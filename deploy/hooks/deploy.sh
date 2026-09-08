@@ -86,8 +86,12 @@ restore_db
 restart_service() {
     if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q "$SERVICE"; then
         systemctl restart "$SERVICE" 2>>"$LOG" && return 0
-        # 非 root（如某些 WebHook 插件以 www 运行）时 systemctl 会失败，退回直启
-        log "systemctl 重启失败（权限？），改用直接启动"
+        # 某些 WebHook 插件以 www 用户运行，systemctl 需要 root —— 再试一次免密 sudo
+        if [ "$(id -u)" != "0" ] && command -v sudo >/dev/null 2>&1; then
+            sudo -n systemctl restart "$SERVICE" 2>>"$LOG" && { log "已通过 sudo systemctl 重启"; return 0; }
+        fi
+        # 都不行才退回直启，并提醒可能与 systemd 里的服务抢端口
+        log "⚠ systemctl 重启失败（权限不足？），改用直接启动；若已有 systemd 服务在跑，可能出现端口冲突"
     fi
     pkill -f "node ${APP_DIR}/server.js" 2>/dev/null || true
     sleep 2
