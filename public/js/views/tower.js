@@ -27,14 +27,14 @@ const TowerView = {
             catch (e) { this.maxFloor = 200; }
         }
         const chap = this.chapterOf(Math.min(this.maxFloor, cleared + 1));
-        const nextBoss = Math.ceil((cleared + 1) / 5) * 5;
+        const nextMilestone = Math.ceil((cleared + 1) / 10) * 10; // 十层里程碑（章节感）
 
         root.innerHTML = `
             <div class="section-title">${ancient ? '远古世界' : '冒险 · 推塔'}</div>
             <div class="card" style="text-align:center">
                 <h3>${ancient ? '🌌 远古远征' : '⚔️ 肉鸽推塔'}</h3>
                 <p style="color:#b9b3d8;font-size:13px;margin:8px 0;line-height:1.7">
-                    小怪分波冲阵，每 5 层关底出现 BOSS。<br>每清完一波可三选一增益。
+                    每关固定 20 波怪潮，第 20 波 BOSS 压轴。<br>每清 4 波可三选一增益。
                 </p>
                 <p>已通关：<b style="color:#ffd56b">${cleared}</b> / ${this.maxFloor} 层　·
                     当前进度：<b style="color:#5cc7ff">${chap.emoji} ${chap.name}</b>（${chap.from}-${chap.to} 层）</p>
@@ -54,7 +54,7 @@ const TowerView = {
             <div class="floor-nav">
                 <button class="btn ghost small" id="fn-prev">« 上一页</button>
                 <button class="btn ghost small" id="fn-cur">回到当前层</button>
-                <button class="btn ghost small" id="fn-boss">下一个 BOSS 层 ${nextBoss <= this.maxFloor ? '(' + nextBoss + ')' : ''}</button>
+                <button class="btn ghost small" id="fn-boss">下一个十层 ${nextMilestone <= this.maxFloor ? '(' + nextMilestone + ')' : ''}</button>
                 <button class="btn ghost small" id="fn-next">下一页 »</button>
             </div>
             <div id="floor-list" class="floor-grid"></div>
@@ -99,7 +99,7 @@ const TowerView = {
             this.renderFloors(root, app, ancient);
         };
         root.querySelector('#fn-boss').onclick = () => {
-            this.pageStart = this.clampPage(nextBoss - 2);
+            this.pageStart = this.clampPage(nextMilestone - 2);
             this.renderFloors(root, app, ancient);
         };
 
@@ -126,7 +126,7 @@ const TowerView = {
         const from = this.pageStart;
         const to = Math.min(this.maxFloor, from + this.pageSize - 1);
         for (let f = from; f <= to; f++) {
-            const isBoss = f % 5 === 0;
+            const isBoss = f % 10 === 0; // 十层里程碑在选层界面上高亮（实际每关末波都有 BOSS）
             const done = f <= cleared;
             const current = f === cleared + 1;
             const locked = (ancient && !gateOk) || !equipped || f > cleared + 1;

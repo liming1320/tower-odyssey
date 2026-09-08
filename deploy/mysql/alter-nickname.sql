@@ -12,7 +12,7 @@ USE `tower_odyssey`;
 -- 加列（已存在会报错，忽略即可）
 ALTER TABLE `players`
     ADD COLUMN `nickname`   VARCHAR(24) NULL COMMENT '玩家昵称（对外展示，可修改）' AFTER `banned`,
-    ADD COLUMN `display_id` VARCHAR(12) NULL COMMENT '展示 ID，如 #7K9M2A' AFTER `nickname`;
+    ADD COLUMN `display_id` VARCHAR(20) NULL COMMENT '展示 ID，14 位字母数字，全局唯一' AFTER `nickname`;
 
 -- 老玩家昵称先用登录名填充（昵称已存在则跳过）
 UPDATE `players` SET `nickname` = `username` WHERE `nickname` IS NULL OR `nickname` = '';

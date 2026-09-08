@@ -184,3 +184,8 @@ body.admin-page { display: block !important; }
     border-color: rgba(255,157,92,0.55) !important;
     color: #ffd0a8 !important;
 }
+
+/* 验证码记录表 */
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.admin-table th, .admin-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; }
+.admin-table th { color: #b9b3d8; font-weight: normal; font-size: 12px; }

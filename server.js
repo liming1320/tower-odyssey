@@ -5,6 +5,21 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
+// 数据库连接兜底配置：
+//   优先级：环境变量 > data/db-env.json > 默认 json 模式
+//   背景：systemd 正常重启会带上 DB_* 环境变量，但部署脚本兜底的 nohup
+//   直启没有这些变量，服务会悄悄回落到 json 模式（新玩家写进 db.json 而不是 MySQL）。
+//   把连接信息写进 data/db-env.json（不进 git、不受部署覆盖），无论哪种方式启动都能进 MySQL。
+try {
+    if (!process.env.DB_DRIVER) {
+        const envCfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'db-env.json'), 'utf8'));
+        for (const k of Object.keys(envCfg)) {
+            if (process.env[k] === undefined) process.env[k] = String(envCfg[k]);
+        }
+        console.log('[boot] 已从 data/db-env.json 读入数据库配置（DB_DRIVER=' + process.env.DB_DRIVER + '）');
+    }
+} catch (e) { /* 配置文件不存在 → 默认 json 模式 */ }
+
 // 存储抽象层：DB_DRIVER=json（默认，data/db.json）或 mysql（生产，多人并发/多端同步）
 const Store = require('./server/store');
 
@@ -834,13 +849,18 @@ function newId() { return crypto.randomBytes(6).toString('hex'); }
 function newToken() { return crypto.randomBytes(16).toString('hex'); }
 
 // ---- 昵称 / 展示 ID ----
-// 展示 ID：# + 6 位，去掉 0/O/1/I 等易混淆字符，形如 #7K9M2A
+// 展示 ID：14 位字母数字混合（去掉易混的 0/O/1/I），形如 LPFR3NMNS7372C
+//   32^14 ≈ 2×10^21 种组合，足够支撑上亿玩家无碰撞
+//   不加 # 之类的装饰符——这就是别人找你时用的「账号标识」，纯字符串更通用
 const DISPLAY_ID_CHARS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+const DISPLAY_ID_LEN = 14;
 const DISPLAY_NICK_MAX = 12;
 function genDisplayId() {
+    const out = new Uint32Array(DISPLAY_ID_LEN);
+    crypto.randomFillSync(out);
     let s = '';
-    for (let i = 0; i < 6; i++) s += DISPLAY_ID_CHARS[crypto.randomInt(DISPLAY_ID_CHARS.length)];
-    return '#' + s;
+    for (let i = 0; i < DISPLAY_ID_LEN; i++) s += DISPLAY_ID_CHARS[out[i] % DISPLAY_ID_CHARS.length];
+    return s;
 }
 function newDisplayId() {
     const taken = new Set(Object.values(DB.users).map(u => u.displayId).filter(Boolean));
@@ -848,7 +868,8 @@ function newDisplayId() {
         const id = genDisplayId();
         if (!taken.has(id)) return id;
     }
-    return '#' + Date.now().toString(36).toUpperCase().slice(-6);
+    // 极小概率连撞 50 次：用时间戳兜底，仍保持 14 位
+    return Date.now().toString(36).toUpperCase().padStart(14, '0').slice(-14);
 }
 // 昵称合法性：2-12 字符（中文算 1 个字符），首尾不能有空格，禁止纯空白
 function validNickname(n) {
@@ -861,14 +882,72 @@ function validNickname(n) {
     return null;
 }
 // 给老账号补齐昵称与展示 ID（升级后首次启动执行）
+// 展示 ID 格式从「#XXXXXX 6位」改为「14 位字母数字」（更通用、更长）。老格式自动重发。
 function migrateNicknames() {
     let changed = 0;
+    const idRe = /^[2-9A-HJ-NP-Z]{14}$/;
     for (const u of Object.values(DB.users)) {
         if (!u.nickname) { u.nickname = u.username || ('冒险者' + String(u.id).slice(-4)); changed++; }
-        if (!u.displayId) { u.displayId = newDisplayId(); changed++; }
+        if (!u.displayId || !idRe.test(u.displayId)) { u.displayId = newDisplayId(); changed++; }
     }
     if (changed) { save(); console.log(`[game] 已为老账号补齐昵称/展示 ID（${changed} 处）`); }
 }
+
+// 默认昵称：勇者 + 4 位随机字母数字（全服唯一，玩家之后可自己改）
+function genDefaultNickname() {
+    const taken = new Set(Object.values(DB.users).map(u => u.nickname).filter(Boolean));
+    for (let i = 0; i < 200; i++) {
+        let s = '';
+        for (let j = 0; j < 4; j++) s += DISPLAY_ID_CHARS[crypto.randomInt(DISPLAY_ID_CHARS.length)];
+        const n = '勇者' + s;
+        if (!taken.has(n)) return n;
+    }
+    // 极小概率撞车：加长到 6 位
+    return '勇者' + crypto.randomBytes(3).toString('hex').toUpperCase();
+}
+// 手机号格式：11 位、1 开头、第二位 3-9
+function validPhone(p) {
+    return typeof p === 'string' && /^1[3-9]\d{9}$/.test(p);
+}
+// 手机号脱敏展示：138****1234
+function maskPhone(p) {
+    return (p && p.length === 11) ? p.slice(0, 3) + '****' + p.slice(7) : '';
+}
+
+// ---------------- 短信验证码 ----------------
+// 开发模式（默认）：验证码打印到服务端控制台，并提供后台接口查看，方便联调；
+// 接真实短信：设置 SMS_PROVIDER=tencent 后在此处接入厂商 SDK（见 deploy/README.md）。
+const SMS = {
+    codes: new Map(),     // phone -> { code, expires }（验证通过即作废）
+    nextSend: new Map(),  // phone -> 下次可发送时间戳（独立存放：验证码作废后限流依然生效）
+    recent: [],           // 最近发送记录（后台查看用）：{ phone, code, time }
+    codeTTL: 5 * 60 * 1000,                                  // 验证码 5 分钟有效
+    resendGap: (parseInt(process.env.SMS_RESEND_SEC) || 60) * 1000, // 同号重发间隔（测试可调小）
+    recentMax: 30,
+    send(phone) {
+        const now = Date.now();
+        const ns = this.nextSend.get(phone) || 0;
+        if (now < ns) {
+            return { ok: false, error: `发送太频繁，请 ${Math.ceil((ns - now) / 1000)} 秒后再试` };
+        }
+        const code = String(crypto.randomInt(100000, 1000000));
+        this.codes.set(phone, { code, expires: now + this.codeTTL });
+        this.nextSend.set(phone, now + this.resendGap);
+        this.recent.unshift({ phone, code, time: now });
+        if (this.recent.length > this.recentMax) this.recent.length = this.recentMax;
+        // 开发模式：直接打日志（接真实短信时替换为厂商 API 调用）
+        console.log(`[sms] 验证码 → ${phone}：${code}（${this.codeTTL / 60000} 分钟内有效）`);
+        return { ok: true, dev: true };
+    },
+    verify(phone, code) {
+        const rec = this.codes.get(phone);
+        if (!rec) return { ok: false, error: '请先获取验证码' };
+        if (Date.now() > rec.expires) { this.codes.delete(phone); return { ok: false, error: '验证码已过期，请重新获取' }; }
+        if (String(code) !== rec.code) return { ok: false, error: '验证码错误' };
+        this.codes.delete(phone); // 验证通过即作废，一次性使用
+        return { ok: true };
+    },
+};
 // 自然日 key（用于每日奖励 / 累计登录天数）
 function todayKey() {
     const d = new Date();
@@ -989,11 +1068,25 @@ api['GET /api/health'] = (req, res) => {
     });
 };
 api['POST /api/register'] = async (req, res, body) => {
-    const { username, password } = body;
+    const { username, password, phone, code } = body;
     if (!username || !password) return sendJson(res, 400, { error: '用户名密码必填' });
-    if (username.length < 2 || username.length > 16) return sendJson(res, 400, { error: '用户名长度 2-16' });
+    // 账号只能是英文 + 数字组合（4-16 位，不能有中文和特殊符号）
+    if (!/^[A-Za-z0-9]{4,16}$/.test(username)) {
+        return sendJson(res, 400, { error: '账号只能是 4-16 位英文字母或数字（不能有中文和特殊符号）' });
+    }
     if (password.length < 4) return sendJson(res, 400, { error: '密码至少 4 位' });
     if (Object.values(DB.users).some(u => u.username === username)) return sendJson(res, 400, { error: '用户已存在' });
+
+    // 注册时可选绑定手机号（需验证码）
+    let bindPhone = null;
+    if (phone) {
+        if (!validPhone(phone)) return sendJson(res, 400, { error: '手机号格式不正确' });
+        const v = SMS.verify(phone, code);
+        if (!v.ok) return sendJson(res, 400, { error: v.error });
+        if (Object.values(DB.users).some(u => u.phone === phone)) return sendJson(res, 400, { error: '该手机号已被其他账号绑定' });
+        bindPhone = phone;
+    }
+
     const id = newId();
     const isAdmin = Object.keys(DB.users).length === 0; // 第一个注册用户为管理员
     DB.users[id] = {
@@ -1001,8 +1094,9 @@ api['POST /api/register'] = async (req, res, body) => {
         password: hashPassword(password),
         isAdmin,
         createdAt: Date.now(),
-        nickname: username,      // 默认昵称 = 登录名，之后可改
-        displayId: newDisplayId(), // 展示 ID，全局唯一
+        nickname: genDefaultNickname(), // 自动昵称：勇者XXXX，之后可改
+        displayId: newDisplayId(),      // 展示 ID，全局唯一
+        phone: bindPhone,
         state: defaultUserState(username),
     };
     const token = newToken();
@@ -1014,13 +1108,88 @@ api['POST /api/register'] = async (req, res, body) => {
 
 api['POST /api/login'] = async (req, res, body) => {
     const { username, password } = body;
-    const user = Object.values(DB.users).find(u => u.username === username);
-    if (!user || !verifyPassword(password, user.password)) return sendJson(res, 401, { error: '用户名或密码错误' });
+    if (!username || !password) return sendJson(res, 400, { error: '请输入账号和密码' });
+    // 账号登录 / 手机号+密码登录 用同一个入口：先按用户名查，查不到再按手机号查
+    const user = Object.values(DB.users).find(u => u.username === username)
+        || Object.values(DB.users).find(u => u.phone === username && !!u.phone);
+    if (!user || !verifyPassword(password, user.password)) return sendJson(res, 401, { error: '账号或密码错误' });
     const token = newToken();
     DB.tokens[token] = user.id;
     touchLogin(user.state);
     save();
     sendJson(res, 200, { ok: true, token, user: publicUser(user) });
+};
+
+// ---- 手机号通道 ----
+// 发送验证码
+api['POST /api/sms/send'] = (req, res, body) => {
+    const { phone } = body;
+    if (!validPhone(phone)) return sendJson(res, 400, { error: '手机号格式不正确' });
+    const r = SMS.send(phone);
+    if (!r.ok) return sendJson(res, 429, { error: r.error });
+    sendJson(res, 200, { ok: true, dev: !!r.dev, ttl: 300 });
+};
+// 手机号 + 验证码 登录（未注册的手机号自动注册，一个手机号只有一个账号，天然不会重复注册）
+// 可同时提交 password 为新账号设置密码；老账号忽略该字段（改密码走 /api/user/set-password）
+api['POST /api/phone/login'] = (req, res, body) => {
+    const { phone, code, password } = body;
+    if (!validPhone(phone)) return sendJson(res, 400, { error: '手机号格式不正确' });
+    const v = SMS.verify(phone, code);
+    if (!v.ok) return sendJson(res, 400, { error: v.error });
+
+    let user = Object.values(DB.users).find(u => u.phone === phone);
+    let isNew = false;
+    if (!user) {
+        // 自动注册：用户名自动生成（账号规则同样是字母+数字），昵称勇者XXXX
+        const id = newId();
+        let uname;
+        do { uname = 'u' + crypto.randomBytes(4).toString('hex'); }
+        while (Object.values(DB.users).some(u => u.username === uname));
+        user = {
+            id, username: uname,
+            password: (password && password.length >= 4) ? hashPassword(password) : '',
+            isAdmin: false,
+            createdAt: Date.now(),
+            nickname: genDefaultNickname(),
+            displayId: newDisplayId(),
+            phone,
+            state: defaultUserState(uname),
+        };
+        DB.users[id] = user;
+        isNew = true;
+    }
+    const token = newToken();
+    DB.tokens[token] = user.id;
+    touchLogin(user.state);
+    save();
+    sendJson(res, 200, { ok: true, token, isNew, user: publicUser(user) });
+};
+// 已登录账号绑定 / 换绑手机号
+api['POST /api/user/bind-phone'] = (req, res, body) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const { phone, code } = body;
+    if (!validPhone(phone)) return sendJson(res, 400, { error: '手机号格式不正确' });
+    const v = SMS.verify(phone, code);
+    if (!v.ok) return sendJson(res, 400, { error: v.error });
+    const other = Object.values(DB.users).find(u => u.phone === phone && u.id !== user.id);
+    if (other) return sendJson(res, 400, { error: '该手机号已被其他账号绑定' });
+    user.phone = phone;
+    save();
+    sendJson(res, 200, { ok: true, phone: maskPhone(phone) });
+};
+// 设置 / 修改密码（验证码登录创建的无密码账号，或想改密码的账号）
+api['POST /api/user/set-password'] = (req, res, body) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const { oldPassword, newPassword } = body;
+    if (!newPassword || newPassword.length < 4) return sendJson(res, 400, { error: '新密码至少 4 位' });
+    if (user.password) { // 已有密码：必须验证旧密码
+        if (!verifyPassword(oldPassword || '', user.password)) return sendJson(res, 400, { error: '旧密码不正确' });
+    }
+    user.password = hashPassword(newPassword);
+    save();
+    sendJson(res, 200, { ok: true });
 };
 
 api['POST /api/logout'] = (req, res) => {
@@ -1043,6 +1212,9 @@ function publicUser(user) {
         username: user.username,
         nickname: user.nickname || user.username,
         displayId: user.displayId || '',
+        phone: maskPhone(user.phone),        // 脱敏：138****1234
+        phoneBound: !!user.phone,            // 是否已绑定
+        hasPassword: !!user.password,        // 验证码登录创建的无密码账号为 false
         isAdmin: !!user.isAdmin,
         createdAt: user.createdAt,
         state: user.state,
@@ -1752,9 +1924,9 @@ function chapterOf(floor) {
     return CHAPTERS.find(c => floor >= c.from && floor <= c.to) || CHAPTERS[CHAPTERS.length - 1];
 }
 
-// Boss 出场序列：相邻 BOSS 层（5/10/15…）绝不相同，同一个 Boss 隔若干关才重复一次
+// Boss 出场序列：相邻层的 BOSS 绝不相同，同一个 Boss 隔若干关才重复一次
 const BOSS_SEQ = (() => {
-    const n = BOSS_TYPES.length, total = Math.ceil(MAX_FLOOR / 5);
+    const n = BOSS_TYPES.length, total = MAX_FLOOR;
     const seq = [];
     let idx = 0;
     for (let i = 0; i < total; i++) {
@@ -1763,14 +1935,13 @@ const BOSS_SEQ = (() => {
     }
     return seq;
 })();
-const TIER_CN = ['', '·二阶', '·三阶', '·四阶', '·五阶', '·六阶', '·七阶'];
+const TIER_CN = ['', '·二阶', '·三阶', '·四阶', '·五阶'];
 function bossForFloor(floor) {
-    const i = Math.floor(floor / 5) - 1;
-    const id = BOSS_SEQ[i % BOSS_SEQ.length];
-    let tier = 0;
-    for (let j = 0; j < i; j++) if (BOSS_SEQ[j % BOSS_SEQ.length] === id) tier++;
+    const id = BOSS_SEQ[(floor - 1) % BOSS_SEQ.length];
+    // 阶数随大章节提升（每 40 层 +1 阶，上限五阶），数值主要还是由层数曲线决定
+    const tier = Math.min(4, Math.floor((floor - 1) / 40));
     const bt = BOSS_TYPES[id];
-    return { bt, tier, name: bt.name + (TIER_CN[Math.min(tier, TIER_CN.length - 1)] || '') };
+    return { bt, tier, name: bt.name + (TIER_CN[tier] || '') };
 }
 
 // 难度曲线：二次增长，200 层持续变强
@@ -1849,20 +2020,29 @@ api['GET /api/tower/level'] = (req, res) => {
     const atkS = floorAtkScale(floor) * mul;
 
     // 保底机制：队伍变强后小怪不能刚出场就被秒杀，所以血量/攻击同时与队伍强度挂钩。
-    // 保底系数本身也随层数递增（小怪撑住的秒数 1.8s → 13.7s，Boss 14s → 113s），
+    // 保底系数本身也随层数递增（小怪撑住的秒数随层数缓慢上升），
     // 这样即使玩家练度很高，每一层的怪物强度依然肉眼可见地在增加。
-    const mobHpBase = Math.max(520 * hpS, teamAtk * (1.8 + 0.06 * (floor - 1)));
+
+    // ---- 波次结构：每关固定 20 波，最后一波必定是 BOSS ----
+    const WAVES_PER_FLOOR = 20;
+    // 每波小怪数：4 只起步，随层数到 10 只封顶（画面上「小而多」的怪潮感）
+    const perWave = Math.min(4 + Math.floor(floor / 4), 10);
+    // 平衡归一化：旧版一关 9~64 只小怪，现在 80~200 只。
+    // 按总量比例压低单只的血/攻，让一关的总承伤、总耗时与旧版大致相当。
+    const oldWaves = Math.min(3 + Math.floor(floor / 3), 8);
+    const oldCnt = Math.min(3 + Math.floor(floor / 8), 8);
+    const countNorm = Math.max(0.22, Math.min(1, (oldWaves * oldCnt) / (WAVES_PER_FLOOR * perWave)));
+    const mobHpBase = Math.floor(Math.max(520 * hpS, teamAtk * (1.8 + 0.06 * (floor - 1))) * countNorm);
     const bossHpBase = Math.max(520 * hpS, teamAtk * (14 + 0.5 * (floor - 1)) / 12);
-    const mobAtkBase = Math.max(42 * atkS, avgHeroHp * (0.05 + 0.0006 * (floor - 1)));
+    const mobAtkBase = Math.floor(Math.max(42 * atkS, avgHeroHp * (0.05 + 0.0006 * (floor - 1))) * countNorm);
     const bossAtkBase = Math.max(42 * atkS, avgHeroHp * (0.065 + 0.0008 * (floor - 1)));
 
-    const waveCount = Math.min(3 + Math.floor(floor / 3), 8);
-    const isBossFloor = floor % 5 === 0;
+    const waveCount = WAVES_PER_FLOOR;
     const waves = [];
     let bossInfo = null;
 
     for (let w = 0; w < waveCount; w++) {
-        const isBossWave = isBossFloor && w === waveCount - 1;
+        const isBossWave = w === waveCount - 1; // 第 20 波固定 BOSS
         const enemies = [];
         if (isBossWave) {
             const { bt, tier, name } = bossForFloor(floor);
@@ -1888,13 +2068,9 @@ api['GET /api/tower/level'] = (req, res) => {
                 });
             }
         } else {
-            // 每波怪数：第 1 层 3 只起步，随层数递增，上限 8
-            const cnt = Math.min(3 + Math.floor(floor / 8), 8);
-            // 精英怪：Boss 层倒数第二波 1-2 只；普通层最后一波 1 只
-            const eliteCount = isBossFloor
-                ? (w === waveCount - 2 ? (floor >= 10 ? 2 : 1) : 0)
-                : (w === waveCount - 1 && floor >= 5 ? 1 : 0);
-            for (let i = 0; i < cnt; i++) {
+            // 精英怪：第 5 / 10 / 15 波（0 起点即 w=4/9/14），越往后精英越多
+            const eliteCount = (w % 5 === 4) ? (floor >= 10 ? 2 : 1) : 0;
+            for (let i = 0; i < perWave; i++) {
                 const t = pool[Math.floor(rng() * pool.length)];
                 const elite = i < eliteCount;
                 const eMul = elite ? 2.5 : 1;
@@ -1917,7 +2093,7 @@ api['GET /api/tower/level'] = (req, res) => {
     };
 
     sendJson(res, 200, {
-        floor, ancient, waves, isBossFloor, boss: bossInfo,
+        floor, ancient, waves, isBossFloor: true, boss: bossInfo,
         heroes: heroesData,
         wall: getWallInfo(user.state),    // 城墙等级 + 专属技能（战斗中可释放）
         buffPool: ROGUE_BUFFS,
@@ -2568,6 +2744,7 @@ api['GET /api/admin/overview'] = (req, res) => {
         id: u.id, username: u.username, isAdmin: u.isAdmin,
         nickname: u.nickname || u.username,
         displayId: u.displayId || '',
+        phone: u.phone || '',
         lv: u.state.tower.maxFloor,
         gems: Math.floor((u.state.resources && u.state.resources.gems) || 0),
         heroCount: (u.state.heroes || []).length,
@@ -2581,6 +2758,21 @@ api['GET /api/admin/overview'] = (req, res) => {
         equipmentTemplates: DB.equipmentTemplates, ringTemplates: DB.ringTemplates,
         artifactTemplates: DB.artifactTemplates, gemTemplates: DB.gemTemplates,
         meta: DB._meta,
+    });
+};
+
+// 后台查看最近发送的验证码（开发/联调期专用：未接真实短信时，管理员在此取码测试）
+api['GET /api/admin/sms-codes'] = (req, res) => {
+    const user = getUserByToken(req);
+    if (!user || (!user.isAdmin && user.id !== 'admin')) return sendJson(res, 403, { error: '无权限' });
+    sendJson(res, 200, {
+        ok: true,
+        provider: process.env.SMS_PROVIDER || 'dev',
+        list: SMS.recent.map(r => ({
+            phone: r.phone, code: r.code,
+            time: new Date(r.time).toISOString(),
+            ago: Math.floor((Date.now() - r.time) / 1000) + 's',
+        })),
     });
 };
 

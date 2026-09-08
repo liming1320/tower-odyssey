@@ -38,6 +38,7 @@ const AdminAPI = (() => {
         userGrant: (data) => call('POST', '/api/admin/user/grant', data),
         userDelete: (data) => call('POST', '/api/admin/user/delete', data),
         mail: (data) => call('POST', '/api/admin/mail', data),
+        smsCodes: () => call('GET', '/api/admin/sms-codes'),
     };
 })();
 
@@ -99,6 +100,7 @@ const AdminApp = {
             wall: () => this.renderWall(body),
             event: () => this.renderEvent(body),
             users: () => this.renderUsers(body),
+            sms: () => this.renderSms(body),
         }[this.tab];
         fn().catch(e => {
             body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`;
@@ -707,6 +709,38 @@ const AdminApp = {
         this._renderPickList(body);
     },
 
+    // ================= 验证码（测试模式查看） =================
+    // 未接真实短信时，玩家端点「获取验证码」后，在这里查看 6 位验证码完成登录/绑定测试。
+    // 接入真实短信（SMS_PROVIDER）后此页仍可用，仅作发送记录审计。
+    async renderSms(body) {
+        let r;
+        try { r = await AdminAPI.smsCodes(); }
+        catch (e) { body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`; return; }
+        const rows = (r.list || []).map(x => `
+            <tr>
+                <td>${x.phone}</td>
+                <td><b style="color:#ffd56b;font-size:15px;letter-spacing:2px">${x.code}</b></td>
+                <td>${new Date(x.time).toLocaleString('zh-CN')}（${x.ago}前）</td>
+            </tr>
+        `).join('');
+        body.innerHTML = `
+            <div class="admin-note">
+                短信通道：<b>${r.provider === 'dev' ? '测试模式（未接真实短信）' : r.provider}</b>。
+                测试模式下玩家点「获取验证码」后，在此处把 6 位验证码告诉玩家即可完成登录 / 绑定。<br>
+                验证码 5 分钟内有效、一次性使用；同一手机号 60 秒内只能发送一次。
+            </div>
+            <div class="card">
+                <h3>最近发送记录（前 30 条）</h3>
+                <button class="btn small ghost" id="sms-refresh">刷新</button>
+                <table class="admin-table" style="margin-top:10px">
+                    <thead><tr><th>手机号</th><th>验证码</th><th>发送时间</th></tr></thead>
+                    <tbody>${rows || '<tr><td colspan="3" style="text-align:center;color:#777;padding:16px">还没有发送记录</td></tr>'}</tbody>
+                </table>
+            </div>
+        `;
+        body.querySelector('#sms-refresh').onclick = () => this.renderSms(body);
+    },
+
     _pageItems() {
         const st = this._us;
         const list = this._filtered();
@@ -731,7 +765,7 @@ const AdminApp = {
                         ${u.isAdmin ? '<span class="tag-admin">[管理员]</span>' : ''}
                     </div>
                     <div class="pi-meta">
-                        账号 ${u.username} · 💎${U.num(u.gems)} · 🏔最高层 ${u.lv || 0} · 英雄 ${u.heroCount || 0} ·
+                        账号 ${u.username}${u.phone ? ' · 📱' + u.phone : ''} · 💎${U.num(u.gems)} · 🏔最高层 ${u.lv || 0} · 英雄 ${u.heroCount || 0} ·
                         登录 ${u.loginDays || 0} 天 · 注册 ${new Date(u.createdAt).toLocaleString('zh-CN')}
                     </div>
                 </div>
@@ -782,8 +816,7 @@ const AdminApp = {
     },
 
     async _deleteSel(body) {
-        const names = [...this._us.sel];
-        if (!names.length) return U.toast('请先选择要删除的玩家');
+        const names = [...this._us.sel];        if (!names.length) return U.toast('请先选择要删除的玩家');
         this._deleteUsers(body, names);
     },
 

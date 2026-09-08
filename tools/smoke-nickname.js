@@ -54,7 +54,7 @@ async function waitUp() {
 
     try {
         const stamp = Date.now().toString().slice(-6);
-        const u1 = 'nick_a' + stamp, u2 = 'nick_b' + stamp;
+        const u1 = 'nicka' + stamp, u2 = 'nickb' + stamp;
 
         console.log('\n① 注册即生成昵称与展示 ID');
         const r1 = await req('POST', '/api/register', { username: u1, password: '1234' });
@@ -62,14 +62,15 @@ async function waitUp() {
         const t1 = r1.token;
         assert(!r1.error, '无错误：' + (r1.error || ''));
         const me1 = await req('GET', '/api/me', null, t1);
-        assert(me1.user.nickname === u1, `默认昵称 = 登录名（${me1.user.nickname}）`);
-        assert(/^#[2-9A-HJ-NP-Z]{6}$/.test(me1.user.displayId || ''), `展示 ID 格式正确（${me1.user.displayId}）`);
+        assert(/^勇者[0-9A-Z]{4}$/.test(me1.user.nickname || ''), `默认昵称为勇者+4位（${me1.user.nickname}）`);
+        assert(/^[2-9A-HJ-NP-Z]{14}$/.test(me1.user.displayId || ''), `展示 ID 格式正确（${me1.user.displayId}）`);
 
         console.log('\n② 修改昵称');
-        const s1 = await req('POST', '/api/user/set-nickname', { nickname: '塔界老王' }, t1);
-        assert(s1.ok && s1.nickname === '塔界老王', '改为「塔界老王」成功');
+        const nickA = '塔界老王' + stamp;
+        const s1 = await req('POST', '/api/user/set-nickname', { nickname: nickA }, t1);
+        assert(s1.ok && s1.nickname === nickA, '改为「' + nickA + '」成功');
         const me1b = await req('GET', '/api/me', null, t1);
-        assert(me1b.user.nickname === '塔界老王', '持久化后仍为新昵称');
+        assert(me1b.user.nickname === nickA, '持久化后仍为新昵称');
         assert(me1b.user.username === u1, '登录名未受影响');
 
         console.log('\n③ 昵称校验');

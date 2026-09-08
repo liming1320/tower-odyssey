@@ -82,22 +82,26 @@ const App = {
         document.getElementById('r-exp').textContent = U.fmt(r.exp || 0);
         document.getElementById('r-wish').textContent = U.fmt(this.user.state.wishCards || 0);
     },
-    // 修改昵称（顶栏点昵称进入）
+    // 个人资料：改昵称 / 绑定手机 / 改密码（顶栏点头像区进入）
     editNickname() {
         const cur = this.user.nickname || this.user.username || '';
+        const u = this.user;
         U.openModal(`
-            <h3>修改昵称</h3>
+            <h3>个人资料</h3>
             <div class="card" style="font-size:12px;color:#b9b3d8;line-height:1.8">
                 昵称是对外展示的名字（聊天、部落、排行榜都用它），2-12 个字符，全服唯一。<br>
-                展示 ID <b style="color:#ffd56b">${this.user.displayId || '生成中'}</b> 是别人加你好友用的编号，不可修改。
+                展示 ID <b style="color:#ffd56b">${u.displayId || '生成中'}</b> 是别人加你好友用的编号，不可修改。<br>
+                绑定手机：<b style="color:${u.phoneBound ? '#5cd65c' : '#ff7a8b'}">${u.phoneBound ? (u.phone || '已绑定') : '未绑定'}</b>
+                ${u.phoneBound ? '' : '（绑定后可用手机号+密码登录）'}
             </div>
             <div style="margin:10px 0">
                 <input id="nick-input" maxlength="12" value="${cur.replace(/"/g, '&quot;')}"
                        placeholder="输入新昵称（2-12 个字符）">
             </div>
             <div style="display:flex;gap:8px">
-                <button class="btn" id="nick-save">保存</button>
-                <button class="btn ghost" onclick="U.closeModal()">取消</button>
+                <button class="btn" id="nick-save">保存昵称</button>
+                <button class="btn ghost" id="btn-bind-phone">📱 ${u.phoneBound ? '换绑手机' : '绑定手机'}</button>
+                <button class="btn ghost" id="btn-set-password">${u.hasPassword ? '修改密码' : '设置密码'}</button>
             </div>
         `);
         const inp = document.getElementById('nick-input');
@@ -116,6 +120,78 @@ const App = {
         };
         document.getElementById('nick-save').onclick = doSave;
         inp.addEventListener('keydown', e => { if (e.key === 'Enter') doSave(); });
+        document.getElementById('btn-bind-phone').onclick = () => this.bindPhone();
+        document.getElementById('btn-set-password').onclick = () => this.setPassword();
+    },
+    // 绑定 / 换绑手机号
+    bindPhone() {
+        U.openModal(`
+            <h3>${this.user.phoneBound ? '换绑手机号' : '绑定手机号'}</h3>
+            <div class="card" style="font-size:12px;color:#b9b3d8;line-height:1.8">
+                ${this.user.phoneBound ? '当前：' + (this.user.phone || '已绑定') + '<br>' : ''}
+                绑定后可用「手机号 + 密码」登录，也可用验证码直接登录。
+            </div>
+            <input id="bp-phone" placeholder="手机号" maxlength="11" inputmode="numeric" style="margin-top:8px">
+            <div class="sms-row" style="margin-top:8px">
+                <input id="bp-code" placeholder="验证码" maxlength="6" inputmode="numeric">
+                <button class="ghost" id="bp-send" type="button">获取验证码</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn" id="bp-save">确认绑定</button>
+                <button class="btn ghost" onclick="U.closeModal()">取消</button>
+            </div>
+        `);
+        const btn = document.getElementById('bp-send');
+        let timer = null, left = 0;
+        btn.onclick = async () => {
+            const phone = document.getElementById('bp-phone').value.trim();
+            if (!/^1[3-9]\d{9}$/.test(phone)) return U.toast('请输入正确的手机号');
+            try {
+                const r = await API.smsSend(phone);
+                left = 60; btn.disabled = true;
+                timer = setInterval(() => {
+                    if (left <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; return; }
+                    btn.textContent = `重发(${left--}s)`;
+                }, 1000);
+                U.toast(r.dev ? '验证码已发送（测试模式：请到后台「验证码」页查看）' : '验证码已发送');
+            } catch (e) { U.toast(e.message); }
+        };
+        document.getElementById('bp-save').onclick = async () => {
+            const phone = document.getElementById('bp-phone').value.trim();
+            const code = document.getElementById('bp-code').value.trim();
+            try {
+                const r = await API.bindPhone(phone, code);
+                this.user.phone = r.phone; this.user.phoneBound = true;
+                U.closeModal(); U.toast('手机号已绑定');
+                this.editNickname();
+            } catch (e) { U.toast(e.message); }
+        };
+    },
+    // 设置 / 修改密码
+    setPassword() {
+        const has = !!this.user.hasPassword;
+        U.openModal(`
+            <h3>${has ? '修改密码' : '设置密码'}</h3>
+            ${has ? '<input id="pw-old" type="password" placeholder="旧密码" style="margin-top:8px">' : ''}
+            <input id="pw-new" type="password" placeholder="新密码（4 位以上）" style="margin-top:8px">
+            <input id="pw-new2" type="password" placeholder="再输入一次新密码" style="margin-top:8px">
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn" id="pw-save">保存</button>
+                <button class="btn ghost" onclick="U.closeModal()">取消</button>
+            </div>
+        `);
+        document.getElementById('pw-save').onclick = async () => {
+            const oldPw = has ? document.getElementById('pw-old').value : '';
+            const nw = document.getElementById('pw-new').value;
+            const nw2 = document.getElementById('pw-new2').value;
+            if (nw.length < 4) return U.toast('新密码至少 4 位');
+            if (nw !== nw2) return U.toast('两次输入的新密码不一致');
+            try {
+                await API.setPassword(oldPw, nw);
+                this.user.hasPassword = true;
+                U.closeModal(); U.toast(has ? '密码已修改' : '密码已设置，之后可用账号或手机号+密码登录');
+            } catch (e) { U.toast(e.message); }
+        };
     },
     // 切换页签时先拉一次最新存档，避免视图读到旧的上阵/资源状态
     async switchTab(tab) {

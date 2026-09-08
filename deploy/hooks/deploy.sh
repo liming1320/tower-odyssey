@@ -133,6 +133,14 @@ done
 
 if [ "$OK" = "1" ]; then
     log "✅ 部署成功：$(git log -1 --oneline)"
+    # 存储模式一致性检查：配了 data/db-env.json（MySQL）但服务跑在 json 模式，
+    # 说明进程没拿到数据库配置（如游离 nohup 进程），会导致新玩家不进 MySQL —— 立刻告警。
+    if [ -f "$APP_DIR/data/db-env.json" ]; then
+        if curl -fsS "http://127.0.0.1:${PORT}/api/health" 2>/dev/null | grep -q '"storage":"json'; then
+            log "☠⚠ 严重告警：data/db-env.json 已配置 MySQL，但服务正在 json 模式运行！"
+            log "   新注册玩家会写进 data/db.json 而不是 MySQL。请执行：systemctl restart tower-odyssey"
+        fi
+    fi
     rm -f "$SNAP"
     exit 0
 fi

@@ -59,7 +59,58 @@ async function init(opts = {}) {
         process.exit(1);
     }
     if (opts.ensureSchema) await ensureSchema();
+    await ensureColumns(); // 自动补缺失的列 / 索引，升级版本不再需要手动执行 ALTER
     return true;
+}
+
+// 自动结构迁移：players 表缺什么列就补什么列；老列宽度不够自动加宽
+// 升级版本不再需要手动跑 alter-xxx.sql
+async function ensureColumns() {
+    try {
+        const [cols] = await pool.query(
+            `SELECT COLUMN_NAME AS name, CHARACTER_MAXIMUM_LENGTH AS len
+             FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'players'`
+        );
+        if (!cols.length) return; // 表都不存在（等 ensureSchema 建表）
+        const have = new Map(cols.map(c => [c.name, c.len]));
+
+        // 缺列 → ADD
+        const need = [
+            ['nickname',   "ALTER TABLE `players` ADD COLUMN `nickname` VARCHAR(24) NULL COMMENT '玩家昵称（对外展示，可修改）'"],
+            ['display_id', "ALTER TABLE `players` ADD COLUMN `display_id` VARCHAR(20) NULL COMMENT '展示 ID，14 位字母数字，全局唯一'"],
+            ['phone',      "ALTER TABLE `players` ADD COLUMN `phone` VARCHAR(20) NULL COMMENT '绑定手机号（可登录）'"],
+        ];
+        for (const [col, ddl] of need) {
+            if (!have.has(col)) {
+                await pool.query(ddl);
+                console.log(`[store] 已自动补列：players.${col}`);
+            }
+        }
+
+        // 老列宽度不够 → MODIFY 拓宽（display_id 从 VARCHAR(12) 升到 VARCHAR(20) 以容纳 14 位 ID）
+        if (have.get('display_id') && Number(have.get('display_id')) < 20) {
+            await pool.query("ALTER TABLE `players` MODIFY COLUMN `display_id` VARCHAR(20) NULL");
+            console.log('[store] 已拓宽 display_id 至 VARCHAR(20)');
+        }
+
+        // 关键：建 phone 唯一索引前，先把空串 '' 改成 NULL
+        // （MySQL 唯一索引里多个空串算重复，但多个 NULL 允许并存——对应"未绑定手机"场景）
+        await pool.query("UPDATE `players` SET `phone` = NULL WHERE `phone` = '' OR `phone` IS NULL").catch(() => {});
+        // 再清一遍确保 phone 是 NULL
+        await pool.query("UPDATE `players` SET `phone` = NULL WHERE `phone` = ''").catch(() => {});
+
+        const [idx] = await pool.query(
+            `SELECT INDEX_NAME AS name FROM information_schema.STATISTICS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'players' AND INDEX_NAME = 'uk_phone'`
+        );
+        if (!idx.length) {
+            await pool.query('ALTER TABLE `players` ADD UNIQUE KEY `uk_phone` (`phone`)');
+            console.log('[store] 已自动补索引：uk_phone(phone)');
+        }
+    } catch (e) {
+        console.error('[store] ⚠ 自动结构迁移失败：' + e.message);
+    }
 }
 
 // 建表（可选，用于全新数据库一键初始化）
@@ -101,6 +152,7 @@ async function loadState() {
                 isAdmin: !!p.is_admin,
                 nickname: p.nickname || saved.nickname || p.username,
                 displayId: p.display_id || saved.displayId || null,
+                phone: p.phone || saved.phone || null,
             });
         } else {
             users[p.id] = {
@@ -108,6 +160,7 @@ async function loadState() {
                 isAdmin: !!p.is_admin, createdAt: p.created_at,
                 nickname: p.nickname || p.username,
                 displayId: p.display_id || null,
+                phone: p.phone || null,
             };
         }
     }
@@ -187,13 +240,13 @@ async function saveState(state) {
         const salt = pass.includes('$') ? pass.split('$')[0] : '';
         await pool.execute(
             `INSERT INTO \`players\`
-                (\`id\`,\`username\`,\`pass_hash\`,\`salt\`,\`is_admin\`,\`created_at\`,\`last_login\`,\`last_login_day\`,\`login_days\`,\`nickname\`,\`display_id\`)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                (\`id\`,\`username\`,\`pass_hash\`,\`salt\`,\`is_admin\`,\`created_at\`,\`last_login\`,\`last_login_day\`,\`login_days\`,\`nickname\`,\`display_id\`,\`phone\`)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
              ON DUPLICATE KEY UPDATE
                 \`username\`=VALUES(\`username\`), \`pass_hash\`=VALUES(\`pass_hash\`), \`salt\`=VALUES(\`salt\`),
                 \`is_admin\`=VALUES(\`is_admin\`), \`last_login\`=VALUES(\`last_login\`),
                 \`last_login_day\`=VALUES(\`last_login_day\`), \`login_days\`=VALUES(\`login_days\`),
-                \`nickname\`=VALUES(\`nickname\`), \`display_id\`=VALUES(\`display_id\`)`,
+                \`nickname\`=VALUES(\`nickname\`), \`display_id\`=VALUES(\`display_id\`), \`phone\`=VALUES(\`phone\`)`,
             [
                 id, u.username, pass, salt, u.isAdmin ? 1 : 0,
                 u.createdAt ? new Date(u.createdAt) : new Date(),
@@ -202,6 +255,7 @@ async function saveState(state) {
                 u.loginDays || 0,
                 u.nickname || u.username || null,
                 u.displayId || null,
+                u.phone || null,
             ]
         );
         await pool.execute(

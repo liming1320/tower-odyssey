@@ -21,6 +21,11 @@ const API = (() => {
         clearToken: () => localStorage.removeItem('game-token'),
         register: (username, password) => call('POST', '/api/register', { username, password }),
         login: (username, password) => call('POST', '/api/login', { username, password }),
+        // 手机号通道
+        smsSend: (phone) => call('POST', '/api/sms/send', { phone }),
+        phoneLogin: (phone, code, password) => call('POST', '/api/phone/login', { phone, code, password }),
+        bindPhone: (phone, code) => call('POST', '/api/user/bind-phone', { phone, code }),
+        setPassword: (oldPassword, newPassword) => call('POST', '/api/user/set-password', { oldPassword, newPassword }),
         logout: () => call('POST', '/api/logout'),
         me: () => call('GET', '/api/me'),
         buildingUpgrade: (which) => call('POST', '/api/building/upgrade', { which }),

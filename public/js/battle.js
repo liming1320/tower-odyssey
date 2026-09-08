@@ -229,12 +229,13 @@ const Battle = {
             this.banner = { text: '⚠ BOSS 来袭', sub: boss.name, until: performance.now() + 2200, big: true, color: '#ff5252' };
             this.shake = 12;
         } else {
-            this.banner = { text: `第 ${this.waveIdx + 1} 波`, sub: `${wave.enemies.length} 只怪物`, until: performance.now() + 1100, color: '#ffd56b' };
+            this.banner = { text: `第 ${this.waveIdx + 1} 波`, sub: `${wave.enemies.length} 只怪物`, until: performance.now() + 850, color: '#ffd56b' };
         }
     },
 
     spawnOne(data) {
-        const size = data.boss ? 34 : (data.elite ? 20 : 15);
+        // 小怪整体缩小一档（数量变多后画面更清爽），BOSS 保持压迫感
+        const size = data.boss ? 32 : (data.elite ? 15 : 11);
         const en = {
             name: data.name, emoji: data.emoji,
             shape: data.shape || 'blob', body: data.body || '#8a8a8a', accent: data.accent || '#333',
@@ -269,12 +270,12 @@ const Battle = {
         if (this.shake > 0) this.shake = Math.max(0, this.shake - dt * 30);
         const stunned = now < this.stunUntil;
 
-        // 逐个出场
+        // 逐个出场（怪潮感：出怪间隔略快）
         if (this.spawnQueue.length) {
             this.spawnTimer -= dt;
             if (this.spawnTimer <= 0) {
                 this.spawnOne(this.spawnQueue.shift());
-                this.spawnTimer = 0.3;
+                this.spawnTimer = 0.22;
             }
         }
 
@@ -490,7 +491,7 @@ const Battle = {
         dmg = Math.max(1, Math.floor(dmg));
         t.hp -= dmg;
         t.hitFlash = 1;
-        this.addFloat(t.x, t.y - (t.boss ? 56 : 40), (crit ? '暴击 ' : '-') + dmg, crit ? '#ff5252' : (color || '#fff'), crit || big);
+        this.addFloat(t.x, t.y - (t.boss ? 52 : 32), (crit ? '暴击 ' : '-') + dmg, crit ? '#ff5252' : (color || '#fff'), crit || big);
         if (t.hp <= 0 && !t.dead) {
             t.dead = true;
             this.addFloat(t.x, t.y - 62, '阵亡', '#ff5252');
@@ -769,14 +770,19 @@ const Battle = {
         this.towerHp = Math.max(0, this.towerHp - 1);
         if (this.waveIdx >= this.waves.length - 1) { this.finish(true); return; }
         this.paused = true;
-        const pool = (this.opts.buffPool || []).slice();
-        const picks = [];
-        for (let i = 0; i < 3 && pool.length; i++) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
-        if (this.opts.onWaveClear) this.opts.onWaveClear(picks, buff => { this.applyBuff(buff); this.resume(); });
-        else this.resume();
+        // 20 波节奏：每 4 波（第 4/8/12/16 波后）弹一次增益三选一，其余波次短暂停顿直接进下一波
+        const isBuffWave = (this.waveIdx + 1) % 4 === 0;
+        if (isBuffWave) {
+            const pool = (this.opts.buffPool || []).slice();
+            const picks = [];
+            for (let i = 0; i < 3 && pool.length; i++) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+            if (picks.length && this.opts.onWaveClear) { this.opts.onWaveClear(picks, buff => { this.applyBuff(buff); this.resume(); }); return; }
+        }
+        this._waveTimer = setTimeout(() => { this._waveTimer = null; this.resume(); }, isBuffWave ? 200 : 650);
     },
 
     resume() {
+        if (this.finished || !this.running) return;
         this.waveIdx++;
         this.paused = false;
         this.beginWave();

@@ -50,6 +50,23 @@ input, select, textarea { font-family: inherit; outline: none; }
 }
 .login-card button.ghost { background: transparent; border: 1px solid #ff9d5c; color: #ff9d5c; }
 .hint { color: #b9aed4; font-size: 12px; text-align: center; margin-top: 16px; line-height: 1.6; }
+/* 登录通道切换 tab */
+.login-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.login-tabs button {
+    flex: 1; padding: 9px 0; margin-top: 0;
+    border-radius: 8px; border: 1px solid #4a4468;
+    background: transparent; color: #b9b3d8;
+    font-size: 14px; font-weight: bold;
+}
+.login-tabs button.active {
+    background: linear-gradient(90deg, #ff9d5c, #ff7a8b);
+    border-color: transparent; color: #fff;
+}
+/* 验证码输入行 */
+.sms-row { display: flex; gap: 8px; align-items: stretch; }
+.sms-row input { flex: 1; margin-bottom: 10px; min-width: 0; }
+.sms-row button { width: 108px; flex: 0 0 108px; padding: 12px 0; margin-top: 0; font-size: 13px; white-space: nowrap; }
+.sms-row button:disabled { opacity: 0.5; }
 
 /* ---------- 主界面 ---------- */
 #app-view { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
