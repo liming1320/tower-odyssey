@@ -1,6 +1,44 @@
 // 资源名称 / 图标（全局共用：营地、冒险结算、后台邮件等）
 const RES_NAME = { gold: '金币', wood: '木材', iron: '铁矿', stone: '石币', exp: '经验', gems: '钻石', wishCards: '许愿卡' };
-const RES_ICON = { gold: '💰', wood: '🪵', iron: '⛓', stone: '🪨', exp: '📘', gems: '💎', wishCards: '🎴' };
+// SVG 图标：跨设备显示一致、颜色可控（emoji 在不同平台差异大且难看）
+const _svg = (inner) => `<svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-2.5px" aria-hidden="true">${inner}</svg>`;
+const RES_ICON = {
+    gold: '💰',
+    gems: '💎',
+    wishCards: '🎴',
+    wood: _svg(`
+        <rect x="2" y="8.6" width="14.2" height="6.8" rx="2.2" fill="#a06a3c"/>
+        <path d="M4.6 9.5 h10.6 v5 h-10.6 a1.6 1.6 0 0 1 -1.6 -1.6 v-1.8 a1.6 1.6 0 0 1 1.6 -1.6 z" fill="#b57a46"/>
+        <ellipse cx="16.8" cy="12" rx="3.4" ry="3.7" fill="#e0b482"/>
+        <ellipse cx="16.8" cy="12" rx="2.1" ry="2.3" fill="none" stroke="#bb8a55" stroke-width="0.9"/>
+        <ellipse cx="16.8" cy="12" rx="0.9" ry="1" fill="#bb8a55"/>
+        <rect x="5" y="10.6" width="8" height="1" rx="0.5" fill="#8a5732" opacity="0.55"/>`),
+    iron: _svg(`
+        <path d="M12 3.2 L20.2 8.6 L17.6 19.4 L6.4 19.4 L3.8 8.6 Z" fill="#93a0b6"/>
+        <path d="M12 3.2 L20.2 8.6 L12 12.4 L3.8 8.6 Z" fill="#b9c5d8"/>
+        <path d="M12 12.4 L20.2 8.6 L17.6 19.4 Z" fill="#8894ab"/>
+        <path d="M12 12.4 L6.4 19.4 L3.8 8.6 Z" fill="#76839c"/>
+        <path d="M12 12.4 L17.6 19.4 L6.4 19.4 Z" fill="#6b7890"/>
+        <circle cx="9.4" cy="10" r="0.85" fill="#eef3fa"/>`),
+    stone: _svg(`
+        <circle cx="12" cy="12" r="9.4" fill="#98a3b5"/>
+        <circle cx="12" cy="12" r="7.8" fill="none" stroke="#7b8899" stroke-width="1"/>
+        <rect x="9.3" y="9.3" width="5.4" height="5.4" rx="1" fill="#5c6779"/>
+        <path d="M6.2 7.4 Q9.4 4.8 13.8 5.3" stroke="#c6cfdb" stroke-width="1.5" fill="none" stroke-linecap="round"/>`),
+    exp: _svg(`
+        <path d="M2.5 6.8 Q6.5 5 11 6.6 L11 17.8 Q6.5 16.2 2.5 18 Z" fill="#eef7ee"/>
+        <path d="M21.5 6.8 Q17.5 5 13 6.6 L13 17.8 Q17.5 16.2 21.5 18 Z" fill="#dff0e0"/>
+        <path d="M11 6.6 Q12 5.9 13 6.6 L13 17.8 Q12 17.1 11 17.8 Z" fill="#4caf62"/>
+        <path d="M4.4 9 Q7 8 9.3 8.8 M4.4 11.6 Q7 10.6 9.3 11.4" stroke="#9cc7a4" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+        <path d="M14.7 8.8 Q17 8 19.6 9 M14.7 11.4 Q17 10.6 19.6 11.6" stroke="#9cc7a4" stroke-width="0.9" fill="none" stroke-linecap="round"/>`),
+};
+
+// 顶栏占位图标填充（index.html 用 <i data-res-icon="wood"></i> 占位，这里统一注入）
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-res-icon]').forEach(el => {
+        el.innerHTML = RES_ICON[el.dataset.resIcon] || '';
+    });
+});
 
 // 工具函数
 const U = {

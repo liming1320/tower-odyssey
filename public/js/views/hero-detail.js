@@ -141,7 +141,7 @@ const HeroDetail = {
                 </p>` : (maxed ? '<p style="color:#ffd56b;font-size:13px">已达最高星级，全部天赋已解锁</p>' : '')}
                 ${cost ? `
                     <p style="font-size:12px;color:#b9b3d8;margin:6px 0">
-                        消耗 💰${U.num(cost.gold)}　💎${U.num(cost.gems)}　⛓${U.num(cost.iron)}
+                        消耗 💰${U.num(cost.gold)}　💎${U.num(cost.gems)}　${RES_ICON.iron}${U.num(cost.iron)}
                     </p>
                     ${needMat > 0 ? `
                         <p style="font-size:12px;margin:4px 0;color:${matOk ? '#7cfc7c' : '#ff7a8b'}">

@@ -80,6 +80,8 @@ input, select, textarea { font-family: inherit; outline: none; }
 }
 .resources { display: flex; gap: 10px; overflow-x: auto; flex: 1; }
 .resources .r { font-size: 12px; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 14px; white-space: nowrap; }
+.resources .r .ric { display: inline-block; width: 15px; height: 15px; vertical-align: -2.5px; }
+.resources .r .ric svg { display: block; }
 .resources b { font-size: 12px; }
 .top-actions { display: flex; gap: 6px; }
 .top-actions button {
