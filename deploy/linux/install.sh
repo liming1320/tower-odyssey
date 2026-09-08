@@ -44,12 +44,22 @@ echo "   项目：$APP_DIR"
 mkdir -p "$APP_DIR/data/backups"
 chmod -R 755 "$APP_DIR/data" 2>/dev/null || true
 
+# 数据库环境变量（DB_DRIVER=mysql 时生效；默认 json 文件存档）
+db_env_lines() {
+    local s="" val
+    for v in DB_DRIVER DB_HOST DB_PORT DB_USER DB_PASS DB_NAME DB_POOL DB_AUTO_SCHEMA; do
+        eval val="\${$v}"
+        [ -n "$val" ] && s="${s}Environment=${v}=${val}"$'\n'
+    done
+    printf "%s" "$s"
+}
+
 # 4) 写 systemd 服务
 say "② 注册 systemd 服务（$SERVICE）"
 cat > "/etc/systemd/system/${SERVICE}.service" <<EOF
 [Unit]
 Description=Tower Odyssey Game Server
-After=network.target
+After=network.target mysqld.service mariadb.service
 
 [Service]
 Type=simple
@@ -57,7 +67,7 @@ User=${RUN_USER}
 WorkingDirectory=${APP_DIR}
 Environment=PORT=${PORT}
 Environment=NODE_ENV=production
-Environment=PATH=${NODE_DIR}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+$(db_env_lines)Environment=PATH=${NODE_DIR}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=${NODE_BIN} ${APP_DIR}/server.js
 Restart=always
 RestartSec=3

@@ -1,0 +1,16 @@
+{
+  "name": "tower-odyssey",
+  "version": "1.0.0",
+  "private": true,
+  "description": "塔界远征 · 肉鸽推塔游戏（零依赖 Node + 原生前端，可选 MySQL 存储）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "migrate": "node tools/migrate-to-mysql.js",
+    "seed:heroes": "node tools/gen-mysql-seed.js",
+    "art": "node tools/gen-hero-art.js"
+  },
+  "optionalDependencies": {
+    "mysql2": "^3.11.0"
+  }
+}

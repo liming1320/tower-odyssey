@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
+// 存储抽象层：DB_DRIVER=json（默认，data/db.json）或 mysql（生产，多人并发/多端同步）
+const Store = require('./server/store');
 
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
@@ -722,9 +724,29 @@ function save() {
     if (_flushTimer) return;
     _flushTimer = setTimeout(() => { _flushTimer = null; flush(); }, 200);
 }
+// 英雄配置变更（改名 / 改技能 / 换立绘）：MySQL 模式下额外写回 heroes 表
+let _heroesDirty = false;
+function saveHeroes() {
+    _heroesDirty = true;
+    save();
+}
 function flush() {
     if (!_dirty) return;
     _dirty = false;
+    // MySQL 模式：玩家数据写库，不写 db.json（代码回滚 / 重新部署都不会碰到玩家数据）
+    if (Store.isMySQL()) {
+        const p = Store.saveState(DB);
+        if (_heroesDirty) {
+            _heroesDirty = false;
+            p.then(() => Store.saveHeroes(DB.heroes))
+                .catch(e => console.error('[game] 英雄写库失败：' + e.message));
+        }
+        p.catch(e => {
+            _dirty = true;
+            console.error('[game] MySQL 保存失败：' + e.message);
+        });
+        return;
+    }
     try {
         const tmp = DB_PATH + '.tmp';
         fs.writeFileSync(tmp, JSON.stringify(DB, null, 2));
@@ -736,7 +758,17 @@ function flush() {
 }
 // 兜底：每 10 秒补写一次，以及进程退出 / 崩溃前强制落盘
 setInterval(flush, 10000);
-function flushAndExit() { flush(); process.exit(0); }
+function flushAndExit(code) {
+    if (Store.isMySQL()) {
+        Store.saveState(DB)
+            .then(() => Store.close())
+            .catch(e => console.error('[game] 退出前保存失败：' + e.message))
+            .finally(() => process.exit(code || 0));
+        return;
+    }
+    flush();
+    process.exit(code || 0);
+}
 process.on('SIGINT', flushAndExit);
 process.on('SIGTERM', flushAndExit);
 process.on('beforeExit', flush);
@@ -913,6 +945,7 @@ api['GET /api/health'] = (req, res) => {
         uptime: Math.floor(process.uptime()),
         players: Object.keys(DB.users || {}).length,
         heroes: (DB.heroes || []).length,
+        storage: Store.driver + (Store.isMySQL() ? `(${process.env.DB_NAME || 'tower_odyssey'})` : '(db.json)'),
         memMB: Math.round(process.memoryUsage().rss / 1048576),
         dbKB: (() => { try { return Math.round(fs.statSync(DB_PATH).size / 1024); } catch (e) { return 0; } })(),
         time: new Date().toISOString(),
@@ -2298,7 +2331,7 @@ api['POST /api/admin/hero/add'] = (req, res, body) => {
     t.skills = normalizeSkills(t.skills, t.skill, t.element);
     if (!t.img) t.img = '8f83fcc3594f42b2255e89fa6d92087f.jpg';
     DB.heroes.push(t);
-    save();
+    saveHeroes();
     sendJson(res, 200, { ok: true, hero: t });
 };
 
@@ -2331,7 +2364,7 @@ api['POST /api/admin/hero/update'] = (req, res, body) => {
         t.skill = { ...(t.skill || {}), ...t.skills[0] };
     }
     DB.heroes[idx] = Object.assign(DB.heroes[idx], t);
-    save();
+    saveHeroes();
     sendJson(res, 200, { ok: true });
 };
 
@@ -2353,8 +2386,24 @@ api['POST /api/admin/hero/delete'] = (req, res, body) => {
             touched++;
         }
     }
-    save();
+    saveHeroes();
     sendJson(res, 200, { ok: true, cleanedUsers: touched });
+};
+
+// 从数据库重新载入英雄配置（在 MySQL 里改名 / 改技能后点一下即可，无需重启）
+api['POST /api/admin/hero/reload'] = async (req, res) => {
+    const user = getUserByToken(req);
+    if (!user || (!user.isAdmin && user.id !== 'admin')) return sendJson(res, 403, { error: '无权限' });
+    if (!Store.isMySQL()) return sendJson(res, 400, { error: '当前不是 MySQL 模式，英雄在 data/db.json 里' });
+    try {
+        const list = await Store.loadHeroes();
+        if (!list || !list.length) return sendJson(res, 400, { error: 'heroes 表为空，请先导入 seed-heroes.sql' });
+        DB.heroes = list;
+        saveHeroes();
+        sendJson(res, 200, { ok: true, count: list.length });
+    } catch (e) {
+        sendJson(res, 500, { error: '重载失败：' + e.message });
+    }
 };
 
 api['POST /api/admin/wall/update'] = (req, res, body) => {
@@ -2486,8 +2535,31 @@ const server = http.createServer(async (req, res) => {
     }
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`[game] listening on http://localhost:${PORT}`);
-    console.log(`[game] 存档文件：${DB_PATH}（账号 / 聊天 / 邮件 / 进度全部持久化在此）`);
-    console.log(`[game] admin: admin / workbuddy`);
-});
+// MySQL 模式：先连库载入真实数据（玩家 + 英雄），再开始监听，避免请求打到空数据
+(async () => {
+    if (Store.isMySQL()) {
+        await Store.init({ ensureSchema: process.env.DB_AUTO_SCHEMA === '1' });
+        const st = await Store.loadState();
+        if (st) {
+            // 玩家与英雄以数据库为准；静态模板（装备/神器/宝石等）若库里为空，沿用内置种子
+            DB.users = st.users;
+            DB.tokens = st.tokens || {};
+            if ((st.heroes || []).length) DB.heroes = st.heroes;
+            ['chat', 'mails', 'clans', 'world', 'ancient', 'events'].forEach(k => {
+                const v = st[k];
+                if (v === undefined || v === null) return;
+                const empty = Array.isArray(v) ? v.length === 0 : Object.keys(v).length === 0;
+                if (!empty) DB[k] = v;
+            });
+        }
+    }
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`[game] listening on http://localhost:${PORT}`);
+        if (Store.isMySQL()) {
+            console.log(`[game] 存储：MySQL（${process.env.DB_NAME || 'tower_odyssey'}）— 玩家数据与代码隔离，回滚不影响存档`);
+        } else {
+            console.log(`[game] 存档文件：${DB_PATH}（账号 / 聊天 / 邮件 / 进度全部持久化在此）`);
+        }
+        console.log(`[game] admin: admin / workbuddy`);
+    });
+})();

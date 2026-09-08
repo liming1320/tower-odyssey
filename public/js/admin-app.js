@@ -30,6 +30,7 @@ const AdminAPI = (() => {
         heroAdd: (hero) => call('POST', '/api/admin/hero/add', { hero }),
         heroUpdate: (hero) => call('POST', '/api/admin/hero/update', { hero }),
         heroDelete: (id) => call('POST', '/api/admin/hero/delete', { id }),
+        heroReload: () => call('POST', '/api/admin/hero/reload', {}),
         wallSave: (w) => call('POST', '/api/admin/wall/update', w),
         wallDelete: (lv) => call('POST', '/api/admin/wall/delete', { lv }),
         eventSave: (e) => call('POST', '/api/admin/event/save', { event: e }),
@@ -154,6 +155,10 @@ const AdminApp = {
                 英雄保存后立刻写入图鉴与许愿池，玩家刷新即可看到；双击下方卡片可载入修改（主技能需填写名称才会保存）。
             </div>
             <div class="card">
+                <div class="row" style="align-items:center;gap:8px;margin-bottom:8px">
+                    <button class="btn ghost small" id="h-reload" title="从 MySQL 的 heroes 表重新读取英雄配置">🔄 重载英雄配置（MySQL）</button>
+                    <span style="font-size:11px;opacity:.7">在数据库里改名/改技能后点这里，无需重启服务</span>
+                </div>
                 <h3>添加 / 编辑英雄</h3>
                 <div class="hero-form">
                     <input id="h-id" placeholder="留空 = 新建英雄">
@@ -282,6 +287,24 @@ const AdminApp = {
             if (cur.length >= 3) return U.toast('最多 3 个技能');
             cur.push({ name: '', desc: '', cd: 8, multiplier: 2, fx: 'slash', tint: '#ffd56b' });
             renderSkills(cur);
+        };
+
+        const reloadBtn = body.querySelector('#h-reload');
+        if (reloadBtn) reloadBtn.onclick = async () => {
+            reloadBtn.disabled = true; reloadBtn.textContent = '⏳ 重载中…';
+            try {
+                const r = await AdminAPI.heroReload();
+                if (r.ok) {
+                    alert(`已从数据库重载 ${r.count} 个英雄`);
+                    this.renderHero(body);
+                } else {
+                    alert('重载失败：' + (r.error || '未知错误'));
+                }
+            } catch (e) {
+                alert('重载失败：' + e.message);
+            } finally {
+                reloadBtn.disabled = false; reloadBtn.textContent = '🔄 重载英雄配置（MySQL）';
+            }
         };
 
         body.querySelector('#h-reset').onclick = () => {
