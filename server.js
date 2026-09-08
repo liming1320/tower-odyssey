@@ -309,6 +309,27 @@ function seedEvents() {
 }
 
 // ---------------- 数据层 ----------------
+// 英雄静态配置（名称/属性/技能/立绘）属于代码资产，放在 data/heroes.seed.json 并进版本库。
+// 玩家存档 data/db.json 不进版本库，避免自动部署时用本地测试存档覆盖线上真实数据。
+// 新建存档时优先读种子文件；没有则回退到内置种子（并保持与 MATERIAL_HEROES 拼接）。
+function loadHeroSeed() {
+    try {
+        const f = path.join(DATA_DIR, 'heroes.seed.json');
+        if (!fs.existsSync(f)) return null;
+        const list = JSON.parse(fs.readFileSync(f, 'utf8'));
+        if (!Array.isArray(list) || !list.length) return null;
+        return list.map(h => Object.assign({}, h, {
+            material: false,
+            skills: (Array.isArray(h.skills) && h.skills.length)
+                ? h.skills
+                : [h.skill].filter(Boolean),
+        })).concat(MATERIAL_HEROES.map(normalizeMaterialHero));
+    } catch (e) {
+        console.error('[game] 读取 heroes.seed.json 失败，回退内置种子：' + e.message);
+        return null;
+    }
+}
+
 function ensureData() {
     if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
     if (!fs.existsSync(DB_PATH)) {
@@ -331,6 +352,7 @@ function ensureData() {
             { id: 'h14', name: '奥特曼赛文', rarity: '稀有', img: '190d56e2109249d36d163f91e3b6b8e6.jpg', element: '光', baseAtk: 950, baseHp: 6500, skill: { name: '光线射击', desc: '对全体造成 150% 伤害', cd: 5, multiplier: 1.5 } },
             { id: 'h15', name: '神女轻音', rarity: '史诗', img: '5a271cca164839198adfb956595396a1.jpg', element: '风', baseAtk: 1250, baseHp: 8800, skill: { name: '微风吟唱', desc: '全体恢复 60% 攻击力生命', cd: 7, multiplier: 0.6 } },
         ].concat(MATERIAL_HEROES.map(normalizeMaterialHero));
+        const heroes = loadHeroSeed() || seedHeroes;
 
         const treasureSeeds = [
             { id: 't1', name: '古玉佩', desc: '生命 +5%', atkPct: 0, hpPct: 5 },
@@ -368,7 +390,7 @@ function ensureData() {
         const initial = {
             users: {}, // id -> {id,username,password,isAdmin,createdAt, lastSeen}
             tokens: {}, // token -> userId
-            heroes: seedHeroes,
+            heroes: heroes,
             treasures: treasureSeeds,
             wallSkills: wallSkills,
             equipmentTemplates: seedEquipment(),

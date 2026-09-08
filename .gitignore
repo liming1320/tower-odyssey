@@ -5,6 +5,10 @@ node_modules/
 *.log
 npm-debug.log*
 
+# 玩家存档（账号 / 进度 / 邮件，运行时数据）
+# 绝不能进仓库：否则每次自动部署都会用本地测试存档覆盖线上真实玩家数据
+data/db.json
+
 # 自动备份（体积大且可随时重建，不同步）
 game/data/backups/
 data/backups/

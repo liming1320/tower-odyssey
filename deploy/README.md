@@ -125,6 +125,20 @@ tar czf /www/backup/game-$(date +%F).tar.gz /www/wwwroot/tower-odyssey/data/db.j
 
 ## 六、自动化部署（CI/CD）：push 到 Gitee 就自动上线
 
+### 两个脚本，别搞混
+
+| 脚本 | 什么时候用 | 干什么 |
+|---|---|---|
+| `deploy/linux/bootstrap.sh` | **新服务器第一次**才用，一台机器执行一次 | 生成/配置 SSH 免密 → 拉代码 → 装 systemd 服务。装完就不用再碰了 |
+| `deploy/hooks/deploy.sh` | **每次 push 自动触发**（WebHook 调它） | 快照存档 → 拉最新代码 → 还原存档 → 重启 → 健康检查 → 失败回滚 |
+
+简单记：**bootstrap 是"装机"，deploy 是"更新"**。你已经装过服务的话，只配 deploy.sh 就行。
+
+> ⚠️ 重要变更：`data/db.json`（玩家存档）已移出版本控制，不再进仓库。
+> 否则每次部署都会用开发机的测试存档覆盖服务器数据。英雄配置改放在
+> `data/heroes.seed.json`（进仓库），新服务器首次启动会自动用它生成存档。
+> 若以后英雄改名/换立绘，跑一次 `node tools/update-hero-seed.js` 再 push。
+
 ### 0）前置：让服务器能免密拉代码（做一次）
 
 **推荐：一条命令自动搞定（生成密钥 → 写 ssh config → 测连通 → 拉代码 → 装服务）**
@@ -180,13 +194,32 @@ git config credential.helper store      # 以后 pull 不再输密码
 ### 1）方式一：宝塔 WebHook（最省事，推荐）
 
 1. 宝塔 → 软件商店 → 安装 **WebHook**
-2. 添加 Hook，执行脚本填：
+2. 添加 Hook，执行脚本填（**不要用 `sudo`，宝塔 WebHook 本身就是 root 运行**）：
    ```bash
-   bash /www/wwwroot/tower-odyssey/deploy/hooks/deploy.sh master
+   export APP_DIR=/www/wwwroot/tower-odyssey
+   export SERVICE=tower-odyssey
+   export PORT=5180
+   bash $APP_DIR/deploy/hooks/deploy.sh master >> /tmp/bt-deploy.log 2>&1
    ```
-3. 复制生成的 URL（形如 `http://IP:8888/hook?access_key=xxx`）
-4. Gitee 仓库 → 管理 → **WebHooks** → 添加 URL，勾选 **Push** 事件
+   > 必须写 `export APP_DIR=...`：`export` 才能让变量传给脚本；不写的话脚本靠自身路径推断也行，但显式最稳。
+3. 复制生成的 URL（形如 `http://IP:8888/hook?access_key=xxx`），点「测试」看是否返回成功
+4. Gitee 仓库 → 管理 → **WebHooks** → 添加 URL，勾选 **Push** 事件，密码留空（宝塔用 URL 里的 `access_key` 鉴权）
 5. 以后本地 `git push` → 服务器自动拉代码、重启、健康检查，失败自动回滚
+
+**验证**：本地改个文件 push，然后
+```bash
+tail -20 /www/wwwroot/tower-odyssey/deploy/logs/deploy.log   # 看部署记录
+curl 127.0.0.1:5180/api/health
+```
+
+**排错**：
+| 现象 | 原因 / 处理 |
+|---|---|
+| WebHook 一直转圈不返回 | 脚本里 `nohup` 起的 node 会占住输出，宝塔会等。把上面命令末尾的 `>> /tmp/bt-deploy.log 2>&1` 加上即可 |
+| 日志报 `找不到 node` | 宝塔的 Node 不在 PATH。脚本已自动扫 `/www/server/nodejs/*/bin`，扫不到就在宝塔「Node.js版本管理器」里设个默认版本，或在脚本里 `export PATH=$PATH:/你的node目录` |
+| `切换分支 master 失败` | 已用 `git checkout -f` 修复；若仍失败，确认服务器分支名是 `master` 还是 `main` |
+| `git fetch 失败` | SSH 公钥/令牌失效，按第六章 0 重配 |
+| 玩家数据被重置了 | 不应发生（脚本会快照还原）。找回：`ls -t data/backups/pre-deploy-*.json` 挑一份覆盖回 `data/db.json` |
 
 ### 2）方式二：自建 WebHook 服务（无面板 / 任何机器都能用，零依赖）
 
