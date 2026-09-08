@@ -9,7 +9,7 @@ set -e
 
 APP_DIR="${APP_DIR:-/www/wwwroot/tower-odyssey}"
 PORT="${PORT:-5180}"
-SERVICE="tower-odyssey"
+SERVICE="${SERVICE:-tower-odyssey}"
 RUN_USER="${RUN_USER:-root}"
 
 say() { echo -e "\033[36m$1\033[0m"; }

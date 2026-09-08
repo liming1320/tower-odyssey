@@ -94,21 +94,57 @@ else
         || die "迁移失败（上面有原因）。服务仍运行在原模式，未受影响"
 fi
 
-# 6) 重写 systemd 并重启
-say "④ 重写 systemd 服务并重启"
-if command -v systemctl >/dev/null 2>&1; then
-    # 备份旧服务文件
-    [ -f "/etc/systemd/system/${SERVICE}.service" ] && \
-        cp -f "/etc/systemd/system/${SERVICE}.service" "/tmp/${SERVICE}.service.bak" 2>/dev/null
-    APP_DIR="$APP_DIR" SERVICE="$SERVICE" PORT="$PORT" \
-        bash "$APP_DIR/deploy/linux/install.sh" 2>&1 | tail -8
-    systemctl daemon-reload
-    systemctl restart "$SERVICE" 2>&1 | tail -3
-else
-    echo "    未检测到 systemd，请手动用下面的环境变量启动："
-    echo "    DB_DRIVER=mysql DB_HOST=$DB_HOST DB_USER=$DB_USER DB_PASS=*** DB_NAME=$DB_NAME node server.js"
-    exit 0
+# 6) 写 DB_* 到 systemd drop-in（不改动原服务文件，最干净）+ 重启
+say "④ 写入数据库配置并重启服务"
+OLD_PID="$(systemctl show "$SERVICE" -p MainPID --value 2>/dev/null || echo 0)"
+echo "    当前进程 PID: $OLD_PID"
+
+DROPIN_DIR="/etc/systemd/system/${SERVICE}.service.d"
+mkdir -p "$DROPIN_DIR"
+cat > "${DROPIN_DIR}/mysql.conf" <<EOF
+# 由 deploy/mysql/switch.sh 生成，切换回文件存档把本文件删掉即可
+[Service]
+Environment=DB_DRIVER=mysql
+Environment=DB_HOST=${DB_HOST}
+Environment=DB_PORT=${DB_PORT}
+Environment=DB_USER=${DB_USER}
+Environment=DB_PASS=${DB_PASS}
+Environment=DB_NAME=${DB_NAME}
+EOF
+ok "已写入 ${DROPIN_DIR}/mysql.conf"
+
+systemctl daemon-reload
+systemctl restart "$SERVICE" 2>&1 | tail -3
+RESTORE_MSG=""
+
+# 等新进程（最多 15 秒），PID 没变说明 restart 没生效，强制重启
+NEW_PID="$OLD_PID"
+for i in $(seq 1 15); do
+    sleep 1
+    NEW_PID="$(systemctl show "$SERVICE" -p MainPID --value 2>/dev/null || echo 0)"
+    [ -n "$NEW_PID" ] && [ "$NEW_PID" != "0" ] && [ "$NEW_PID" != "$OLD_PID" ] && break
+done
+
+if [ "$NEW_PID" = "$OLD_PID" ]; then
+    echo "    ⚠ systemctl restart 未生效（PID 未变），改用强制重启…"
+    systemctl stop "$SERVICE" 2>/dev/null
+    sleep 1
+    # 兜底：kill 掉仍占用端口的旧进程
+    for pid in $(ss -lptn "sport = :${PORT}" 2>/dev/null | grep -o 'pid=[0-9]*' | cut -d= -f2 | sort -u); do
+        kill -9 "$pid" 2>/dev/null && echo "    已强制结束残留进程 $pid"
+    done
+    sleep 1
+    systemctl start "$SERVICE" 2>&1 | tail -3
+    sleep 2
+    RESTORE_MSG="（走了强制重启）"
 fi
+
+NEW_PID="$(systemctl show "$SERVICE" -p MainPID --value 2>/dev/null || echo 0)"
+echo "    新进程 PID: $NEW_PID $RESTORE_MSG"
+[ "$NEW_PID" = "0" ] || [ -z "$NEW_PID" ] && {
+    echo "  ✗ 服务未启动，看日志：journalctl -u $SERVICE -n 30"
+    exit 1
+}
 
 # 7) 健康检查（最多 25 秒）
 say "⑤ 健康检查"
@@ -121,12 +157,10 @@ done
 
 if [ -z "$HEALTH" ]; then
     echo "  ✗ 服务没起来，正在回滚到文件存档模式…"
-    if [ -f "/tmp/${SERVICE}.service.bak" ]; then
-        cp -f "/tmp/${SERVICE}.service.bak" "/etc/systemd/system/${SERVICE}.service"
-        systemctl daemon-reload && systemctl restart "$SERVICE"
-        sleep 2
-        curl -s -m 3 "http://127.0.0.1:${PORT}/api/health" && echo && echo "  已回滚，游戏恢复可用"
-    fi
+    rm -f "${DROPIN_DIR}/mysql.conf"
+    systemctl daemon-reload && systemctl restart "$SERVICE"
+    sleep 3
+    curl -s -m 3 "http://127.0.0.1:${PORT}/api/health" && echo && echo "  已回滚，游戏恢复可用（文件存档模式）"
     echo "  排查：journalctl -u $SERVICE -n 30"
     exit 1
 fi
@@ -142,8 +176,9 @@ case "$HEALTH" in
     *)
         echo
         echo "⚠ 服务起来了但仍是文件模式（storage 不是 mysql）。"
-        echo "  检查服务里的环境变量：systemctl show $SERVICE -p Environment"
-        echo "  或看日志：journalctl -u $SERVICE -n 30"
+        echo "  核对配置：systemctl show $SERVICE -p Environment"
+        echo "  看日志：journalctl -u $SERVICE -n 30"
+        echo "  回滚：rm -f ${DROPIN_DIR}/mysql.conf && systemctl daemon-reload && systemctl restart $SERVICE"
         exit 1
         ;;
 esac
