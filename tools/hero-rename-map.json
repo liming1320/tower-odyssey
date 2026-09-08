@@ -1,0 +1,278 @@
+[
+ {
+  "id": "h01",
+  "before": "小甜心爱洛",
+  "after": "潮汐歌女·澜澜",
+  "element": "水"
+ },
+ {
+  "id": "h02",
+  "before": "猩红塞拉斯",
+  "after": "赤刃剑客·焰",
+  "element": "火"
+ },
+ {
+  "id": "h03",
+  "before": "时空主温温",
+  "after": "时之守序·瞳",
+  "element": "光"
+ },
+ {
+  "id": "h04",
+  "before": "歌姬妮妮",
+  "after": "星语歌姬·妮可",
+  "element": "光"
+ },
+ {
+  "id": "h05",
+  "before": "破坏神娜娜",
+  "after": "崩坏魔童·娜娜",
+  "element": "暗"
+ },
+ {
+  "id": "h06",
+  "before": "女皇伊琳娜",
+  "after": "夜之女皇·伊莲",
+  "element": "暗"
+ },
+ {
+  "id": "h07",
+  "before": "魔女法琳娜",
+  "after": "灼炎魔女·法琳",
+  "element": "火"
+ },
+ {
+  "id": "h08",
+  "before": "狐妖贝拉",
+  "after": "狐火巫女·贝拉",
+  "element": "火"
+ },
+ {
+  "id": "h09",
+  "before": "暗之墓",
+  "after": "幽冥守墓人·墨",
+  "element": "暗"
+ },
+ {
+  "id": "h10",
+  "before": "断月镰希芙",
+  "after": "断月镰使·希芙",
+  "element": "暗"
+ },
+ {
+  "id": "h11",
+  "before": "月神露西亚",
+  "after": "月华神使·露娜",
+  "element": "光"
+ },
+ {
+  "id": "h12",
+  "before": "万伏小蓝星",
+  "after": "电光小子·蓝星",
+  "element": "光"
+ },
+ {
+  "id": "h13",
+  "before": "太阳神夏夏",
+  "after": "烈阳神女·夏夏",
+  "element": "火"
+ },
+ {
+  "id": "h14",
+  "before": "奥特曼赛文",
+  "after": "银辉武神·零式",
+  "element": "光"
+ },
+ {
+  "id": "h15",
+  "before": "神女轻音",
+  "after": "圣咏神女·铃音",
+  "element": "光"
+ },
+ {
+  "id": "h16",
+  "before": "精灵神鹿鹿",
+  "after": "森灵神鹿·鹿鹿",
+  "element": "光"
+ },
+ {
+  "id": "h17",
+  "before": "绘世神小悠",
+  "after": "绘海之灵·小悠",
+  "element": "水"
+ },
+ {
+  "id": "h18",
+  "before": "大天使米勒",
+  "after": "圣翼天使·米勒",
+  "element": "光"
+ },
+ {
+  "id": "h19",
+  "before": "雷神左尔",
+  "after": "雷霆神将·左尔",
+  "element": "光"
+ },
+ {
+  "id": "h20",
+  "before": "光之墓",
+  "after": "曙光守墓人·曜",
+  "element": "光"
+ },
+ {
+  "id": "h21",
+  "before": "比利小琴",
+  "after": "琴音游侠·比利",
+  "element": "光"
+ },
+ {
+  "id": "h22",
+  "before": "花仙阿黛拉",
+  "after": "花灵仙子·阿黛拉",
+  "element": "光"
+ },
+ {
+  "id": "h23",
+  "before": "百鸟神佩吉",
+  "after": "百羽神使·佩吉",
+  "element": "光"
+ },
+ {
+  "id": "h24",
+  "before": "波大侠",
+  "after": "踏浪大侠·阿波",
+  "element": "水"
+ },
+ {
+  "id": "h25",
+  "before": "哀木涕",
+  "after": "木桶勇士·阿蛮",
+  "element": "暗"
+ },
+ {
+  "id": "h26",
+  "before": "韦斯夫妇",
+  "after": "双子巡礼·韦斯",
+  "element": "光"
+ },
+ {
+  "id": "h27",
+  "before": "剑圣奥利弗",
+  "after": "剑圣·奥利弗",
+  "element": "光"
+ },
+ {
+  "id": "h28",
+  "before": "小园丁莉莉",
+  "after": "园丁少女·莉莉",
+  "element": "光"
+ },
+ {
+  "id": "h29",
+  "before": "葱葱公主",
+  "after": "青葱公主·葱葱",
+  "element": "光"
+ },
+ {
+  "id": "h30",
+  "before": "嗨啦噜王子",
+  "after": "海螺王子·噜噜",
+  "element": "水"
+ },
+ {
+  "id": "h31",
+  "before": "暴龙加加",
+  "after": "暴龙少年·加加",
+  "element": "火"
+ },
+ {
+  "id": "h32",
+  "before": "鸣火小吉娜",
+  "after": "鸣火少女·吉娜",
+  "element": "火"
+ },
+ {
+  "id": "h33",
+  "before": "天才刘星",
+  "after": "天才少年·刘星",
+  "element": "光"
+ },
+ {
+  "id": "h34",
+  "before": "巨力艾斯",
+  "after": "巨力斗士·艾斯",
+  "element": "火"
+ },
+ {
+  "id": "h35",
+  "before": "托尔索",
+  "after": "圣光守卫·托尔",
+  "element": "光"
+ },
+ {
+  "id": "h36",
+  "before": "蛮锤塔利",
+  "after": "蛮锤工匠·塔利",
+  "element": "火"
+ },
+ {
+  "id": "h37",
+  "before": "鬼火少女樱",
+  "after": "鬼火少女·小樱",
+  "element": "暗"
+ },
+ {
+  "id": "h38",
+  "before": "红衣小舞",
+  "after": "红衣舞者·小舞",
+  "element": "火"
+ },
+ {
+  "id": "h39",
+  "before": "雪女斯卡蒂",
+  "after": "雪女·斯卡蒂",
+  "element": "水"
+ },
+ {
+  "id": "h40",
+  "before": "神盾阿克",
+  "after": "神盾卫士·阿克",
+  "element": "光"
+ },
+ {
+  "id": "h41",
+  "before": "五娃",
+  "after": "水灵童子·阿蓝",
+  "element": "水"
+ },
+ {
+  "id": "h42",
+  "before": "人鱼玛丽娅",
+  "after": "人鱼歌女·玛丽娅",
+  "element": "水"
+ },
+ {
+  "id": "h43",
+  "before": "冰人萨米",
+  "after": "冰晶少年·萨米",
+  "element": "水"
+ },
+ {
+  "id": "h44",
+  "before": "极寒洛洛",
+  "after": "极寒灵童·洛洛",
+  "element": "水"
+ },
+ {
+  "id": "h45",
+  "before": "菠萝仔",
+  "after": "菠萝小侠·波仔",
+  "element": "光"
+ },
+ {
+  "id": "h46",
+  "before": "冰小月",
+  "after": "冰月少女·小月",
+  "element": "水"
+ }
+]

@@ -21,3 +21,6 @@ Thumbs.db
 
 # 存档快照导出（默认不进仓库，避免多人覆盖）
 data-export-*.json
+
+# 已下线的旧立绘（来源为网络素材，存在版权风险，不再使用）
+tools/_retired-hero-png/

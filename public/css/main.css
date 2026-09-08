@@ -569,3 +569,48 @@ input, select, textarea { font-family: inherit; outline: none; }
     border-color: #7ddf64; color: #d8f7b8;
     background: rgba(125,223,100,0.15);
 }
+
+/* ---------- 头像下方的星级标识（1-16 星） ----------
+   1-5  ★ 黄     6-10 ★ 红     11-14 ★ 彩虹
+   15   至尊（紫金 + 皇冠角标）   16   MAX（金冠 + 流光）
+------------------------------------------------------ */
+.stars {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 1px; line-height: 1; font-size: 12px; letter-spacing: 0.5px;
+    margin-top: 3px; text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
+}
+.stars .s { font-size: 1em; }
+.stars .num {
+    font-size: 9px; font-weight: 700; margin-left: 3px; padding: 0 3px;
+    border-radius: 4px; background: rgba(0, 0, 0, .45);
+}
+/* 渐变星：子星继承父级渐变，保证 ★ 本身也是彩色 */
+.stars.rainbow .s, .stars.royal .s, .stars.max .s {
+    background: inherit; background-size: inherit;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.stars.yellow  { color: #ffd56b; }
+.stars.red     { color: #ff4d5e; text-shadow: 0 0 6px rgba(255, 77, 94, .55), 0 1px 2px rgba(0,0,0,.45); }
+.stars.rainbow .s {
+    background: linear-gradient(90deg, #ff5f6d, #ffc371, #7ee08a, #5cc7ff, #b78bff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, .35));
+}
+.stars.royal {
+    background: linear-gradient(90deg, #ffd56b, #ff7adf, #b78bff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 4px rgba(255, 122, 223, .5));
+}
+.stars.royal .num { background: rgba(123, 60, 190, .75); color: #ffe9ff; -webkit-text-fill-color: #ffe9ff; }
+.stars.max {
+    background: linear-gradient(90deg, #fff3b0, #ffd56b, #ff9d5c, #ffd56b, #fff3b0);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: starFlow 2.2s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(255, 213, 107, .6));
+}
+.stars.max .num { background: rgba(160, 90, 10, .8); color: #fff6d5; -webkit-text-fill-color: #fff6d5; }
+@keyframes starFlow { 0% { background-position: 0 0; } 100% { background-position: 200% 0; } }
+
+/* 英雄卡片：头像 + 星级居中成一组 */
+.hero-card .star-line { text-align: center; margin-bottom: 2px; }

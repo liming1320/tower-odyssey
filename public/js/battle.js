@@ -1472,14 +1472,20 @@ const Battle = {
                 ctx.beginPath(); ctx.arc(h.x, y, r + 6.5, 0, 6.283); ctx.stroke();
                 ctx.restore();
             }
-            // 星级
+            // 星级（1-5 黄 / 6-10 红 / 11-14 彩虹 / 15 至尊 / 16 MAX）
             if (h.star && h.star > 0) {
                 ctx.save();
-                ctx.font = 'bold 9px system-ui';
                 ctx.textAlign = 'center';
-                ctx.fillStyle = '#ffd56b';
-                ctx.globalAlpha = 0.9;
-                ctx.fillText(h.star + '★', h.x, y - r - 7);
+                ctx.globalAlpha = 0.95;
+                const col = U.starColor(h.star);
+                const starTxt = h.star >= 15 ? '👑' : '★';
+                ctx.font = 'bold 9px system-ui';
+                ctx.fillStyle = col;
+                ctx.fillText(starTxt, h.x - 6, y - r - 7);
+                // 具体数字
+                ctx.font = 'bold 9px system-ui';
+                ctx.fillStyle = col;
+                ctx.fillText(String(h.star), h.x + 5, y - r - 7);
                 ctx.restore();
             }
 

@@ -55,6 +55,41 @@ const U = {
     },
     rarityClass(r) { return 'rarity-' + r.replace('+', '\\+'); },
     imgSrc(file) { return '/img/' + file; },
+
+    /* ---------- 星级标识（1-16 星，头像下方显示，最多 5 颗） ----------
+       1-5   黄色 n 颗      6-10  红色 (n-5) 颗
+       11-14 彩虹 (n-10) 颗 15    至尊（紫金 5 星 + 角标 15）
+       16    MAX（金冠 + 流光）
+    ------------------------------------------------------------------ */
+    starMarks(star) {
+        const s = Math.max(0, Math.min(16, parseInt(star || 0, 10)));
+        if (s <= 0) return null;
+        if (s >= 16) return { cls: 'max', glyph: '★', count: 5, num: 'MAX', crown: true, title: '16 星 · 满星' };
+        if (s === 15) return { cls: 'royal', glyph: '★', count: 5, num: '15', crown: true, title: '15 星 · 至尊' };
+        if (s >= 11) return { cls: 'rainbow', glyph: '★', count: s - 10, num: '', title: s + ' 星 · 彩虹' };
+        if (s >= 6) return { cls: 'red', glyph: '★', count: s - 5, num: '', title: s + ' 星 · 赤焰' };
+        return { cls: 'yellow', glyph: '★', count: s, num: '', title: s + ' 星' };
+    },
+    // 内嵌皇冠 SVG（兼容所有平台，不依赖 emoji 字体）
+    _crown() {
+        return '<svg viewBox="0 0 12 12" width="11" height="11" style="vertical-align:-1px;margin-right:2px">' +
+            '<path d="M1 9 L2 4 L4 6 L6 1 L8 6 L10 4 L11 9 Z" fill="#ffd56b" stroke="#c99a2e" stroke-width="0.6" stroke-linejoin="round"/>' +
+            '<rect x="1" y="9" width="10" height="1.6" fill="#c99a2e"/></svg>';
+    },
+    starHtml(star, size) {
+        const m = this.starMarks(star);
+        if (!m) return '';
+        const st = size ? `font-size:${size}px;` : '';
+        const body = `<span class="s">${(m.crown ? this._crown() : '') + m.glyph.repeat(m.count)}</span>`;
+        const num = m.num ? `<span class="num">${m.num}</span>` : '';
+        return `<span class="stars ${m.cls}" style="${st}" title="${m.title}">${body}${num}</span>`;
+    },
+    // 战斗 canvas 用的星级颜色
+    starColor(star) {
+        const m = this.starMarks(star);
+        if (!m) return '#cfc9e8';
+        return { yellow: '#ffd56b', red: '#ff4d5e', rainbow: '#ff7adf', royal: '#ff7adf', max: '#ffe9a8' }[m.cls];
+    },
     // 品质色与名（前端静态副本，与后端 DB._meta 一致）
     quality: {
         order: ['green', 'blue', 'purple', 'orange', 'red', 'gold', 'rainbow'],

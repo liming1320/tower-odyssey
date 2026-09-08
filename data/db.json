@@ -46,6 +46,134 @@
         "lastTick": 1788851731437,
         "wishPity": 0
       }
+    },
+    "64af30a51630": {
+      "id": "64af30a51630",
+      "username": "art_612256",
+      "password": "472c86783f83b6d9$03d94319702227727cbb3597247f82c70f2101a3a9cb82bc1c05eb3ff4c2f92b",
+      "isAdmin": false,
+      "createdAt": 1788853612638,
+      "state": {
+        "username": "art_612256",
+        "resources": {
+          "gold": 100,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 100000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t3",
+          "t5",
+          "t6",
+          "t2"
+        ],
+        "heroes": [
+          {
+            "uid": "1e9be43df273",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bb8c16a3644d",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "eacf64c0ac0b",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f00f91aee2fc",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "24f995418040",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "48173effdef7",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "05474462a31a",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7c6b2e09c2cb",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "fae5e447b1c8",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5cd837d7f146",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "1e9be43df273",
+          "bb8c16a3644d",
+          "eacf64c0ac0b",
+          "f00f91aee2fc"
+        ],
+        "wishCards": 0,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "lastLoginDay": "2026-09-08",
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788853612638,
+        "wishPity": 10
+      }
     }
   },
   "tokens": {
@@ -90,14 +218,16 @@
     "4ad46abc4501897ae226486c97274500": "__admin__",
     "563878622674399a5b6fa16e779c7228": "__admin__",
     "db36be38d9dff6f4dbdf4b29f07e5223": "6f8a6e470f70",
-    "e65cfd8c3148a964086e01c0178e478a": "__admin__"
+    "e65cfd8c3148a964086e01c0178e478a": "__admin__",
+    "e24bb27ca34ae3ef8ba62458189184ad": "64af30a51630",
+    "1d127cd68298a26e5f04ce6f0bcfff2b": "__admin__"
   },
   "heroes": [
     {
       "id": "h01",
-      "name": "小甜心爱洛",
+      "name": "潮汐歌女·澜澜",
       "rarity": "传说+",
-      "img": "heroes/h01.png",
+      "img": "heroes/h01.svg",
       "element": "水",
       "baseAtk": 1780,
       "baseHp": 10700,
@@ -128,13 +258,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h01.svg"
     },
     {
       "id": "h02",
-      "name": "猩红塞拉斯",
+      "name": "赤刃剑客·焰",
       "rarity": "传说+",
-      "img": "heroes/h02.png",
+      "img": "heroes/h02.svg",
       "element": "火",
       "baseAtk": 1860,
       "baseHp": 11400,
@@ -165,13 +296,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h02.svg"
     },
     {
       "id": "h03",
-      "name": "时空主温温",
+      "name": "时之守序·瞳",
       "rarity": "传说+",
-      "img": "heroes/h03.png",
+      "img": "heroes/h03.svg",
       "element": "光",
       "baseAtk": 1940,
       "baseHp": 12100,
@@ -202,13 +334,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h03.svg"
     },
     {
       "id": "h04",
-      "name": "歌姬妮妮",
+      "name": "星语歌姬·妮可",
       "rarity": "传说+",
-      "img": "heroes/h04.png",
+      "img": "heroes/h04.svg",
       "element": "光",
       "baseAtk": 2020,
       "baseHp": 12800,
@@ -239,13 +372,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h04.svg"
     },
     {
       "id": "h05",
-      "name": "破坏神娜娜",
+      "name": "崩坏魔童·娜娜",
       "rarity": "传说+",
-      "img": "heroes/h05.png",
+      "img": "heroes/h05.svg",
       "element": "暗",
       "baseAtk": 2100,
       "baseHp": 10000,
@@ -276,13 +410,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h05.svg"
     },
     {
       "id": "h06",
-      "name": "女皇伊琳娜",
+      "name": "夜之女皇·伊莲",
       "rarity": "传说+",
-      "img": "heroes/h06.png",
+      "img": "heroes/h06.svg",
       "element": "暗",
       "baseAtk": 1700,
       "baseHp": 10700,
@@ -313,13 +448,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h06.svg"
     },
     {
       "id": "h07",
-      "name": "魔女法琳娜",
+      "name": "灼炎魔女·法琳",
       "rarity": "传说",
-      "img": "heroes/h07.png",
+      "img": "heroes/h07.svg",
       "element": "火",
       "baseAtk": 1290,
       "baseHp": 8500,
@@ -350,13 +486,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h07.svg"
     },
     {
       "id": "h08",
-      "name": "狐妖贝拉",
+      "name": "狐火巫女·贝拉",
       "rarity": "传说",
-      "img": "heroes/h08.png",
+      "img": "heroes/h08.svg",
       "element": "火",
       "baseAtk": 1330,
       "baseHp": 8750,
@@ -387,13 +524,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h08.svg"
     },
     {
       "id": "h09",
-      "name": "暗之墓",
+      "name": "幽冥守墓人·墨",
       "rarity": "传说",
-      "img": "heroes/h09.png",
+      "img": "heroes/h09.svg",
       "element": "暗",
       "baseAtk": 1370,
       "baseHp": 9000,
@@ -424,13 +562,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h09.svg"
     },
     {
       "id": "h10",
-      "name": "断月镰希芙",
+      "name": "断月镰使·希芙",
       "rarity": "传说",
-      "img": "heroes/h10.png",
+      "img": "heroes/h10.svg",
       "element": "暗",
       "baseAtk": 1410,
       "baseHp": 8000,
@@ -461,13 +600,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h10.svg"
     },
     {
       "id": "h11",
-      "name": "月神露西亚",
+      "name": "月华神使·露娜",
       "rarity": "传说+",
-      "img": "heroes/h11.png",
+      "img": "heroes/h11.svg",
       "element": "光",
       "baseAtk": 2100,
       "baseHp": 10700,
@@ -498,13 +638,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h11.svg"
     },
     {
       "id": "h12",
-      "name": "万伏小蓝星",
+      "name": "电光小子·蓝星",
       "rarity": "传说+",
-      "img": "heroes/h12.png",
+      "img": "heroes/h12.svg",
       "element": "光",
       "baseAtk": 1700,
       "baseHp": 11400,
@@ -535,13 +676,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h12.svg"
     },
     {
       "id": "h13",
-      "name": "太阳神夏夏",
+      "name": "烈阳神女·夏夏",
       "rarity": "传说+",
-      "img": "heroes/h13.png",
+      "img": "heroes/h13.svg",
       "element": "火",
       "baseAtk": 1780,
       "baseHp": 12100,
@@ -572,13 +714,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h13.svg"
     },
     {
       "id": "h14",
-      "name": "奥特曼赛文",
+      "name": "银辉武神·零式",
       "rarity": "传说+",
-      "img": "heroes/h14.png",
+      "img": "heroes/h14.svg",
       "element": "光",
       "baseAtk": 1860,
       "baseHp": 12800,
@@ -609,13 +752,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h14.svg"
     },
     {
       "id": "h15",
-      "name": "神女轻音",
+      "name": "圣咏神女·铃音",
       "rarity": "传说+",
-      "img": "heroes/h15.png",
+      "img": "heroes/h15.svg",
       "element": "光",
       "baseAtk": 1940,
       "baseHp": 10000,
@@ -646,13 +790,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h15.svg"
     },
     {
       "id": "h16",
-      "name": "精灵神鹿鹿",
+      "name": "森灵神鹿·鹿鹿",
       "rarity": "传说+",
-      "img": "heroes/h16.png",
+      "img": "heroes/h16.svg",
       "element": "光",
       "baseAtk": 2020,
       "baseHp": 10700,
@@ -683,13 +828,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h16.svg"
     },
     {
       "id": "h17",
-      "name": "绘世神小悠",
+      "name": "绘海之灵·小悠",
       "rarity": "传说+",
-      "img": "heroes/h17.png",
+      "img": "heroes/h17.svg",
       "element": "水",
       "baseAtk": 2100,
       "baseHp": 11400,
@@ -720,13 +866,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h17.svg"
     },
     {
       "id": "h18",
-      "name": "大天使米勒",
+      "name": "圣翼天使·米勒",
       "rarity": "传说",
-      "img": "heroes/h18.png",
+      "img": "heroes/h18.svg",
       "element": "光",
       "baseAtk": 1250,
       "baseHp": 8750,
@@ -757,13 +904,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h18.svg"
     },
     {
       "id": "h19",
-      "name": "雷神左尔",
+      "name": "雷霆神将·左尔",
       "rarity": "传说",
-      "img": "heroes/h19.png",
+      "img": "heroes/h19.svg",
       "element": "光",
       "baseAtk": 1290,
       "baseHp": 9000,
@@ -794,13 +942,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h19.svg"
     },
     {
       "id": "h20",
-      "name": "光之墓",
+      "name": "曙光守墓人·曜",
       "rarity": "传说",
-      "img": "heroes/h20.png",
+      "img": "heroes/h20.svg",
       "element": "光",
       "baseAtk": 1330,
       "baseHp": 8000,
@@ -831,13 +980,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h20.svg"
     },
     {
       "id": "h21",
-      "name": "比利小琴",
+      "name": "琴音游侠·比利",
       "rarity": "传说",
-      "img": "heroes/h21.png",
+      "img": "heroes/h21.svg",
       "element": "光",
       "baseAtk": 1370,
       "baseHp": 8250,
@@ -868,13 +1018,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h21.svg"
     },
     {
       "id": "h22",
-      "name": "花仙阿黛拉",
+      "name": "花灵仙子·阿黛拉",
       "rarity": "传说+",
-      "img": "heroes/h22.png",
+      "img": "heroes/h22.svg",
       "element": "光",
       "baseAtk": 2020,
       "baseHp": 11400,
@@ -905,13 +1056,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h22.svg"
     },
     {
       "id": "h23",
-      "name": "百鸟神佩吉",
+      "name": "百羽神使·佩吉",
       "rarity": "传说+",
-      "img": "heroes/h23.png",
+      "img": "heroes/h23.svg",
       "element": "光",
       "baseAtk": 2100,
       "baseHp": 12100,
@@ -942,13 +1094,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h23.svg"
     },
     {
       "id": "h24",
-      "name": "波大侠",
+      "name": "踏浪大侠·阿波",
       "rarity": "传说+",
-      "img": "heroes/h24.png",
+      "img": "heroes/h24.svg",
       "element": "水",
       "baseAtk": 1700,
       "baseHp": 12800,
@@ -979,13 +1132,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h24.svg"
     },
     {
       "id": "h25",
-      "name": "哀木涕",
+      "name": "木桶勇士·阿蛮",
       "rarity": "传说+",
-      "img": "heroes/h25.png",
+      "img": "heroes/h25.svg",
       "element": "暗",
       "baseAtk": 1780,
       "baseHp": 10000,
@@ -1016,13 +1170,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h25.svg"
     },
     {
       "id": "h26",
-      "name": "韦斯夫妇",
+      "name": "双子巡礼·韦斯",
       "rarity": "传说",
-      "img": "heroes/h26.png",
+      "img": "heroes/h26.svg",
       "element": "光",
       "baseAtk": 1330,
       "baseHp": 8250,
@@ -1053,13 +1208,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h26.svg"
     },
     {
       "id": "h27",
-      "name": "剑圣奥利弗",
+      "name": "剑圣·奥利弗",
       "rarity": "传说",
-      "img": "heroes/h27.png",
+      "img": "heroes/h27.svg",
       "element": "光",
       "baseAtk": 1370,
       "baseHp": 8500,
@@ -1090,13 +1246,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h27.svg"
     },
     {
       "id": "h28",
-      "name": "小园丁莉莉",
+      "name": "园丁少女·莉莉",
       "rarity": "传说",
-      "img": "heroes/h28.png",
+      "img": "heroes/h28.svg",
       "element": "光",
       "baseAtk": 1410,
       "baseHp": 8750,
@@ -1127,13 +1284,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h28.svg"
     },
     {
       "id": "h29",
-      "name": "葱葱公主",
+      "name": "青葱公主·葱葱",
       "rarity": "传说",
-      "img": "heroes/h29.png",
+      "img": "heroes/h29.svg",
       "element": "光",
       "baseAtk": 1450,
       "baseHp": 9000,
@@ -1164,13 +1322,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h29.svg"
     },
     {
       "id": "h30",
-      "name": "嗨啦噜王子",
+      "name": "海螺王子·噜噜",
       "rarity": "传说",
-      "img": "heroes/h30.png",
+      "img": "heroes/h30.svg",
       "element": "水",
       "baseAtk": 1250,
       "baseHp": 8000,
@@ -1201,13 +1360,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h30.svg"
     },
     {
       "id": "h31",
-      "name": "暴龙加加",
+      "name": "暴龙少年·加加",
       "rarity": "传说+",
-      "img": "heroes/h31.png",
+      "img": "heroes/h31.svg",
       "element": "火",
       "baseAtk": 1780,
       "baseHp": 10700,
@@ -1238,13 +1398,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h31.svg"
     },
     {
       "id": "h32",
-      "name": "鸣火小吉娜",
+      "name": "鸣火少女·吉娜",
       "rarity": "传说+",
-      "img": "heroes/h32.png",
+      "img": "heroes/h32.svg",
       "element": "火",
       "baseAtk": 1860,
       "baseHp": 11400,
@@ -1275,13 +1436,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h32.svg"
     },
     {
       "id": "h33",
-      "name": "天才刘星",
+      "name": "天才少年·刘星",
       "rarity": "传说+",
-      "img": "heroes/h33.png",
+      "img": "heroes/h33.svg",
       "element": "光",
       "baseAtk": 1940,
       "baseHp": 12100,
@@ -1312,13 +1474,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h33.svg"
     },
     {
       "id": "h34",
-      "name": "巨力艾斯",
+      "name": "巨力斗士·艾斯",
       "rarity": "传说",
-      "img": "heroes/h34.png",
+      "img": "heroes/h34.svg",
       "element": "火",
       "baseAtk": 1410,
       "baseHp": 9000,
@@ -1349,13 +1512,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h34.svg"
     },
     {
       "id": "h35",
-      "name": "托尔索",
+      "name": "圣光守卫·托尔",
       "rarity": "传说",
-      "img": "heroes/h35.png",
+      "img": "heroes/h35.svg",
       "element": "光",
       "baseAtk": 1450,
       "baseHp": 8000,
@@ -1386,13 +1550,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h35.svg"
     },
     {
       "id": "h36",
-      "name": "蛮锤塔利",
+      "name": "蛮锤工匠·塔利",
       "rarity": "传说",
-      "img": "heroes/h36.png",
+      "img": "heroes/h36.svg",
       "element": "火",
       "baseAtk": 1250,
       "baseHp": 8250,
@@ -1423,13 +1588,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h36.svg"
     },
     {
       "id": "h37",
-      "name": "鬼火少女樱",
+      "name": "鬼火少女·小樱",
       "rarity": "传说",
-      "img": "heroes/h37.png",
+      "img": "heroes/h37.svg",
       "element": "暗",
       "baseAtk": 1290,
       "baseHp": 8500,
@@ -1460,13 +1626,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h37.svg"
     },
     {
       "id": "h38",
-      "name": "红衣小舞",
+      "name": "红衣舞者·小舞",
       "rarity": "传说",
-      "img": "heroes/h38.png",
+      "img": "heroes/h38.svg",
       "element": "火",
       "baseAtk": 1330,
       "baseHp": 8750,
@@ -1497,13 +1664,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h38.svg"
     },
     {
       "id": "h39",
-      "name": "雪女斯卡蒂",
+      "name": "雪女·斯卡蒂",
       "rarity": "传说+",
-      "img": "heroes/h39.png",
+      "img": "heroes/h39.svg",
       "element": "水",
       "baseAtk": 1940,
       "baseHp": 12800,
@@ -1534,13 +1702,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h39.svg"
     },
     {
       "id": "h40",
-      "name": "神盾阿克",
+      "name": "神盾卫士·阿克",
       "rarity": "传说+",
-      "img": "heroes/h40.png",
+      "img": "heroes/h40.svg",
       "element": "光",
       "baseAtk": 2020,
       "baseHp": 10000,
@@ -1571,13 +1740,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h40.svg"
     },
     {
       "id": "h41",
-      "name": "五娃",
+      "name": "水灵童子·阿蓝",
       "rarity": "传说+",
-      "img": "heroes/h41.png",
+      "img": "heroes/h41.svg",
       "element": "水",
       "baseAtk": 2100,
       "baseHp": 10700,
@@ -1608,13 +1778,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h41.svg"
     },
     {
       "id": "h42",
-      "name": "人鱼玛丽娅",
+      "name": "人鱼歌女·玛丽娅",
       "rarity": "传说",
-      "img": "heroes/h42.png",
+      "img": "heroes/h42.svg",
       "element": "水",
       "baseAtk": 1250,
       "baseHp": 8500,
@@ -1645,13 +1816,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h42.svg"
     },
     {
       "id": "h43",
-      "name": "冰人萨米",
+      "name": "冰晶少年·萨米",
       "rarity": "传说",
-      "img": "heroes/h43.png",
+      "img": "heroes/h43.svg",
       "element": "水",
       "baseAtk": 1290,
       "baseHp": 8750,
@@ -1682,13 +1854,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h43.svg"
     },
     {
       "id": "h44",
-      "name": "极寒洛洛",
+      "name": "极寒灵童·洛洛",
       "rarity": "传说",
-      "img": "heroes/h44.png",
+      "img": "heroes/h44.svg",
       "element": "水",
       "baseAtk": 1330,
       "baseHp": 9000,
@@ -1719,13 +1892,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h44.svg"
     },
     {
       "id": "h45",
-      "name": "菠萝仔",
+      "name": "菠萝小侠·波仔",
       "rarity": "传说",
-      "img": "heroes/h45.png",
+      "img": "heroes/h45.svg",
       "element": "光",
       "baseAtk": 1370,
       "baseHp": 8000,
@@ -1756,13 +1930,14 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h45.svg"
     },
     {
       "id": "h46",
-      "name": "冰小月",
+      "name": "冰月少女·小月",
       "rarity": "传说",
-      "img": "heroes/h46.png",
+      "img": "heroes/h46.svg",
       "element": "水",
       "baseAtk": 1410,
       "baseHp": 8250,
@@ -1793,7 +1968,8 @@
         }
       ],
       "tier": 5,
-      "material": false
+      "material": false,
+      "avatar": "avatars/h46.svg"
     },
     {
       "id": "m31",

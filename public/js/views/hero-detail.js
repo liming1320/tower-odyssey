@@ -46,9 +46,8 @@ const HeroDetail = {
                 <h3 style="color:#ffd56b">${t.name}
                     <span class="${U.rarityClass(t.rarity)}" style="font-size:13px;margin-left:4px">${t.rarity}</span>
                 </h3>
-                <div style="font-size:15px;color:#ffd56b;margin:4px 0">
-                    ${'★'.repeat(star)}${'☆'.repeat(Math.max(0, starMax - star))}　<span style="font-size:12px;color:#b9b3d8">${star} 星</span>
-                </div>
+                <div style="margin:4px 0 2px">${U.starHtml(star, 16)}</div>
+                <div style="font-size:11px;color:#b9b3d8">${star} / ${starMax} 星</div>
                 <div style="font-size:12px;color:#b9b3d8;line-height:1.5;max-width:380px;margin:6px auto">
                     ${t.desc || (t.element + '系英雄')}
                 </div>
@@ -101,7 +100,7 @@ const HeroDetail = {
                 <h3>当前属性</h3>
                 <div class="row"><span>攻击</span><b style="color:#ff9d5c">${U.num(oh.atk)}</b></div>
                 <div class="row"><span>生命</span><b style="color:#5cc7ff">${U.num(oh.hp)}</b></div>
-                <div class="row"><span>星级</span><b style="color:#ffd56b">${oh.star || ctx.starBase}★</b></div>
+                <div class="row"><span>星级</span><b>${U.starHtml(oh.star || ctx.starBase)}</b></div>
             </div>
         `;
         body.querySelector('#hd-up').onclick = async () => {

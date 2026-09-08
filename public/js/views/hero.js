@@ -47,6 +47,7 @@ const HeroView = {
                 const node = U.el(`
                     <div class="hero-card" style="${owned ? '' : 'opacity:.42;filter:grayscale(1)'}">
                         <img src="${U.imgSrc(h.img)}" loading="lazy">
+                        <div class="star-line">${U.starHtml(owned ? ((r.owned.find(o => o.id === h.id) || {}).star || 5) : 0)}</div>
                         <div class="name">${h.name}</div>
                         <div class="rarity ${U.rarityClass(h.rarity)}">${h.element}系</div>
                         ${owned ? '<div style="font-size:10px;color:#5cc7ff">已拥有</div>'
@@ -107,9 +108,8 @@ const HeroView = {
                     ${isEq ? '<div style="position:absolute;top:2px;right:4px;font-size:10px;color:#5cc7ff">已上阵</div>' : ''}
                     ${mat ? `<div style="position:absolute;top:2px;left:4px;font-size:9px;color:#c9c3e8;background:rgba(0,0,0,.65);padding:1px 5px;border-radius:4px">材料 ${t.tier || 3}★</div>` : ''}
                     <img src="${U.imgSrc(t.img)}">
-                    <div class="name">${t.name} <span style="color:#ffd56b">Lv.${oh.lv || 1}</span>
-                        ${star > 0 ? `<span style="color:#ffd56b;font-size:10px;margin-left:2px">${'★'.repeat(star)}</span>` : ''}
-                    </div>
+                    <div class="star-line">${U.starHtml(star)}</div>
+                    <div class="name">${t.name} <span style="color:#ffd56b">Lv.${oh.lv || 1}</span></div>
                     <div class="rarity ${U.rarityClass(t.rarity)}">${t.rarity}</div>
                     <div style="font-size:11px;color:#ff9d5c;margin-top:3px">攻 <b data-s="atk">${oh.atk || 0}</b></div>
                     <div style="font-size:11px;color:#5cc7ff">生命 <b data-s="hp">${oh.hp || 0}</b></div>
