@@ -42,8 +42,13 @@ if ! detect_node; then
 fi
 echo "   git : $(git --version)"
 echo "   node: $("$NODE_BIN" -v)  ($NODE_BIN  ← 已自动识别宝塔 Node)"
-NODE_MAJOR="$("$NODE_BIN" -v | sed 's/^v//; s/\..*//')"
-if [ "$NODE_MAJOR" -lt 18 ]; then echo "   Node 版本过低，需要 >= 18"; node_hint; exit 1; fi
+if [ "$NODE_MAJOR" -lt 16 ]; then
+    echo "✗ Node 版本过低（$("$NODE_BIN" -v)），至少需要 16"
+    node_hint
+    exit 1
+elif [ "$NODE_MAJOR" -lt 18 ]; then
+    echo "   ⚠ Node $("$NODE_BIN" -v) 可以正常运行本项目，但官方已停止维护，建议升到 20.x"
+fi
 
 # ---------- SSH 方式：准备密钥 ----------
 if [ "$MODE" = "ssh" ]; then

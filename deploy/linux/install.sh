@@ -26,10 +26,12 @@ fi
 NODE_VER="$("$NODE_BIN" -v)"
 echo "   Node: $NODE_VER ($NODE_BIN)"
 NODE_MAJOR="${NODE_VER#v}"; NODE_MAJOR="${NODE_MAJOR%%.*}"
-if [ "$NODE_MAJOR" -lt 18 ]; then
-    echo "   Node 版本过低（$NODE_VER），需要 >= 18"
+if [ "$NODE_MAJOR" -lt 16 ]; then
+    echo "✗ Node 版本过低（$NODE_VER），至少需要 16"
     node_hint
     exit 1
+elif [ "$NODE_MAJOR" -lt 18 ]; then
+    echo "   ⚠ Node $NODE_VER 可以正常运行本项目，但官方已停止维护，建议升到 20.x"
 fi
 
 # 2) 检查代码目录
