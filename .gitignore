@@ -20,4 +20,4 @@ game/tools/tmp/
 Thumbs.db
 
 # 存档快照导出（默认不进仓库，避免多人覆盖）
-game/data-export-*.json
+data-export-*.json
