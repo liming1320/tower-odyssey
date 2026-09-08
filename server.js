@@ -399,13 +399,27 @@ ensureData();
 function backupDB() {
     try {
         if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
-        const stamp = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
+        if (!fs.existsSync(DB_PATH)) return;
+        const d = new Date();
+        const p = (n) => String(n).padStart(2, '0');
+        const stamp = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
         fs.copyFileSync(DB_PATH, path.join(BACKUP_DIR, `db-${stamp}.json`));
-        // 只保留最近 12 份备份
-        const files = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('db-')).sort();
-        while (files.length > 12) fs.unlinkSync(path.join(BACKUP_DIR, files.shift()));
+        pruneBackups();
     } catch (e) { console.error('[game] 备份失败：' + e.message); }
 }
+// 备份保留策略：最近 12 份全留 + 每天最早 1 份保留 14 天（其余删除，避免磁盘被撑爆）
+function pruneBackups() {
+    try {
+        const files = fs.readdirSync(BACKUP_DIR).filter(f => /^db-.*\.json$/.test(f)).sort();
+        const keep = new Set(files.slice(-12));
+        const byDay = {};
+        for (const f of files) { const day = f.slice(3, 13); if (!byDay[day]) byDay[day] = f; }
+        Object.values(byDay).slice(-14).forEach(f => keep.add(f));
+        for (const f of files) if (!keep.has(f)) fs.unlinkSync(path.join(BACKUP_DIR, f));
+    } catch (e) { console.error('[game] 清理备份失败：' + e.message); }
+}
+// 每小时自动备份一次（不只是启动时）
+setInterval(backupDB, 60 * 60 * 1000);
 
 function loadDB() {
     let raw = null;
@@ -868,6 +882,20 @@ async function readBody(req) {
 }
 
 const api = {};
+// 健康检查（给 Nginx / 宝塔 / 监控 / 负载均衡探活用）
+api['GET /api/health'] = (req, res) => {
+    sendJson(res, 200, {
+        ok: true,
+        game: 'tower-odyssey',
+        version: (DB._meta && DB._meta.version) || '1.0.0',
+        uptime: Math.floor(process.uptime()),
+        players: Object.keys(DB.users || {}).length,
+        heroes: (DB.heroes || []).length,
+        memMB: Math.round(process.memoryUsage().rss / 1048576),
+        dbKB: (() => { try { return Math.round(fs.statSync(DB_PATH).size / 1024); } catch (e) { return 0; } })(),
+        time: new Date().toISOString(),
+    });
+};
 api['POST /api/register'] = async (req, res, body) => {
     const { username, password } = body;
     if (!username || !password) return sendJson(res, 400, { error: '用户名密码必填' });
