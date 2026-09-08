@@ -2,6 +2,10 @@
 -- 塔界远征 · MySQL 数据库结构
 -- 设计原则：玩家数据与代码彻底分离，代码回滚 / 重新部署都不影响玩家数据
 --
+-- 【版本要求】MySQL 5.7.0+ / 8.x / MariaDB 10.2+ 均可
+--   用到了 JSON 列与 utf8mb4。宝塔软件商店里的 **MySQL 5.7.44 直接可用**，
+--   不必特意折腾 MySQL 8。
+--
 -- 使用方式（任选其一）：
 --   mysql -u root -p < deploy/mysql/schema.sql
 --   或粘贴到宝塔 → 数据库 → phpMyAdmin → SQL 执行
@@ -149,7 +153,11 @@ CREATE TABLE `admin_logs` (
 -- =============================================================
 -- 建专用账号（生产环境建议用，不要用 root）
 --   默认密码请自行修改！
+--
+--   ⚠ MySQL 5.7 不支持 "CREATE USER IF NOT EXISTS"（那是 8.0 的语法），
+--     所以账号已存在时下面第一条会报错，忽略即可；或先执行 DROP USER 再建。
 -- =============================================================
--- CREATE USER IF NOT EXISTS 'to_user'@'%' IDENTIFIED BY '改成强密码';
+-- DROP USER IF EXISTS 'to_user'@'%';
+-- CREATE USER 'to_user'@'%' IDENTIFIED BY '改成强密码';
 -- GRANT SELECT,INSERT,UPDATE,DELETE ON `tower_odyssey`.* TO 'to_user'@'%';
 -- FLUSH PRIVILEGES;

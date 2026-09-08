@@ -3,14 +3,20 @@
  * 生成英雄数据的 MySQL 插入语句 → deploy/mysql/seed-heroes.sql
  *
  * 数据来源：data/db.json（56 个英雄：46 战斗 + 10 许愿材料）
- * 用法：node tools/gen-mysql-seed.js
+ *
+ * 用法：
+ *   node tools/gen-mysql-seed.js          首次导入用（会清空 heroes / hero_skills 再全量写入）
+ *   node tools/gen-mysql-seed.js --safe   线上补数据用（INSERT IGNORE，已存在的英雄不动，
+ *                                         只补新英雄 —— 不会覆盖你在数据库里改过的名字/技能）
  */
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const DB = path.join(ROOT, 'data', 'db.json');
-const OUT = path.join(ROOT, 'deploy', 'mysql', 'seed-heroes.sql');
+const SAFE = process.argv.includes('--safe');
+const OUT = path.join(ROOT, 'deploy', 'mysql',
+    SAFE ? 'seed-heroes-safe.sql' : 'seed-heroes.sql');
 
 if (!fs.existsSync(DB)) { console.error('找不到 data/db.json'); process.exit(1); }
 const db = JSON.parse(fs.readFileSync(DB, 'utf8'));
@@ -30,13 +36,23 @@ lines.push('-- 塔界远征 · 英雄初始数据（自动生成，请勿手改�
 lines.push('-- 生成命令：node tools/gen-mysql-seed.js');
 lines.push('-- 改名 / 改技能 / 换立绘：直接 UPDATE heroes 表即可，无需改代码');
 lines.push('-- =============================================================');
+if (SAFE) {
+    lines.push('-- 【安全模式】INSERT IGNORE：已存在的英雄 / 技能保持不变，只补缺失的行');
+    lines.push('-- 用途：线上库已人工改过名字或技能时，用来补新英雄，不会覆盖已有改动');
+} else {
+    lines.push('-- 【首次导入】会先清空 heroes / hero_skills 再全量写入');
+    lines.push('-- ⚠ 如果库里已经人工改过英雄名/技能，请改用安全模式：');
+    lines.push('--    node tools/gen-mysql-seed.js --safe   →  deploy/mysql/seed-heroes-safe.sql');
+}
 lines.push('USE `tower_odyssey`;');
 lines.push('');
-lines.push('SET FOREIGN_KEY_CHECKS = 0;');
-lines.push('TRUNCATE TABLE `hero_skills`;');
-lines.push('TRUNCATE TABLE `heroes`;');
-lines.push('SET FOREIGN_KEY_CHECKS = 1;');
-lines.push('');
+if (!SAFE) {
+    lines.push('SET FOREIGN_KEY_CHECKS = 0;');
+    lines.push('TRUNCATE TABLE `hero_skills`;');
+    lines.push('TRUNCATE TABLE `heroes`;');
+    lines.push('SET FOREIGN_KEY_CHECKS = 1;');
+    lines.push('');
+}
 
 // ---------- heroes ----------
 lines.push('-- ---------- 英雄主表 ----------');
@@ -70,7 +86,7 @@ const rows = heroes.map((h, i) => {
     ].join(',')})`;
 });
 chunk(rows, 20).forEach(g => {
-    lines.push(`INSERT INTO \`heroes\` (${HERO_COLS}) VALUES`);
+    lines.push(`INSERT ${SAFE ? 'IGNORE ' : ''}INTO \`heroes\` (${HERO_COLS}) VALUES`);
     lines.push(g.join(',\n') + ';');
     lines.push('');
 });
@@ -90,7 +106,7 @@ heroes.forEach(h => {
 });
 if (skillRows.length) {
     chunk(skillRows, 40).forEach(g => {
-        lines.push('INSERT INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier`,`fx`,`tint`) VALUES');
+        lines.push('INSERT ' + (SAFE ? 'IGNORE ' : '') + 'INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier`,`fx`,`tint`) VALUES');
         lines.push(g.join(',\n') + ';');
         lines.push('');
     });

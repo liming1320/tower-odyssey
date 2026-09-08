@@ -196,12 +196,17 @@ git config credential.helper store      # 以后 pull 不再输密码
 1. 宝塔 → 软件商店 → 安装 **WebHook**
 2. 添加 Hook，执行脚本填（**不要用 `sudo`，宝塔 WebHook 本身就是 root 运行**）：
    ```bash
+   export HOME=/root
    export APP_DIR=/www/wwwroot/tower-odyssey
    export SERVICE=tower-odyssey
    export PORT=5180
    bash $APP_DIR/deploy/hooks/deploy.sh master >> /tmp/bt-deploy.log 2>&1
    ```
-   > 必须写 `export APP_DIR=...`：`export` 才能让变量传给脚本；不写的话脚本靠自身路径推断也行，但显式最稳。
+   > 两个关键点：
+   > ① `export HOME=/root` —— 宝塔执行脚本时 HOME 不是 /root，git 读不到
+   >   `/root/.git-credentials`，会报 `Authentication failed`。加了这行才能免密拉代码
+   >   （也可以直接把令牌写进 remote：`git remote set-url origin https://用户名:令牌@gitee.com/...`）。
+   > ② 末尾 `>> /tmp/bt-deploy.log 2>&1` —— 不加宝塔会一直转圈不返回。
 3. 复制生成的 URL（形如 `http://IP:8888/hook?access_key=xxx`），点「测试」看是否返回成功
 4. Gitee 仓库 → 管理 → **WebHooks** → 添加 URL，勾选 **Push** 事件，密码留空（宝塔用 URL 里的 `access_key` 鉴权）
 5. 以后本地 `git push` → 服务器自动拉代码、重启、健康检查，失败自动回滚
@@ -218,7 +223,7 @@ curl 127.0.0.1:5180/api/health
 | WebHook 一直转圈不返回 | 脚本里 `nohup` 起的 node 会占住输出，宝塔会等。把上面命令末尾的 `>> /tmp/bt-deploy.log 2>&1` 加上即可 |
 | 日志报 `找不到 node` | 宝塔的 Node 不在 PATH。脚本已自动扫 `/www/server/nodejs/*/bin`，扫不到就在宝塔「Node.js版本管理器」里设个默认版本，或在脚本里 `export PATH=$PATH:/你的node目录` |
 | `切换分支 master 失败` | 已用 `git checkout -f` 修复；若仍失败，确认服务器分支名是 `master` 还是 `main` |
-| `git fetch 失败` | SSH 公钥/令牌失效，按第六章 0 重配 |
+| `git fetch 失败` / `Authentication failed` | **最常见**：宝塔执行脚本时 `HOME` 不是 `/root`，git 找不到 `/root/.git-credentials`。<br>解决二选一：① 脚本开头加 `export HOME=/root`；② 把令牌写进 remote：<br>`git remote set-url origin https://用户名:令牌@gitee.com/用户名/仓库.git`（**推荐，最省事**）。<br>仍失败则是令牌被吊销/过期，去 Gitee 重新生成 |
 | 玩家数据被重置了 | 不应发生（脚本会快照还原）。找回：`ls -t data/backups/pre-deploy-*.json` 挑一份覆盖回 `data/db.json` |
 
 ### 2）方式二：自建 WebHook 服务（无面板 / 任何机器都能用，零依赖）

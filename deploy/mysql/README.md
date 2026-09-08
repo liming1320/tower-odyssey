@@ -27,7 +27,21 @@
 
 ## 二、宝塔上安装 MySQL（10 分钟）
 
-1. 宝塔 → 软件商店 → 搜索 **MySQL** → 安装 **MySQL 8.0**（2C4G 内存够；想省内存可选 MariaDB 10.6）
+### 版本怎么选：直接用宝塔里的 MySQL 5.7.44 就行
+
+| 版本 | 结论 |
+|---|---|
+| **MySQL 5.7.44**（软件商店默认能搜到的） | ✅ **直接用**，本方案全部兼容 |
+| MySQL 8.0 / 8.4 | ✅ 也支持，但宝塔软件商店常搜不到，要手动装，没必要折腾 |
+| MariaDB 10.6 | ✅ 支持（记得建库时字符集选 utf8mb4） |
+
+脚本只用到了 **JSON 列**（5.7.0+ 就有）和 **utf8mb4**，没有 MySQL 8 专有语法，
+所以 **5.7.44 完全够用**。想装 8 的话：宝塔 → 软件商店 → **MySQL多版本管理**（Docker 插件），
+或手动 `yum install mysql-server`（不推荐，容易和宝塔的环境打架）。
+
+### 安装步骤
+
+1. 宝塔 → 软件商店 → 搜索 **MySQL** → 安装 **5.7.44**（2C4G 内存足够）
 2. 装完后 → 数据库 → **root 密码** 看一下并记下来
 3. 创建数据库：数据库 → 添加数据库
    - 数据库名：`tower_odyssey`
@@ -51,12 +65,21 @@ mysql -u root -p < /www/wwwroot/tower-odyssey/deploy/mysql/schema.sql
 
 ## 四、导入英雄数据
 
+**首次导入**（会清空 heroes / hero_skills 再全量写入）：
 ```bash
 cd /www/wwwroot/tower-odyssey
 mysql -u root -p tower_odyssey < deploy/mysql/seed-heroes.sql
 ```
 
 导入后 56 个英雄（46 战斗 + 10 材料）、102 条技能就进 `heroes` / `hero_skills` 表了。
+
+> ⚠ **以后别再跑上面这条**——它会 `TRUNCATE` 清空英雄表，把你在数据库里改过的名字/技能全冲掉。
+> 已经改过数据、只是想**补新增英雄**时，用安全版（INSERT IGNORE，已存在的行不动）：
+> ```bash
+> mysql -u root -p tower_odyssey < deploy/mysql/seed-heroes-safe.sql
+> ```
+> 本地改完英雄名/立绘后，重新生成两个文件：
+> `node tools/gen-mysql-seed.js && node tools/gen-mysql-seed.js --safe`
 
 **验证**：
 ```sql

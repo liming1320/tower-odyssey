@@ -3,18 +3,12 @@
 -- 生成命令：node tools/gen-mysql-seed.js
 -- 改名 / 改技能 / 换立绘：直接 UPDATE heroes 表即可，无需改代码
 -- =============================================================
--- 【首次导入】会先清空 heroes / hero_skills 再全量写入
--- ⚠ 如果库里已经人工改过英雄名/技能，请改用安全模式：
---    node tools/gen-mysql-seed.js --safe   →  deploy/mysql/seed-heroes-safe.sql
+-- 【安全模式】INSERT IGNORE：已存在的英雄 / 技能保持不变，只补缺失的行
+-- 用途：线上库已人工改过名字或技能时，用来补新英雄，不会覆盖已有改动
 USE `tower_odyssey`;
 
-SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE `hero_skills`;
-TRUNCATE TABLE `heroes`;
-SET FOREIGN_KEY_CHECKS = 1;
-
 -- ---------- 英雄主表 ----------
-INSERT INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`,`img`,`avatar`,`material`,`hero_desc`,`skill_name`,`skill_desc`,`skill_cd`,`skill_multiplier`,`skill_fx`,`skill_tint`,`enabled`,`sort_order`) VALUES
+INSERT IGNORE INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`,`img`,`avatar`,`material`,`hero_desc`,`skill_name`,`skill_desc`,`skill_cd`,`skill_multiplier`,`skill_fx`,`skill_tint`,`enabled`,`sort_order`) VALUES
 ('h01','潮汐歌女·澜澜','传说+','水',5,1780,10700,'heroes/h01.svg','avatars/h01.svg',0,NULL,'甜蜜冲击','对全体敌人造成 220% 攻击力的伤害',6,2.2,'water','#ff8fc7',1,0),
 ('h02','赤刃剑客·焰','传说+','火',5,1860,11400,'heroes/h02.svg','avatars/h02.svg',0,NULL,'猩红之刃','对单体敌人造成 350% 攻击力的伤害',8,3.5,'slash','#ff3b5c',1,1),
 ('h03','时之守序·瞳','传说+','光',5,1940,12100,'heroes/h03.svg','avatars/h03.svg',0,NULL,'时空静止','冻结全体敌人 2 秒，并造成伤害',10,0,'freeze','#8ad4ff',1,2),
@@ -36,7 +30,7 @@ INSERT INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`
 ('h19','雷霆神将·左尔','传说','光',5,1290,9000,'heroes/h19.svg','avatars/h19.svg',0,NULL,'雷霆万钧','对全体敌人造成 230% 攻击力的伤害',7,2.3,'bolt','#ffd56b',1,18),
 ('h20','曙光守墓人·曜','传说','光',5,1330,8000,'heroes/h20.svg','avatars/h20.svg',0,NULL,'光之墓碑','对单体敌人造成 300% 攻击力的伤害',9,3,'holy','#fff3c4',1,19);
 
-INSERT INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`,`img`,`avatar`,`material`,`hero_desc`,`skill_name`,`skill_desc`,`skill_cd`,`skill_multiplier`,`skill_fx`,`skill_tint`,`enabled`,`sort_order`) VALUES
+INSERT IGNORE INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`,`img`,`avatar`,`material`,`hero_desc`,`skill_name`,`skill_desc`,`skill_cd`,`skill_multiplier`,`skill_fx`,`skill_tint`,`enabled`,`sort_order`) VALUES
 ('h21','琴音游侠·比利','传说','光',5,1370,8250,'heroes/h21.svg','avatars/h21.svg',0,NULL,'魔音贯耳','对全体敌人造成 190% 攻击力的伤害',6,1.9,'sound','#b78bff',1,20),
 ('h22','花灵仙子·阿黛拉','传说+','光',5,2020,11400,'heroes/h22.svg','avatars/h22.svg',0,NULL,'花海绽放','全体恢复 75% 攻击力的生命',7,0.75,'bloom','#ff9ec7',1,21),
 ('h23','百羽神使·佩吉','传说+','光',5,2100,12100,'heroes/h23.svg','avatars/h23.svg',0,NULL,'百鸟朝凤','对全体敌人造成 240% 攻击力的伤害',7,2.4,'wind','#a8e6ff',1,22),
@@ -58,7 +52,7 @@ INSERT INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`
 ('h39','雪女·斯卡蒂','传说+','水',5,1940,12800,'heroes/h39.svg','avatars/h39.svg',0,NULL,'冰霜风暴','对全体敌人造成 245% 攻击力的伤害',7,2.45,'ice','#8ad4ff',1,38),
 ('h40','神盾卫士·阿克','传说+','光',5,2020,10000,'heroes/h40.svg','avatars/h40.svg',0,NULL,'神盾护体','全体获得 35% 减伤，持续 3 秒',9,0,'shield','#ffd56b',1,39);
 
-INSERT INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`,`img`,`avatar`,`material`,`hero_desc`,`skill_name`,`skill_desc`,`skill_cd`,`skill_multiplier`,`skill_fx`,`skill_tint`,`enabled`,`sort_order`) VALUES
+INSERT IGNORE INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`,`img`,`avatar`,`material`,`hero_desc`,`skill_name`,`skill_desc`,`skill_cd`,`skill_multiplier`,`skill_fx`,`skill_tint`,`enabled`,`sort_order`) VALUES
 ('h41','水灵童子·阿蓝','传说+','水',5,2100,10700,'heroes/h41.svg','avatars/h41.svg',0,NULL,'水漫金山','对全体敌人造成 235% 攻击力的伤害',7,2.35,'tidal','#5cc7ff',1,40),
 ('h42','人鱼歌女·玛丽娅','传说','水',5,1250,8500,'heroes/h42.svg','avatars/h42.svg',0,NULL,'海妖之歌','全体队友恢复 65% 攻击力的生命',7,0.65,'sound','#7ad4ff',1,41),
 ('h43','冰晶少年·萨米','传说','水',5,1290,8750,'heroes/h43.svg','avatars/h43.svg',0,NULL,'冰封千里','冻结全体敌人 1.5 秒，并造成伤害',10,0,'freeze','#a8e6ff',1,42),
@@ -77,7 +71,7 @@ INSERT INTO `heroes` (`id`,`name`,`rarity`,`element`,`tier`,`base_atk`,`base_hp`
 ('m47','藤蔓精灵','精英','草',4,645,4550,'material/m47.svg','material/m47.svg',1,'缠绕树干生长的藤之精灵，能抽出细细的藤鞭，多被用作升星材料。','藤鞭抽击','对单体造成 120% 攻击力伤害',7,1.2,NULL,NULL,1,55);
 
 -- ---------- 英雄技能表（slot 0 = 主技能）----------
-INSERT INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier`,`fx`,`tint`) VALUES
+INSERT IGNORE INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier`,`fx`,`tint`) VALUES
 ('h01',0,'甜蜜冲击','对全体敌人造成 220% 攻击力的伤害',6,2.2,'water','#ff8fc7'),
 ('h01',1,'潮汐涌动','对全体造成 180% 伤害并冻结 1 秒',9,1.8,'tidal','#ff8fc7'),
 ('h02',0,'猩红之刃','对单体敌人造成 350% 攻击力的伤害',8,3.5,'slash','#ff3b5c'),
@@ -119,7 +113,7 @@ INSERT INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier
 ('h20',0,'光之墓碑','对单体敌人造成 300% 攻击力的伤害',9,3,'holy','#fff3c4'),
 ('h20',1,'圣光普照','全体恢复 70% 攻击力生命并减伤',9,0.7,'holy','#fff3c4');
 
-INSERT INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier`,`fx`,`tint`) VALUES
+INSERT IGNORE INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier`,`fx`,`tint`) VALUES
 ('h21',0,'魔音贯耳','对全体敌人造成 190% 攻击力的伤害',6,1.9,'sound','#b78bff'),
 ('h21',1,'疾风连击','对全体造成 150% 伤害，冷却较短',5,1.5,'wind','#b78bff'),
 ('h22',0,'花海绽放','全体恢复 75% 攻击力的生命',7,0.75,'bloom','#ff9ec7'),
@@ -161,7 +155,7 @@ INSERT INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier
 ('h40',0,'神盾护体','全体获得 35% 减伤，持续 3 秒',9,0,'shield','#ffd56b'),
 ('h40',1,'圣光普照','全体恢复 70% 攻击力生命并减伤',9,0.7,'holy','#ffd56b');
 
-INSERT INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier`,`fx`,`tint`) VALUES
+INSERT IGNORE INTO `hero_skills` (`hero_id`,`slot`,`name`,`skill_desc`,`cd`,`multiplier`,`fx`,`tint`) VALUES
 ('h41',0,'水漫金山','对全体敌人造成 235% 攻击力的伤害',7,2.35,'tidal','#5cc7ff'),
 ('h41',1,'潮汐涌动','对全体造成 180% 伤害并冻结 1 秒',9,1.8,'tidal','#5cc7ff'),
 ('h42',0,'海妖之歌','全体队友恢复 65% 攻击力的生命',7,0.65,'sound','#7ad4ff'),
