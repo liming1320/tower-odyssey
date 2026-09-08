@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#d8f7b8"/>
+      <stop offset="100%" stop-color="#7ddf64"/>
+    </radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d8f7b8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="96" fill="url(#bg)" stroke="#ffd56b" stroke-width="6"/>
+  <circle cx="100" cy="100" r="82" fill="none" stroke="#ffffff" stroke-width="3" opacity=".5"/>
+  
+            <path d="M100 46 C86 26 60 26 54 44 C74 36 86 44 100 60 Z" fill="#7ddf64" stroke="#2f7a35" stroke-width="3"/>
+            <path d="M100 46 C114 26 140 26 146 44 C126 36 114 44 100 60 Z" fill="#7ddf64" stroke="#2f7a35" stroke-width="3"/>
+            <path d="M100 46 L100 62" stroke="#2f7a35" stroke-width="4" stroke-linecap="round"/>
+  <!-- 身体 -->
+  <ellipse cx="100" cy="118" rx="52" ry="46" fill="url(#body)" stroke="#2f7a35" stroke-width="4"/>
+  <!-- 眼睛 -->
+  <ellipse cx="82" cy="112" rx="8" ry="10" fill="#2f7a35"/>
+  <ellipse cx="118" cy="112" rx="8" ry="10" fill="#2f7a35"/>
+  <circle cx="85" cy="108" r="3" fill="#ffffff"/>
+  <circle cx="121" cy="108" r="3" fill="#ffffff"/>
+  <!-- 腮红 -->
+  <ellipse cx="70" cy="128" rx="9" ry="6" fill="#7ddf64" opacity=".55"/>
+  <ellipse cx="130" cy="128" rx="9" ry="6" fill="#7ddf64" opacity=".55"/>
+  <!-- 嘴 -->
+  <path d="M92 134 Q100 142 108 134" stroke="#2f7a35" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- 元素标记 -->
+  <text x="100" y="182" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="700" fill="#2f7a35" opacity=".85">草</text>
+  
+        <circle cx="100" cy="100" r="92" fill="none" stroke="#ffd56b" stroke-width="4" opacity=".9" stroke-dasharray="10 8"/>
+        <g transform="translate(150,46)">
+            <path d="M0 -16 L5 -5 L17 -5 L7 3 L11 15 L0 8 L-11 15 L-7 3 L-17 -5 L-5 -5 Z" fill="#ffd56b" stroke="#8a5a12" stroke-width="2"/>
+        </g>
+</svg>

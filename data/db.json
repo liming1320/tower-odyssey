@@ -1,0 +1,5387 @@
+{
+  "users": {
+    "750b13ba9b13": {
+      "id": "750b13ba9b13",
+      "username": "alice",
+      "password": "ed3a65a878de4730$3cfdcbd4a3174f62d4d79098b0e37ace9177d40d58a26fecfb1f6206b332ff3e",
+      "isAdmin": true,
+      "createdAt": 1788753338877,
+      "state": {
+        "username": "alice",
+        "resources": {
+          "wood": 19025.21521066655,
+          "iron": 15179.042031666668,
+          "stone": 12651.448105333415,
+          "gold": 679.5645790000001,
+          "exp": 25238.982316000154,
+          "gems": 100000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t2"
+        ],
+        "heroes": [],
+        "equipped": [],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "clanId": null,
+        "lastTick": 1788766263382,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "23569dd461f0": {
+      "id": "23569dd461f0",
+      "username": "tmtqx4irk",
+      "password": "5149fbf47892217e$7e411214ba6487b49d43c0f4758393352eb4cb0e0c6296abd90a3fe1504b9b7b",
+      "isAdmin": false,
+      "createdAt": 1788766057053,
+      "state": {
+        "username": "tmtqx4irk",
+        "resources": {
+          "gold": 610.869028,
+          "wood": 128.98407466666666,
+          "iron": 68.11504666666664,
+          "stone": 64.49203733333333,
+          "exp": 43.47611199999999,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t5",
+          "t2"
+        ],
+        "heroes": [
+          {
+            "uid": "26a7e32aa98b",
+            "id": "h20",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ac67ab62d289",
+            "id": "h45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "aad97001a55d",
+            "id": "h20",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "267b8045d5b9",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b22338da850b",
+            "id": "h44",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "19fabd1ccc91",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c672f443d0d2",
+            "id": "h36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "0cf1dccfa98a",
+            "id": "h22",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "85495624eed6",
+            "id": "h45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ee0ae0c32793",
+            "id": "h26",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "26a7e32aa98b",
+          "ac67ab62d289",
+          "aad97001a55d",
+          "267b8045d5b9",
+          "b22338da850b"
+        ],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "clanId": null,
+        "lastTick": 1788766263382,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "df034d54720e": {
+      "id": "df034d54720e",
+      "username": "tmtqx9etl",
+      "password": "fd1f7789e4a79e0d$b8dba208c558ab73ac37f4c0f1148f3e8030e6ef2de39dc0f270b696382777fb",
+      "isAdmin": false,
+      "createdAt": 1788766285170,
+      "state": {
+        "username": "tmtqx9etl",
+        "resources": {
+          "gold": 600.439635,
+          "wood": 101.17236,
+          "iron": 50.732725,
+          "stone": 50.58618,
+          "exp": 1.75854,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t5",
+          "t1",
+          "t3"
+        ],
+        "heroes": [
+          {
+            "uid": "8dd83df17fdf",
+            "id": "h21",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2481424d3036",
+            "id": "h37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "52f8e2a0ccea",
+            "id": "h46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "df1822af51f6",
+            "id": "h34",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "daeab47a937a",
+            "id": "h19",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "61cfbdb3b7ed",
+            "id": "h38",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "62ac14d23d3a",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "27214c8c4df9",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d5fd18afe418",
+            "id": "h16",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c001ae179382",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "8dd83df17fdf",
+          "2481424d3036",
+          "52f8e2a0ccea",
+          "df1822af51f6",
+          "daeab47a937a"
+        ],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "clanId": null,
+        "lastTick": 1788766293465,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "7ca83c53bcfb": {
+      "id": "7ca83c53bcfb",
+      "username": "tmtqxdq28",
+      "password": "9e6cacfa11e65ba8$57bf141498970a718ed9f20237cb60007c5105e979559aecfb9f6f0d70dfe474",
+      "isAdmin": false,
+      "createdAt": 1788766486200,
+      "state": {
+        "username": "tmtqxdq28",
+        "resources": {
+          "gold": 660.431261,
+          "wood": 75.15002933333334,
+          "iron": 80.71876833333334,
+          "stone": 44.57501466666667,
+          "exp": 51.725044,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 2,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t3",
+          "t1",
+          "t6"
+        ],
+        "heroes": [
+          {
+            "uid": "2b36a98e2178",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1e875aa73e1c",
+            "id": "h01",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b6088e2b5760",
+            "id": "h21",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "dca83ab0bbee",
+            "id": "h19",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f603ab56f975",
+            "id": "h05",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "87e91f470f8b",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "82c49460e3be",
+            "id": "h19",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bb6d88888832",
+            "id": "h27",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f8d63735308b",
+            "id": "h20",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a10347380dc0",
+            "id": "h44",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "2b36a98e2178",
+          "1e875aa73e1c",
+          "b6088e2b5760",
+          "dca83ab0bbee",
+          "f603ab56f975"
+        ],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "clanId": null,
+        "lastTick": 1788766494337,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "12f87322972f": {
+      "id": "12f87322972f",
+      "username": "tmtqxh0bu",
+      "password": "795b40ba24660158$0c7303c2377fa166f2a1754b0cb1e18e802c383dc8c4c8006e80e98e4701c968",
+      "isAdmin": false,
+      "createdAt": 1788766639477,
+      "state": {
+        "username": "tmtqxh0bu",
+        "resources": {
+          "gold": 720.433487,
+          "wood": 115.15596533333333,
+          "iron": 110.72247833333333,
+          "stone": 64.57798266666666,
+          "exp": 101.733948,
+          "gems": 99020
+        },
+        "buildings": {
+          "camp": 2,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t1",
+          "t5",
+          "t3",
+          "t2"
+        ],
+        "heroes": [
+          {
+            "uid": "d9fe0984ed98",
+            "id": "h37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bb679af6b071",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "be745db1d57b",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2d8422a66a34",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b77782c285d9",
+            "id": "h20",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "12348a2c3c75",
+            "id": "h19",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "9db6a273434a",
+            "id": "h10",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "afd6f29d7eb9",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d8e5ea66256a",
+            "id": "h16",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "0e03ea837bca",
+            "id": "h19",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "d9fe0984ed98",
+          "bb679af6b071",
+          "be745db1d57b",
+          "2d8422a66a34",
+          "b77782c285d9"
+        ],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788766647656,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "217c81b4a6dc": {
+      "id": "217c81b4a6dc",
+      "username": "uimtqxiq0v",
+      "password": "ae49d14676cff0d3$aeb0c44fa16aafedd49f6cae3943f319bdd5b97eb4a11eea83c125b7b8a6844b",
+      "isAdmin": false,
+      "createdAt": 1788766721617,
+      "state": {
+        "username": "uimtqxiq0v",
+        "resources": {
+          "gold": 600,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 98000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t6",
+          "t3",
+          "t5",
+          "t2"
+        ],
+        "heroes": [
+          {
+            "uid": "23120b2b3eff",
+            "id": "h35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "033d36c5e158",
+            "id": "h45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ef70e4e6a139",
+            "id": "h29",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "301106864a8e",
+            "id": "h30",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c09d070537d9",
+            "id": "h16",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a07370ef75a7",
+            "id": "h46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "496f92fb9c26",
+            "id": "h43",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "088096ca443a",
+            "id": "h36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f4733583f9e7",
+            "id": "h09",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2e40933faa2c",
+            "id": "h20",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "23120b2b3eff",
+          "033d36c5e158",
+          "ef70e4e6a139",
+          "301106864a8e",
+          "c09d070537d9"
+        ],
+        "wishCards": 20,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788766721617,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "6bc938f42e1b": {
+      "id": "6bc938f42e1b",
+      "username": "uimtqxjmbi",
+      "password": "34486419d0c7ab7a$371c14857556ce27582cab3187b53ac2e73a387bfd42952e22a8c49df6dfaa81",
+      "isAdmin": false,
+      "createdAt": 1788766763448,
+      "state": {
+        "username": "uimtqxjmbi",
+        "resources": {
+          "gold": 600,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t3",
+          "t6",
+          "t2",
+          "t4",
+          "t1"
+        ],
+        "heroes": [
+          {
+            "uid": "88b0be2ab7de",
+            "id": "h21",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "96e919a18db0",
+            "id": "h35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b7dd4ad890ff",
+            "id": "h41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b5f6cc014453",
+            "id": "h27",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d5f3dc334397",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "08e1d562036b",
+            "id": "h09",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e4b3772d166f",
+            "id": "h36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4842c83b902c",
+            "id": "h13",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d38085c56aec",
+            "id": "h40",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f223a6382ca3",
+            "id": "h20",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "88b0be2ab7de",
+          "96e919a18db0",
+          "b7dd4ad890ff",
+          "b5f6cc014453",
+          "d5f3dc334397"
+        ],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788766763448,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "f428e2fef2bb": {
+      "id": "f428e2fef2bb",
+      "username": "uimtqxq6pf",
+      "password": "d20cdbcf0636c72c$4d0afc82c774f2d1b38a784b0bcb11a702f3601b4a7bde6204ffa4a876aabb1c",
+      "isAdmin": false,
+      "createdAt": 1788767069783,
+      "state": {
+        "username": "uimtqxq6pf",
+        "resources": {
+          "gold": 600,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t2",
+          "t1",
+          "t6",
+          "t5",
+          "t3",
+          "t4"
+        ],
+        "heroes": [
+          {
+            "uid": "d24ca4f17a3d",
+            "id": "h37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "700e73f14444",
+            "id": "h37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "59263a8474de",
+            "id": "h40",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "460d9e0417ea",
+            "id": "h27",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "3c3a2eff8f23",
+            "id": "h14",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "03273d2a03d6",
+            "id": "h35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f98a65fbc7c3",
+            "id": "h42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "3591cd4b62a1",
+            "id": "h45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f9d6e42f9251",
+            "id": "h45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6530320621b4",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "d24ca4f17a3d",
+          "700e73f14444",
+          "59263a8474de",
+          "460d9e0417ea",
+          "3c3a2eff8f23"
+        ],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788767069783,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "e4bcb6b85078": {
+      "id": "e4bcb6b85078",
+      "username": "tmtqxsa91",
+      "password": "4cfb75c560e07360$b3f67b082c2887aeab3d52f378109265deae1aefdf35871d296b989f6268137e",
+      "isAdmin": false,
+      "createdAt": 1788767165621,
+      "state": {
+        "username": "tmtqxsa91",
+        "resources": {
+          "gold": 720.452779,
+          "wood": 115.20741066666666,
+          "iron": 110.75463166666667,
+          "stone": 64.60370533333332,
+          "exp": 101.811116,
+          "gems": 99020
+        },
+        "buildings": {
+          "camp": 2,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t5",
+          "t6",
+          "t1"
+        ],
+        "heroes": [
+          {
+            "uid": "599176fdcf9e",
+            "id": "h43",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "fe16e44b60e0",
+            "id": "h38",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "98e15ec62944",
+            "id": "h22",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c805bcd10b91",
+            "id": "h10",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5ed4b432a43e",
+            "id": "h44",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b451f4fc1519",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a0f4fe026143",
+            "id": "h27",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "3d9f82546401",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "887bf62f02a1",
+            "id": "h10",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b7f64863db5b",
+            "id": "h27",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "599176fdcf9e",
+          "fe16e44b60e0",
+          "98e15ec62944",
+          "c805bcd10b91",
+          "5ed4b432a43e"
+        ],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788767174164,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "6746bd2a3095": {
+      "id": "6746bd2a3095",
+      "username": "uikub3",
+      "password": "4157456d879b028e$2d51c8bf45c0f747350d0e8235937f037bcefa8591bac0f1bd2159316dd74390",
+      "isAdmin": false,
+      "createdAt": 1788768474525,
+      "state": {
+        "username": "uikub3",
+        "resources": {
+          "gold": 400,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [],
+        "heroes": [
+          {
+            "uid": "b6c544c4b8bc",
+            "id": "h21",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "b6c544c4b8bc"
+        ],
+        "wishCards": 19,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788768474525,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "cb88355b9f7c": {
+      "id": "cb88355b9f7c",
+      "username": "ui5w0l",
+      "password": "b2c31bed0debdb9a$6777546a7b9d14eb4c43f941b20126a23c5db08aa51e6a274fc2586cbc9ffddf",
+      "isAdmin": false,
+      "createdAt": 1788768508170,
+      "state": {
+        "username": "ui5w0l",
+        "resources": {
+          "gold": 400,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t4"
+        ],
+        "heroes": [
+          {
+            "uid": "322ceb7a817f",
+            "id": "h39",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "322ceb7a817f"
+        ],
+        "wishCards": 19,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788768508170,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "a322e04aa4c9": {
+      "id": "a322e04aa4c9",
+      "username": "uiqkc9",
+      "password": "d2748515546dd03c$4719692402255cc0ceb047341334b67459a9ebd7dab4d77ab790d0eb5ec1116b",
+      "isAdmin": false,
+      "createdAt": 1788768578318,
+      "state": {
+        "username": "uiqkc9",
+        "resources": {
+          "gold": 400,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t6",
+          "t3"
+        ],
+        "heroes": [
+          {
+            "uid": "07c6c5548456",
+            "id": "h10",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2263c35168d3",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "706c1653d6fd",
+            "id": "h23",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7cd52af2b683",
+            "id": "h33",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5ae598b3026b",
+            "id": "h46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "07c6c5548456"
+        ],
+        "wishCards": 15,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788768578318,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "4c4c7074d74c": {
+      "id": "4c4c7074d74c",
+      "username": "uiawbd",
+      "password": "03cf7fe1d498a450$4a813c262fbef670aaa85db5a269db95c52ceb5f3d382f8f10900d39b6ff1653",
+      "isAdmin": false,
+      "createdAt": 1788768637089,
+      "state": {
+        "username": "uiawbd",
+        "resources": {
+          "gold": 400,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 99000
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t2",
+          "t1",
+          "t6"
+        ],
+        "heroes": [
+          {
+            "uid": "21fe466028e2",
+            "id": "h21",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4fd149c06f1a",
+            "id": "h07",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "46000582dbf1",
+            "id": "h18",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5d227349d185",
+            "id": "h26",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "601418477be9",
+            "id": "h37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "21fe466028e2"
+        ],
+        "wishCards": 15,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788768637089,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "dbc721a06b0f": {
+      "id": "dbc721a06b0f",
+      "username": "tmtqyos4q",
+      "password": "84c0ab35d61488ff$15c19a0ed79687c5a732a8c3752cc09a9b357c82e90d7ac3652e8a45dc29eb8b",
+      "isAdmin": false,
+      "createdAt": 1788768681789,
+      "state": {
+        "username": "tmtqyos4q",
+        "resources": {
+          "gold": 520.440642,
+          "wood": 115.17504533333333,
+          "iron": 110.73440333333333,
+          "stone": 64.58752266666667,
+          "exp": 101.762568,
+          "gems": 99020
+        },
+        "buildings": {
+          "camp": 2,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t4",
+          "t2",
+          "t1"
+        ],
+        "heroes": [
+          {
+            "uid": "396ca4b1d388",
+            "id": "h21",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d090dc9586a8",
+            "id": "h24",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ae99210668a3",
+            "id": "h17",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "30b8854c23d8",
+            "id": "h36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e1919601171c",
+            "id": "h20",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1891c2a06c4e",
+            "id": "h44",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1dccd2f59e97",
+            "id": "h38",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2f88dc284119",
+            "id": "h35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4b1e25230bec",
+            "id": "h36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "282833206078",
+            "id": "h45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "396ca4b1d388",
+          "d090dc9586a8",
+          "ae99210668a3",
+          "30b8854c23d8",
+          "e1919601171c"
+        ],
+        "wishCards": 10,
+        "tower": {
+          "floor": 1,
+          "maxFloor": 1
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788768690103,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "wishPity": 0
+      }
+    },
+    "46a9dbe1bfb7": {
+      "id": "46a9dbe1bfb7",
+      "username": "skl10758",
+      "password": "1b31f2579973cd40$92193e1c7707f60467d0f6f0c5c3ff9ce4f6db6bca6cece05454450c60f2667f",
+      "isAdmin": false,
+      "createdAt": 1788850710908,
+      "state": {
+        "username": "skl10758",
+        "resources": {
+          "gold": 10000599,
+          "wood": 100,
+          "iron": 50,
+          "stone": 50,
+          "exp": 0,
+          "gems": 200099
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t2",
+          "t1",
+          "t3",
+          "t6",
+          "t5"
+        ],
+        "heroes": [
+          {
+            "uid": "4e52db3f4870",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "59e55a0f4514",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6a97bc603244",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a5e5312b0e74",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "64eaea14f7ed",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "72036d2d23a7",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "22eb63929fe0",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "3bb0d20d07d6",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a0b1cb552784",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e2446bc8cfd3",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [],
+        "wishCards": 30,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "lastLoginDay": "2026-09-08",
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788850710908,
+        "wishPity": 10
+      }
+    },
+    "4b892bd64b56": {
+      "id": "4b892bd64b56",
+      "username": "sk97703",
+      "password": "35c6eb682541ab62$36d7d3dffd3ff5162cc4f49cc13b2fced332aa4a3670251609d4c4f2b916a062",
+      "isAdmin": false,
+      "createdAt": 1788850997783,
+      "state": {
+        "username": "sk97703",
+        "resources": {
+          "gold": 100000599,
+          "wood": 100,
+          "iron": 1000049,
+          "stone": 1000049,
+          "exp": 0,
+          "gems": 200099
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t3",
+          "t1",
+          "t6",
+          "t5",
+          "t2",
+          "t4"
+        ],
+        "heroes": [
+          {
+            "uid": "d630776cb100",
+            "id": "h24",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a9298fd9bafe",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "43498e34dfee",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6ce14f42b73d",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "eb1692591a4f",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "9c9a389f83ea",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "57d679588026",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bb58f8b7b218",
+            "id": "h24",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "eb963ada6ffc",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6a91f9d6c6e9",
+            "id": "h40",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d801dcfb7453",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "42f23175475b",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "376d0273da90",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c9f51e8bc3ba",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "40ff11478294",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "556ce28819ba",
+            "id": "h20",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "055c1ebc4910",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "add1121c0cea",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "0fce99d5af25",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ce1c09483df2",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "314fafd4765c",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d76464e3b7bd",
+            "id": "h05",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "407138482081",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "54887c12334d",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c7b802c236cc",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "08b3b14e7008",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ca7fce4dd40a",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "744f0dda200d",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b4411a6ca874",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7ca3d3a80d3e",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1c2aa245776a",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "61c4939a57da",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "35de1f8136b8",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c8a40276a8da",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "59b7920f677e",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "0470df9706a0",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "9c415460e534",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d151e7abe7f2",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "8d797ba6ef00",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b6f5adffe792",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "d630776cb100",
+          "bb58f8b7b218",
+          "6a91f9d6c6e9"
+        ],
+        "wishCards": 170,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "lastLoginDay": "2026-09-08",
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788850997783,
+        "wishPity": 18
+      }
+    },
+    "01e01b1838a6": {
+      "id": "01e01b1838a6",
+      "username": "sk45219",
+      "password": "29eae472696abaea$bf49161d5c9aa42cd24fc636a3f55931738aaff666ac75c6bfd0a7526187a3c2",
+      "isAdmin": false,
+      "createdAt": 1788851045277,
+      "state": {
+        "username": "sk45219",
+        "resources": {
+          "gold": 100000599,
+          "wood": 100,
+          "iron": 1000049,
+          "stone": 1000049,
+          "exp": 0,
+          "gems": 200099
+        },
+        "buildings": {
+          "camp": 1,
+          "forge": 1,
+          "research": 1,
+          "hunt": 1,
+          "mine": 1
+        },
+        "wall": {
+          "lv": 1,
+          "name": "青石墙"
+        },
+        "treasures": [
+          "t3",
+          "t1",
+          "t5",
+          "t2",
+          "t6",
+          "t4"
+        ],
+        "heroes": [
+          {
+            "uid": "0ce600a773f5",
+            "id": "h08",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "eef779cd94ce",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "951477c417fb",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "3ec0533f3519",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1ff79491506c",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bf6751ea3c77",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "710652ac2c9b",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c0a145337182",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2352827fb3b4",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a5b2fc344f7e",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "72b3ff694cea",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4b07f51b5b19",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "994ece7a8626",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "0a4b2824821c",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "79e37d4ad4f4",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e3ecf95c4bfb",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bc12b9623b1a",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4081882f5892",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7a8a67fa6c90",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b2e7451ba5ec",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "21dbc4ff802f",
+            "id": "h21",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "67ceebb561a7",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "43d8b7a678e8",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5a1d782f41b4",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d60fa396fcd8",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "23f0399cf42a",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "82dd6a2d16c0",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4d00960c8cb9",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4c1e6052a6b1",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "09823237cad4",
+            "id": "h01",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a7040b86e7e0",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b8bdca5a1482",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c621c0cd5aa8",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c00b85617bd8",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "3015b4729c8d",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b899d51ee2e3",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e8b7e0ad073b",
+            "id": "h03",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ea327ff66605",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "8e5489c97fa7",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "09ce2dabe549",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "0ce600a773f5",
+          "21dbc4ff802f",
+          "09823237cad4"
+        ],
+        "wishCards": 170,
+        "claimedEvents": {},
+        "loginDays": 1,
+        "lastLoginDay": "2026-09-08",
+        "tower": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "ancient": {
+          "floor": 1,
+          "maxFloor": 0
+        },
+        "clanId": null,
+        "lastTick": 1788851045277,
+        "wishPity": 3
+      }
+    }
+  },
+  "tokens": {
+    "57c32f04c2f286529c5266e6862319f8": "750b13ba9b13",
+    "b877d2f5a23d54eb85822d5a1a93e2ad": "750b13ba9b13",
+    "290d114bc3055a6b37e02b07768fd3c6": "admin",
+    "aad8dada1b14d90727207daf51f0df63": "750b13ba9b13",
+    "65b2b13e65bb9cdbb2f96cdc679386fc": "__admin__",
+    "31eb07a462db05ff057fa2a1d2b625f1": "750b13ba9b13",
+    "2b590b3bd218283d6980e9e10d1ef157": "750b13ba9b13",
+    "9ae63dca9236f1196d0046bc287932a5": "750b13ba9b13",
+    "87cc8deb639907cda68f654fcb64ebb4": "750b13ba9b13",
+    "ccb25ea32b2b938830bc8d2e99d82112": "23569dd461f0",
+    "3be7f6884fc2d35d21044b289b7d5b09": "df034d54720e",
+    "56ddb53d243755f8f6f9799d1fd18d08": "7ca83c53bcfb",
+    "e0d54f74425ee656c6d83cb0a7f8c431": "12f87322972f",
+    "5cc5d65b6226de32d0d4f459a1ea037a": "217c81b4a6dc",
+    "e37bd768cd401084318249ad9745fc5c": "6bc938f42e1b",
+    "20bd9cceeb2f7993f2505482aa7ef51f": "f428e2fef2bb",
+    "6e07b7e81a326164958867d12c3105c5": "e4bcb6b85078",
+    "d6a2c8b9f9f714ddc06b7936e08045ec": "__admin__",
+    "772b077ac373080cdca69ca8ef906d82": "__admin__",
+    "1a2971b1b137f5c548854522244077fd": "__admin__",
+    "fe537460182134c8e05e242a9c30a895": "6746bd2a3095",
+    "48973a204180e1446739e1215a3b04d0": "cb88355b9f7c",
+    "8b07245c0636e13930c3da2535d76279": "a322e04aa4c9",
+    "bb350fbad1c2b06fded21efdc843d470": "__admin__",
+    "d4b333fcb60bfdd24e9e1b963dfd5488": "4c4c7074d74c",
+    "ddf2d20d62e4a48d1d7f41f470f23dad": "__admin__",
+    "9be40d902af6706711a8db99e3b35f7c": "dbc721a06b0f",
+    "6e32bd60141970fdd579ebf1248d1a26": "__admin__",
+    "925978a005a62e2571994a45f00cc259": "__admin__",
+    "b5b5a90ddbdb968170267fbed7d02486": "__admin__",
+    "aaf34e7b42b0960637884c945f89f7ff": "__admin__",
+    "a0fad3d74e41e985544a011e74bc3899": "__admin__",
+    "a70135a4869d9629ed86396d68850456": "__admin__",
+    "bc73fe03665a8ebfbc696bab86faf886": "__admin__",
+    "3142ae71d453b0bc6ed3303332f7b052": "__admin__",
+    "42aa15ae7ba23167043a9f8bdd12315e": "__admin__",
+    "7416cced0b31aefb7db04aa32c402651": "__admin__",
+    "2b2ded13ad3a15a9da5f366051d416ef": "__admin__",
+    "2e591c54c6f2c2cddfcc920b3016a874": "__admin__",
+    "a8cd3d69fb7e5d3406c917d827ee8110": "__admin__",
+    "e9eb15f4d4351b04d8fb2ea7bd9f745d": "__admin__",
+    "e0aa14cd81b3456a22f6648ca07a1d74": "__admin__",
+    "8864774bb516fdbf6c6838053255d63c": "__admin__",
+    "7d745c74640be5696f1ecac2134f6b1a": "__admin__",
+    "ef2459023edb17059d5f75542f00bf8d": "__admin__",
+    "a075075897cd3b566953ca52a5dc6bb2": "__admin__",
+    "aee37d0081e00a93d6452dac72077bd0": "__admin__",
+    "737da24f51b78cf7a52e218f880d5697": "__admin__",
+    "d36edc161f0d9cec59e745f01884d6a6": "__admin__",
+    "0f41e7189cbf1b79386475c907f50021": "__admin__",
+    "2d3c33fb2740c0ad6d8e9ef3c38d04f0": "__admin__",
+    "4610930e42e6102d6bb2692ee1830a66": "__admin__",
+    "fe7b619b028cdb2a396f928c32d96601": "__admin__",
+    "1e507f7f6b4c2ba45f106a6668b169d5": "__admin__",
+    "534bac7f4953dcad2c49104ba86919f3": "__admin__",
+    "693a2511fed0f5c9381c09752dfa6790": "__admin__",
+    "d97ddee73651bc7ca63dd8fca08910c6": "46a9dbe1bfb7",
+    "d19bf720b447cfc74680670452277ff8": "__admin__",
+    "b178dd573b4d3c271b106fcba6bf0a10": "__admin__",
+    "4ad46abc4501897ae226486c97274500": "__admin__",
+    "deaa77f0eb885fcb5be1b073ac804c40": "4b892bd64b56",
+    "368564b4c9077153b83f169ed1ba9708": "4b892bd64b56",
+    "563878622674399a5b6fa16e779c7228": "__admin__",
+    "5c00f9e276b17f16c899424833e92238": "01e01b1838a6",
+    "cc3632201a7657b85f895fc05cf37925": "01e01b1838a6"
+  },
+  "heroes": [
+    {
+      "id": "h01",
+      "name": "小甜心爱洛",
+      "rarity": "传说+",
+      "img": "heroes/h01.png",
+      "element": "水",
+      "baseAtk": 1780,
+      "baseHp": 10700,
+      "skill": {
+        "name": "甜蜜冲击",
+        "desc": "对全体敌人造成 220% 攻击力的伤害",
+        "cd": 6,
+        "multiplier": 2.2,
+        "fx": "water",
+        "tint": "#ff8fc7"
+      },
+      "skills": [
+        {
+          "name": "甜蜜冲击",
+          "desc": "对全体敌人造成 220% 攻击力的伤害",
+          "cd": 6,
+          "multiplier": 2.2,
+          "fx": "water",
+          "tint": "#ff8fc7"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#ff8fc7"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h02",
+      "name": "猩红塞拉斯",
+      "rarity": "传说+",
+      "img": "heroes/h02.png",
+      "element": "火",
+      "baseAtk": 1860,
+      "baseHp": 11400,
+      "skill": {
+        "name": "猩红之刃",
+        "desc": "对单体敌人造成 350% 攻击力的伤害",
+        "cd": 8,
+        "multiplier": 3.5,
+        "fx": "slash",
+        "tint": "#ff3b5c"
+      },
+      "skills": [
+        {
+          "name": "猩红之刃",
+          "desc": "对单体敌人造成 350% 攻击力的伤害",
+          "cd": 8,
+          "multiplier": 3.5,
+          "fx": "slash",
+          "tint": "#ff3b5c"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ff3b5c"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h03",
+      "name": "时空主温温",
+      "rarity": "传说+",
+      "img": "heroes/h03.png",
+      "element": "光",
+      "baseAtk": 1940,
+      "baseHp": 12100,
+      "skill": {
+        "name": "时空静止",
+        "desc": "冻结全体敌人 2 秒，并造成伤害",
+        "cd": 10,
+        "multiplier": 0,
+        "fx": "freeze",
+        "tint": "#8ad4ff"
+      },
+      "skills": [
+        {
+          "name": "时空静止",
+          "desc": "冻结全体敌人 2 秒，并造成伤害",
+          "cd": 10,
+          "multiplier": 0,
+          "fx": "freeze",
+          "tint": "#8ad4ff"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#8ad4ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h04",
+      "name": "歌姬妮妮",
+      "rarity": "传说+",
+      "img": "heroes/h04.png",
+      "element": "光",
+      "baseAtk": 2020,
+      "baseHp": 12800,
+      "skill": {
+        "name": "天籁之音",
+        "desc": "全体队友恢复 80% 攻击力的生命",
+        "cd": 7,
+        "multiplier": 0.8,
+        "fx": "heal",
+        "tint": "#ffe6a0"
+      },
+      "skills": [
+        {
+          "name": "天籁之音",
+          "desc": "全体队友恢复 80% 攻击力的生命",
+          "cd": 7,
+          "multiplier": 0.8,
+          "fx": "heal",
+          "tint": "#ffe6a0"
+        },
+        {
+          "name": "圣光普照",
+          "desc": "全体恢复 70% 攻击力生命并减伤",
+          "cd": 9,
+          "multiplier": 0.7,
+          "fx": "holy",
+          "tint": "#ffe6a0"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h05",
+      "name": "破坏神娜娜",
+      "rarity": "传说+",
+      "img": "heroes/h05.png",
+      "element": "暗",
+      "baseAtk": 2100,
+      "baseHp": 10000,
+      "skill": {
+        "name": "破坏之锤",
+        "desc": "对全体敌人造成 180% 攻击力的伤害",
+        "cd": 6,
+        "multiplier": 1.8,
+        "fx": "meteor",
+        "tint": "#b06bff"
+      },
+      "skills": [
+        {
+          "name": "破坏之锤",
+          "desc": "对全体敌人造成 180% 攻击力的伤害",
+          "cd": 6,
+          "multiplier": 1.8,
+          "fx": "meteor",
+          "tint": "#b06bff"
+        },
+        {
+          "name": "暗影侵蚀",
+          "desc": "对全体造成 220% 伤害并削弱攻击",
+          "cd": 10,
+          "multiplier": 2.2,
+          "fx": "dark",
+          "tint": "#b06bff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h06",
+      "name": "女皇伊琳娜",
+      "rarity": "传说+",
+      "img": "heroes/h06.png",
+      "element": "暗",
+      "baseAtk": 1700,
+      "baseHp": 10700,
+      "skill": {
+        "name": "女皇威严",
+        "desc": "对全体造成 200% 伤害并削弱其攻击",
+        "cd": 8,
+        "multiplier": 2,
+        "fx": "dark",
+        "tint": "#d06bff"
+      },
+      "skills": [
+        {
+          "name": "女皇威严",
+          "desc": "对全体造成 200% 伤害并削弱其攻击",
+          "cd": 8,
+          "multiplier": 2,
+          "fx": "dark",
+          "tint": "#d06bff"
+        },
+        {
+          "name": "暗影侵蚀",
+          "desc": "对全体造成 220% 伤害并削弱攻击",
+          "cd": 10,
+          "multiplier": 2.2,
+          "fx": "dark",
+          "tint": "#d06bff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h07",
+      "name": "魔女法琳娜",
+      "rarity": "传说",
+      "img": "heroes/h07.png",
+      "element": "火",
+      "baseAtk": 1290,
+      "baseHp": 8500,
+      "skill": {
+        "name": "烈焰风暴",
+        "desc": "对全体敌人造成 240% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.4,
+        "fx": "fire",
+        "tint": "#ff7a2f"
+      },
+      "skills": [
+        {
+          "name": "烈焰风暴",
+          "desc": "对全体敌人造成 240% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.4,
+          "fx": "fire",
+          "tint": "#ff7a2f"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ff7a2f"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h08",
+      "name": "狐妖贝拉",
+      "rarity": "传说",
+      "img": "heroes/h08.png",
+      "element": "火",
+      "baseAtk": 1330,
+      "baseHp": 8750,
+      "skill": {
+        "name": "狐火灼烧",
+        "desc": "对全体造成 210% 伤害并附加灼烧",
+        "cd": 6,
+        "multiplier": 2.1,
+        "fx": "burn",
+        "tint": "#ff9d3b"
+      },
+      "skills": [
+        {
+          "name": "狐火灼烧",
+          "desc": "对全体造成 210% 伤害并附加灼烧",
+          "cd": 6,
+          "multiplier": 2.1,
+          "fx": "burn",
+          "tint": "#ff9d3b"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ff9d3b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h09",
+      "name": "暗之墓",
+      "rarity": "传说",
+      "img": "heroes/h09.png",
+      "element": "暗",
+      "baseAtk": 1370,
+      "baseHp": 9000,
+      "skill": {
+        "name": "暗影之墓",
+        "desc": "召唤暗影对单体造成 280% 伤害",
+        "cd": 9,
+        "multiplier": 2.8,
+        "fx": "summon",
+        "tint": "#7a4fd6"
+      },
+      "skills": [
+        {
+          "name": "暗影之墓",
+          "desc": "召唤暗影对单体造成 280% 伤害",
+          "cd": 9,
+          "multiplier": 2.8,
+          "fx": "summon",
+          "tint": "#7a4fd6"
+        },
+        {
+          "name": "暗影侵蚀",
+          "desc": "对全体造成 220% 伤害并削弱攻击",
+          "cd": 10,
+          "multiplier": 2.2,
+          "fx": "dark",
+          "tint": "#7a4fd6"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h10",
+      "name": "断月镰希芙",
+      "rarity": "传说",
+      "img": "heroes/h10.png",
+      "element": "暗",
+      "baseAtk": 1410,
+      "baseHp": 8000,
+      "skill": {
+        "name": "断月镰舞",
+        "desc": "对全体敌人造成 260% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.6,
+        "fx": "slash",
+        "tint": "#b78bff"
+      },
+      "skills": [
+        {
+          "name": "断月镰舞",
+          "desc": "对全体敌人造成 260% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.6,
+          "fx": "slash",
+          "tint": "#b78bff"
+        },
+        {
+          "name": "暗影侵蚀",
+          "desc": "对全体造成 220% 伤害并削弱攻击",
+          "cd": 10,
+          "multiplier": 2.2,
+          "fx": "dark",
+          "tint": "#b78bff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h11",
+      "name": "月神露西亚",
+      "rarity": "传说+",
+      "img": "heroes/h11.png",
+      "element": "光",
+      "baseAtk": 2100,
+      "baseHp": 10700,
+      "skill": {
+        "name": "月光洗礼",
+        "desc": "全体恢复 70% 生命并提升 20% 攻击",
+        "cd": 8,
+        "multiplier": 0.7,
+        "fx": "heal",
+        "tint": "#cfe6ff"
+      },
+      "skills": [
+        {
+          "name": "月光洗礼",
+          "desc": "全体恢复 70% 生命并提升 20% 攻击",
+          "cd": 8,
+          "multiplier": 0.7,
+          "fx": "heal",
+          "tint": "#cfe6ff"
+        },
+        {
+          "name": "圣光普照",
+          "desc": "全体恢复 70% 攻击力生命并减伤",
+          "cd": 9,
+          "multiplier": 0.7,
+          "fx": "holy",
+          "tint": "#cfe6ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h12",
+      "name": "万伏小蓝星",
+      "rarity": "传说+",
+      "img": "heroes/h12.png",
+      "element": "光",
+      "baseAtk": 1700,
+      "baseHp": 11400,
+      "skill": {
+        "name": "万伏雷击",
+        "desc": "对全体敌人造成 250% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.5,
+        "fx": "thunder",
+        "tint": "#5cc7ff"
+      },
+      "skills": [
+        {
+          "name": "万伏雷击",
+          "desc": "对全体敌人造成 250% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.5,
+          "fx": "thunder",
+          "tint": "#5cc7ff"
+        },
+        {
+          "name": "雷霆万钧",
+          "desc": "对全体造成 200% 伤害并麻痹",
+          "cd": 10,
+          "multiplier": 2,
+          "fx": "thunder",
+          "tint": "#5cc7ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h13",
+      "name": "太阳神夏夏",
+      "rarity": "传说+",
+      "img": "heroes/h13.png",
+      "element": "火",
+      "baseAtk": 1780,
+      "baseHp": 12100,
+      "skill": {
+        "name": "太阳耀斑",
+        "desc": "对全体敌人造成 260% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.6,
+        "fx": "meteor",
+        "tint": "#ffd23b"
+      },
+      "skills": [
+        {
+          "name": "太阳耀斑",
+          "desc": "对全体敌人造成 260% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.6,
+          "fx": "meteor",
+          "tint": "#ffd23b"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ffd23b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h14",
+      "name": "奥特曼赛文",
+      "rarity": "传说+",
+      "img": "heroes/h14.png",
+      "element": "光",
+      "baseAtk": 1860,
+      "baseHp": 12800,
+      "skill": {
+        "name": "集束光线",
+        "desc": "对单体敌人造成 380% 攻击力的伤害",
+        "cd": 8,
+        "multiplier": 3.8,
+        "fx": "laser",
+        "tint": "#ff5252"
+      },
+      "skills": [
+        {
+          "name": "集束光线",
+          "desc": "对单体敌人造成 380% 攻击力的伤害",
+          "cd": 8,
+          "multiplier": 3.8,
+          "fx": "laser",
+          "tint": "#ff5252"
+        },
+        {
+          "name": "圣光普照",
+          "desc": "全体恢复 70% 攻击力生命并减伤",
+          "cd": 9,
+          "multiplier": 0.7,
+          "fx": "holy",
+          "tint": "#ff5252"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h15",
+      "name": "神女轻音",
+      "rarity": "传说+",
+      "img": "heroes/h15.png",
+      "element": "光",
+      "baseAtk": 1940,
+      "baseHp": 10000,
+      "skill": {
+        "name": "微风吟唱",
+        "desc": "全体队友恢复 60% 攻击力的生命",
+        "cd": 7,
+        "multiplier": 0.6,
+        "fx": "heal",
+        "tint": "#9dffc7"
+      },
+      "skills": [
+        {
+          "name": "微风吟唱",
+          "desc": "全体队友恢复 60% 攻击力的生命",
+          "cd": 7,
+          "multiplier": 0.6,
+          "fx": "heal",
+          "tint": "#9dffc7"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#9dffc7"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h16",
+      "name": "精灵神鹿鹿",
+      "rarity": "传说+",
+      "img": "heroes/h16.png",
+      "element": "光",
+      "baseAtk": 2020,
+      "baseHp": 10700,
+      "skill": {
+        "name": "森之守护",
+        "desc": "全体获得 30% 减伤，持续 3 秒",
+        "cd": 9,
+        "multiplier": 0,
+        "fx": "shield",
+        "tint": "#7cfc7c"
+      },
+      "skills": [
+        {
+          "name": "森之守护",
+          "desc": "全体获得 30% 减伤，持续 3 秒",
+          "cd": 9,
+          "multiplier": 0,
+          "fx": "shield",
+          "tint": "#7cfc7c"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#7cfc7c"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h17",
+      "name": "绘世神小悠",
+      "rarity": "传说+",
+      "img": "heroes/h17.png",
+      "element": "水",
+      "baseAtk": 2100,
+      "baseHp": 11400,
+      "skill": {
+        "name": "绘世之笔",
+        "desc": "对全体敌人造成 230% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.3,
+        "fx": "paint",
+        "tint": "#ff9ec7"
+      },
+      "skills": [
+        {
+          "name": "绘世之笔",
+          "desc": "对全体敌人造成 230% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.3,
+          "fx": "paint",
+          "tint": "#ff9ec7"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#ff9ec7"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h18",
+      "name": "大天使米勒",
+      "rarity": "传说",
+      "img": "heroes/h18.png",
+      "element": "光",
+      "baseAtk": 1250,
+      "baseHp": 8750,
+      "skill": {
+        "name": "圣光审判",
+        "desc": "对全体敌人造成 200% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2,
+        "fx": "holy",
+        "tint": "#ffe28a"
+      },
+      "skills": [
+        {
+          "name": "圣光审判",
+          "desc": "对全体敌人造成 200% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2,
+          "fx": "holy",
+          "tint": "#ffe28a"
+        },
+        {
+          "name": "圣光普照",
+          "desc": "全体恢复 70% 攻击力生命并减伤",
+          "cd": 9,
+          "multiplier": 0.7,
+          "fx": "holy",
+          "tint": "#ffe28a"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h19",
+      "name": "雷神左尔",
+      "rarity": "传说",
+      "img": "heroes/h19.png",
+      "element": "光",
+      "baseAtk": 1290,
+      "baseHp": 9000,
+      "skill": {
+        "name": "雷霆万钧",
+        "desc": "对全体敌人造成 230% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.3,
+        "fx": "bolt",
+        "tint": "#ffd56b"
+      },
+      "skills": [
+        {
+          "name": "雷霆万钧",
+          "desc": "对全体敌人造成 230% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.3,
+          "fx": "bolt",
+          "tint": "#ffd56b"
+        },
+        {
+          "name": "雷霆万钧",
+          "desc": "对全体造成 200% 伤害并麻痹",
+          "cd": 10,
+          "multiplier": 2,
+          "fx": "thunder",
+          "tint": "#ffd56b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h20",
+      "name": "光之墓",
+      "rarity": "传说",
+      "img": "heroes/h20.png",
+      "element": "光",
+      "baseAtk": 1330,
+      "baseHp": 8000,
+      "skill": {
+        "name": "光之墓碑",
+        "desc": "对单体敌人造成 300% 攻击力的伤害",
+        "cd": 9,
+        "multiplier": 3,
+        "fx": "holy",
+        "tint": "#fff3c4"
+      },
+      "skills": [
+        {
+          "name": "光之墓碑",
+          "desc": "对单体敌人造成 300% 攻击力的伤害",
+          "cd": 9,
+          "multiplier": 3,
+          "fx": "holy",
+          "tint": "#fff3c4"
+        },
+        {
+          "name": "圣光普照",
+          "desc": "全体恢复 70% 攻击力生命并减伤",
+          "cd": 9,
+          "multiplier": 0.7,
+          "fx": "holy",
+          "tint": "#fff3c4"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h21",
+      "name": "比利小琴",
+      "rarity": "传说",
+      "img": "heroes/h21.png",
+      "element": "光",
+      "baseAtk": 1370,
+      "baseHp": 8250,
+      "skill": {
+        "name": "魔音贯耳",
+        "desc": "对全体敌人造成 190% 攻击力的伤害",
+        "cd": 6,
+        "multiplier": 1.9,
+        "fx": "sound",
+        "tint": "#b78bff"
+      },
+      "skills": [
+        {
+          "name": "魔音贯耳",
+          "desc": "对全体敌人造成 190% 攻击力的伤害",
+          "cd": 6,
+          "multiplier": 1.9,
+          "fx": "sound",
+          "tint": "#b78bff"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#b78bff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h22",
+      "name": "花仙阿黛拉",
+      "rarity": "传说+",
+      "img": "heroes/h22.png",
+      "element": "光",
+      "baseAtk": 2020,
+      "baseHp": 11400,
+      "skill": {
+        "name": "花海绽放",
+        "desc": "全体恢复 75% 攻击力的生命",
+        "cd": 7,
+        "multiplier": 0.75,
+        "fx": "bloom",
+        "tint": "#ff9ec7"
+      },
+      "skills": [
+        {
+          "name": "花海绽放",
+          "desc": "全体恢复 75% 攻击力的生命",
+          "cd": 7,
+          "multiplier": 0.75,
+          "fx": "bloom",
+          "tint": "#ff9ec7"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#ff9ec7"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h23",
+      "name": "百鸟神佩吉",
+      "rarity": "传说+",
+      "img": "heroes/h23.png",
+      "element": "光",
+      "baseAtk": 2100,
+      "baseHp": 12100,
+      "skill": {
+        "name": "百鸟朝凤",
+        "desc": "对全体敌人造成 240% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.4,
+        "fx": "wind",
+        "tint": "#a8e6ff"
+      },
+      "skills": [
+        {
+          "name": "百鸟朝凤",
+          "desc": "对全体敌人造成 240% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.4,
+          "fx": "wind",
+          "tint": "#a8e6ff"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#a8e6ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h24",
+      "name": "波大侠",
+      "rarity": "传说+",
+      "img": "heroes/h24.png",
+      "element": "水",
+      "baseAtk": 1700,
+      "baseHp": 12800,
+      "skill": {
+        "name": "浪里白条",
+        "desc": "对单体敌人造成 360% 攻击力的伤害",
+        "cd": 8,
+        "multiplier": 3.6,
+        "fx": "tidal",
+        "tint": "#5cc7ff"
+      },
+      "skills": [
+        {
+          "name": "浪里白条",
+          "desc": "对单体敌人造成 360% 攻击力的伤害",
+          "cd": 8,
+          "multiplier": 3.6,
+          "fx": "tidal",
+          "tint": "#5cc7ff"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#5cc7ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h25",
+      "name": "哀木涕",
+      "rarity": "传说+",
+      "img": "heroes/h25.png",
+      "element": "暗",
+      "baseAtk": 1780,
+      "baseHp": 10000,
+      "skill": {
+        "name": "哀嚎冲击",
+        "desc": "对全体敌人造成 210% 攻击力的伤害",
+        "cd": 6,
+        "multiplier": 2.1,
+        "fx": "sound",
+        "tint": "#a08ad8"
+      },
+      "skills": [
+        {
+          "name": "哀嚎冲击",
+          "desc": "对全体敌人造成 210% 攻击力的伤害",
+          "cd": 6,
+          "multiplier": 2.1,
+          "fx": "sound",
+          "tint": "#a08ad8"
+        },
+        {
+          "name": "暗影侵蚀",
+          "desc": "对全体造成 220% 伤害并削弱攻击",
+          "cd": 10,
+          "multiplier": 2.2,
+          "fx": "dark",
+          "tint": "#a08ad8"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h26",
+      "name": "韦斯夫妇",
+      "rarity": "传说",
+      "img": "heroes/h26.png",
+      "element": "光",
+      "baseAtk": 1330,
+      "baseHp": 8250,
+      "skill": {
+        "name": "双剑合璧",
+        "desc": "对全体敌人造成 200% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2,
+        "fx": "slash",
+        "tint": "#ffd56b"
+      },
+      "skills": [
+        {
+          "name": "双剑合璧",
+          "desc": "对全体敌人造成 200% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2,
+          "fx": "slash",
+          "tint": "#ffd56b"
+        },
+        {
+          "name": "圣光普照",
+          "desc": "全体恢复 70% 攻击力生命并减伤",
+          "cd": 9,
+          "multiplier": 0.7,
+          "fx": "holy",
+          "tint": "#ffd56b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h27",
+      "name": "剑圣奥利弗",
+      "rarity": "传说",
+      "img": "heroes/h27.png",
+      "element": "光",
+      "baseAtk": 1370,
+      "baseHp": 8500,
+      "skill": {
+        "name": "无双剑气",
+        "desc": "对单体敌人造成 320% 攻击力的伤害",
+        "cd": 8,
+        "multiplier": 3.2,
+        "fx": "slash",
+        "tint": "#9dffc7"
+      },
+      "skills": [
+        {
+          "name": "无双剑气",
+          "desc": "对单体敌人造成 320% 攻击力的伤害",
+          "cd": 8,
+          "multiplier": 3.2,
+          "fx": "slash",
+          "tint": "#9dffc7"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#9dffc7"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h28",
+      "name": "小园丁莉莉",
+      "rarity": "传说",
+      "img": "heroes/h28.png",
+      "element": "光",
+      "baseAtk": 1410,
+      "baseHp": 8750,
+      "skill": {
+        "name": "藤蔓缠绕",
+        "desc": "冻结全体敌人 1.5 秒，并造成伤害",
+        "cd": 10,
+        "multiplier": 0,
+        "fx": "freeze",
+        "tint": "#7cfc7c"
+      },
+      "skills": [
+        {
+          "name": "藤蔓缠绕",
+          "desc": "冻结全体敌人 1.5 秒，并造成伤害",
+          "cd": 10,
+          "multiplier": 0,
+          "fx": "freeze",
+          "tint": "#7cfc7c"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#7cfc7c"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h29",
+      "name": "葱葱公主",
+      "rarity": "传说",
+      "img": "heroes/h29.png",
+      "element": "光",
+      "baseAtk": 1450,
+      "baseHp": 9000,
+      "skill": {
+        "name": "葱葱冲击",
+        "desc": "对全体敌人造成 180% 攻击力的伤害",
+        "cd": 6,
+        "multiplier": 1.8,
+        "fx": "wind",
+        "tint": "#b6ff7a"
+      },
+      "skills": [
+        {
+          "name": "葱葱冲击",
+          "desc": "对全体敌人造成 180% 攻击力的伤害",
+          "cd": 6,
+          "multiplier": 1.8,
+          "fx": "wind",
+          "tint": "#b6ff7a"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#b6ff7a"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h30",
+      "name": "嗨啦噜王子",
+      "rarity": "传说",
+      "img": "heroes/h30.png",
+      "element": "水",
+      "baseAtk": 1250,
+      "baseHp": 8000,
+      "skill": {
+        "name": "皇家号令",
+        "desc": "全体提升 25% 攻击，持续 3 秒",
+        "cd": 9,
+        "multiplier": 0,
+        "fx": "buff",
+        "tint": "#ffd56b"
+      },
+      "skills": [
+        {
+          "name": "皇家号令",
+          "desc": "全体提升 25% 攻击，持续 3 秒",
+          "cd": 9,
+          "multiplier": 0,
+          "fx": "buff",
+          "tint": "#ffd56b"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#ffd56b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h31",
+      "name": "暴龙加加",
+      "rarity": "传说+",
+      "img": "heroes/h31.png",
+      "element": "火",
+      "baseAtk": 1780,
+      "baseHp": 10700,
+      "skill": {
+        "name": "暴龙咆哮",
+        "desc": "对全体敌人造成 250% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.5,
+        "fx": "fire",
+        "tint": "#ff6b2f"
+      },
+      "skills": [
+        {
+          "name": "暴龙咆哮",
+          "desc": "对全体敌人造成 250% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.5,
+          "fx": "fire",
+          "tint": "#ff6b2f"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ff6b2f"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h32",
+      "name": "鸣火小吉娜",
+      "rarity": "传说+",
+      "img": "heroes/h32.png",
+      "element": "火",
+      "baseAtk": 1860,
+      "baseHp": 11400,
+      "skill": {
+        "name": "鸣火爆裂",
+        "desc": "对全体敌人造成 240% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.4,
+        "fx": "meteor",
+        "tint": "#ff8a3b"
+      },
+      "skills": [
+        {
+          "name": "鸣火爆裂",
+          "desc": "对全体敌人造成 240% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.4,
+          "fx": "meteor",
+          "tint": "#ff8a3b"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ff8a3b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h33",
+      "name": "天才刘星",
+      "rarity": "传说+",
+      "img": "heroes/h33.png",
+      "element": "光",
+      "baseAtk": 1940,
+      "baseHp": 12100,
+      "skill": {
+        "name": "流星一击",
+        "desc": "对单体敌人造成 370% 攻击力的伤害",
+        "cd": 8,
+        "multiplier": 3.7,
+        "fx": "meteor",
+        "tint": "#ffe66b"
+      },
+      "skills": [
+        {
+          "name": "流星一击",
+          "desc": "对单体敌人造成 370% 攻击力的伤害",
+          "cd": 8,
+          "multiplier": 3.7,
+          "fx": "meteor",
+          "tint": "#ffe66b"
+        },
+        {
+          "name": "雷霆万钧",
+          "desc": "对全体造成 200% 伤害并麻痹",
+          "cd": 10,
+          "multiplier": 2,
+          "fx": "thunder",
+          "tint": "#ffe66b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h34",
+      "name": "巨力艾斯",
+      "rarity": "传说",
+      "img": "heroes/h34.png",
+      "element": "火",
+      "baseAtk": 1410,
+      "baseHp": 9000,
+      "skill": {
+        "name": "巨力铁拳",
+        "desc": "对单体敌人造成 310% 攻击力的伤害",
+        "cd": 8,
+        "multiplier": 3.1,
+        "fx": "slash",
+        "tint": "#ff9d5c"
+      },
+      "skills": [
+        {
+          "name": "巨力铁拳",
+          "desc": "对单体敌人造成 310% 攻击力的伤害",
+          "cd": 8,
+          "multiplier": 3.1,
+          "fx": "slash",
+          "tint": "#ff9d5c"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ff9d5c"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h35",
+      "name": "托尔索",
+      "rarity": "传说",
+      "img": "heroes/h35.png",
+      "element": "光",
+      "baseAtk": 1450,
+      "baseHp": 8000,
+      "skill": {
+        "name": "雷神之锤",
+        "desc": "对全体敌人造成 220% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.2,
+        "fx": "bolt",
+        "tint": "#8ad4ff"
+      },
+      "skills": [
+        {
+          "name": "雷神之锤",
+          "desc": "对全体敌人造成 220% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.2,
+          "fx": "bolt",
+          "tint": "#8ad4ff"
+        },
+        {
+          "name": "雷霆万钧",
+          "desc": "对全体造成 200% 伤害并麻痹",
+          "cd": 10,
+          "multiplier": 2,
+          "fx": "thunder",
+          "tint": "#8ad4ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h36",
+      "name": "蛮锤塔利",
+      "rarity": "传说",
+      "img": "heroes/h36.png",
+      "element": "火",
+      "baseAtk": 1250,
+      "baseHp": 8250,
+      "skill": {
+        "name": "蛮锤碎地",
+        "desc": "对全体敌人造成 190% 攻击力的伤害",
+        "cd": 6,
+        "multiplier": 1.9,
+        "fx": "quake",
+        "tint": "#ff7a8b"
+      },
+      "skills": [
+        {
+          "name": "蛮锤碎地",
+          "desc": "对全体敌人造成 190% 攻击力的伤害",
+          "cd": 6,
+          "multiplier": 1.9,
+          "fx": "quake",
+          "tint": "#ff7a8b"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ff7a8b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h37",
+      "name": "鬼火少女樱",
+      "rarity": "传说",
+      "img": "heroes/h37.png",
+      "element": "暗",
+      "baseAtk": 1290,
+      "baseHp": 8500,
+      "skill": {
+        "name": "鬼火燎原",
+        "desc": "对全体敌人造成 230% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.3,
+        "fx": "burn",
+        "tint": "#6fffd0"
+      },
+      "skills": [
+        {
+          "name": "鬼火燎原",
+          "desc": "对全体敌人造成 230% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.3,
+          "fx": "burn",
+          "tint": "#6fffd0"
+        },
+        {
+          "name": "暗影侵蚀",
+          "desc": "对全体造成 220% 伤害并削弱攻击",
+          "cd": 10,
+          "multiplier": 2.2,
+          "fx": "dark",
+          "tint": "#6fffd0"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h38",
+      "name": "红衣小舞",
+      "rarity": "传说",
+      "img": "heroes/h38.png",
+      "element": "火",
+      "baseAtk": 1330,
+      "baseHp": 8750,
+      "skill": {
+        "name": "红莲之舞",
+        "desc": "对全体敌人造成 210% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.1,
+        "fx": "bloom",
+        "tint": "#ff5c7a"
+      },
+      "skills": [
+        {
+          "name": "红莲之舞",
+          "desc": "对全体敌人造成 210% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.1,
+          "fx": "bloom",
+          "tint": "#ff5c7a"
+        },
+        {
+          "name": "烈焰爆裂",
+          "desc": "对单体造成 260% 伤害并灼烧",
+          "cd": 8,
+          "multiplier": 2.6,
+          "fx": "burn",
+          "tint": "#ff5c7a"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h39",
+      "name": "雪女斯卡蒂",
+      "rarity": "传说+",
+      "img": "heroes/h39.png",
+      "element": "水",
+      "baseAtk": 1940,
+      "baseHp": 12800,
+      "skill": {
+        "name": "冰霜风暴",
+        "desc": "对全体敌人造成 245% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.45,
+        "fx": "ice",
+        "tint": "#8ad4ff"
+      },
+      "skills": [
+        {
+          "name": "冰霜风暴",
+          "desc": "对全体敌人造成 245% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.45,
+          "fx": "ice",
+          "tint": "#8ad4ff"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#8ad4ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h40",
+      "name": "神盾阿克",
+      "rarity": "传说+",
+      "img": "heroes/h40.png",
+      "element": "光",
+      "baseAtk": 2020,
+      "baseHp": 10000,
+      "skill": {
+        "name": "神盾护体",
+        "desc": "全体获得 35% 减伤，持续 3 秒",
+        "cd": 9,
+        "multiplier": 0,
+        "fx": "shield",
+        "tint": "#ffd56b"
+      },
+      "skills": [
+        {
+          "name": "神盾护体",
+          "desc": "全体获得 35% 减伤，持续 3 秒",
+          "cd": 9,
+          "multiplier": 0,
+          "fx": "shield",
+          "tint": "#ffd56b"
+        },
+        {
+          "name": "圣光普照",
+          "desc": "全体恢复 70% 攻击力生命并减伤",
+          "cd": 9,
+          "multiplier": 0.7,
+          "fx": "holy",
+          "tint": "#ffd56b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h41",
+      "name": "五娃",
+      "rarity": "传说+",
+      "img": "heroes/h41.png",
+      "element": "水",
+      "baseAtk": 2100,
+      "baseHp": 10700,
+      "skill": {
+        "name": "水漫金山",
+        "desc": "对全体敌人造成 235% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.35,
+        "fx": "tidal",
+        "tint": "#5cc7ff"
+      },
+      "skills": [
+        {
+          "name": "水漫金山",
+          "desc": "对全体敌人造成 235% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.35,
+          "fx": "tidal",
+          "tint": "#5cc7ff"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#5cc7ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h42",
+      "name": "人鱼玛丽娅",
+      "rarity": "传说",
+      "img": "heroes/h42.png",
+      "element": "水",
+      "baseAtk": 1250,
+      "baseHp": 8500,
+      "skill": {
+        "name": "海妖之歌",
+        "desc": "全体队友恢复 65% 攻击力的生命",
+        "cd": 7,
+        "multiplier": 0.65,
+        "fx": "sound",
+        "tint": "#7ad4ff"
+      },
+      "skills": [
+        {
+          "name": "海妖之歌",
+          "desc": "全体队友恢复 65% 攻击力的生命",
+          "cd": 7,
+          "multiplier": 0.65,
+          "fx": "sound",
+          "tint": "#7ad4ff"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#7ad4ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h43",
+      "name": "冰人萨米",
+      "rarity": "传说",
+      "img": "heroes/h43.png",
+      "element": "水",
+      "baseAtk": 1290,
+      "baseHp": 8750,
+      "skill": {
+        "name": "冰封千里",
+        "desc": "冻结全体敌人 1.5 秒，并造成伤害",
+        "cd": 10,
+        "multiplier": 0,
+        "fx": "freeze",
+        "tint": "#a8e6ff"
+      },
+      "skills": [
+        {
+          "name": "冰封千里",
+          "desc": "冻结全体敌人 1.5 秒，并造成伤害",
+          "cd": 10,
+          "multiplier": 0,
+          "fx": "freeze",
+          "tint": "#a8e6ff"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#a8e6ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h44",
+      "name": "极寒洛洛",
+      "rarity": "传说",
+      "img": "heroes/h44.png",
+      "element": "水",
+      "baseAtk": 1330,
+      "baseHp": 9000,
+      "skill": {
+        "name": "极寒冰锥",
+        "desc": "对全体敌人造成 215% 攻击力的伤害",
+        "cd": 7,
+        "multiplier": 2.15,
+        "fx": "ice",
+        "tint": "#b3f0ff"
+      },
+      "skills": [
+        {
+          "name": "极寒冰锥",
+          "desc": "对全体敌人造成 215% 攻击力的伤害",
+          "cd": 7,
+          "multiplier": 2.15,
+          "fx": "ice",
+          "tint": "#b3f0ff"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#b3f0ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h45",
+      "name": "菠萝仔",
+      "rarity": "传说",
+      "img": "heroes/h45.png",
+      "element": "光",
+      "baseAtk": 1370,
+      "baseHp": 8000,
+      "skill": {
+        "name": "菠萝飞弹",
+        "desc": "对单体敌人造成 300% 攻击力的伤害",
+        "cd": 8,
+        "multiplier": 3,
+        "fx": "meteor",
+        "tint": "#ffd23b"
+      },
+      "skills": [
+        {
+          "name": "菠萝飞弹",
+          "desc": "对单体敌人造成 300% 攻击力的伤害",
+          "cd": 8,
+          "multiplier": 3,
+          "fx": "meteor",
+          "tint": "#ffd23b"
+        },
+        {
+          "name": "疾风连击",
+          "desc": "对全体造成 150% 伤害，冷却较短",
+          "cd": 5,
+          "multiplier": 1.5,
+          "fx": "wind",
+          "tint": "#ffd23b"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "h46",
+      "name": "冰小月",
+      "rarity": "传说",
+      "img": "heroes/h46.png",
+      "element": "水",
+      "baseAtk": 1410,
+      "baseHp": 8250,
+      "skill": {
+        "name": "月华冰刃",
+        "desc": "对全体敌人造成 195% 攻击力的伤害",
+        "cd": 6,
+        "multiplier": 1.95,
+        "fx": "slash",
+        "tint": "#b3f0ff"
+      },
+      "skills": [
+        {
+          "name": "月华冰刃",
+          "desc": "对全体敌人造成 195% 攻击力的伤害",
+          "cd": 6,
+          "multiplier": 1.95,
+          "fx": "slash",
+          "tint": "#b3f0ff"
+        },
+        {
+          "name": "潮汐涌动",
+          "desc": "对全体造成 180% 伤害并冻结 1 秒",
+          "cd": 9,
+          "multiplier": 1.8,
+          "fx": "tidal",
+          "tint": "#b3f0ff"
+        }
+      ],
+      "tier": 5,
+      "material": false
+    },
+    {
+      "id": "m31",
+      "name": "水泡泡",
+      "rarity": "优秀",
+      "tier": 3,
+      "element": "水",
+      "baseAtk": 380,
+      "baseHp": 2800,
+      "img": "material/m31.svg",
+      "desc": "漂浮在溪畔的小型水元素，一戳就破。除了充当升星材料别无他用。",
+      "skill": {
+        "name": "水花溅射",
+        "desc": "对单体造成 80% 攻击力伤害",
+        "cd": 8,
+        "multiplier": 0.8
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "水花溅射",
+          "desc": "对单体造成 80% 攻击力伤害",
+          "cd": 8,
+          "multiplier": 0.8
+        }
+      ]
+    },
+    {
+      "id": "m41",
+      "name": "溪流精灵",
+      "rarity": "精英",
+      "tier": 4,
+      "element": "水",
+      "baseAtk": 640,
+      "baseHp": 4600,
+      "img": "material/m41.svg",
+      "desc": "汇聚溪水之力的元素精灵，能掀起小小的浪花，常被当作升星材料。",
+      "skill": {
+        "name": "溪水冲击",
+        "desc": "对单体造成 120% 攻击力伤害",
+        "cd": 7,
+        "multiplier": 1.2
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "溪水冲击",
+          "desc": "对单体造成 120% 攻击力伤害",
+          "cd": 7,
+          "multiplier": 1.2
+        }
+      ]
+    },
+    {
+      "id": "m32",
+      "name": "小火花",
+      "rarity": "优秀",
+      "tier": 3,
+      "element": "火",
+      "baseAtk": 400,
+      "baseHp": 2600,
+      "img": "material/m32.svg",
+      "desc": "一簇摇曳的小火苗，风一吹就晃。是廉价的升星材料。",
+      "skill": {
+        "name": "火星飞溅",
+        "desc": "对单体造成 80% 攻击力伤害",
+        "cd": 8,
+        "multiplier": 0.8
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "火星飞溅",
+          "desc": "对单体造成 80% 攻击力伤害",
+          "cd": 8,
+          "multiplier": 0.8
+        }
+      ]
+    },
+    {
+      "id": "m42",
+      "name": "烈焰童子",
+      "rarity": "精英",
+      "tier": 4,
+      "element": "火",
+      "baseAtk": 660,
+      "baseHp": 4400,
+      "img": "material/m42.svg",
+      "desc": "掌中跳跃着火焰的孩童，脾气不大本事也不大，适合当升星材料。",
+      "skill": {
+        "name": "烈焰弹",
+        "desc": "对单体造成 120% 攻击力伤害",
+        "cd": 7,
+        "multiplier": 1.2
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "烈焰弹",
+          "desc": "对单体造成 120% 攻击力伤害",
+          "cd": 7,
+          "multiplier": 1.2
+        }
+      ]
+    },
+    {
+      "id": "m35",
+      "name": "萤火虫",
+      "rarity": "优秀",
+      "tier": 3,
+      "element": "光",
+      "baseAtk": 360,
+      "baseHp": 3000,
+      "img": "material/m35.svg",
+      "desc": "提着微弱光芒的小虫，除了发光一无是处，标准的升星材料。",
+      "skill": {
+        "name": "微光",
+        "desc": "对单体造成 80% 攻击力伤害",
+        "cd": 8,
+        "multiplier": 0.8
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "微光",
+          "desc": "对单体造成 80% 攻击力伤害",
+          "cd": 8,
+          "multiplier": 0.8
+        }
+      ]
+    },
+    {
+      "id": "m45",
+      "name": "晨曦使",
+      "rarity": "精英",
+      "tier": 4,
+      "element": "光",
+      "baseAtk": 630,
+      "baseHp": 4700,
+      "img": "material/m45.svg",
+      "desc": "带来第一缕晨光的下级侍从，力量有限，多被用作升星材料。",
+      "skill": {
+        "name": "晨曦射线",
+        "desc": "对单体造成 120% 攻击力伤害",
+        "cd": 7,
+        "multiplier": 1.2
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "晨曦射线",
+          "desc": "对单体造成 120% 攻击力伤害",
+          "cd": 7,
+          "multiplier": 1.2
+        }
+      ]
+    },
+    {
+      "id": "m36",
+      "name": "影缚",
+      "rarity": "优秀",
+      "tier": 3,
+      "element": "暗",
+      "baseAtk": 385,
+      "baseHp": 2750,
+      "img": "material/m36.svg",
+      "desc": "附着在地面上的稀薄影子，踩上去会粘脚。廉价升星材料。",
+      "skill": {
+        "name": "暗影缠绕",
+        "desc": "对单体造成 80% 攻击力伤害",
+        "cd": 8,
+        "multiplier": 0.8
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "暗影缠绕",
+          "desc": "对单体造成 80% 攻击力伤害",
+          "cd": 8,
+          "multiplier": 0.8
+        }
+      ]
+    },
+    {
+      "id": "m46",
+      "name": "暗影仆从",
+      "rarity": "精英",
+      "tier": 4,
+      "element": "暗",
+      "baseAtk": 655,
+      "baseHp": 4450,
+      "img": "material/m46.svg",
+      "desc": "听命于高阶暗影的下级仆从，战力平平，是可靠的升星材料。",
+      "skill": {
+        "name": "暗影突刺",
+        "desc": "对单体造成 120% 攻击力伤害",
+        "cd": 7,
+        "multiplier": 1.2
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "暗影突刺",
+          "desc": "对单体造成 120% 攻击力伤害",
+          "cd": 7,
+          "multiplier": 1.2
+        }
+      ]
+    },
+    {
+      "id": "m37",
+      "name": "青苔童子",
+      "rarity": "优秀",
+      "tier": 3,
+      "element": "草",
+      "baseAtk": 375,
+      "baseHp": 2850,
+      "img": "material/m37.svg",
+      "desc": "趴在老树根上的青苔小精，湿漉漉软绵绵，是常见的升星材料。",
+      "skill": {
+        "name": "苔藓飞溅",
+        "desc": "对单体造成 80% 攻击力伤害",
+        "cd": 8,
+        "multiplier": 0.8
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "苔藓飞溅",
+          "desc": "对单体造成 80% 攻击力伤害",
+          "cd": 8,
+          "multiplier": 0.8
+        }
+      ]
+    },
+    {
+      "id": "m47",
+      "name": "藤蔓精灵",
+      "rarity": "精英",
+      "tier": 4,
+      "element": "草",
+      "baseAtk": 645,
+      "baseHp": 4550,
+      "img": "material/m47.svg",
+      "desc": "缠绕树干生长的藤之精灵，能抽出细细的藤鞭，多被用作升星材料。",
+      "skill": {
+        "name": "藤鞭抽击",
+        "desc": "对单体造成 120% 攻击力伤害",
+        "cd": 7,
+        "multiplier": 1.2
+      },
+      "material": true,
+      "skills": [
+        {
+          "fx": "slash",
+          "tint": "#b9b3d8",
+          "name": "藤鞭抽击",
+          "desc": "对单体造成 120% 攻击力伤害",
+          "cd": 7,
+          "multiplier": 1.2
+        }
+      ]
+    }
+  ],
+  "treasures": [
+    {
+      "id": "t1",
+      "name": "古玉佩",
+      "desc": "生命 +5%",
+      "atkPct": 0,
+      "hpPct": 5
+    },
+    {
+      "id": "t2",
+      "name": "青铜爵",
+      "desc": "攻击 +5%",
+      "atkPct": 5,
+      "hpPct": 0
+    },
+    {
+      "id": "t3",
+      "name": "琉璃盏",
+      "desc": "攻击 +10%，生命 +10%",
+      "atkPct": 10,
+      "hpPct": 10
+    },
+    {
+      "id": "t4",
+      "name": "龙纹璧",
+      "desc": "攻击 +15%",
+      "atkPct": 15,
+      "hpPct": 0
+    },
+    {
+      "id": "t5",
+      "name": "玉玲珑",
+      "desc": "生命 +15%",
+      "atkPct": 0,
+      "hpPct": 15
+    },
+    {
+      "id": "t6",
+      "name": "玄铁令",
+      "desc": "攻击 +20%，生命 +20%",
+      "atkPct": 20,
+      "hpPct": 20
+    }
+  ],
+  "wallSkills": [
+    {
+      "lv": 1,
+      "name": "青石墙",
+      "atkPct": 2,
+      "hpPct": 2,
+      "skill": {
+        "type": "stun",
+        "name": "落石冲击",
+        "desc": "眩晕全体怪物 1.5 秒",
+        "cd": 14,
+        "value": 1.5
+      }
+    },
+    {
+      "lv": 5,
+      "name": "铜铁墙",
+      "atkPct": 5,
+      "hpPct": 5,
+      "skill": {
+        "type": "knock",
+        "name": "铁壁冲撞",
+        "desc": "击退小怪半屏并短暂停顿",
+        "cd": 16,
+        "value": 110
+      }
+    },
+    {
+      "lv": 10,
+      "name": "白银墙",
+      "atkPct": 8,
+      "hpPct": 8,
+      "skill": {
+        "type": "shield",
+        "name": "银辉护盾",
+        "desc": "为城墙附加护盾，6 秒免疫伤害",
+        "cd": 18,
+        "value": 6
+      }
+    },
+    {
+      "lv": 15,
+      "name": "黄金墙",
+      "atkPct": 12,
+      "hpPct": 12,
+      "skill": {
+        "type": "petrify",
+        "name": "石化凝视",
+        "desc": "石化全体怪物 2 秒",
+        "cd": 20,
+        "value": 2
+      }
+    },
+    {
+      "lv": 20,
+      "name": "铂金墙",
+      "atkPct": 16,
+      "hpPct": 16,
+      "skill": {
+        "type": "dmgup",
+        "name": "铂金战意",
+        "desc": "全队增伤 35%，持续 8 秒",
+        "cd": 20,
+        "value": 35
+      }
+    },
+    {
+      "lv": 30,
+      "name": "钻石墙",
+      "atkPct": 22,
+      "hpPct": 22,
+      "skill": {
+        "type": "block",
+        "name": "钻石屏障",
+        "desc": "生成阻碍物阻挡怪物前进",
+        "cd": 22,
+        "value": 4
+      }
+    },
+    {
+      "lv": 40,
+      "name": "星耀墙",
+      "atkPct": 30,
+      "hpPct": 30,
+      "skill": {
+        "type": "cdreduce",
+        "name": "星耀共鸣",
+        "desc": "8 秒内英雄技能冷却减半",
+        "cd": 24,
+        "value": 50
+      }
+    },
+    {
+      "lv": 50,
+      "name": "王者墙",
+      "atkPct": 40,
+      "hpPct": 40,
+      "skill": {
+        "type": "refresh",
+        "name": "王者号令",
+        "desc": "立即刷新全队必杀冷却",
+        "cd": 30,
+        "value": 0
+      }
+    }
+  ],
+  "chat": [
+    {
+      "user": "alice",
+      "text": "hello world",
+      "time": 1788753344676,
+      "isAdmin": true
+    },
+    {
+      "user": "bob5118",
+      "text": "hello",
+      "time": 1788753412199,
+      "isAdmin": false
+    },
+    {
+      "user": "liming1320",
+      "text": "你好",
+      "time": 1788760704608,
+      "isAdmin": false
+    },
+    {
+      "user": "liming1320",
+      "text": "你好",
+      "time": 1788848406593,
+      "isAdmin": false
+    }
+  ],
+  "mails": [
+    {
+      "id": "94cec4be862c",
+      "toAll": true,
+      "to": null,
+      "title": "开服福利",
+      "content": "每位玩家金币500",
+      "rewards": {
+        "gold": 500
+      },
+      "time": 1788753394314,
+      "from": "admin",
+      "claimedBy": [
+        "de8d865c0f2d",
+        "2c4fc0f00c1a",
+        "f3ecafe755ac",
+        "6a3b7c8cc434",
+        "3d949256f664",
+        "8083d2c9e5ad",
+        "46a9dbe1bfb7",
+        "cd316c35233c",
+        "dc93dd413eae",
+        "4b892bd64b56",
+        "01e01b1838a6"
+      ]
+    },
+    {
+      "id": "35f5cc28c6b0",
+      "toAll": false,
+      "to": "750b13ba9b13",
+      "toName": "alice",
+      "title": "测试奖励",
+      "content": "管理员发放",
+      "rewards": {
+        "gems": 500,
+        "gold": 1000
+      },
+      "time": 1788848620177,
+      "from": "admin",
+      "claimedBy": []
+    },
+    {
+      "id": "5328b2fc8e1a",
+      "toAll": true,
+      "to": null,
+      "title": "全员福利",
+      "content": "",
+      "rewards": {
+        "gems": 100
+      },
+      "time": 1788848620182,
+      "from": "admin",
+      "claimedBy": [
+        "de8d865c0f2d",
+        "2c4fc0f00c1a",
+        "f3ecafe755ac",
+        "6a3b7c8cc434",
+        "3d949256f664",
+        "8083d2c9e5ad",
+        "46a9dbe1bfb7",
+        "cd316c35233c",
+        "dc93dd413eae",
+        "4b892bd64b56",
+        "01e01b1838a6"
+      ]
+    },
+    {
+      "id": "9e6529d3255e",
+      "toAll": false,
+      "to": "750b13ba9b13",
+      "toName": "alice",
+      "title": "系统奖励",
+      "content": "",
+      "rewards": {
+        "gems": 2412412
+      },
+      "time": 1788848842936,
+      "from": "admin",
+      "claimedBy": []
+    },
+    {
+      "id": "ea26c53a29f5",
+      "toAll": false,
+      "to": "750b13ba9b13",
+      "toName": "alice",
+      "title": "系统奖励",
+      "content": "",
+      "rewards": {
+        "gold": 4111111
+      },
+      "time": 1788849034771,
+      "from": "admin",
+      "claimedBy": []
+    },
+    {
+      "id": "23b6f1f54dfb",
+      "toAll": false,
+      "to": "46a9dbe1bfb7",
+      "toName": "skl10758",
+      "title": "资源",
+      "content": "",
+      "rewards": {
+        "gold": 9999999,
+        "wishCards": 30,
+        "gems": 99999
+      },
+      "time": 1788850710910,
+      "from": "admin",
+      "claimedBy": [
+        "46a9dbe1bfb7"
+      ]
+    },
+    {
+      "id": "57f7ea45a751",
+      "toAll": false,
+      "to": "4b892bd64b56",
+      "toName": "sk97703",
+      "title": "资源",
+      "content": "",
+      "rewards": {
+        "gold": 99999999,
+        "iron": 999999,
+        "stone": 999999,
+        "gems": 99999,
+        "wishCards": 200
+      },
+      "time": 1788850997786,
+      "from": "admin",
+      "claimedBy": [
+        "4b892bd64b56"
+      ]
+    },
+    {
+      "id": "a34ddf396bf9",
+      "toAll": false,
+      "to": "01e01b1838a6",
+      "toName": "sk45219",
+      "title": "资源",
+      "content": "",
+      "rewards": {
+        "gold": 99999999,
+        "iron": 999999,
+        "stone": 999999,
+        "gems": 99999,
+        "wishCards": 200
+      },
+      "time": 1788851045279,
+      "from": "admin",
+      "claimedBy": [
+        "01e01b1838a6"
+      ]
+    }
+  ],
+  "clans": {
+    "6b0193d42ace": {
+      "id": "6b0193d42ace",
+      "name": "狼牙",
+      "leaderId": "de8d865c0f2d",
+      "leaderName": "liming1320",
+      "members": [
+        "de8d865c0f2d"
+      ],
+      "createdAt": 1788753531821,
+      "chat": []
+    }
+  },
+  "world": {},
+  "events": [
+    {
+      "id": "welcome",
+      "name": "七日登录",
+      "type": "login",
+      "active": true,
+      "desc": "连续 7 天登录可获得：钻石 500、许愿卡 10、金币 5000",
+      "rewards": {
+        "gems": 500,
+        "wishCards": 10,
+        "gold": 5000
+      },
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "name": "测试活动",
+      "type": "login",
+      "desc": "登录送钻",
+      "needDays": 3,
+      "active": true,
+      "rewards": {
+        "gems": 888
+      },
+      "id": "6995127dc83c"
+    }
+  ],
+  "equipmentTemplates": [
+    {
+      "id": "eq_weapon_green",
+      "slot": "weapon",
+      "quality": "green",
+      "name": "铁剑",
+      "atk": 96,
+      "hp": 0,
+      "desc": "优秀武器，为穿戴者带来属性加成",
+      "icon": "⚔️"
+    },
+    {
+      "id": "eq_weapon_blue",
+      "slot": "weapon",
+      "quality": "blue",
+      "name": "银刃",
+      "atk": 153,
+      "hp": 0,
+      "desc": "精良武器，为穿戴者带来属性加成",
+      "icon": "⚔️"
+    },
+    {
+      "id": "eq_weapon_purple",
+      "slot": "weapon",
+      "quality": "purple",
+      "name": "寒霜剑",
+      "atk": 249,
+      "hp": 0,
+      "desc": "史诗武器，为穿戴者带来属性加成",
+      "icon": "⚔️"
+    },
+    {
+      "id": "eq_weapon_orange",
+      "slot": "weapon",
+      "quality": "orange",
+      "name": "烈焰刀",
+      "atk": 403,
+      "hp": 0,
+      "desc": "传说武器，为穿戴者带来属性加成",
+      "icon": "⚔️"
+    },
+    {
+      "id": "eq_weapon_red",
+      "slot": "weapon",
+      "quality": "red",
+      "name": "嗜血魔剑",
+      "atk": 624,
+      "hp": 0,
+      "desc": "远古武器，为穿戴者带来属性加成",
+      "icon": "⚔️"
+    },
+    {
+      "id": "eq_weapon_gold",
+      "slot": "weapon",
+      "quality": "gold",
+      "name": "屠龙宝刀",
+      "atk": 960,
+      "hp": 0,
+      "desc": "太古武器，为穿戴者带来属性加成",
+      "icon": "⚔️"
+    },
+    {
+      "id": "eq_weapon_rainbow",
+      "slot": "weapon",
+      "quality": "rainbow",
+      "name": "创世之刃",
+      "atk": 1536,
+      "hp": 0,
+      "desc": "神话武器，为穿戴者带来属性加成",
+      "icon": "⚔️"
+    },
+    {
+      "id": "eq_armor_green",
+      "slot": "armor",
+      "quality": "green",
+      "name": "皮甲",
+      "atk": 0,
+      "hp": 480,
+      "desc": "优秀护甲，为穿戴者带来属性加成",
+      "icon": "🛡"
+    },
+    {
+      "id": "eq_armor_blue",
+      "slot": "armor",
+      "quality": "blue",
+      "name": "锁子甲",
+      "atk": 0,
+      "hp": 768,
+      "desc": "精良护甲，为穿戴者带来属性加成",
+      "icon": "🛡"
+    },
+    {
+      "id": "eq_armor_purple",
+      "slot": "armor",
+      "quality": "purple",
+      "name": "秘银战甲",
+      "atk": 0,
+      "hp": 1248,
+      "desc": "史诗护甲，为穿戴者带来属性加成",
+      "icon": "🛡"
+    },
+    {
+      "id": "eq_armor_orange",
+      "slot": "armor",
+      "quality": "orange",
+      "name": "龙鳞战甲",
+      "atk": 0,
+      "hp": 2016,
+      "desc": "传说护甲，为穿戴者带来属性加成",
+      "icon": "🛡"
+    },
+    {
+      "id": "eq_armor_red",
+      "slot": "armor",
+      "quality": "red",
+      "name": "深渊铠甲",
+      "atk": 0,
+      "hp": 3120,
+      "desc": "远古护甲，为穿戴者带来属性加成",
+      "icon": "🛡"
+    },
+    {
+      "id": "eq_armor_gold",
+      "slot": "armor",
+      "quality": "gold",
+      "name": "永恒之铠",
+      "atk": 0,
+      "hp": 4800,
+      "desc": "太古护甲，为穿戴者带来属性加成",
+      "icon": "🛡"
+    },
+    {
+      "id": "eq_armor_rainbow",
+      "slot": "armor",
+      "quality": "rainbow",
+      "name": "诸神黄昏",
+      "atk": 0,
+      "hp": 7680,
+      "desc": "神话护甲，为穿戴者带来属性加成",
+      "icon": "🛡"
+    },
+    {
+      "id": "eq_helmet_green",
+      "slot": "helmet",
+      "quality": "green",
+      "name": "布帽",
+      "atk": 96,
+      "hp": 0,
+      "desc": "优秀头盔，为穿戴者带来属性加成",
+      "icon": "👑"
+    },
+    {
+      "id": "eq_helmet_blue",
+      "slot": "helmet",
+      "quality": "blue",
+      "name": "钢盔",
+      "atk": 153,
+      "hp": 0,
+      "desc": "精良头盔，为穿戴者带来属性加成",
+      "icon": "👑"
+    },
+    {
+      "id": "eq_helmet_purple",
+      "slot": "helmet",
+      "quality": "purple",
+      "name": "紫金冠",
+      "atk": 249,
+      "hp": 0,
+      "desc": "史诗头盔，为穿戴者带来属性加成",
+      "icon": "👑"
+    },
+    {
+      "id": "eq_helmet_orange",
+      "slot": "helmet",
+      "quality": "orange",
+      "name": "龙角盔",
+      "atk": 403,
+      "hp": 0,
+      "desc": "传说头盔，为穿戴者带来属性加成",
+      "icon": "👑"
+    },
+    {
+      "id": "eq_helmet_red",
+      "slot": "helmet",
+      "quality": "red",
+      "name": "邪王面具",
+      "atk": 624,
+      "hp": 0,
+      "desc": "远古头盔，为穿戴者带来属性加成",
+      "icon": "👑"
+    },
+    {
+      "id": "eq_helmet_gold",
+      "slot": "helmet",
+      "quality": "gold",
+      "name": "神王之冕",
+      "atk": 960,
+      "hp": 0,
+      "desc": "太古头盔，为穿戴者带来属性加成",
+      "icon": "👑"
+    },
+    {
+      "id": "eq_helmet_rainbow",
+      "slot": "helmet",
+      "quality": "rainbow",
+      "name": "星辰之冠",
+      "atk": 1536,
+      "hp": 0,
+      "desc": "神话头盔，为穿戴者带来属性加成",
+      "icon": "👑"
+    },
+    {
+      "id": "eq_boots_green",
+      "slot": "boots",
+      "quality": "green",
+      "name": "草鞋",
+      "atk": 0,
+      "hp": 288,
+      "desc": "优秀鞋子，为穿戴者带来属性加成",
+      "icon": "👢"
+    },
+    {
+      "id": "eq_boots_blue",
+      "slot": "boots",
+      "quality": "blue",
+      "name": "皮靴",
+      "atk": 0,
+      "hp": 460,
+      "desc": "精良鞋子，为穿戴者带来属性加成",
+      "icon": "👢"
+    },
+    {
+      "id": "eq_boots_purple",
+      "slot": "boots",
+      "quality": "purple",
+      "name": "迅捷之靴",
+      "atk": 0,
+      "hp": 748,
+      "desc": "史诗鞋子，为穿戴者带来属性加成",
+      "icon": "👢"
+    },
+    {
+      "id": "eq_boots_orange",
+      "slot": "boots",
+      "quality": "orange",
+      "name": "追风靴",
+      "atk": 0,
+      "hp": 1209,
+      "desc": "传说鞋子，为穿戴者带来属性加成",
+      "icon": "👢"
+    },
+    {
+      "id": "eq_boots_red",
+      "slot": "boots",
+      "quality": "red",
+      "name": "幻影步履",
+      "atk": 0,
+      "hp": 1872,
+      "desc": "远古鞋子，为穿戴者带来属性加成",
+      "icon": "👢"
+    },
+    {
+      "id": "eq_boots_gold",
+      "slot": "boots",
+      "quality": "gold",
+      "name": "时光之靴",
+      "atk": 0,
+      "hp": 2880,
+      "desc": "太古鞋子，为穿戴者带来属性加成",
+      "icon": "👢"
+    },
+    {
+      "id": "eq_boots_rainbow",
+      "slot": "boots",
+      "quality": "rainbow",
+      "name": "万界之履",
+      "atk": 0,
+      "hp": 4608,
+      "desc": "神话鞋子，为穿戴者带来属性加成",
+      "icon": "👢"
+    }
+  ],
+  "ringTemplates": [
+    {
+      "id": "ring_green",
+      "quality": "green",
+      "name": "蓝晶戒",
+      "atkPct": 2,
+      "hpPct": 3,
+      "desc": "优秀戒指，攻/生命 双加成",
+      "icon": "💍"
+    },
+    {
+      "id": "ring_blue",
+      "quality": "blue",
+      "name": "紫晶戒",
+      "atkPct": 3,
+      "hpPct": 4,
+      "desc": "精良戒指，攻/生命 双加成",
+      "icon": "💍"
+    },
+    {
+      "id": "ring_purple",
+      "quality": "purple",
+      "name": "红宝戒",
+      "atkPct": 5,
+      "hpPct": 7,
+      "desc": "史诗戒指，攻/生命 双加成",
+      "icon": "💍"
+    },
+    {
+      "id": "ring_orange",
+      "quality": "orange",
+      "name": "琥珀戒",
+      "atkPct": 8,
+      "hpPct": 12,
+      "desc": "传说戒指，攻/生命 双加成",
+      "icon": "💍"
+    },
+    {
+      "id": "ring_red",
+      "quality": "red",
+      "name": "血玉戒",
+      "atkPct": 13,
+      "hpPct": 19,
+      "desc": "远古戒指，攻/生命 双加成",
+      "icon": "💍"
+    },
+    {
+      "id": "ring_gold",
+      "quality": "gold",
+      "name": "帝皇戒",
+      "atkPct": 20,
+      "hpPct": 30,
+      "desc": "太古戒指，攻/生命 双加成",
+      "icon": "💍"
+    },
+    {
+      "id": "ring_rainbow",
+      "quality": "rainbow",
+      "name": "神谕之戒",
+      "atkPct": 32,
+      "hpPct": 48,
+      "desc": "神话戒指，攻/生命 双加成",
+      "icon": "💍"
+    }
+  ],
+  "artifactTemplates": [
+    {
+      "id": "art_green",
+      "quality": "green",
+      "name": "月光宝盒",
+      "lvAtkBase": 20,
+      "lvHpBase": 120,
+      "starSkillPct": 8,
+      "maxStar": 10,
+      "maxLevel": 100,
+      "desc": "优秀神器，升星可强化技能，升级可提升攻/生命",
+      "icon": "🔮"
+    },
+    {
+      "id": "art_blue",
+      "quality": "blue",
+      "name": "玄铁法杖",
+      "lvAtkBase": 32,
+      "lvHpBase": 192,
+      "starSkillPct": 16,
+      "maxStar": 10,
+      "maxLevel": 100,
+      "desc": "精良神器，升星可强化技能，升级可提升攻/生命",
+      "icon": "🔮"
+    },
+    {
+      "id": "art_purple",
+      "quality": "purple",
+      "name": "雷神之锤",
+      "lvAtkBase": 52,
+      "lvHpBase": 312,
+      "starSkillPct": 24,
+      "maxStar": 10,
+      "maxLevel": 100,
+      "desc": "史诗神器，升星可强化技能，升级可提升攻/生命",
+      "icon": "🔮"
+    },
+    {
+      "id": "art_orange",
+      "quality": "orange",
+      "name": "圣光之剑",
+      "lvAtkBase": 84,
+      "lvHpBase": 504,
+      "starSkillPct": 32,
+      "maxStar": 10,
+      "maxLevel": 100,
+      "desc": "传说神器，升星可强化技能，升级可提升攻/生命",
+      "icon": "🔮"
+    },
+    {
+      "id": "art_red",
+      "quality": "red",
+      "name": "末日之刃",
+      "lvAtkBase": 130,
+      "lvHpBase": 780,
+      "starSkillPct": 40,
+      "maxStar": 10,
+      "maxLevel": 100,
+      "desc": "远古神器，升星可强化技能，升级可提升攻/生命",
+      "icon": "🔮"
+    },
+    {
+      "id": "art_gold",
+      "quality": "gold",
+      "name": "永恒权杖",
+      "lvAtkBase": 200,
+      "lvHpBase": 1200,
+      "starSkillPct": 48,
+      "maxStar": 10,
+      "maxLevel": 100,
+      "desc": "太古神器，升星可强化技能，升级可提升攻/生命",
+      "icon": "🔮"
+    },
+    {
+      "id": "art_rainbow",
+      "quality": "rainbow",
+      "name": "创世神格",
+      "lvAtkBase": 320,
+      "lvHpBase": 1920,
+      "starSkillPct": 56,
+      "maxStar": 10,
+      "maxLevel": 100,
+      "desc": "神话神器，升星可强化技能，升级可提升攻/生命",
+      "icon": "🔮"
+    }
+  ],
+  "gemTemplates": [
+    {
+      "id": "gem_atk_blue",
+      "type": "atk",
+      "quality": "blue",
+      "name": "黄玉",
+      "atkPct": 3,
+      "icon": "💎"
+    },
+    {
+      "id": "gem_hp_blue",
+      "type": "hp",
+      "quality": "blue",
+      "name": "翠玉",
+      "hpPct": 4,
+      "icon": "💠"
+    },
+    {
+      "id": "gem_atk_purple",
+      "type": "atk",
+      "quality": "purple",
+      "name": "紫晶",
+      "atkPct": 5,
+      "icon": "💎"
+    },
+    {
+      "id": "gem_hp_purple",
+      "type": "hp",
+      "quality": "purple",
+      "name": "玛瑙",
+      "hpPct": 7,
+      "icon": "💠"
+    },
+    {
+      "id": "gem_atk_orange",
+      "type": "atk",
+      "quality": "orange",
+      "name": "琥珀",
+      "atkPct": 8,
+      "icon": "💎"
+    },
+    {
+      "id": "gem_hp_orange",
+      "type": "hp",
+      "quality": "orange",
+      "name": "月光石",
+      "hpPct": 12,
+      "icon": "💠"
+    },
+    {
+      "id": "gem_atk_red",
+      "type": "atk",
+      "quality": "red",
+      "name": "赤焰石",
+      "atkPct": 13,
+      "icon": "💎"
+    },
+    {
+      "id": "gem_hp_red",
+      "type": "hp",
+      "quality": "red",
+      "name": "霜华石",
+      "hpPct": 19,
+      "icon": "💠"
+    },
+    {
+      "id": "gem_atk_gold",
+      "type": "atk",
+      "quality": "gold",
+      "name": "日耀石",
+      "atkPct": 20,
+      "icon": "💎"
+    },
+    {
+      "id": "gem_hp_gold",
+      "type": "hp",
+      "quality": "gold",
+      "name": "月华石",
+      "hpPct": 30,
+      "icon": "💠"
+    },
+    {
+      "id": "gem_atk_rainbow",
+      "type": "atk",
+      "quality": "rainbow",
+      "name": "神谕石",
+      "atkPct": 32,
+      "icon": "💎"
+    },
+    {
+      "id": "gem_hp_rainbow",
+      "type": "hp",
+      "quality": "rainbow",
+      "name": "万象石",
+      "hpPct": 48,
+      "icon": "💠"
+    }
+  ],
+  "_meta": {
+    "qualities": [
+      "green",
+      "blue",
+      "purple",
+      "orange",
+      "red",
+      "gold",
+      "rainbow"
+    ],
+    "qualityName": {
+      "green": "优秀",
+      "blue": "精良",
+      "purple": "史诗",
+      "orange": "传说",
+      "red": "远古",
+      "gold": "太古",
+      "rainbow": "神话"
+    },
+    "qualityColor": {
+      "green": "#5cd65c",
+      "blue": "#5cc7ff",
+      "purple": "#b78bff",
+      "orange": "#ff9d5c",
+      "red": "#ff5252",
+      "gold": "#ffd56b",
+      "rainbow": "#ff7adf"
+    },
+    "typeMinQuality": {
+      "equipment": "green",
+      "ring": "blue",
+      "artifact": "blue",
+      "gem": "blue",
+      "wall": "purple",
+      "treasure": "blue"
+    },
+    "equipSlots": [
+      "weapon",
+      "armor",
+      "helmet",
+      "boots"
+    ],
+    "equipSlotName": {
+      "weapon": "武器",
+      "armor": "护甲",
+      "helmet": "头盔",
+      "boots": "鞋子"
+    },
+    "starBase": 5,
+    "starMax": 16,
+    "starPerks": [
+      {
+        "star": 6,
+        "key": "stun",
+        "name": "震击",
+        "icon": "💫",
+        "val": 12,
+        "desc": "普攻有 12% 概率眩晕敌人 1 秒"
+      },
+      {
+        "star": 7,
+        "key": "dmgUp",
+        "name": "增伤",
+        "icon": "⚔️",
+        "val": 10,
+        "desc": "自身造成伤害 +10%"
+      },
+      {
+        "star": 8,
+        "key": "revive",
+        "name": "复生",
+        "icon": "🕊",
+        "val": 1,
+        "desc": "战斗中首次阵亡时原地复活，恢复 50% 生命"
+      },
+      {
+        "star": 9,
+        "key": "dmgDown",
+        "name": "减伤",
+        "icon": "🛡",
+        "val": 8,
+        "desc": "自身受到伤害 -8%"
+      },
+      {
+        "star": 10,
+        "key": "shield",
+        "name": "护盾",
+        "icon": "💠",
+        "val": 15,
+        "desc": "战斗开始时获得 15% 最大生命的护盾"
+      },
+      {
+        "star": 11,
+        "key": "allDmg",
+        "name": "战意",
+        "icon": "🔥",
+        "val": 15,
+        "desc": "全体友方造成伤害 +15%"
+      },
+      {
+        "star": 12,
+        "key": "aura",
+        "name": "光环",
+        "icon": "🌟",
+        "val": 10,
+        "desc": "光环：全体友方攻击 +10%"
+      },
+      {
+        "star": 13,
+        "key": "stunUp",
+        "name": "强震",
+        "icon": "⚡",
+        "val": 22,
+        "desc": "眩晕概率提升至 22%，持续 1.5 秒"
+      },
+      {
+        "star": 14,
+        "key": "critUp",
+        "name": "狂暴",
+        "icon": "💥",
+        "val": 15,
+        "desc": "暴击率 +15%，暴击伤害 +30%"
+      },
+      {
+        "star": 15,
+        "key": "teamGuard",
+        "name": "守护",
+        "icon": "⛨",
+        "val": 12,
+        "desc": "全体友方受到伤害 -12%"
+      },
+      {
+        "star": 16,
+        "key": "awaken",
+        "name": "觉醒",
+        "icon": "👑",
+        "val": 25,
+        "desc": "觉醒：全属性 +25%，技能伤害 +50%"
+      }
+    ],
+    "forgeMaxLv": 100,
+    "forgeLvGain": 8
+  }
+}

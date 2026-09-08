@@ -1,0 +1,784 @@
+[
+  {
+    "id": "h01",
+    "name": "小甜心爱洛",
+    "rarity": "传说+",
+    "img": "heroes/h01.png",
+    "element": "水",
+    "baseAtk": 1780,
+    "baseHp": 10700,
+    "skill": {
+      "name": "甜蜜冲击",
+      "desc": "对全体敌人造成 220% 攻击力的伤害",
+      "cd": 6,
+      "multiplier": 2.2,
+      "fx": "water",
+      "tint": "#ff8fc7"
+    }
+  },
+  {
+    "id": "h02",
+    "name": "猩红塞拉斯",
+    "rarity": "传说+",
+    "img": "heroes/h02.png",
+    "element": "火",
+    "baseAtk": 1860,
+    "baseHp": 11400,
+    "skill": {
+      "name": "猩红之刃",
+      "desc": "对单体敌人造成 350% 攻击力的伤害",
+      "cd": 8,
+      "multiplier": 3.5,
+      "fx": "slash",
+      "tint": "#ff3b5c"
+    }
+  },
+  {
+    "id": "h03",
+    "name": "时空主温温",
+    "rarity": "传说+",
+    "img": "heroes/h03.png",
+    "element": "风",
+    "baseAtk": 1940,
+    "baseHp": 12100,
+    "skill": {
+      "name": "时空静止",
+      "desc": "冻结全体敌人 2 秒，并造成伤害",
+      "cd": 10,
+      "multiplier": 0,
+      "fx": "freeze",
+      "tint": "#8ad4ff"
+    }
+  },
+  {
+    "id": "h04",
+    "name": "歌姬妮妮",
+    "rarity": "传说+",
+    "img": "heroes/h04.png",
+    "element": "光",
+    "baseAtk": 2020,
+    "baseHp": 12800,
+    "skill": {
+      "name": "天籁之音",
+      "desc": "全体队友恢复 80% 攻击力的生命",
+      "cd": 7,
+      "multiplier": 0.8,
+      "fx": "heal",
+      "tint": "#ffe6a0"
+    }
+  },
+  {
+    "id": "h05",
+    "name": "破坏神娜娜",
+    "rarity": "传说+",
+    "img": "heroes/h05.png",
+    "element": "暗",
+    "baseAtk": 2100,
+    "baseHp": 10000,
+    "skill": {
+      "name": "破坏之锤",
+      "desc": "对全体敌人造成 180% 攻击力的伤害",
+      "cd": 6,
+      "multiplier": 1.8,
+      "fx": "meteor",
+      "tint": "#b06bff"
+    }
+  },
+  {
+    "id": "h06",
+    "name": "女皇伊琳娜",
+    "rarity": "传说+",
+    "img": "heroes/h06.png",
+    "element": "暗",
+    "baseAtk": 1700,
+    "baseHp": 10700,
+    "skill": {
+      "name": "女皇威严",
+      "desc": "对全体造成 200% 伤害并削弱其攻击",
+      "cd": 8,
+      "multiplier": 2.0,
+      "fx": "dark",
+      "tint": "#d06bff"
+    }
+  },
+  {
+    "id": "h07",
+    "name": "魔女法琳娜",
+    "rarity": "传说",
+    "img": "heroes/h07.png",
+    "element": "火",
+    "baseAtk": 1290,
+    "baseHp": 8500,
+    "skill": {
+      "name": "烈焰风暴",
+      "desc": "对全体敌人造成 240% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.4,
+      "fx": "fire",
+      "tint": "#ff7a2f"
+    }
+  },
+  {
+    "id": "h08",
+    "name": "狐妖贝拉",
+    "rarity": "传说",
+    "img": "heroes/h08.png",
+    "element": "火",
+    "baseAtk": 1330,
+    "baseHp": 8750,
+    "skill": {
+      "name": "狐火灼烧",
+      "desc": "对全体造成 210% 伤害并附加灼烧",
+      "cd": 6,
+      "multiplier": 2.1,
+      "fx": "burn",
+      "tint": "#ff9d3b"
+    }
+  },
+  {
+    "id": "h09",
+    "name": "暗之墓",
+    "rarity": "传说",
+    "img": "heroes/h09.png",
+    "element": "暗",
+    "baseAtk": 1370,
+    "baseHp": 9000,
+    "skill": {
+      "name": "暗影之墓",
+      "desc": "召唤暗影对单体造成 280% 伤害",
+      "cd": 9,
+      "multiplier": 2.8,
+      "fx": "summon",
+      "tint": "#7a4fd6"
+    }
+  },
+  {
+    "id": "h10",
+    "name": "断月镰希芙",
+    "rarity": "传说",
+    "img": "heroes/h10.png",
+    "element": "暗",
+    "baseAtk": 1410,
+    "baseHp": 8000,
+    "skill": {
+      "name": "断月镰舞",
+      "desc": "对全体敌人造成 260% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.6,
+      "fx": "slash",
+      "tint": "#b78bff"
+    }
+  },
+  {
+    "id": "h11",
+    "name": "月神露西亚",
+    "rarity": "传说+",
+    "img": "heroes/h11.png",
+    "element": "光",
+    "baseAtk": 2100,
+    "baseHp": 10700,
+    "skill": {
+      "name": "月光洗礼",
+      "desc": "全体恢复 70% 生命并提升 20% 攻击",
+      "cd": 8,
+      "multiplier": 0.7,
+      "fx": "heal",
+      "tint": "#cfe6ff"
+    }
+  },
+  {
+    "id": "h12",
+    "name": "万伏小蓝星",
+    "rarity": "传说+",
+    "img": "heroes/h12.png",
+    "element": "雷",
+    "baseAtk": 1700,
+    "baseHp": 11400,
+    "skill": {
+      "name": "万伏雷击",
+      "desc": "对全体敌人造成 250% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.5,
+      "fx": "thunder",
+      "tint": "#5cc7ff"
+    }
+  },
+  {
+    "id": "h13",
+    "name": "太阳神夏夏",
+    "rarity": "传说+",
+    "img": "heroes/h13.png",
+    "element": "火",
+    "baseAtk": 1780,
+    "baseHp": 12100,
+    "skill": {
+      "name": "太阳耀斑",
+      "desc": "对全体敌人造成 260% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.6,
+      "fx": "meteor",
+      "tint": "#ffd23b"
+    }
+  },
+  {
+    "id": "h14",
+    "name": "奥特曼赛文",
+    "rarity": "传说+",
+    "img": "heroes/h14.png",
+    "element": "光",
+    "baseAtk": 1860,
+    "baseHp": 12800,
+    "skill": {
+      "name": "集束光线",
+      "desc": "对单体敌人造成 380% 攻击力的伤害",
+      "cd": 8,
+      "multiplier": 3.8,
+      "fx": "laser",
+      "tint": "#ff5252"
+    }
+  },
+  {
+    "id": "h15",
+    "name": "神女轻音",
+    "rarity": "传说+",
+    "img": "heroes/h15.png",
+    "element": "风",
+    "baseAtk": 1940,
+    "baseHp": 10000,
+    "skill": {
+      "name": "微风吟唱",
+      "desc": "全体队友恢复 60% 攻击力的生命",
+      "cd": 7,
+      "multiplier": 0.6,
+      "fx": "heal",
+      "tint": "#9dffc7"
+    }
+  },
+  {
+    "id": "h16",
+    "name": "精灵神鹿鹿",
+    "rarity": "传说+",
+    "img": "heroes/h16.png",
+    "element": "风",
+    "baseAtk": 2020,
+    "baseHp": 10700,
+    "skill": {
+      "name": "森之守护",
+      "desc": "全体获得 30% 减伤，持续 3 秒",
+      "cd": 9,
+      "multiplier": 0,
+      "fx": "shield",
+      "tint": "#7cfc7c"
+    }
+  },
+  {
+    "id": "h17",
+    "name": "绘世神小悠",
+    "rarity": "传说+",
+    "img": "heroes/h17.png",
+    "element": "水",
+    "baseAtk": 2100,
+    "baseHp": 11400,
+    "skill": {
+      "name": "绘世之笔",
+      "desc": "对全体敌人造成 230% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.3,
+      "fx": "paint",
+      "tint": "#ff9ec7"
+    }
+  },
+  {
+    "id": "h18",
+    "name": "大天使米勒",
+    "rarity": "传说",
+    "img": "heroes/h18.png",
+    "element": "光",
+    "baseAtk": 1250,
+    "baseHp": 8750,
+    "skill": {
+      "name": "圣光审判",
+      "desc": "对全体敌人造成 200% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.0,
+      "fx": "holy",
+      "tint": "#ffe28a"
+    }
+  },
+  {
+    "id": "h19",
+    "name": "雷神左尔",
+    "rarity": "传说",
+    "img": "heroes/h19.png",
+    "element": "雷",
+    "baseAtk": 1290,
+    "baseHp": 9000,
+    "skill": {
+      "name": "雷霆万钧",
+      "desc": "对全体敌人造成 230% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.3,
+      "fx": "bolt",
+      "tint": "#ffd56b"
+    }
+  },
+  {
+    "id": "h20",
+    "name": "光之墓",
+    "rarity": "传说",
+    "img": "heroes/h20.png",
+    "element": "光",
+    "baseAtk": 1330,
+    "baseHp": 8000,
+    "skill": {
+      "name": "光之墓碑",
+      "desc": "对单体敌人造成 300% 攻击力的伤害",
+      "cd": 9,
+      "multiplier": 3.0,
+      "fx": "holy",
+      "tint": "#fff3c4"
+    }
+  },
+  {
+    "id": "h21",
+    "name": "比利小琴",
+    "rarity": "传说",
+    "img": "heroes/h21.png",
+    "element": "风",
+    "baseAtk": 1370,
+    "baseHp": 8250,
+    "skill": {
+      "name": "魔音贯耳",
+      "desc": "对全体敌人造成 190% 攻击力的伤害",
+      "cd": 6,
+      "multiplier": 1.9,
+      "fx": "sound",
+      "tint": "#b78bff"
+    }
+  },
+  {
+    "id": "h22",
+    "name": "花仙阿黛拉",
+    "rarity": "传说+",
+    "img": "heroes/h22.png",
+    "element": "风",
+    "baseAtk": 2020,
+    "baseHp": 11400,
+    "skill": {
+      "name": "花海绽放",
+      "desc": "全体恢复 75% 攻击力的生命",
+      "cd": 7,
+      "multiplier": 0.75,
+      "fx": "bloom",
+      "tint": "#ff9ec7"
+    }
+  },
+  {
+    "id": "h23",
+    "name": "百鸟神佩吉",
+    "rarity": "传说+",
+    "img": "heroes/h23.png",
+    "element": "风",
+    "baseAtk": 2100,
+    "baseHp": 12100,
+    "skill": {
+      "name": "百鸟朝凤",
+      "desc": "对全体敌人造成 240% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.4,
+      "fx": "wind",
+      "tint": "#a8e6ff"
+    }
+  },
+  {
+    "id": "h24",
+    "name": "波大侠",
+    "rarity": "传说+",
+    "img": "heroes/h24.png",
+    "element": "水",
+    "baseAtk": 1700,
+    "baseHp": 12800,
+    "skill": {
+      "name": "浪里白条",
+      "desc": "对单体敌人造成 360% 攻击力的伤害",
+      "cd": 8,
+      "multiplier": 3.6,
+      "fx": "tidal",
+      "tint": "#5cc7ff"
+    }
+  },
+  {
+    "id": "h25",
+    "name": "哀木涕",
+    "rarity": "传说+",
+    "img": "heroes/h25.png",
+    "element": "暗",
+    "baseAtk": 1780,
+    "baseHp": 10000,
+    "skill": {
+      "name": "哀嚎冲击",
+      "desc": "对全体敌人造成 210% 攻击力的伤害",
+      "cd": 6,
+      "multiplier": 2.1,
+      "fx": "sound",
+      "tint": "#a08ad8"
+    }
+  },
+  {
+    "id": "h26",
+    "name": "韦斯夫妇",
+    "rarity": "传说",
+    "img": "heroes/h26.png",
+    "element": "光",
+    "baseAtk": 1330,
+    "baseHp": 8250,
+    "skill": {
+      "name": "双剑合璧",
+      "desc": "对全体敌人造成 200% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.0,
+      "fx": "slash",
+      "tint": "#ffd56b"
+    }
+  },
+  {
+    "id": "h27",
+    "name": "剑圣奥利弗",
+    "rarity": "传说",
+    "img": "heroes/h27.png",
+    "element": "风",
+    "baseAtk": 1370,
+    "baseHp": 8500,
+    "skill": {
+      "name": "无双剑气",
+      "desc": "对单体敌人造成 320% 攻击力的伤害",
+      "cd": 8,
+      "multiplier": 3.2,
+      "fx": "slash",
+      "tint": "#9dffc7"
+    }
+  },
+  {
+    "id": "h28",
+    "name": "小园丁莉莉",
+    "rarity": "传说",
+    "img": "heroes/h28.png",
+    "element": "风",
+    "baseAtk": 1410,
+    "baseHp": 8750,
+    "skill": {
+      "name": "藤蔓缠绕",
+      "desc": "冻结全体敌人 1.5 秒，并造成伤害",
+      "cd": 10,
+      "multiplier": 0,
+      "fx": "freeze",
+      "tint": "#7cfc7c"
+    }
+  },
+  {
+    "id": "h29",
+    "name": "葱葱公主",
+    "rarity": "传说",
+    "img": "heroes/h29.png",
+    "element": "风",
+    "baseAtk": 1450,
+    "baseHp": 9000,
+    "skill": {
+      "name": "葱葱冲击",
+      "desc": "对全体敌人造成 180% 攻击力的伤害",
+      "cd": 6,
+      "multiplier": 1.8,
+      "fx": "wind",
+      "tint": "#b6ff7a"
+    }
+  },
+  {
+    "id": "h30",
+    "name": "嗨啦噜王子",
+    "rarity": "传说",
+    "img": "heroes/h30.png",
+    "element": "水",
+    "baseAtk": 1250,
+    "baseHp": 8000,
+    "skill": {
+      "name": "皇家号令",
+      "desc": "全体提升 25% 攻击，持续 3 秒",
+      "cd": 9,
+      "multiplier": 0,
+      "fx": "buff",
+      "tint": "#ffd56b"
+    }
+  },
+  {
+    "id": "h31",
+    "name": "暴龙加加",
+    "rarity": "传说+",
+    "img": "heroes/h31.png",
+    "element": "火",
+    "baseAtk": 1780,
+    "baseHp": 10700,
+    "skill": {
+      "name": "暴龙咆哮",
+      "desc": "对全体敌人造成 250% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.5,
+      "fx": "fire",
+      "tint": "#ff6b2f"
+    }
+  },
+  {
+    "id": "h32",
+    "name": "鸣火小吉娜",
+    "rarity": "传说+",
+    "img": "heroes/h32.png",
+    "element": "火",
+    "baseAtk": 1860,
+    "baseHp": 11400,
+    "skill": {
+      "name": "鸣火爆裂",
+      "desc": "对全体敌人造成 240% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.4,
+      "fx": "meteor",
+      "tint": "#ff8a3b"
+    }
+  },
+  {
+    "id": "h33",
+    "name": "天才刘星",
+    "rarity": "传说+",
+    "img": "heroes/h33.png",
+    "element": "雷",
+    "baseAtk": 1940,
+    "baseHp": 12100,
+    "skill": {
+      "name": "流星一击",
+      "desc": "对单体敌人造成 370% 攻击力的伤害",
+      "cd": 8,
+      "multiplier": 3.7,
+      "fx": "meteor",
+      "tint": "#ffe66b"
+    }
+  },
+  {
+    "id": "h34",
+    "name": "巨力艾斯",
+    "rarity": "传说",
+    "img": "heroes/h34.png",
+    "element": "火",
+    "baseAtk": 1410,
+    "baseHp": 9000,
+    "skill": {
+      "name": "巨力铁拳",
+      "desc": "对单体敌人造成 310% 攻击力的伤害",
+      "cd": 8,
+      "multiplier": 3.1,
+      "fx": "slash",
+      "tint": "#ff9d5c"
+    }
+  },
+  {
+    "id": "h35",
+    "name": "托尔索",
+    "rarity": "传说",
+    "img": "heroes/h35.png",
+    "element": "雷",
+    "baseAtk": 1450,
+    "baseHp": 8000,
+    "skill": {
+      "name": "雷神之锤",
+      "desc": "对全体敌人造成 220% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.2,
+      "fx": "bolt",
+      "tint": "#8ad4ff"
+    }
+  },
+  {
+    "id": "h36",
+    "name": "蛮锤塔利",
+    "rarity": "传说",
+    "img": "heroes/h36.png",
+    "element": "火",
+    "baseAtk": 1250,
+    "baseHp": 8250,
+    "skill": {
+      "name": "蛮锤碎地",
+      "desc": "对全体敌人造成 190% 攻击力的伤害",
+      "cd": 6,
+      "multiplier": 1.9,
+      "fx": "quake",
+      "tint": "#ff7a8b"
+    }
+  },
+  {
+    "id": "h37",
+    "name": "鬼火少女樱",
+    "rarity": "传说",
+    "img": "heroes/h37.png",
+    "element": "暗",
+    "baseAtk": 1290,
+    "baseHp": 8500,
+    "skill": {
+      "name": "鬼火燎原",
+      "desc": "对全体敌人造成 230% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.3,
+      "fx": "burn",
+      "tint": "#6fffd0"
+    }
+  },
+  {
+    "id": "h38",
+    "name": "红衣小舞",
+    "rarity": "传说",
+    "img": "heroes/h38.png",
+    "element": "火",
+    "baseAtk": 1330,
+    "baseHp": 8750,
+    "skill": {
+      "name": "红莲之舞",
+      "desc": "对全体敌人造成 210% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.1,
+      "fx": "bloom",
+      "tint": "#ff5c7a"
+    }
+  },
+  {
+    "id": "h39",
+    "name": "雪女斯卡蒂",
+    "rarity": "传说+",
+    "img": "heroes/h39.png",
+    "element": "水",
+    "baseAtk": 1940,
+    "baseHp": 12800,
+    "skill": {
+      "name": "冰霜风暴",
+      "desc": "对全体敌人造成 245% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.45,
+      "fx": "ice",
+      "tint": "#8ad4ff"
+    }
+  },
+  {
+    "id": "h40",
+    "name": "神盾阿克",
+    "rarity": "传说+",
+    "img": "heroes/h40.png",
+    "element": "光",
+    "baseAtk": 2020,
+    "baseHp": 10000,
+    "skill": {
+      "name": "神盾护体",
+      "desc": "全体获得 35% 减伤，持续 3 秒",
+      "cd": 9,
+      "multiplier": 0,
+      "fx": "shield",
+      "tint": "#ffd56b"
+    }
+  },
+  {
+    "id": "h41",
+    "name": "五娃",
+    "rarity": "传说+",
+    "img": "heroes/h41.png",
+    "element": "水",
+    "baseAtk": 2100,
+    "baseHp": 10700,
+    "skill": {
+      "name": "水漫金山",
+      "desc": "对全体敌人造成 235% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.35,
+      "fx": "tidal",
+      "tint": "#5cc7ff"
+    }
+  },
+  {
+    "id": "h42",
+    "name": "人鱼玛丽娅",
+    "rarity": "传说",
+    "img": "heroes/h42.png",
+    "element": "水",
+    "baseAtk": 1250,
+    "baseHp": 8500,
+    "skill": {
+      "name": "海妖之歌",
+      "desc": "全体队友恢复 65% 攻击力的生命",
+      "cd": 7,
+      "multiplier": 0.65,
+      "fx": "sound",
+      "tint": "#7ad4ff"
+    }
+  },
+  {
+    "id": "h43",
+    "name": "冰人萨米",
+    "rarity": "传说",
+    "img": "heroes/h43.png",
+    "element": "水",
+    "baseAtk": 1290,
+    "baseHp": 8750,
+    "skill": {
+      "name": "冰封千里",
+      "desc": "冻结全体敌人 1.5 秒，并造成伤害",
+      "cd": 10,
+      "multiplier": 0,
+      "fx": "freeze",
+      "tint": "#a8e6ff"
+    }
+  },
+  {
+    "id": "h44",
+    "name": "极寒洛洛",
+    "rarity": "传说",
+    "img": "heroes/h44.png",
+    "element": "水",
+    "baseAtk": 1330,
+    "baseHp": 9000,
+    "skill": {
+      "name": "极寒冰锥",
+      "desc": "对全体敌人造成 215% 攻击力的伤害",
+      "cd": 7,
+      "multiplier": 2.15,
+      "fx": "ice",
+      "tint": "#b3f0ff"
+    }
+  },
+  {
+    "id": "h45",
+    "name": "菠萝仔",
+    "rarity": "传说",
+    "img": "heroes/h45.png",
+    "element": "风",
+    "baseAtk": 1370,
+    "baseHp": 8000,
+    "skill": {
+      "name": "菠萝飞弹",
+      "desc": "对单体敌人造成 300% 攻击力的伤害",
+      "cd": 8,
+      "multiplier": 3.0,
+      "fx": "meteor",
+      "tint": "#ffd23b"
+    }
+  },
+  {
+    "id": "h46",
+    "name": "冰小月",
+    "rarity": "传说",
+    "img": "heroes/h46.png",
+    "element": "水",
+    "baseAtk": 1410,
+    "baseHp": 8250,
+    "skill": {
+      "name": "月华冰刃",
+      "desc": "对全体敌人造成 195% 攻击力的伤害",
+      "cd": 6,
+      "multiplier": 1.95,
+      "fx": "slash",
+      "tint": "#b3f0ff"
+    }
+  }
+]

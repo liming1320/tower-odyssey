@@ -1,0 +1,186 @@
+/* 管理后台独立样式（仅在 /admin 加载，玩家端不可见） */
+
+/* 后台需要滚动，覆盖主样式的 overflow:hidden */
+body.admin-page { overflow: auto; }
+body.admin-page { display: block !important; }
+
+.admin-shell { min-height: 100vh; background: #1c1f2e; }
+
+.admin-topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: linear-gradient(90deg, #2a2140, #3a2c63);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+.admin-brand { font-size: 17px; font-weight: 700; color: #ffd56b; letter-spacing: 1px; }
+.admin-top-actions { display: flex; align-items: center; gap: 10px; }
+.admin-top-actions a { text-decoration: none; }
+
+.admin-body-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px 16px 60px;
+}
+
+/* 表单控件 */
+.admin-body-wrap input,
+.admin-body-wrap select,
+.admin-body-wrap textarea {
+    width: 100%;
+    padding: 9px 10px;
+    margin-bottom: 8px;
+    background: rgba(0,0,0,0.32);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 8px;
+    color: #f3f0e0;
+    font-size: 13px;
+}
+.admin-body-wrap input:focus,
+.admin-body-wrap select:focus,
+.admin-body-wrap textarea:focus { border-color: #ff9d5c; }
+.admin-body-wrap input::placeholder,
+.admin-body-wrap textarea::placeholder { color: #6e6788; }
+.admin-body-wrap select option { background: #2a2140; color: #f3f0e0; }
+
+.admin-body-wrap .card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* 概览卡片网格 */
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.admin-stats .card { margin-bottom: 0; text-align: center; }
+.admin-stats .card p { font-size: 26px; color: #ffd56b; font-weight: 700; margin-top: 4px; }
+
+/* 英雄网格（后台编辑用，双击填充表单） */
+.admin-hero-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.admin-hero-grid .hero-card { cursor: pointer; transition: transform .12s; }
+.admin-hero-grid .hero-card:hover { transform: translateY(-3px); }
+.admin-hero-grid .hero-card.editing { outline: 2px solid #ff9d5c; }
+
+/* 技能编辑器 */
+.skill-form {
+    background: rgba(0,0,0,0.25);
+    border-left: 3px solid #ff9d5c;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+.skill-form .row { display: flex; gap: 6px; }
+.skill-form .row > * { flex: 1; }
+
+/* 列表项 */
+.admin-list-item {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px;
+}
+.admin-list-item .info { flex: 1; min-width: 0; }
+.admin-list-item .info h4 { font-size: 14px; color: #ffd56b; margin-bottom: 3px; }
+.admin-list-item .info p { font-size: 12px; color: #b9b3d8; word-break: break-all; }
+.admin-list-item .ops { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* 提示条 */
+.admin-note {
+    background: rgba(92,199,255,0.1);
+    border: 1px solid rgba(92,199,255,0.3);
+    color: #9fd8ff;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+/* 桌面端后台不受 420px 容器限制 */
+@media (min-width: 720px) {
+    body.admin-page #ad-login-view { width: auto; height: 100vh; box-shadow: none; }
+}
+
+@media (max-width: 719px) {
+    .admin-stats { grid-template-columns: repeat(2, 1fr); }
+    .admin-tabs { flex-wrap: wrap; }
+    .admin-tabs button { flex: 1 1 30%; }
+    .admin-list-item { flex-direction: column; align-items: stretch; }
+    .admin-list-item .ops { justify-content: flex-end; }
+}
+
+/* ===== 玩家选择器（搜索 / 多选 / 分页） ===== */
+.scope-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 8px; }
+.scope-row label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: #e6e1ff; cursor: pointer;
+}
+.scope-row input[type=radio] { width: auto !important; margin: 0 !important; accent-color: #ff9d5c; }
+
+.picker-tools {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px;
+}
+.picker-count { font-size: 12px; color: #b9b3d8; margin-right: auto; }
+.picker-count b { color: #ffd56b; font-size: 14px; }
+.picker-tools .btn { width: auto !important; margin: 0 !important; padding: 5px 10px !important; }
+
+.picker-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    max-height: 92px; overflow-y: auto;
+    background: rgba(0,0,0,0.22); border-radius: 8px;
+    padding: 8px; margin-bottom: 8px;
+}
+.chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,157,92,0.16); border: 1px solid rgba(255,157,92,0.4);
+    color: #ffd0a8; font-size: 12px; padding: 3px 8px; border-radius: 12px;
+}
+.chip b { cursor: pointer; color: #ff9d5c; font-weight: 700; }
+.chip b:hover { color: #ff7a8b; }
+
+.picker-list { max-height: 320px; overflow-y: auto; border-radius: 8px; }
+.pick-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 9px 10px; margin-bottom: 6px;
+    cursor: pointer; transition: background .15s, border-color .15s;
+}
+.pick-item:hover { background: rgba(255,255,255,0.09); }
+.pick-item.sel { background: rgba(255,157,92,0.14); border-color: rgba(255,157,92,0.5); }
+.pick-item input[type=checkbox] { width: auto !important; margin: 0 !important; accent-color: #ff9d5c; flex-shrink: 0; }
+.pick-item .pi-main { flex: 1; min-width: 0; }
+.pick-item .pi-name { font-size: 13px; color: #ffd56b; font-weight: 600; }
+.pick-item .pi-meta { font-size: 11px; color: #a49dc4; margin-top: 2px; word-break: break-all; }
+.tag-admin { color: #ff7a8b; font-size: 11px; margin-left: 4px; }
+
+.pager {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 10px; font-size: 12px; color: #b9b3d8;
+}
+.pager .btn { width: auto !important; margin: 0 !important; padding: 5px 12px !important; }
+.pager select { width: auto !important; margin: 0 !important; padding: 4px 8px !important; font-size: 12px; }
+
+.btn.danger, .btn.small.danger {
+    background: rgba(255,80,100,0.18) !important;
+    border: 1px solid rgba(255,80,100,0.45) !important;
+    color: #ff9aa8 !important;
+}
+.btn.danger:hover, .btn.small.danger:hover { background: rgba(255,80,100,0.32) !important; }
+
+@media (max-width: 719px) {
+    .pager { flex-wrap: wrap; }
+    .pick-item { flex-wrap: wrap; }
+}
+
+/* 快捷筛选按钮的选中态 */
+.picker-tools .btn.ghost.on {
+    background: rgba(255,157,92,0.2) !important;
+    border-color: rgba(255,157,92,0.55) !important;
+    color: #ffd0a8 !important;
+}

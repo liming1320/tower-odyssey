@@ -1,0 +1,23 @@
+# 依赖
+node_modules/
+
+# 日志
+*.log
+npm-debug.log*
+
+# 自动备份（体积大且可随时重建，不同步）
+game/data/backups/
+data/backups/
+
+# 临时截图/测试产物（可选保留，默认不同步）
+game/tools/shots/
+game/tools/tmp/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 存档快照导出（默认不进仓库，避免多人覆盖）
+game/data-export-*.json

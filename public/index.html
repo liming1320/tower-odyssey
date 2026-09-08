@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>一步两步 - 肉鸽推塔</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%E2%9A%94%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/css/main.css?v=20260908a">
+</head>
+<body>
+
+<!-- 登录 -->
+<div id="login-view" class="view login-view">
+    <div class="login-card">
+        <h1 class="game-title">一步两步</h1>
+        <p class="subtitle">肉鸽推塔 · 部落远征</p>
+        <input id="login-username" placeholder="用户名 (2-16 位)">
+        <input id="login-password" type="password" placeholder="密码 (4 位以上)">
+        <button id="btn-login">登 录</button>
+        <button id="btn-register" class="ghost">注 册</button>
+        <p class="hint">提示：第一个注册的用户自动成为管理员。</p>
+    </div>
+</div>
+
+<!-- 主界面 -->
+<div id="app-view" class="hidden">
+    <!-- 顶部资源栏 -->
+    <div class="topbar">
+        <div class="resources">
+            <span class="r gem" title="钻石">💎 <b id="r-gem">0</b></span>
+            <span class="r gold" title="金币">💰 <b id="r-gold">0</b></span>
+            <span class="r wood" title="木材">🪵 <b id="r-wood">0</b></span>
+            <span class="r iron" title="铁矿">⛓ <b id="r-iron">0</b></span>
+            <span class="r stone" title="石币">🪨 <b id="r-stone">0</b></span>
+            <span class="r exp" title="经验">📘 <b id="r-exp">0</b></span>
+            <span class="r wish" title="许愿卡">🎴 <b id="r-wish">0</b></span>
+        </div>
+        <div class="top-actions">
+            <button id="btn-chat" title="聊天">💬</button>
+            <button id="btn-event" title="活动">🎉<i id="event-dot" class="dot hidden"></i></button>
+            <button id="btn-mail" title="邮件">📧<i id="mail-dot" class="dot hidden"></i></button>
+            <button id="btn-menu" title="菜单">⋮</button>
+        </div>
+    </div>
+
+    <!-- 菜单 -->
+    <div id="menu-panel" class="panel hidden">
+        <div class="menu-list">
+            <div data-action="free">每日免费领取</div>
+            <div data-action="event">🎉 活动中心</div>
+            <div data-action="logout">退出登录</div>
+        </div>
+    </div>
+
+    <!-- 主体内容区 -->
+    <div id="page-content" class="page-content"></div>
+
+    <!-- 底部导航 -->
+    <div class="bottomnav">
+        <button data-tab="camp" class="active"><span>🏕</span><br>营地</button>
+        <button data-tab="aid"><span>🛡</span><br>助战</button>
+        <button data-tab="hero"><span>🦸</span><br>英雄</button>
+        <button data-tab="tower"><span>⚔️</span><br>冒险</button>
+        <button data-tab="world"><span>🌍</span><br>世界</button>
+        <button data-tab="clan"><span>🏰</span><br>部落</button>
+        <button data-tab="ancient"><span>🌌</span><br>远古世界</button>
+    </div>
+</div>
+
+<!-- 弹窗容器 -->
+<div id="modal-root"></div>
+
+<script src="/js/api.js?v=20260908a"></script>
+<script src="/js/utils.js?v=20260908a"></script>
+<script src="/js/battle.js?v=20260908a"></script>
+<script src="/js/views/login.js?v=20260908a"></script>
+<script src="/js/views/camp.js?v=20260908a"></script>
+<script src="/js/views/aid.js?v=20260908a"></script>
+<script src="/js/views/hero.js?v=20260908a"></script>
+<script src="/js/views/hero-detail.js?v=20260908a"></script>
+<script src="/js/views/tower.js?v=20260908a"></script>
+<script src="/js/views/world.js?v=20260908a"></script>
+<script src="/js/views/clan.js?v=20260908a"></script>
+<script src="/js/views/ancient.js?v=20260908a"></script>
+<script src="/js/views/chat.js?v=20260908a"></script>
+<script src="/js/views/mail.js?v=20260908a"></script>
+<script src="/js/views/event.js?v=20260908a"></script>
+<script src="/js/app.js?v=20260908a"></script>
+</body>
+</html>
