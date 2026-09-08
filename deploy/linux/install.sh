@@ -15,14 +15,22 @@ RUN_USER="${RUN_USER:-root}"
 say() { echo -e "\033[36m$1\033[0m"; }
 die() { echo -e "\033[31m✗ $1\033[0m"; exit 1; }
 
-# 1) 检查 Node
+# 1) 检查 Node（兼容宝塔「Node.js版本管理器」：装了但不在 PATH 里）
 say "① 检查运行环境"
-command -v node >/dev/null 2>&1 || die "未找到 node，请先安装 Node 18+（宝塔：软件商店 → Node.js版本管理器）"
-NODE_BIN="$(command -v node)"
-NODE_VER="$(node -v)"
+. "$(dirname "$0")/detect-node.sh"
+if ! detect_node; then
+    die "未找到 node"
+    node_hint
+    exit 1
+fi
+NODE_VER="$("$NODE_BIN" -v)"
 echo "   Node: $NODE_VER ($NODE_BIN)"
 NODE_MAJOR="${NODE_VER#v}"; NODE_MAJOR="${NODE_MAJOR%%.*}"
-[ "$NODE_MAJOR" -ge 18 ] || die "Node 版本过低（$NODE_VER），需要 >= 18"
+if [ "$NODE_MAJOR" -lt 18 ]; then
+    echo "   Node 版本过低（$NODE_VER），需要 >= 18"
+    node_hint
+    exit 1
+fi
 
 # 2) 检查代码目录
 [ -d "$APP_DIR" ] || die "目录不存在：$APP_DIR（先 git clone 项目）"
@@ -47,6 +55,7 @@ User=${RUN_USER}
 WorkingDirectory=${APP_DIR}
 Environment=PORT=${PORT}
 Environment=NODE_ENV=production
+Environment=PATH=${NODE_DIR}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=${NODE_BIN} ${APP_DIR}/server.js
 Restart=always
 RestartSec=3

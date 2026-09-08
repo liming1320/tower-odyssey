@@ -36,11 +36,14 @@ fi
 
 say "① 检查运行环境"
 command -v git  >/dev/null 2>&1 || die "未找到 git，先装：yum install -y git  或  apt install -y git"
-command -v node >/dev/null 2>&1 || die "未找到 node，先在宝塔「软件商店 → Node.js版本管理器」装 Node 18+"
+. "$(dirname "$0")/detect-node.sh"
+if ! detect_node; then
+    command -v node >/dev/null 2>&1 || { die "未找到 node（git 已就绪，node 在拉代码前必须有）"; node_hint; exit 1; }
+fi
 echo "   git : $(git --version)"
-echo "   node: $(node -v)"
-NODE_MAJOR="$(node -v | sed 's/^v//; s/\..*//')"
-[ "$NODE_MAJOR" -ge 18 ] || die "Node 版本过低（$(node -v)），需要 >= 18"
+echo "   node: $("$NODE_BIN" -v)  ($NODE_BIN  ← 已自动识别宝塔 Node)"
+NODE_MAJOR="$("$NODE_BIN" -v | sed 's/^v//; s/\..*//')"
+if [ "$NODE_MAJOR" -lt 18 ]; then echo "   Node 版本过低，需要 >= 18"; node_hint; exit 1; fi
 
 # ---------- SSH 方式：准备密钥 ----------
 if [ "$MODE" = "ssh" ]; then
