@@ -614,3 +614,28 @@ input, select, textarea { font-family: inherit; outline: none; }
 
 /* 英雄卡片：头像 + 星级居中成一组 */
 .hero-card .star-line { text-align: center; margin-bottom: 2px; }
+
+/* ---------- 昵称 / 展示 ID ---------- */
+.profile-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    max-width: 130px; padding: 3px 8px;
+    background: rgba(255, 213, 107, .12);
+    border: 1px solid rgba(255, 213, 107, .35);
+    border-radius: 12px;
+    color: #ffd56b; font-size: 12px; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+    transition: background .15s, border-color .15s;
+    overflow: hidden;
+}
+.profile-chip:hover { background: rgba(255, 213, 107, .22); border-color: rgba(255, 213, 107, .6); }
+.profile-chip #p-nick { overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
+.profile-chip #p-uid { font-size: 10px; font-weight: 500; opacity: .65; letter-spacing: .3px; flex-shrink: 0; }
+.uid {
+    font-size: 10px; font-weight: 500; opacity: .65;
+    letter-spacing: .3px; margin-left: 3px;
+}
+.chat-msg .uid { color: #8ad4ff; opacity: .7; }
+@media (max-width: 360px) {
+    .profile-chip { max-width: 100px; padding: 2px 6px; font-size: 11px; }
+    .profile-chip #p-nick { max-width: 50px; }
+}

@@ -29,7 +29,10 @@ const ChatView = {
             if (r.messages && r.messages.length) {
                 r.messages.forEach(m => {
                     const cls = m.isAdmin ? 'u admin' : 'u';
-                    list.appendChild(U.el(`<div class="chat-msg"><span class="${cls}">${m.user}：</span>${m.text}<span class="time">${new Date(m.time).toLocaleTimeString()}</span></div>`));
+                    const tag = m.displayId
+                        ? `${m.user}<span class="uid">${m.displayId}</span>`
+                        : m.user;
+                    list.appendChild(U.el(`<div class="chat-msg"><span class="${cls}">${tag}：</span>${m.text}<span class="time">${new Date(m.time).toLocaleTimeString()}</span></div>`));
                 });
                 list.scrollTop = list.scrollHeight;
             }

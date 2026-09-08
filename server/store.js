@@ -99,11 +99,15 @@ async function loadState() {
                 username: p.username,
                 password: p.pass_hash,
                 isAdmin: !!p.is_admin,
+                nickname: p.nickname || saved.nickname || p.username,
+                displayId: p.display_id || saved.displayId || null,
             });
         } else {
             users[p.id] = {
                 id: p.id, username: p.username, password: p.pass_hash,
                 isAdmin: !!p.is_admin, createdAt: p.created_at,
+                nickname: p.nickname || p.username,
+                displayId: p.display_id || null,
             };
         }
     }
@@ -183,18 +187,21 @@ async function saveState(state) {
         const salt = pass.includes('$') ? pass.split('$')[0] : '';
         await pool.execute(
             `INSERT INTO \`players\`
-                (\`id\`,\`username\`,\`pass_hash\`,\`salt\`,\`is_admin\`,\`created_at\`,\`last_login\`,\`last_login_day\`,\`login_days\`)
-             VALUES (?,?,?,?,?,?,?,?,?)
+                (\`id\`,\`username\`,\`pass_hash\`,\`salt\`,\`is_admin\`,\`created_at\`,\`last_login\`,\`last_login_day\`,\`login_days\`,\`nickname\`,\`display_id\`)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?)
              ON DUPLICATE KEY UPDATE
                 \`username\`=VALUES(\`username\`), \`pass_hash\`=VALUES(\`pass_hash\`), \`salt\`=VALUES(\`salt\`),
                 \`is_admin\`=VALUES(\`is_admin\`), \`last_login\`=VALUES(\`last_login\`),
-                \`last_login_day\`=VALUES(\`last_login_day\`), \`login_days\`=VALUES(\`login_days\`)`,
+                \`last_login_day\`=VALUES(\`last_login_day\`), \`login_days\`=VALUES(\`login_days\`),
+                \`nickname\`=VALUES(\`nickname\`), \`display_id\`=VALUES(\`display_id\`)`,
             [
                 id, u.username, pass, salt, u.isAdmin ? 1 : 0,
                 u.createdAt ? new Date(u.createdAt) : new Date(),
                 u.lastLogin ? new Date(u.lastLogin) : null,
                 u.lastLoginDay || null,
                 u.loginDays || 0,
+                u.nickname || u.username || null,
+                u.displayId || null,
             ]
         );
         await pool.execute(

@@ -11,7 +11,7 @@ const ClanView = {
                     <div class="card">
                         <h3>${c.name}</h3>
                         <p style="color:#b9b3d8;font-size:12px">族长：${c.leaderName} · 人数：${c.members.length}</p>
-                        <p style="color:#b9b3d8;font-size:12px">成员：${r.memberDetails.map(m => `${m.username}(Lv.${m.lv})`).join('、')}</p>
+                        <p style="color:#b9b3d8;font-size:12px">成员：${r.memberDetails.map(m => `${m.nickname || m.username}${m.displayId ? `<span style="opacity:.6">${m.displayId}</span>` : ''}(Lv.${m.lv})`).join('、')}</p>
                         <p style="color:#5cc7ff;font-size:12px;margin-top:6px">部落功能：联合远征 / 部落战（占位）</p>
                     </div>
                 `;

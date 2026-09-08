@@ -35,8 +35,12 @@ CREATE TABLE `players` (
     `last_login_day` DATE         NULL COMMENT '最近登录日期（签到用）',
     `login_days`     INT          NOT NULL DEFAULT 0 COMMENT '累计登录天数',
     `banned`         TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否封禁',
+    `nickname`       VARCHAR(24)  NULL COMMENT '玩家昵称（对外展示，可修改）',
+    `display_id`     VARCHAR(12)  NULL COMMENT '展示 ID，如 #7K9M2A，全局唯一',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_username` (`username`),
+    UNIQUE KEY `uk_nickname` (`nickname`),
+    UNIQUE KEY `uk_display_id` (`display_id`),
     KEY `idx_last_login` (`last_login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='玩家账号';
 

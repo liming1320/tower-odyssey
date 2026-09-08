@@ -1025,6 +1025,10 @@ const Battle = {
         }
 
         ctx.save();
+        // 小怪不显示血条，血量低于 30% 时用呼吸闪烁提示濒死
+        if (!e.boss && e.maxHp > 0 && e.hp / e.maxHp <= 0.3) {
+            ctx.globalAlpha = 0.45 + 0.55 * Math.abs(Math.sin(this.time * 5));
+        }
         if (e.hitFlash > 0) { ctx.globalAlpha = 0.85; ctx.filter = 'brightness(2.2)'; }
         if (e.boss) {
             ctx.shadowColor = 'rgba(255,60,60,0.7)'; ctx.shadowBlur = 16 + Math.sin(this.time * 4) * 8;
@@ -1034,23 +1038,22 @@ const Battle = {
         this.drawShape(ctx, e.shape, x, y, s, e.body, e.accent, e.animT, e.walking);
         ctx.restore();
 
-        // 血条
-        const bw = e.boss ? 76 : Math.max(22, s * 1.7);
-        const bh = e.boss ? 7 : 4;
-        const by = y - s * (e.boss ? 1.5 : 1.35);
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.fillRect(x - bw / 2 - 1, by - 1, bw + 2, bh + 2);
-        ctx.fillStyle = e.boss ? '#ff5252' : (e.elite ? '#ffb03b' : '#7cfc7c');
-        ctx.fillRect(x - bw / 2, by, bw * Math.max(0, e.hp / e.maxHp), bh);
-
+        // 血条：只有 BOSS 显示（小怪靠上面的濒死闪烁提示，画面更干净）
         if (e.boss) {
+            const bw = 76, bh = 7;
+            const by = y - s * 1.5;
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(x - bw / 2 - 1, by - 1, bw + 2, bh + 2);
+            ctx.fillStyle = '#ff5252';
+            ctx.fillRect(x - bw / 2, by, bw * Math.max(0, e.hp / e.maxHp), bh);
+            // BOSS 名字
             ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
             ctx.fillStyle = '#ffd56b';
             ctx.fillText(e.name + (e.skill ? ' · ' + e.skill : ''), x, by - 5);
         } else if (e.elite) {
             ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
             ctx.fillStyle = '#ffb03b';
-            ctx.fillText('精英', x, by - 3);
+            ctx.fillText('精英', x, y - s * 1.35 - 3);
         }
     },
 

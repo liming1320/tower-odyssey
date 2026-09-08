@@ -130,8 +130,8 @@ const AdminApp = {
                 ${r.users.slice(0, 8).map(u => `
                     <div class="admin-list-item" style="margin-bottom:6px">
                         <div class="info">
-                            <h4>${u.username} ${u.isAdmin ? '<span style="color:#ff7a8b;font-size:11px">[管理员]</span>' : ''}</h4>
-                            <p>钻石 ${U.num(u.gems)} · 最高层 ${u.lv} · ${new Date(u.createdAt).toLocaleString('zh-CN')}</p>
+                            <h4>${u.nickname || u.username} ${u.displayId ? `<span style="color:#8ad4ff;font-size:11px;opacity:.75">${u.displayId}</span>` : ''} ${u.isAdmin ? '<span style="color:#ff7a8b;font-size:11px">[管理员]</span>' : ''}</h4>
+                            <p>账号 ${u.username} · 钻石 ${U.num(u.gems)} · 最高层 ${u.lv} · ${new Date(u.createdAt).toLocaleString('zh-CN')}</p>
                         </div>
                     </div>
                 `).join('') || '<p style="font-size:12px;color:#777">暂无玩家</p>'}
@@ -554,7 +554,12 @@ const AdminApp = {
         let list = st.all;
         if (st.onlyIdle) list = list.filter(u => (u.lv || 0) === 0 && (u.heroCount || 0) === 0);
         const kw = st.kw.trim().toLowerCase();
-        if (kw) list = list.filter(u => (u.username || '').toLowerCase().includes(kw));
+        // 支持按账号 / 昵称 / 展示 ID 搜索
+        if (kw) list = list.filter(u =>
+            (u.username || '').toLowerCase().includes(kw) ||
+            (u.nickname || '').toLowerCase().includes(kw) ||
+            (u.displayId || '').toLowerCase().includes(kw)
+        );
         return list;
     },
     _maxPage() {
@@ -721,11 +726,12 @@ const AdminApp = {
             <div class="pick-item ${st.sel.has(u.username) ? 'sel' : ''}" data-uname="${u.username}">
                 <input type="checkbox" data-pick="${u.username}" ${st.sel.has(u.username) ? 'checked' : ''}>
                 <div class="pi-main">
-                    <div class="pi-name">${u.username}
+                    <div class="pi-name">${u.nickname || u.username}
+                        ${u.displayId ? `<span style="color:#8ad4ff;font-size:11px;opacity:.7;margin-left:4px">${u.displayId}</span>` : ''}
                         ${u.isAdmin ? '<span class="tag-admin">[管理员]</span>' : ''}
                     </div>
                     <div class="pi-meta">
-                        💎${U.num(u.gems)} · 🏔最高层 ${u.lv || 0} · 英雄 ${u.heroCount || 0} ·
+                        账号 ${u.username} · 💎${U.num(u.gems)} · 🏔最高层 ${u.lv || 0} · 英雄 ${u.heroCount || 0} ·
                         登录 ${u.loginDays || 0} 天 · 注册 ${new Date(u.createdAt).toLocaleString('zh-CN')}
                     </div>
                 </div>

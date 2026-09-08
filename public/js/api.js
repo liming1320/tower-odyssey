@@ -65,6 +65,7 @@ const API = (() => {
         clanMine: () => call('GET', '/api/clan/mine'),
         chatGet: (since) => call('GET', '/api/chat?since=' + (since || 0)),
         chatSend: (text) => call('POST', '/api/chat/send', { text }),
+        setNickname: (nickname) => call('POST', '/api/user/set-nickname', { nickname }),
         mails: () => call('GET', '/api/mail'),
         mailClaim: (id) => call('POST', '/api/mail/claim', { id }),
         free: () => call('POST', '/api/free'),

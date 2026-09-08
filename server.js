@@ -832,6 +832,43 @@ function verifyPassword(pw, stored) {
 }
 function newId() { return crypto.randomBytes(6).toString('hex'); }
 function newToken() { return crypto.randomBytes(16).toString('hex'); }
+
+// ---- 昵称 / 展示 ID ----
+// 展示 ID：# + 6 位，去掉 0/O/1/I 等易混淆字符，形如 #7K9M2A
+const DISPLAY_ID_CHARS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+const DISPLAY_NICK_MAX = 12;
+function genDisplayId() {
+    let s = '';
+    for (let i = 0; i < 6; i++) s += DISPLAY_ID_CHARS[crypto.randomInt(DISPLAY_ID_CHARS.length)];
+    return '#' + s;
+}
+function newDisplayId() {
+    const taken = new Set(Object.values(DB.users).map(u => u.displayId).filter(Boolean));
+    for (let i = 0; i < 50; i++) {
+        const id = genDisplayId();
+        if (!taken.has(id)) return id;
+    }
+    return '#' + Date.now().toString(36).toUpperCase().slice(-6);
+}
+// 昵称合法性：2-12 字符（中文算 1 个字符），首尾不能有空格，禁止纯空白
+function validNickname(n) {
+    if (typeof n !== 'string') return '昵称不合法';
+    const s = n.trim();
+    if (s.length < 2) return '昵称至少 2 个字符';
+    if (s.length > DISPLAY_NICK_MAX) return `昵称最多 ${DISPLAY_NICK_MAX} 个字符`;
+    if (/^\s|\s$/.test(n)) return '昵称首尾不能有空格';
+    if (/[<>]|[\u0000-\u001f]/.test(s)) return '昵称含非法字符';
+    return null;
+}
+// 给老账号补齐昵称与展示 ID（升级后首次启动执行）
+function migrateNicknames() {
+    let changed = 0;
+    for (const u of Object.values(DB.users)) {
+        if (!u.nickname) { u.nickname = u.username || ('冒险者' + String(u.id).slice(-4)); changed++; }
+        if (!u.displayId) { u.displayId = newDisplayId(); changed++; }
+    }
+    if (changed) { save(); console.log(`[game] 已为老账号补齐昵称/展示 ID（${changed} 处）`); }
+}
 // 自然日 key（用于每日奖励 / 累计登录天数）
 function todayKey() {
     const d = new Date();
@@ -964,6 +1001,8 @@ api['POST /api/register'] = async (req, res, body) => {
         password: hashPassword(password),
         isAdmin,
         createdAt: Date.now(),
+        nickname: username,      // 默认昵称 = 登录名，之后可改
+        displayId: newDisplayId(), // 展示 ID，全局唯一
         state: defaultUserState(username),
     };
     const token = newToken();
@@ -1002,10 +1041,17 @@ function publicUser(user) {
     return {
         id: user.id,
         username: user.username,
+        nickname: user.nickname || user.username,
+        displayId: user.displayId || '',
         isAdmin: !!user.isAdmin,
         createdAt: user.createdAt,
         state: user.state,
     };
+}
+// 对外展示用：昵称 + 展示 ID
+function displayName(user) {
+    if (!user) return '未知玩家';
+    return (user.nickname || user.username || '未知玩家');
 }
 
 // ---- 营地 ----
@@ -2159,7 +2205,36 @@ api['GET /api/clan/mine'] = (req, res) => {
     const cid = user.state.clanId;
     if (!cid) return sendJson(res, 400, { error: '未加入部落' });
     const c = DB.clans[cid];
-    sendJson(res, 200, { clan: c, memberDetails: c.members.map(id => DB.users[id] && { id, username: DB.users[id].username, lv: DB.users[id].state.tower.maxFloor }) });
+    sendJson(res, 200, {
+        clan: c,
+        memberDetails: c.members.map(id => {
+            const u = DB.users[id];
+            if (!u) return null;
+            return {
+                id,
+                username: u.username,
+                nickname: displayName(u),
+                displayId: u.displayId || '',
+                lv: u.state && u.state.tower ? u.state.tower.maxFloor : 1,
+            };
+        }).filter(Boolean),
+    });
+};
+
+// 修改昵称（对外展示用，登录名不变）
+api['POST /api/user/set-nickname'] = (req, res, body) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const bad = validNickname(body.nickname);
+    if (bad) return sendJson(res, 400, { error: bad });
+    const nick = String(body.nickname).trim();
+    const dup = Object.values(DB.users).find(u => u.id !== user.id && (u.nickname || u.username) === nick);
+    if (dup) return sendJson(res, 400, { error: '该昵称已被占用' });
+    user.nickname = nick;
+    if (!user.displayId) user.displayId = newDisplayId();
+    if (user.state) user.state.nickname = nick;
+    save();
+    sendJson(res, 200, { ok: true, nickname: user.nickname, displayId: user.displayId });
 };
 
 // ---- 聊天 ----
@@ -2173,7 +2248,14 @@ api['POST /api/chat/send'] = (req, res, body) => {
     const user = getUserByToken(req);
     if (!user) return sendJson(res, 401, { error: '未登录' });
     if (!body.text || body.text.length > 100) return sendJson(res, 400, { error: '内容不合法' });
-    const msg = { user: user.username, text: String(body.text).slice(0, 100), time: Date.now(), isAdmin: user.isAdmin };
+    const msg = {
+        user: displayName(user),          // 对外显示昵称
+        uid: user.id,
+        displayId: user.displayId || '',
+        text: String(body.text).slice(0, 100),
+        time: Date.now(),
+        isAdmin: user.isAdmin,
+    };
     DB.chat.push(msg);
     if (DB.chat.length > 500) DB.chat = DB.chat.slice(-500);
     save();
@@ -2484,6 +2566,8 @@ api['GET /api/admin/overview'] = (req, res) => {
     if (!user || (!user.isAdmin && user.id !== 'admin')) return sendJson(res, 403, { error: '无权限' });
     const users = Object.values(DB.users).map(u => ({
         id: u.id, username: u.username, isAdmin: u.isAdmin,
+        nickname: u.nickname || u.username,
+        displayId: u.displayId || '',
         lv: u.state.tower.maxFloor,
         gems: Math.floor((u.state.resources && u.state.resources.gems) || 0),
         heroCount: (u.state.heroes || []).length,
@@ -2553,6 +2637,7 @@ const server = http.createServer(async (req, res) => {
             });
         }
     }
+    migrateNicknames();
     server.listen(PORT, '0.0.0.0', () => {
         console.log(`[game] listening on http://localhost:${PORT}`);
         if (Store.isMySQL()) {
