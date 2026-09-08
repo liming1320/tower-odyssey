@@ -95,9 +95,37 @@ else
 fi
 
 # 6) 写 DB_* 到 systemd drop-in（不改动原服务文件，最干净）+ 重启
+# 杀掉占用 PORT 的游离进程（exclude_pid 是当前 systemd 主进程，不杀）
+kill_port_holders() {
+    local exclude="$1" pid found=0
+    local pids=""
+    if command -v ss >/dev/null 2>&1; then
+        pids="$(ss -lptnH "sport = :${PORT}" 2>/dev/null | grep -o 'pid=[0-9]*' | cut -d= -f2)"
+    fi
+    if [ -z "$pids" ] && command -v lsof >/dev/null 2>&1; then
+        pids="$(lsof -ti ":${PORT}" -sTCP:LISTEN 2>/dev/null)"
+    fi
+    if [ -z "$pids" ] && command -v fuser >/dev/null 2>&1; then
+        pids="$(fuser "${PORT}/tcp" 2>/dev/null | tr -s ' ' '\n')"
+    fi
+    for pid in $(echo "$pids" | sort -u); do
+        case "$pid" in ''|*[!0-9]*) continue;; esac
+        [ "$pid" = "0" ] && continue
+        [ -n "$exclude" ] && [ "$pid" = "$exclude" ] && continue
+        echo "    结束占用 ${PORT} 的游离进程 $pid"
+        kill -9 "$pid" 2>/dev/null
+        found=1
+    done
+    return 0
+}
+
 say "④ 写入数据库配置并重启服务"
 OLD_PID="$(systemctl show "$SERVICE" -p MainPID --value 2>/dev/null || echo 0)"
-echo "    当前进程 PID: $OLD_PID"
+echo "    systemd 当前主进程 PID: ${OLD_PID:-0}"
+if [ "${OLD_PID:-0}" = "0" ]; then
+    echo "    ⚠ 该服务当前不在 systemd 管理下（多半是某次部署走了 nohup 直启），"
+    echo "      下面会先清掉游离进程，再交给 systemd 接管"
+fi
 
 DROPIN_DIR="/etc/systemd/system/${SERVICE}.service.d"
 mkdir -p "$DROPIN_DIR"
@@ -113,38 +141,58 @@ Environment=DB_NAME=${DB_NAME}
 EOF
 ok "已写入 ${DROPIN_DIR}/mysql.conf"
 
+# 先停服务 + 清干净端口占用，再启动（否则旧进程占着端口，新进程起不来）
 systemctl daemon-reload
-systemctl restart "$SERVICE" 2>&1 | tail -3
-RESTORE_MSG=""
+systemctl stop "$SERVICE" 2>/dev/null
+sleep 1
+kill_port_holders "${OLD_PID}"
+sleep 1
 
-# 等新进程（最多 15 秒），PID 没变说明 restart 没生效，强制重启
-NEW_PID="$OLD_PID"
-for i in $(seq 1 15); do
+systemctl restart "$SERVICE" 2>&1 | tail -3
+
+# 等新进程（最多 20 秒）
+NEW_PID=""
+for i in $(seq 1 20); do
     sleep 1
     NEW_PID="$(systemctl show "$SERVICE" -p MainPID --value 2>/dev/null || echo 0)"
     [ -n "$NEW_PID" ] && [ "$NEW_PID" != "0" ] && [ "$NEW_PID" != "$OLD_PID" ] && break
 done
 
-if [ "$NEW_PID" = "$OLD_PID" ]; then
-    echo "    ⚠ systemctl restart 未生效（PID 未变），改用强制重启…"
+# 进程没起来 / 端口仍被别人占着 → 再来一轮强制清理
+if [ -z "$NEW_PID" ] || [ "$NEW_PID" = "0" ] || [ "$NEW_PID" = "$OLD_PID" ]; then
+    echo "    ⚠ 服务未正常拉起，执行强制清理后重试…"
     systemctl stop "$SERVICE" 2>/dev/null
     sleep 1
-    # 兜底：kill 掉仍占用端口的旧进程
-    for pid in $(ss -lptn "sport = :${PORT}" 2>/dev/null | grep -o 'pid=[0-9]*' | cut -d= -f2 | sort -u); do
-        kill -9 "$pid" 2>/dev/null && echo "    已强制结束残留进程 $pid"
-    done
+    kill_port_holders ""
     sleep 1
     systemctl start "$SERVICE" 2>&1 | tail -3
-    sleep 2
-    RESTORE_MSG="（走了强制重启）"
+    sleep 3
 fi
 
 NEW_PID="$(systemctl show "$SERVICE" -p MainPID --value 2>/dev/null || echo 0)"
-echo "    新进程 PID: $NEW_PID $RESTORE_MSG"
-[ "$NEW_PID" = "0" ] || [ -z "$NEW_PID" ] && {
-    echo "  ✗ 服务未启动，看日志：journalctl -u $SERVICE -n 30"
+echo "    systemd 新主进程 PID: ${NEW_PID:-0}"
+ACT_STATE="$(systemctl show "$SERVICE" -p SubState --value 2>/dev/null || echo unknown)"
+echo "    服务状态: $ACT_STATE"
+
+if [ -z "$NEW_PID" ] || [ "$NEW_PID" = "0" ] || [ "$ACT_STATE" = "failed" ]; then
+    echo "  ✗ 服务未启动，日志："
+    journalctl -u "$SERVICE" -n 20 --no-pager 2>/dev/null | tail -20
     exit 1
-}
+fi
+
+# 确认 5180 上跑的就是 systemd 这个进程，否则说明仍有游离进程占端口
+PORT_PIDS="$(ss -lptnH "sport = :${PORT}" 2>/dev/null | grep -o 'pid=[0-9]*' | cut -d= -f2 | sort -u | tr '\n' ' ')"
+echo "    端口 ${PORT} 占用进程: ${PORT_PIDS:-（无）}"
+case " $PORT_PIDS " in
+    *" $NEW_PID "*) ;;
+    *)
+        echo "    ⚠ 监听 ${PORT} 的不是 systemd 进程（$PORT_PIDS），清理后重启…"
+        systemctl stop "$SERVICE" 2>/dev/null; sleep 1
+        kill_port_holders "$NEW_PID"; sleep 1
+        systemctl start "$SERVICE" 2>&1 | tail -3
+        sleep 3
+        ;;
+esac
 
 # 7) 健康检查（最多 25 秒）
 say "⑤ 健康检查"

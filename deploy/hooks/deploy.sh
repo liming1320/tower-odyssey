@@ -82,6 +82,22 @@ NEW_SHA="$(git rev-parse HEAD)"
 log "新版本：$NEW_SHA  $(git log -1 --pretty=%s)"
 restore_db
 
+# 结束占用 PORT 的游离进程（systemd 拉不起来的常见原因）
+kill_port_holders() {
+    local pids="" pid
+    if command -v ss >/dev/null 2>&1; then
+        pids="$(ss -lptnH "sport = :${PORT}" 2>/dev/null | grep -o 'pid=[0-9]*' | cut -d= -f2)"
+    fi
+    if [ -z "$pids" ] && command -v lsof >/dev/null 2>&1; then
+        pids="$(lsof -ti ":${PORT}" -sTCP:LISTEN 2>/dev/null)"
+    fi
+    for pid in $(echo "$pids" | sort -u); do
+        case "$pid" in ''|*[!0-9]*) continue;; esac
+        [ "$pid" = "0" ] && continue
+        kill -9 "$pid" 2>/dev/null && log "已结束占用 ${PORT} 的游离进程 $pid"
+    done
+}
+
 # ---------- 3) 重启服务 ----------
 restart_service() {
     if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q "$SERVICE"; then
@@ -90,10 +106,18 @@ restart_service() {
         if [ "$(id -u)" != "0" ] && command -v sudo >/dev/null 2>&1; then
             sudo -n systemctl restart "$SERVICE" 2>>"$LOG" && { log "已通过 sudo systemctl 重启"; return 0; }
         fi
-        # 都不行才退回直启，并提醒可能与 systemd 里的服务抢端口
-        log "⚠ systemctl 重启失败（权限不足？），改用直接启动；若已有 systemd 服务在跑，可能出现端口冲突"
+        # 走到这里多半是端口被游离进程占着（上次直启留下的），清掉后用 systemd 再拉一次。
+        # 不要直接退回 nohup，否则会不断产生新的游离进程，systemd 永远接管不回来。
+        log "⚠ systemctl 重启失败，清理端口占用后重试"
+        systemctl stop "$SERVICE" 2>/dev/null
+        kill_port_holders
+        sleep 1
+        systemctl start "$SERVICE" 2>>"$LOG" && { log "已通过 systemctl 重启（清理端口后）"; return 0; }
+        log "✗ systemctl 仍无法启动，日志：journalctl -u $SERVICE -n 20"
     fi
+    log "⚠ 回退到直接启动（systemd 不可用）"
     pkill -f "node ${APP_DIR}/server.js" 2>/dev/null || true
+    kill_port_holders
     sleep 2
     cd "$APP_DIR" && nohup "$NODE_BIN" server.js >>"$LOG_DIR/server.log" 2>&1 &
 }
