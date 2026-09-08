@@ -106,6 +106,13 @@ node tools/migrate-to-mysql.js
 会把 `data/db.json` 里的玩家、英雄、邮件、聊天全量导入。
 第一次跑可以加 `--init` 让它顺便建表。
 
+> **如果你已经执行过 `seed-heroes.sql` 导好英雄了**，加 `--skip-heroes` 只导玩家存档，
+> 避免用 db.json 里的英雄覆盖掉数据库里已经调好的配置：
+> ```bash
+> DB_DRIVER=mysql DB_USER=root DB_PASS=你的root密码 DB_NAME=tower_odyssey \
+>   node tools/migrate-to-mysql.js --skip-heroes
+> ```
+
 ---
 
 ## 六、让服务用 MySQL 启动
@@ -147,7 +154,34 @@ systemctl daemon-reload && systemctl restart tower-odyssey
 
 ## 七、日常运维（这才是重点）
 
-### 给英雄改名
+### 改英雄有两条路，选方便的那个
+
+| 途径 | 怎么用 | 适合 |
+|---|---|---|
+| **① 管理后台**（推荐，不用写 SQL） | 后台 → 英雄管理 → 填表单保存 | 日常改名字/描述/技能/立绘/头像，点一下就生效 |
+| **② 直接改数据库** | `UPDATE heroes SET ...` | 批量改、脚本改、想用 SQL 精确控制 |
+
+两条路**改的是同一份数据**（后台保存 = 写 `heroes` / `hero_skills` 表），所以随便选。
+后台改完玩家刷新页面即可看到；直接改 SQL 的话，点一下后台的
+**「🔄 重载英雄配置」**（或调 `POST /api/admin/hero/reload`）让正在运行的服务重新读库，**不用重启**。
+
+> ⚠ 注意：**JSON 模式**（`DB_DRIVER=json`）下后台改的是 `data/db.json`，不是数据库。
+> 只有切到 MySQL 后，后台和数据库才是同一份。
+
+### 「重新生成 seed 文件」是什么时候才需要？
+
+**日常改英雄不需要碰它。** `seed-heroes.sql` 只是**新装一台服务器时的初始数据快照**。
+只有在这种情况才需要重新生成：本地用脚本**批量**改了英雄（比如跑了
+`tools/rename-heroes.js` 批量改名、`tools/gen-hero-art.js` 重画立绘），
+想让「以后新装的服务器」也直接用这套新数据。
+
+```bash
+node tools/gen-mysql-seed.js && node tools/gen-mysql-seed.js --safe
+#   → seed-heroes.sql（首次导入用，会清空重写）
+#   → seed-heroes-safe.sql（线上补新英雄用，不动已有行）
+```
+
+### 给英雄改名（SQL 方式）
 ```sql
 UPDATE heroes SET name='新名字' WHERE id='h01';
 ```

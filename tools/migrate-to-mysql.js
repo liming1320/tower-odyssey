@@ -10,6 +10,8 @@
  * 用法：
  *   node tools/migrate-to-mysql.js                 # 只导数据（表需已建好）
  *   node tools/migrate-to-mysql.js --init          # 自动建表 + 导数据
+ *   node tools/migrate-to-mysql.js --skip-heroes   # 已经导入过 seed-heroes.sql 时用，
+ *                                                    只导玩家存档，不覆盖 heroes 表
  *   DB_USER=root DB_PASS=xxx node tools/migrate-to-mysql.js --init
  *
  * 环境变量：DB_HOST / DB_PORT / DB_USER / DB_PASS / DB_NAME
@@ -31,6 +33,7 @@ const Store = require(path.join(ROOT, 'server', 'store.js'));
     if (!fs.existsSync(DB_FILE)) { console.error('找不到 data/db.json'); process.exit(1); }
 
     const init = process.argv.includes('--init');
+    const skipHeroes = process.argv.includes('--skip-heroes');
     console.log(`▶ 连接 MySQL（${process.env.DB_HOST || '127.0.0.1'}/${process.env.DB_NAME || 'tower_odyssey'}）…`);
     await Store.init({ ensureSchema: init });
     if (init) console.log('✔ 数据表已就绪');
@@ -39,7 +42,9 @@ const Store = require(path.join(ROOT, 'server', 'store.js'));
 
     // 1) 英雄 + 技能
     const heroes = db.heroes || [];
-    if (heroes.length) {
+    if (skipHeroes) {
+        console.log('⏭  已按 --skip-heroes 跳过英雄导入（保留数据库里现有的英雄配置）');
+    } else if (heroes.length) {
         await Store.saveHeroes(heroes);
         const skills = heroes.reduce((n, h) => n + ((h.skills && h.skills.length) ? h.skills.length : (h.skill ? 1 : 0)), 0);
         console.log(`✔ 英雄 ${heroes.length} 个（战斗 ${heroes.filter(h => !h.material).length} / 材料 ${heroes.filter(h => h.material).length}），技能 ${skills} 条`);
