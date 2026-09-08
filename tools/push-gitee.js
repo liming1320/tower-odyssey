@@ -4,7 +4,7 @@
  *
  * 令牌获取：Gitee 网页 → 右上角头像 → 设置 → 私人令牌 → 生成新令牌
  *          勾选权限：projects（以及 user_info 可选）
- * 仓库默认名：one-step-two-steps（可用第二个参数改）
+ * 仓库默认名：tower-odyssey（可用第二个参数改）
  * 仓库会设为 private=true，因此 db.json 里的账号数据不会公开。
  */
 const https = require('https');
@@ -12,12 +12,12 @@ const { execSync } = require('child_process');
 const path = require('path');
 
 const token = process.argv[2];
-const repo = process.argv[3] || 'one-step-two-steps';
-const desc = '一步两步 · 肉鸽推塔游戏（Node 零依赖 + 原生前端）';
+const repo = process.argv[3] || 'tower-odyssey';
+const desc = '塔界远征 · 肉鸽推塔游戏（Node 零依赖 + 原生前端）';
 
 if (!token) {
     console.log('用法: node tools/push-gitee.js <Gitee私人令牌> [仓库名]');
-    console.log('示例: node tools/push-gitee.js 8f9a...c3d one-step-two-steps');
+    console.log('示例: node tools/push-gitee.js 8f9a...c3d tower-odyssey');
     process.exit(1);
 }
 
