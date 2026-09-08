@@ -9,42 +9,1188 @@
       "state": {
         "username": "liming1320",
         "resources": {
-          "gold": 100,
-          "wood": 100,
-          "iron": 50,
-          "stone": 50,
-          "exp": 0,
-          "gems": 100000
+          "gold": 1150.7436,
+          "wood": 746.3162666666668,
+          "iron": 607.5726666666667,
+          "stone": 381.66488133333337,
+          "exp": 1327.9946439999999,
+          "gems": 85150
         },
         "buildings": {
-          "camp": 1,
-          "forge": 1,
-          "research": 1,
-          "hunt": 1,
+          "camp": 3,
+          "forge": 3,
+          "research": 2,
+          "hunt": 2,
           "mine": 1
         },
         "wall": {
           "lv": 1,
           "name": "青石墙"
         },
-        "treasures": [],
-        "heroes": [],
-        "equipped": [],
-        "wishCards": 10,
+        "treasures": [
+          "t1",
+          "t6",
+          "t2",
+          "t5",
+          "t3",
+          "t4"
+        ],
+        "heroes": [
+          {
+            "uid": "e96d390bed71",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b351debb6119",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f9b8d31a5525",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "73f268608032",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "101ae533aaa0",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2eb2304d5681",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6111216f18f3",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bbfef5036982",
+            "id": "h38",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2eb1f57edcb1",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c99fc338c9fc",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "0402bc00166a",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5aeab3c3fd82",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5dbb6c5c60f5",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1f7f5b608cf6",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a59f3d95da67",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "32047fec7b27",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4b8958afd56a",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "144e27683606",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e6a7e2f454bd",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "cb78f2009e5b",
+            "id": "h39",
+            "lv": 3,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "27080ba42552",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "016d31c70d79",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7e6204cb3491",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d5b1898a9331",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e52658c66e3c",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "cd6f55999f1a",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c3e9fc90a144",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c306b00a7e3d",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2bd6a88dbc20",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1584b3d549c1",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "fe420c893725",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f22cdbcf4a0e",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "421c410c245b",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e7989225fe04",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "aba26f4ac2ca",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "24178e1772fb",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "9f8b21e12db3",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c9c005b24ba0",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ff94882678f3",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "86c964bcb69f",
+            "id": "h24",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bf9bbcac7d92",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "90ab3f5e6ea0",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bf77aa9db2fb",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6699f67042d0",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "9a11e6efe36f",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f2c7ab59f594",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f8181186ef98",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "028c33b83981",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d468f7ed5703",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b9f453f9cdf5",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6dd9c851e1f4",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a526b88f3718",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "646d5381f745",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e1afe46e2610",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "67af511dbc38",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "3772c133bae9",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "58ceda2aff3f",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c1aa0430546c",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "99910cefbeed",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e03d9ea03a12",
+            "id": "h33",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "26488adfe4ec",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b6304ec79458",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "09e4f950aea8",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2c593484539d",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "cca9cd61c904",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f12a558a1501",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "99bc54783e4e",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "9dc8a5e11a51",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5e3361525d83",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "34c55527b1c9",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "fe36cae14862",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d38dfa4d17be",
+            "id": "h39",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6d8db2609f86",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "beaebb8a3b4d",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c066271fdc1f",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7aad97808987",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d4b375b7e564",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6910292da3a4",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "8b4399a9d663",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "df788f840701",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f02a5e778ac6",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7eb91ee76a19",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "15c6d6d8c8a7",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5f4ad82fa484",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "26adfa627ce4",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "24b971a2e2cc",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d5545a8990aa",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "0ec83948b4ad",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "591aa5b31e0f",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "9aef2441bf60",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ae7f65aeb193",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b9f40629ea7c",
+            "id": "h44",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4d8e9b60e68f",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bd75f1908620",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7883f745c6db",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c9f76cc1c6af",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e1eeb5ced46f",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7e5b8efdc79a",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "acf316670f6c",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b8d6b0d3fb00",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "38a7220d2d5a",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "52061afc5504",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5fdfac799fd5",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d8be7c5290e7",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "743a7898889f",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b18710540a1d",
+            "id": "h32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "69f2695b862a",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e314872211f4",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7e2e8715fca8",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "cd67218405f4",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "39664502654d",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b3053d5033cc",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "0a5be1db7443",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b72b58343e97",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "39a373e996dd",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6aa30c0f8312",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "cdc2f0931d66",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1d59ce42b2b1",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4399b8b2a5bf",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6de02e1f0007",
+            "id": "m42",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6be369f4af40",
+            "id": "m32",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c61c4c48d833",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "419a6346fea0",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f1f4592cb7dc",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "8dd4ae40bbe8",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "450844f9d11a",
+            "id": "h36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "67c3d0293060",
+            "id": "h11",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "a000a024137d",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "4ca675631939",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "d8b7e74fc1c5",
+            "id": "m41",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "7ade0e5e452d",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "23d9974bf6af",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "135b75f119c3",
+            "id": "h05",
+            "lv": 5,
+            "exp": 0,
+            "star": 5,
+            "equip": {
+              "weapon": {
+                "id": "eq_weapon_blue",
+                "lv": 1,
+                "quality": "blue"
+              }
+            },
+            "artifact": {
+              "id": "art_gold",
+              "lv": 1,
+              "star": 0
+            }
+          },
+          {
+            "uid": "475a44599dee",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "24b5290f8cca",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6fcb62997607",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "6c8394541f76",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "c596f7caba5a",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "55ef1c346363",
+            "id": "h40",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "5d8339425361",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "fc1d768555da",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "2bf0ccc5cf8e",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "60c7ff9c61fe",
+            "id": "h28",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b8f1de3abef8",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "60d2e5443367",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "1c2550a5372c",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b9af27fd909d",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "81f6ee850866",
+            "id": "m46",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "447a743350fc",
+            "id": "m31",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ed8200102b22",
+            "id": "h44",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b95749fded76",
+            "id": "m37",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "f638b193e952",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "52441d2daf8e",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e0c811562718",
+            "id": "h38",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "e4d517b03d6f",
+            "id": "m36",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b4a88b31f61b",
+            "id": "h04",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "b8d75d81543c",
+            "id": "m47",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "bb4d6aed7847",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "30977dab9514",
+            "id": "m45",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          },
+          {
+            "uid": "ef314bb4c071",
+            "id": "m35",
+            "lv": 1,
+            "exp": 0,
+            "star": 5
+          }
+        ],
+        "equipped": [
+          "bbfef5036982",
+          "5dbb6c5c60f5",
+          "cb78f2009e5b",
+          "86c964bcb69f",
+          "e03d9ea03a12"
+        ],
+        "wishCards": 0,
         "claimedEvents": {},
         "loginDays": 1,
         "lastLoginDay": "2026-09-08",
         "tower": {
           "floor": 1,
-          "maxFloor": 0
+          "maxFloor": 3
         },
         "ancient": {
           "floor": 1,
           "maxFloor": 0
         },
-        "clanId": null,
-        "lastTick": 1788851731437,
-        "wishPity": 0
+        "clanId": "6b0193d42ace",
+        "lastTick": 1788855165374,
+        "wishPity": 4
       }
     },
     "64af30a51630": {
@@ -2451,7 +3597,8 @@
         "cd316c35233c",
         "dc93dd413eae",
         "4b892bd64b56",
-        "01e01b1838a6"
+        "01e01b1838a6",
+        "6f8a6e470f70"
       ]
     },
     {
@@ -2476,7 +3623,8 @@
         "cd316c35233c",
         "dc93dd413eae",
         "4b892bd64b56",
-        "01e01b1838a6"
+        "01e01b1838a6",
+        "6f8a6e470f70"
       ]
     }
   ],
@@ -2487,7 +3635,8 @@
       "leaderId": "de8d865c0f2d",
       "leaderName": "liming1320",
       "members": [
-        "de8d865c0f2d"
+        "de8d865c0f2d",
+        "6f8a6e470f70"
       ],
       "createdAt": 1788753531821,
       "chat": []

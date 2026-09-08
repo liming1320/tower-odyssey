@@ -41,13 +41,22 @@
 - 放行端口：面板「安全」+ 腾讯云控制台「安全组」都放行 `80`、`443`（调试阶段可临时放行 `5180`）
 
 ### 2）拉代码
+仓库是**私有**的，直接 https clone 会要求输密码。用下面任一种：
+
 ```bash
-mkdir -p /www/wwwroot && cd /www/wwwroot
-git clone https://gitee.com/li-ming1320/tower-odyssey.git
-cd tower-odyssey
+# A. 一条命令全搞定（推荐）
+cd /www/wwwroot
+bash <(curl -fsSL https://gitee.com/li-ming1320/tower-odyssey/raw/master/deploy/linux/bootstrap.sh)
+
+# B. HTTPS + 私人令牌（最快）
+git clone https://用户名:令牌@gitee.com/li-ming1320/tower-odyssey.git
+
+# C. SSH 部署公钥（长期用，需先配 ~/.ssh/config，见第六章 0）
+git clone git@gitee.com:li-ming1320/tower-odyssey.git
 ```
 
 ### 3）一键部署（systemd 守护）
+> 用 A 方式的话，bootstrap.sh 已经帮你装好了，这步可跳过。
 ```bash
 chmod +x deploy/linux/install.sh
 sudo APP_DIR=/www/wwwroot/tower-odyssey PORT=5180 bash deploy/linux/install.sh
@@ -76,7 +85,8 @@ curl 127.0.0.1:5180/api/health     # 健康检查
 ```bash
 curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -   # CentOS/Rocky
 # 或：curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt install -y nodejs
-git clone https://gitee.com/li-ming1320/tower-odyssey.git /opt/tower-odyssey
+# 先配好 SSH 部署公钥（见第六章 0），然后：
+git clone git@gitee.com:li-ming1320/tower-odyssey.git /opt/tower-odyssey
 cd /opt/tower-odyssey && chmod +x deploy/linux/install.sh
 sudo APP_DIR=/opt/tower-odyssey bash deploy/linux/install.sh
 ```
@@ -117,19 +127,55 @@ tar czf /www/backup/game-$(date +%F).tar.gz /www/wwwroot/tower-odyssey/data/db.j
 
 ### 0）前置：让服务器能免密拉代码（做一次）
 
-在**服务器**上执行：
+**推荐：一条命令自动搞定（生成密钥 → 写 ssh config → 测连通 → 拉代码 → 装服务）**
 ```bash
-ssh-keygen -t ed25519 -C "deploy" -f ~/.ssh/gitee_deploy    # 一路回车
-cat ~/.ssh/gitee_deploy.pub
+cd /www/wwwroot
+curl -o bootstrap.sh https://gitee.com/li-ming1320/tower-odyssey/raw/master/deploy/linux/bootstrap.sh
+bash bootstrap.sh
+# 脚本会打印公钥，粘到 Gitee 仓库 → 管理 → 部署公钥管理 → 添加，回车继续
 ```
-把输出粘贴到：Gitee 仓库 → 管理 → **部署公钥管理** → 添加公钥（只读公钥最安全）。
 
-然后测试：
+<details>
+<summary>手动分步（想自己控制时用）</summary>
+
 ```bash
-cd /www/wwwroot && git clone git@gitee.com:li-ming1320/tower-odyssey.git
-# 已经用 https clone 过的，改一下地址即可：
-# git remote set-url origin git@gitee.com:li-ming1320/tower-odyssey.git
+ssh-keygen -t ed25519 -C "deploy" -f ~/.ssh/gitee_deploy -N ""
+cat ~/.ssh/gitee_deploy.pub     # 粘到 Gitee → 仓库 → 管理 → 部署公钥管理 → 添加公钥
 ```
+
+**⚠️ 最容易踩的坑**：密钥文件名不是默认的 `id_ed25519`，SSH **不会自动使用它**。
+必须写 `~/.ssh/config` 指定，否则一定报 `Permission denied (publickey)`：
+```bash
+cat >> ~/.ssh/config <<'EOF'
+Host gitee.com
+    HostName gitee.com
+    User git
+    IdentityFile ~/.ssh/gitee_deploy
+    IdentitiesOnly yes
+EOF
+chmod 600 ~/.ssh/config
+```
+
+验证（看到 `successfully authenticated` 即成功）：
+```bash
+ssh -T git@gitee.com
+cd /www/wwwroot && git clone git@gitee.com:li-ming1320/tower-odyssey.git
+```
+</details>
+
+<details>
+<summary>备选：HTTPS + 私人令牌（不想配公钥时用，最快）</summary>
+
+```bash
+GITEE_USER=你的Gitee用户名 GITEE_TOKEN=私人令牌 bash bootstrap.sh
+# 或手写：
+git clone https://用户名:令牌@gitee.com/li-ming1320/tower-odyssey.git
+git remote set-url origin https://gitee.com/li-ming1320/tower-odyssey.git
+printf 'https://用户名:令牌@gitee.com\n' > ~/.git-credentials && chmod 600 ~/.git-credentials
+git config credential.helper store      # 以后 pull 不再输密码
+```
+令牌需勾选 **repo** 权限；Gitee「设置 → 私人令牌」可随时吊销。
+</details>
 
 ### 1）方式一：宝塔 WebHook（最省事，推荐）
 

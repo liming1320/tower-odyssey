@@ -24,8 +24,12 @@ OLD_SHA="$(git rev-parse HEAD 2>/dev/null)"
 log "当前版本：$OLD_SHA"
 
 # 1) 拉取代码
-git fetch --all --quiet 2>>"$LOG"
-git checkout "$BRANCH" --quiet 2>>"$LOG"
+#    禁止交互：万一 SSH 公钥/令牌失效，git 会卡在输密码，这里直接失败走回滚，不阻塞 WebHook
+export GIT_TERMINAL_PROMPT=0
+export GIT_ASKPASS=/bin/true
+git config --global --add safe.directory "$APP_DIR" >/dev/null 2>&1
+git fetch --all --quiet 2>>"$LOG" || { log "✗ git fetch 失败（SSH 公钥或令牌权限失效？）"; exit 1; }
+git checkout "$BRANCH" --quiet 2>>"$LOG" || { log "✗ 切换分支 $BRANCH 失败"; exit 1; }
 git reset --hard "origin/$BRANCH" --quiet 2>>"$LOG" || { log "✗ 拉取代码失败"; exit 1; }
 NEW_SHA="$(git rev-parse HEAD)"
 [ "$OLD_SHA" = "$NEW_SHA" ] && log "代码无变化（$NEW_SHA），仍执行重启以保稳妥"
