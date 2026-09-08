@@ -1,0 +1,20 @@
+[Unit]
+Description=Tower Odyssey Deploy Webhook (Gitee push → 自动部署)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/www/wwwroot/tower-odyssey
+Environment=WEBHOOK_PORT=9000
+Environment=WEBHOOK_SECRET=请改成你的密钥
+Environment=DEPLOY_BRANCH=master
+Environment=APP_DIR=/www/wwwroot/tower-odyssey
+Environment=SERVICE=tower-odyssey
+Environment=GAME_PORT=5180
+ExecStart=/usr/bin/node /www/wwwroot/tower-odyssey/tools/webhook-deploy.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

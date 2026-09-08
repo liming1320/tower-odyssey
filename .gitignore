@@ -24,3 +24,6 @@ data-export-*.json
 
 # 已下线的旧立绘（来源为网络素材，存在版权风险，不再使用）
 tools/_retired-hero-png/
+
+# 部署日志
+deploy/logs/

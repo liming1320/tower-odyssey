@@ -113,7 +113,64 @@ tar czf /www/backup/game-$(date +%F).tar.gz /www/wwwroot/tower-odyssey/data/db.j
 
 ---
 
-## 六、后续扩容（人真多了再说）
+## 六、自动化部署（CI/CD）：push 到 Gitee 就自动上线
+
+### 0）前置：让服务器能免密拉代码（做一次）
+
+在**服务器**上执行：
+```bash
+ssh-keygen -t ed25519 -C "deploy" -f ~/.ssh/gitee_deploy    # 一路回车
+cat ~/.ssh/gitee_deploy.pub
+```
+把输出粘贴到：Gitee 仓库 → 管理 → **部署公钥管理** → 添加公钥（只读公钥最安全）。
+
+然后测试：
+```bash
+cd /www/wwwroot && git clone git@gitee.com:li-ming1320/tower-odyssey.git
+# 已经用 https clone 过的，改一下地址即可：
+# git remote set-url origin git@gitee.com:li-ming1320/tower-odyssey.git
+```
+
+### 1）方式一：宝塔 WebHook（最省事，推荐）
+
+1. 宝塔 → 软件商店 → 安装 **WebHook**
+2. 添加 Hook，执行脚本填：
+   ```bash
+   bash /www/wwwroot/tower-odyssey/deploy/hooks/deploy.sh master
+   ```
+3. 复制生成的 URL（形如 `http://IP:8888/hook?access_key=xxx`）
+4. Gitee 仓库 → 管理 → **WebHooks** → 添加 URL，勾选 **Push** 事件
+5. 以后本地 `git push` → 服务器自动拉代码、重启、健康检查，失败自动回滚
+
+### 2）方式二：自建 WebHook 服务（无面板 / 任何机器都能用，零依赖）
+
+```bash
+cp deploy/webhook-deploy.service /etc/systemd/system/
+vi /etc/systemd/system/webhook-deploy.service    # 改 WEBHOOK_SECRET 和 APP_DIR
+systemctl daemon-reload && systemctl enable --now webhook-deploy
+curl http://127.0.0.1:9000/                      # 看状态
+```
+Gitee WebHook 填 `http://你的IP:9000/hook`，密码填 `WEBHOOK_SECRET`。
+（腾讯云安全组需放行 9000，或只放行 Gitee 的出口 IP 段）
+
+### 3）方式三：Gitee Go 流水线（可视化，需开通 Gitee Go）
+
+已提供 `.gitee/workflows/deploy.yml`，在流水线「变量/密钥」里配好
+`SSH_KEY` / `SSH_HOST` / `SSH_USER` / `APP_DIR` 四个变量即可。
+
+### 4）部署脚本做了什么（`deploy/hooks/deploy.sh`）
+
+1. `git fetch` + `reset --hard origin/master`
+2. **部署前自动备份** `data/db.json` → `data/backups/pre-deploy-*.json`
+3. 重启服务（有 systemd 用 systemd，没有就 nohup 直接拉起）
+4. 轮询 `/api/health` 最多 20 秒
+5. **失败自动回滚**到上一个 commit 并重启
+
+日志：`deploy/logs/deploy.log`　｜　手动触发：`bash deploy/hooks/deploy.sh master`
+
+---
+
+## 七、后续扩容（人真多了再说）
 
 1. **先纵向**：宝塔面板 → 调整 Node 内存上限；2核4G 升 4核8G
 2. **再横向**：把存档从 `db.json` 换成 **MySQL**（腾讯云 MySQL 或面板里装），服务改成无状态 → 起多个 Node 实例 → 腾讯云 CLB 负载均衡

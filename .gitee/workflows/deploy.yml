@@ -1,0 +1,38 @@
+# Gitee Go 流水线：push 到 master 自动部署到服务器
+# 使用方式（可选方案，推荐先用宝塔 WebHook，更简单）：
+#   1. 仓库 → 流水线 → 新建流水线 → 选择「YAML 文件」
+#   2. 在「环境变量/密钥」里添加：
+#        SSH_KEY    = 服务器私钥（对应已加到 Gitee 部署公钥的那把）
+#        SSH_HOST   = 服务器公网 IP
+#        SSH_USER   = root
+#        APP_DIR    = /www/wwwroot/tower-odyssey
+#   3. 保存后每次 push master 自动触发
+#
+# 注意：不同时期 Gitee Go 的 YAML 字段可能略有差异，若界面报错，
+#       优先用宝塔 WebHook 或 tools/webhook-deploy.js 自建服务（都不依赖 Gitee Go）。
+
+version: '1.0'
+name: tower-odyssey-deploy
+displayName: 塔界远征-自动部署
+
+trigger:
+  push:
+    branches:
+      - master
+
+stages:
+  - name: deploy
+    displayName: 部署到服务器
+    steps:
+      - step: script@1.0.0
+        name: ssh-deploy
+        displayName: SSH 远程部署
+        script: |
+          set -e
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" \
+            "cd $APP_DIR && bash deploy/hooks/deploy.sh master"
+          echo "部署完成"
