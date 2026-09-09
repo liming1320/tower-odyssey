@@ -186,17 +186,66 @@ const MG = {
         } catch (e) {}
     },
 
+    // ================= 关卡数扩展 =================
+    // 把任意游戏的关卡列表扩到 N（默认 50）。少于 N 的用引擎名池（场景/品级/能力三套池）
+    // 顺延补足，确保所有游戏统一 50 关（暗棋除外，沿用 DOS 原版 15 关）
+    fillLevels(levels, want) {
+        want = want || 50;
+        if (!levels || levels.length >= want) return levels;
+        // 三套名池（每个 60 个），按 i % 3 循环，递增取名
+        const POOLS = [
+            ['启程','微风','林间','溪畔','山谷','云端','雷雨','霜降','雪原','荒漠',
+             '幽谷','熔岩','深渊','星海','幻境','苍穹','混沌','鸿蒙','太虚','归墟',
+             '迷踪','雾隐','断崖','石门','古道','驿亭','海角','天涯','昆仑','蓬莱',
+             '桃源','峨眉','五岳','沧澜','瀚海','冰原','火山','雷泽','风谷','龙窟',
+             '凤巢','麒麟崖','盘丝洞','万妖殿','九霄','天宫','瑶池','凌霄','紫霄','碧落',
+             '化境','绝顶','通天','御虚','破界','入圣','不灭','永劫','归元','神化'],
+            ['青铜','黑铁','白板','新秀','好手','劲敌','强敌','精英','骁将',
+             '统领','元帅','霸主','王者','传说','史诗','不朽','至尊','神话','永恒',
+             '黑铁Ⅱ','精钢','寒铁','陨铁','玄铁','星辰','皓月','耀阳','璀璨','辉金',
+             '赤霄','碧落','青冥','紫电','白金','墨玉','翡翠','玛瑙','琥珀','琉璃',
+             '玄晶','紫金','赤金','耀金','天金','圣金','太一','无瑕','无垢','归真',
+             '霸者','绝响','傲视','凌霄','破晓','风暴','雷霆','烈火','寒冰','圣光'],
+            ['初见','学步','小试','渐入','熟手','巧思','妙手','连击','进阶','高手',
+             '精通','险境','绝境','大师','宗师','传奇','无双','至尊','神话','王者',
+             '暗影','轮回','涅槃','归一','永恒','不朽','鸿蒙','太初','无极','归墟',
+             '破晓','风暴','雷霆','烈火','寒冰','圣光','圣光','圣光','圣光','圣光',
+             '霸者','绝响','傲视','凌霄','破晓','风暴','雷霆','烈火','寒冰','圣光'],
+        ];
+        const out = levels.slice();
+        let j = out.length;
+        while (out.length < want) {
+            const last = levels[levels.length - 1] || {};
+            const pool = POOLS[j % POOLS.length];
+            const ni = Math.min(pool.length - 1, Math.floor((j - 1) / 2));
+            out.push({ name: pool[ni] || ('第 ' + (j + 1) + ' 关'), desc: last.desc || '' });
+            j++;
+        }
+        return out;
+    },
+
     // ================= 关卡选择界面 =================
     // cfg: { game, title, levels:[{name,desc}], onStart(idx, lv), extra:[{label,onClick}] }
     levelSelect(container, cfg) {
         const p = this.getGameProgress(cfg.game);
         container.innerHTML = '';
+        // 关卡数统一扩展到 50：少于 50 的用引擎名池补足（保持原 1..N 难度曲线，N+1..50 顺延）
+        // 暗棋（banqi）例外：沿用 DOS 原版 15 关，不做扩展
+        const wantLv = cfg.game === 'banqi' ? 15 : 50;
+        const fullLevels = MG.fillLevels(cfg.levels, wantLv);
+        cfg = Object.assign({}, cfg, { levels: fullLevels });
         const wrap = document.createElement('div');
         wrap.className = 'mg-levelsel';
         const total = Object.values(p.stars).reduce((a, b) => a + b, 0);
-        const maxTotal = cfg.levels.length * 3;
+        const maxTotal = fullLevels.length * 3;
         wrap.innerHTML = `<div class="mg-ls-title">${cfg.title}
             <span class="mg-ls-total">⭐ ${total}/${maxTotal}</span></div>`;
+        // 排行榜条
+        const rankBar = document.createElement('div');
+        rankBar.className = 'mg-rank-bar';
+        rankBar.innerHTML = `<span>🏆 本游戏榜单</span><button data-act="rank">查看 TOP 20</button>`;
+        rankBar.querySelector('button').onclick = () => MG.showRank(cfg.game, cfg.title);
+        wrap.appendChild(rankBar);
         const grid = document.createElement('div');
         grid.className = 'mg-ls-grid';
         cfg.levels.forEach((lv, idx) => {
@@ -269,6 +318,44 @@ const MG = {
         });
     },
 
+    // ================= 排行榜（调用 /api/minigame/rank 渲染 TOP 20）=================
+    async showRank(gameId, title) {
+        let data = { list: [] };
+        try {
+            const tk = localStorage.getItem('game-token');
+            const r = await fetch('/api/minigame/rank?game=' + encodeURIComponent(gameId), tk ? { headers: { 'Authorization': 'Bearer ' + tk } } : {});
+            data = await r.json();
+        } catch (e) { data = { list: [] }; }
+        const html = `<h3>🏆 ${title || gameId} · 榜单 TOP 20</h3>
+            <div style="max-height:380px;overflow:auto;margin-top:8px">
+            ${data.list.length ? `<table style="width:100%;font-size:13px;border-collapse:collapse">
+                <tr style="color:#ffd56b;border-bottom:1px solid #555"><th style="padding:4px;text-align:left">#</th><th style="text-align:left">玩家</th><th style="text-align:right">积分</th></tr>
+                ${data.list.map((x, i) => `<tr style="border-bottom:1px solid #2a3450"><td style="padding:5px;color:${i < 3 ? '#ffd56b' : '#7a90d8'};font-weight:bold">${x.rank}</td><td>${x.isAdmin ? '👑 ' : ''}${x.nickname || ''}</td><td style="text-align:right;color:#5cc7ff;font-weight:bold">${x.score}</td></tr>`).join('')}
+                </table>` : '<p style="color:#7a90d8;padding:30px;text-align:center">还没人上榜，快来当第一名！</p>'}
+            </div>
+            <div class="modal-actions" style="margin-top:10px"><button class="btn" onclick="U.closeModal()">关闭</button></div>`;
+        U.openModal(html);
+    },
+    // 上报分数（通关或无尽结算后调用）
+    reportScore(gameId, score) {
+        const tk = localStorage.getItem('game-token');
+        if (!tk || !Number.isFinite(score)) return Promise.resolve(null);
+        return fetch('/api/minigame/score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk },
+            body: JSON.stringify({ game: gameId, score: Math.floor(score) }),
+        }).then(r => r.ok ? r.json() : null).catch(() => null);
+    },
+    // 拉取后台设置的排序；玩家端按此顺序渲染 GAMES
+    async fetchOrder() {
+        try {
+            const r = await fetch('/api/minigame/order');
+            if (!r.ok) return [];
+            const d = await r.json();
+            return d.order || [];
+        } catch (e) { return []; }
+    },
+
     // ================= 统一游戏关卡化框架 =================
     // 流程：levelSelect → 选关 → start → 完成 → result(星级) → 重试/下一关/选关
     //  cfg: {
@@ -320,6 +407,9 @@ const MG = {
                     const stars = result.stars || 0;
                     if (!endless) this.recordStars(cfg.id, idx + 1, stars);
                     else this.setBest(cfg.id, result.score || 0);
+                    // 上报排行榜（仅登录用户；分数取关卡星 ×100 或无尽分）
+                    const score = endless ? (result.score || 0) : stars * 100 + (idx + 1) * 50;
+                    try { MG.reportScore(cfg.id, score); } catch (e) {}
                     this.result(container, {
                         win: !!result.win,
                         title: result.title || (result.win ? '🏆 胜利！' : '💥 失败'),

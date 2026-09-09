@@ -1004,6 +1004,11 @@ function getUserByToken(req) {
     return DB.users[uid];
 }
 
+function isAdminToken(req) {
+    const token = (req.headers['authorization'] || '').replace('Bearer ', '') || url.parse(req.url, true).query.token;
+    return token && DB.tokens[token] === '__admin__';
+}
+
 function sendJson(res, code, data) {
     res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     res.end(JSON.stringify(data));
@@ -2473,7 +2478,23 @@ api['POST /api/mail/claim'] = (req, res, body) => {
 // ---- 小游戏闯关进度 + 奖励 ----
 // 进度存档：u.state.minigames = { [gameId]: { [level]: { stars, clears } } }
 // 奖励规则（防刷）：首次通关送钻（关卡越高越多）+ 金币；已通关只升星补差价；重复通关不送
-const MINIGAME_IDS = new Set(['gomoku','g2048','banqi','xiangqi','link','match3','snake','tetris','mole','mine','memory','slide15','bulls','sudoku6','hanoi','piano','reaction','breakout','jump','shooter']);
+// MINIGAME_IDS 同时作为排行榜白名单
+const MINIGAME_IDS = new Set([
+    // 旧 20
+    'gomoku','g2048','banqi','xiangqi','link','match3','snake','tetris','mole','mine','memory','slide15','bulls','sudoku6','hanoi','piano','reaction','breakout','jump','shooter',
+    // 新 80
+    'tictactoe','connect4','reversi','nim','battleship','dots','mancala','queens','peg','breakthru',
+    'chess','junqi',
+    'solitaire','spider','freecell','pyramid','blackjack','poker','war','monopoly',
+    'maze','lightsout','floodit','pipes','nonogram','sudoku9','numberpath','sokoban','blockpuzzle','mastermind',
+    'flappy','dodge','catcher','balloonpop','archery','basketball','darts','fishing','helicopter','stacker',
+    'mathquiz','stroop','higherlower','oddone','idiom','trivia','counting','estimate','clockread','sequence',
+    'flashnum','chimp','simon','cardmem','wordmem','spot','pathmem','shadowmatch','whatmiss','reversenum',
+    'coinflip','dicehi','slots','bingo','spinner','rpsgame','plinko','lucky7','tapburst','gacha',
+    'towerdef','idleclick','life','virus','sandfall','ballance','rocketland','orbit','traffic','growfarm',
+    // 本轮新增
+    'knife','sheep','pocketarmy',
+]);
 api['POST /api/minigame/report'] = (req, res, body) => {
     const user = getUserByToken(req);
     if (!user) return sendJson(res, 401, { error: '未登录' });
@@ -2512,6 +2533,47 @@ api['GET /api/minigame/progress'] = (req, res) => {
     sendJson(res, 200, { progress: (user.state && user.state.minigames) || {} });
 };
 
+// ---- 小游戏积分排行榜 ----
+//  DB.minigameScores = { [gameId]: [ {nickname, score, ts, displayId, isAdmin}, ... ] }
+//  按 score 倒序，取前 20；同名次取最早达成
+api['POST /api/minigame/score'] = (req, res, body) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const game = String(body.game || '');
+    const score = parseInt(body.score);
+    if (!MINIGAME_IDS.has(game)) return sendJson(res, 400, { error: '未知小游戏' });
+    if (!Number.isFinite(score) || score < 0) return sendJson(res, 400, { error: '积分不合法' });
+    DB.minigameScores = DB.minigameScores || {};
+    DB.minigameScores[game] = DB.minigameScores[game] || [];
+    const list = DB.minigameScores[game];
+    const nick = user.nickname || user.username || ('玩家' + (user.displayId || user.id || ''));
+    const isAdmin = !!user.isAdmin;
+    const displayId = user.displayId || '';
+    const me = list.find(x => x.userId === (user.id || user.username));
+    if (me) {
+        if (score > me.score) me.score = score;
+        me.ts = Date.now();
+        me.nickname = nick; me.isAdmin = isAdmin; me.displayId = displayId;
+    } else {
+        list.push({ userId: user.id || user.username, nickname: nick, score, ts: Date.now(), displayId, isAdmin });
+    }
+    list.sort((a, b) => b.score - a.score || a.ts - b.ts);
+    // 保留前 100
+    if (list.length > 100) list.length = 100;
+    save();
+    // 返回前 10 + 我的排名
+    const top = list.slice(0, 10).map((x, i) => ({ rank: i + 1, nickname: x.nickname, score: x.score, displayId: x.displayId, isAdmin: x.isAdmin }));
+    const myRank = list.findIndex(x => x.userId === (user.id || user.username)) + 1;
+    sendJson(res, 200, { ok: true, top, myRank, myScore: list.find(x => x.userId === (user.id || user.username)).score });
+};
+api['GET /api/minigame/rank'] = (req, res) => {
+    const parsed = url.parse(req.url, true);
+    const game = String(parsed.query.game || '');
+    if (!MINIGAME_IDS.has(game)) return sendJson(res, 400, { error: '未知小游戏' });
+    const list = ((DB.minigameScores || {})[game] || []).slice(0, 20).map((x, i) => ({ rank: i + 1, nickname: x.nickname, score: x.score, displayId: x.displayId, isAdmin: x.isAdmin }));
+    sendJson(res, 200, { game, list });
+};
+
 // ---- 后台 ----
 api['POST /api/admin/login'] = (req, res, body) => {
     // 单独管理员入口，用户名 admin / 密码 workbuddy
@@ -2520,6 +2582,20 @@ api['POST /api/admin/login'] = (req, res, body) => {
     DB.tokens[token] = '__admin__';
     save();
     sendJson(res, 200, { ok: true, token, isAdmin: true });
+};
+
+// ---- 小游戏排序：玩家 GET 当前顺序 / 后台 POST 调整 ----
+// DB.minigameOrder = string[]   （按用户后台设置的顺序存）
+api['GET /api/minigame/order'] = (req, res) => {
+    sendJson(res, 200, { order: DB.minigameOrder || [] });
+};
+api['POST /api/admin/minigame/order'] = (req, res, body) => {
+    if (!isAdminToken(req)) return sendJson(res, 401, { error: '需要管理员' });
+    const order = Array.isArray(body.order) ? body.order.filter(x => typeof x === 'string' && MINIGAME_IDS.has(x)) : null;
+    if (!order) return sendJson(res, 400, { error: 'order 不合法' });
+    DB.minigameOrder = order;
+    save();
+    sendJson(res, 200, { ok: true, order: DB.minigameOrder });
 };
 
 api['POST /api/admin/mail'] = (req, res, body) => {

@@ -3,21 +3,24 @@
 // 支持：触屏滑动 / 鼠标拖拽 / 方向键 / WASD
 window.MiniGames = window.MiniGames || {};
 
-// ============ 11 只妖怪定义（按用户给的等级表）============
-// e: emoji 主体；c1/c2: 底板渐变亮/暗色；bd: 描边+徽标色
+// ============ 12 只妖怪定义（按用户给的等级表）============
+// 底板统一深色（避免同色系妖怪撞色难辨），靠「造型 + 等级环 + 等级数字」区分
+// e: emoji 主体；tint: 等级环/徽标色（按等级排列成可辨识的色谱）
 const MON = [
-    { n: '毒蛇·绿', e: '🐍', c1: '#a8e888', c2: '#4a9a4a', bd: '#2e6e2e' },
-    { n: '毒蛇·蓝', e: '🐍', c1: '#9ab8f8', c2: '#4a6ac0', bd: '#2e4a8e' },
-    { n: '黄蜂精',  e: '🐝', c1: '#ffe896', c2: '#d0a030', bd: '#8f6a10' },
-    { n: '蛤蟆·绿', e: '🐸', c1: '#a8ecA8', c2: '#58a858', bd: '#357035' },
-    { n: '蛤蟆·蓝', e: '🐸', c1: '#c4acf8', c2: '#7048c8', bd: '#4a2a8e' },
-    { n: '蛤蟆·红', e: '🐸', c1: '#ffa0a0', c2: '#d04848', bd: '#8e2020' },
-    { n: '蜈蚣精',  e: '🐛', c1: '#ffcf96', c2: '#c07838', bd: '#8a5015' },
-    { n: '蜘蛛精',  e: '🕷️', c1: '#dcbcf8', c2: '#8850c8', bd: '#582a8e' },
-    { n: '鳄鱼精',  e: '🐊', c1: '#ffbc80', c2: '#c07028', bd: '#8a4810' },
-    { n: '蝎子精',  e: '🦂', c1: '#ffb088', c2: '#c05030', bd: '#8a3010' },
-    { n: '蛇精',    e: '🐍', c1: '#d0b0f2', c2: '#6a3aa8', bd: '#3a1a68', crown: true },
+    { n: '毒蛇·绿', e: '🐍', tint: '#8ed86a' },
+    { n: '毒蛇·蓝', e: '🐍', tint: '#5cc7ff' },
+    { n: '黄蜂精',  e: '🐝', tint: '#ffd56b' },
+    { n: '蛤蟆·绿', e: '🐸', tint: '#7ae8a0' },
+    { n: '蛤蟆·蓝', e: '🐸', tint: '#6a8cff' },
+    { n: '蛤蟆·红', e: '🐸', tint: '#ff8a7a' },
+    { n: '蜈蚣精',  e: '🐛', tint: '#ffb04a' },
+    { n: '蜘蛛精', e: '🕷️', tint: '#c48aff' },
+    { n: '鳄鱼精',  e: '🐊', tint: '#6ad8c0' },
+    { n: '蝎子精',  e: '🦂', tint: '#ff6b8a' },
+    { n: '蛇精',    e: '🐍', tint: '#ffd700', crown: true },
+    { n: '万妖王',  e: '👹', tint: '#ff2d6f', crown: true },     // 11+11→12 终极形态
 ];
+const MAX_LV = 12;   // 最高等级（11+11 可继续合出 12「万妖王」）
 
 // 等级 → 妖怪名（level 0 返回空串，用于空棋盘）
 const MON_NAME = level => (level > 0 && MON[level - 1]) ? MON[level - 1].n : '';
@@ -48,24 +51,25 @@ function drawMonsterCell(ctx, level, x, y, s, anim) {
     // 投影
     roundRect(ctx, x + 6, y + 8, s - 12, s - 12, 16);
     ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fill();
-    // 底板渐变
+    // 底板：统一深石板色（不按妖怪上色，避免同色系撞色）
     roundRect(ctx, x + 4, y + 4, s - 8, s - 8, 16);
     const g = ctx.createLinearGradient(0, y, 0, y + s);
-    g.addColorStop(0, m.c1); g.addColorStop(1, m.c2);
+    g.addColorStop(0, '#4a5570'); g.addColorStop(0.55, '#39415a'); g.addColorStop(1, '#2a3044');
     ctx.fillStyle = g; ctx.fill();
-    ctx.lineWidth = 3; ctx.strokeStyle = m.bd; ctx.stroke();
+    // 等级色细环（区分同造型妖怪的唯一色彩线索，不是色块背景）
+    ctx.lineWidth = 3.5; ctx.strokeStyle = m.tint; ctx.stroke();
     // 顶部内高光
     roundRect(ctx, x + 9, y + 8, s - 18, s * 0.26, 10);
-    ctx.fillStyle = 'rgba(255,255,255,0.30)'; ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.16)'; ctx.fill();
 
-    // 妖怪主体（emoji）
+    // 妖怪主体（emoji，放大突出造型）
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = `${Math.round(s * 0.52)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-    ctx.fillText(m.e, cx, cy - s * 0.05);
+    ctx.font = `${Math.round(s * 0.58)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+    ctx.fillText(m.e, cx, cy - s * 0.06);
     // 蛇精：头顶王冠
     if (m.crown) {
-        ctx.font = `${Math.round(s * 0.26)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-        ctx.fillText('👑', cx + s * 0.14, cy - s * 0.32);
+        ctx.font = `${Math.round(s * 0.28)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+        ctx.fillText('👑', cx + s * 0.15, cy - s * 0.34);
     }
 
     // 合并闪光
@@ -77,45 +81,88 @@ function drawMonsterCell(ctx, level, x, y, s, anim) {
     // 名字胶囊（底部）
     const capW = m.n.length * 12 + 12;
     roundRect(ctx, cx - capW / 2, y + s - 24, capW, 17, 9);
-    ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill();
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 11px "Microsoft YaHei",sans-serif';
     ctx.fillText(m.n, cx, y + s - 15);
 
-    // 等级徽标（左上角：白底彩字圆徽）
-    ctx.beginPath(); ctx.arc(x + 18, y + 18, 12, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff'; ctx.fill();
-    ctx.lineWidth = 2.5; ctx.strokeStyle = m.bd; ctx.stroke();
-    ctx.fillStyle = m.bd;
-    ctx.font = 'bold 13px Arial,sans-serif';
-    ctx.fillText(level, x + 18, y + 18.5);
+    // 等级徽标（左上角：等级色实心圆 + 白字，辨识度优先）
+    ctx.beginPath(); ctx.arc(x + 19, y + 19, 13.5, 0, Math.PI * 2);
+    ctx.fillStyle = m.tint; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.stroke();
+    ctx.fillStyle = '#1a1f2e';
+    ctx.font = 'bold 15px Arial,sans-serif';
+    ctx.fillText(level, x + 19, y + 19.5);
     ctx.restore();
 }
 
-// =================== 关卡配置（20 关，目标 = 凑出指定等级怪物）===================
-MiniGames.g2048 = {
-    LEVELS: [
-        { name: '伏蛇',     target: 2,  moves: 100, desc: '击败 毒蛇·蓝 · 100 步' },
-        { name: '蜂起',     target: 3,  moves: 170, desc: '击败 黄蜂精 · 170 步' },
-        { name: '通灵',     target: 3,  moves: 140, desc: '击败 黄蜂精 · 140 步' },
-        { name: '蛤蟆咒',   target: 4,  moves: 280, desc: '击败 蛤蟆·绿 · 280 步' },
-        { name: '石门试炼', target: 4,  moves: 250, rocks: 2, desc: '击败 蛤蟆·绿 · 250 步 · 🪨2' },
-        { name: '呱声震谷', target: 5,  moves: 220, desc: '击败 蛤蟆·蓝 · 220 步' },
-        { name: '毒潭',     target: 5,  moves: 480, desc: '击败 蛤蟆·蓝 · 480 步' },
-        { name: '乱石沼',   target: 6,  moves: 430, rocks: 3, desc: '击败 蛤蟆·红 · 430 步 · 🪨3' },
-        { name: '魔音窟',   target: 6,  moves: 380, desc: '击败 蛤蟆·红 · 380 步' },
-        { name: '百足径',   target: 7,  moves: 800, desc: '击败 蜈蚣精 · 800 步' },
-        { name: '石林',     target: 7,  moves: 700, rocks: 3, desc: '击败 蜈蚣精 · 700 步 · 🪨3' },
-        { name: '蛛丝洞',   target: 8,  moves: 620, desc: '击败 蜘蛛精 · 620 步' },
-        { name: '碎石带',   target: 8,  moves: 560, rocks: 4, desc: '击败 蜘蛛精 · 560 步 · 🪨4' },
-        { name: '鳄潭',     target: 9,  moves: 1400, desc: '击败 鳄鱼精 · 1400 步' },
-        { name: '顽石岗',   target: 9,  moves: 1250, rocks: 4, desc: '击败 鳄鱼精 · 1250 步 · 🪨4' },
-        { name: '蝎尾崖',   target: 10, moves: 1100, desc: '击败 蝎子精 · 1100 步' },
-        { name: '深渊石阵', target: 10, moves: 980,  rocks: 5, desc: '击败 蝎子精 · 980 步 · 🪨5' },
-        { name: '蛇穴',     target: 11, moves: 2400, desc: '击败 蛇精 · 2400 步' },
-        { name: '磐石塔',   target: 11, moves: 2100, rocks: 4, desc: '击败 蛇精 · 2100 步 · 🪨4' },
-        { name: '诛妖·终',  target: 11, moves: 1800, rocks: 6, desc: '击败 蛇精 · 1800 步 · 🪨6' },
-    ],
+// =================== 关卡配置（50 关，按目标等级从 2 升到 12「万妖王」）===================
+    // 棋盘大小随 target 自动放大（4×4 / 5×5 / 6×6），无尽固定 5×5
+    const LV = (name, moves, rocks) => ({ name, moves, rocks: rocks || 0 });
+    MiniGames.g2048 = {
+        LEVELS: [
+            // target 2 — 入门：4×4，宽松
+            LV('伏蛇',     100),
+            LV('蛇蜕',     90),
+            LV('毒雾',     110, 1),
+            // target 3 — 黄蜂精：4×4
+            LV('蜂起',     170),
+            LV('通灵',     140),
+            LV('黄蜂窝',   200, 2),
+            // target 4 — 蛤蟆·绿：4×4
+            LV('蛤蟆咒',   280),
+            LV('石门试炼', 250, 2),
+            LV('青沼地',   240),
+            // target 5 — 蛤蟆·蓝：4×4
+            LV('呱声震谷', 220),
+            LV('毒潭',     480),
+            LV('蓝鳞渊',   400, 2),
+            // target 6 — 蛤蟆·红：4×4
+            LV('乱石沼',   430, 3),
+            LV('魔音窟',   380),
+            LV('血红泽',   500, 3),
+            // target 7 — 蜈蚣精：4×4
+            LV('百足径',   800),
+            LV('石林',     700, 3),
+            LV('万足坑',   620, 3),
+            // target 8 — 蜘蛛精：5×5（棋盘放大，给腾挪空间）
+            LV('蛛丝洞',   620),
+            LV('碎石带',   560, 4),
+            LV('织网岭',   720, 3),
+            LV('盘丝宫',   680, 4),
+            // target 9 — 鳄鱼精：5×5
+            LV('鳄潭',     1400),
+            LV('顽石岗',   1250, 4),
+            LV('鳄甲门',   1500, 4),
+            LV('深渊鳍',   1600, 3),
+            // target 10 — 蝎子精：5×5
+            LV('蝎尾崖',   1100),
+            LV('深渊石阵', 980,  5),
+            LV('毒尾阵',   1300, 5),
+            LV('暗刺谷',   1180, 4),
+            LV('蜇魂殿',   1400, 5),
+            // target 11 — 蛇精：6×6（棋盘进一步放大，目标值=2048，需要很多空间合并）
+            LV('蛇穴',     2400),
+            LV('磐石塔',   2100, 4),
+            LV('诛妖·终',  1800, 6),
+            LV('金鳞门',   2600, 5),
+            LV('蛇蜕祭',   2400, 4),
+            LV('千年咒',   2800, 5),
+            LV('冷牙殿',   3000, 4),
+            // target 12 — 万妖王：6×6（终极目标，目标值=4096，必须扩棋盘）
+            LV('万妖殿',   3500, 6),
+            LV('妖王座',   3800, 6),
+            LV('终极试炼', 3200, 7),
+            LV('不灭之焰', 4200, 6),
+            LV('王者加冕', 4500, 5),
+            LV('群妖之巅', 4000, 7),
+            LV('归一塔',   4800, 6),
+            LV('洪荒之地', 5000, 6),
+            LV('永恒战场', 4400, 7),
+            LV('混沌尽头', 5200, 6),
+            LV('至高天',   5500, 5),
+            LV('万界归一', 4800, 7),
+        ],
     // 无尽模式：格子没满就能一直玩，棋盘锁死即结束（无需解锁任何关卡）
     ENDLESS: { name: '无尽 · 降妖', desc: '格子没满就一直合，合出蛇精也不停' },
     // 由 MG.runGame 统一管理关卡选择；g2048.start 只负责对局逻辑
@@ -131,9 +178,15 @@ MiniGames.g2048 = {
 
 // =================== 单局游戏主逻辑 ===================
 function g2048Round(container, opts, level, api) {
-    const N = 4, SIZE = 100;
-    const lv = level > 0 ? MiniGames.g2048.LEVELS[level - 1] : { target: 11, moves: Infinity, rocks: 0 };
-    const target = lv.target || 11, maxMoves = lv.moves || Infinity, rockN = lv.rocks || 0;
+    // 棋盘大小随目标等级自动放大：低目标紧凑 4×4 保持挑战；高目标扩到 5×5 / 6×6 给腾挪空间
+    //   target ≤ 7 → 4×4  target 8-10 → 5×5  target ≥ 11 → 6×6
+    // 无尽模式固定 5×5（空间够大、棋盘填满不易、节奏刚好）
+    const sizeFor = t => t <= 7 ? 4 : (t <= 10 ? 5 : 6);
+    const lv = level > 0 ? MiniGames.g2048.LEVELS[level - 1] : { target: 12, moves: Infinity, rocks: 0 };
+    const target = lv.target || 12;
+    const N = level > 0 ? sizeFor(target) : 5;
+    const SIZE = Math.floor(Math.min(460, 360 + 40 * N) / N);
+    const maxMoves = lv.moves || Infinity, rockN = lv.rocks || 0;
     const { c, ctx, w, h, destroy } = MG.canvas(container, N * SIZE + 20, N * SIZE + 20);
 
     let board = Array.from({ length: N }, () => Array(N).fill(0));
@@ -159,29 +212,10 @@ function g2048Round(container, opts, level, api) {
     // 等级 → 分数
     const levelScore = l => l * l * 5;
 
-    // 加权 spawn：根据目标等级动态调整
-    const spawnLevel = () => {
-        const maxSpawn = Math.min(11, Math.max(2, target));
-        if (maxSpawn <= 2) return Math.random() < 0.85 ? 1 : 2;
-        if (maxSpawn <= 4) {
-            const r = Math.random();
-            if (r < 0.7) return 1;
-            if (r < 0.92) return 2;
-            return MG.ri(3, maxSpawn);
-        }
-        if (maxSpawn <= 7) {
-            const r = Math.random();
-            if (r < 0.55) return 1;
-            if (r < 0.78) return 2;
-            if (r < 0.9) return 3;
-            return MG.ri(4, maxSpawn);
-        }
-        const r = Math.random();
-        if (r < 0.4) return 1;
-        if (r < 0.65) return 2;
-        if (r < 0.82) return 3;
-        return MG.ri(4, maxSpawn);
-    };
+    // ============ Spawn 策略 ============
+    // 新出现的怪只出 1 级 / 2 级（85% / 15%）—— 跟经典 2048 一致，让玩家循序渐进、玩的时间长
+    // 高级怪只能通过合并低低怪自然产生
+    const spawnLevel = () => Math.random() < 0.85 ? 1 : 2;
 
     const add = () => {
         const empty = [];
@@ -229,10 +263,16 @@ function g2048Round(container, opts, level, api) {
             }
         }
         const maxL = Math.max(...board.flat(), 0);
+        // 封顶合并时的全屏闪光（两个 MAX_LV 相遇）
+        const capFlash = Math.max(0, 1 - (t - capMergeFlash) / 600);
+        if (capFlash > 0) {
+            ctx.fillStyle = `rgba(255, 215, 0, ${0.35 * capFlash})`;
+            ctx.fillRect(0, 0, w, h);
+        }
         if (level > 0) {
-            opts.onScore && opts.onScore(`目标：${MON_NAME(target)} (Lv${target}) · 最高 Lv${maxL} · ${moves}/${maxMoves} 步 · 击退 ${score}`);
+            opts.onScore && opts.onScore(`目标：${MON_NAME(target)} (Lv${target}) · 最高 Lv${maxL} · ${moves}/${maxMoves} 步 · 击退 ${score} · ${N}×${N}`);
         } else {
-            opts.onScore && opts.onScore(`分数 ${score} · 最高 Lv${maxL}（${MON_NAME(maxL) || '-'}） · ${moves} 步`);
+            opts.onScore && opts.onScore(`分数 ${score} · 最高 Lv${maxL}（${MON_NAME(maxL) || '-'}） · ${moves} 步 · ${N}×${N}`);
         }
     };
 
@@ -241,14 +281,19 @@ function g2048Round(container, opts, level, api) {
     const loop = () => { draw(); rafId = requestAnimationFrame(loop); };
     if (typeof requestAnimationFrame === 'function') rafId = requestAnimationFrame(loop);
 
-    // 段内压缩：n + n → n+1（封顶 11）
+    // 段内压缩：n + n → n+1（封顶 MAX_LV=12「万妖王」）
+    // 两个万妖王相遇：保留两枚 + 大额加分（封顶后不能再升，但玩家仍能感受到合成反馈 + 屏幕闪光）
+    let capMergeFlash = 0;
     const compressSeg = seg => {
         const a = seg.filter(v => v);
         for (let i = 0; i < a.length - 1; i++) {
-            if (a[i] === a[i + 1] && a[i] < 11) {
+            if (a[i] === a[i + 1] && a[i] < MAX_LV) {
                 a[i] += 1;
                 score += levelScore(a[i]);
                 a.splice(i + 1, 1);
+            } else if (a[i] === MAX_LV && a[i + 1] === MAX_LV) {
+                score += levelScore(MAX_LV) * 3;
+                capMergeFlash = Date.now();
             }
         }
         while (a.length < seg.length) a.push(0);

@@ -42,6 +42,7 @@ const TowerView = {
                 ${!equipped ? '<p style="color:#ff7a8b;font-size:12px;margin-top:6px">请先点击下方按钮上阵英雄</p>' : ''}
                 ${ancient && !gateOk ? `<p style="color:#ff7a8b;font-size:12px;margin-top:6px">需先在冒险中通关第 ${gate} 层</p>` : ''}
                 <button class="btn" id="btn-formation" style="margin-top:10px">🎯 上阵（${equipped}/5）</button>
+                <button class="btn ghost" id="btn-mini" style="margin-top:10px;margin-left:6px">🎮 小游戏（103 款）</button>
                 <div id="formation-list" style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:10px"></div>
                 <button class="btn ${this.autoTower ? '' : 'ghost'} small" id="btn-auto-tower" style="margin-top:10px">
                     ${this.autoTower ? '🤖 自动推塔：开（通关自动进下一层）' : '🤖 自动推塔：关'}
@@ -62,6 +63,11 @@ const TowerView = {
         `;
 
         root.querySelector('#btn-formation').onclick = () => this.openFormation(root, app, ancient);
+        const miniBtn = root.querySelector('#btn-mini');
+        if (miniBtn) miniBtn.onclick = () => {
+            if (window.MinigamesView) MinigamesView.open(app);
+            else U.toast && U.toast('小游戏加载中…');
+        };
         const autoBtn = root.querySelector('#btn-auto-tower');
         if (autoBtn) autoBtn.onclick = () => {
             this.autoTower = !this.autoTower;

@@ -1,20 +1,31 @@
 // 小游戏入口：竖版滚动卡片，每张游戏点击进入全屏游戏容器
 // 真正的 20 个游戏实现放在 /js/minigames/*.js，由本文件按需加载
 const MinigamesView = {
-    open(app) {
-        // 先同步服务器进度（登录用户），再渲染卡片
-        const render = () => this.render(app);
-        try { MG.sync().then(render, render); } catch (e) { render(); }
+    async open(app) {
+        // 先同步服务器进度（登录用户），并拉取后台设置的排序；无排序时按 manifest 原序
+        try {
+            MG.sync();
+            const order = await MG.fetchOrder();
+            if (order && order.length) {
+                const map = new Map(GAMES.map(g => [g.id, g]));
+                const ordered = [];
+                order.forEach(id => { if (map.has(id)) { ordered.push(map.get(id)); map.delete(id); } });
+                ordered.push(...map.values());   // 新增的未在排序里的追加到末尾
+                this._sorted = ordered;
+            }
+        } catch (e) {}
+        this.render(app);
     },
     render(app) {
+        const list = this._sorted || GAMES;
         // 切到独立 tab 区域显示
         const root = document.getElementById('page-content');
         root.innerHTML = `
-            <div class="section-title">🎮 小游戏<span style="float:right;font-size:12px;color:#b9b3d8;font-weight:normal">共 ${GAMES.length} 款</span></div>
+            <div class="section-title">🎮 小游戏<span style="float:right;font-size:12px;color:#b9b3d8;font-weight:normal">共 ${list.length} 款</span></div>
             <div class="mini-hub" id="mini-hub"></div>
         `;
         const hub = document.getElementById('mini-hub');
-        GAMES.forEach(g => {
+        list.forEach(g => {
             const stars = MG.totalStars(g.id);
             const card = U.el(`
                 <div class="mini-card" data-id="${g.id}">
@@ -198,6 +209,11 @@ const GAMES = [
     sc('orbit', '轨道跳跃', '20 关 + 无尽 · 躲开陨石', '#0e1430', '#05080f', ['\ud83d\udef0', '\u2604']),
     sc('traffic', '交通调度', '20 关 · 避免路口相撞', '#2f3a3a', '#141c1c', ['\ud83d\ude97', '\ud83d\uded1']),
     sc('growfarm', '开心农场', '20 关 + 无尽 · 种植收获', '#3a5a2e', '#16281a', ['\ud83c\udf31', '\ud83c\udf3e']),
+
+    // 本轮新增（3 款）
+    sc('knife', '鸠摩智转刀', '50 关 + 无尽 · 转盘上插刀避开已有', '#8a5a2f', '#3a2010', ['\ud83d\udd2a', '\ud83c\udfaf']),
+    sc('sheep', '羊了个羊', '50 关 + 无尽 · 7 槽堆叠消除', '#fff5d6', '#caa86a', ['\ud83d\udc11', '\ud83d\udc30']),
+    sc('pocketarmy', '口袋奇兵', '50 关 + 无尽 · 加减门 / 木桶 / 敌人', '#3a7fd0', '#1a3a70', ['\ud83d\udc66', '\ud83d\udca3']),
 ];
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合

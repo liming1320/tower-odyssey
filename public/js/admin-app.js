@@ -39,6 +39,8 @@ const AdminAPI = (() => {
         userDelete: (data) => call('POST', '/api/admin/user/delete', data),
         mail: (data) => call('POST', '/api/admin/mail', data),
         smsCodes: () => call('GET', '/api/admin/sms-codes'),
+        // 通用 GET/POST（用于新增的任意后台接口）
+        api: (path, method, body) => call(method || 'GET', path, body),
     };
 })();
 
@@ -104,6 +106,7 @@ const AdminApp = {
             users: () => this.renderUsers(body),
             sms: () => this.renderSms(body),
             gift: () => this.renderGift(body),
+            order: () => this.renderOrder(body),
         }[this.tab];
         fn().catch(e => {
             body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`;
@@ -742,6 +745,66 @@ const AdminApp = {
             </div>
         `;
         body.querySelector('#sms-refresh').onclick = () => this.renderSms(body);
+    },
+
+    // ================= 小游戏排序（管理后台可调整顺序，玩家端同步）=================
+    async renderOrder(body) {
+        body.innerHTML = `<div class="card">加载中...</div>`;
+        let r;
+        try { r = await AdminAPI.api('/api/admin/minigame/order', 'GET'); }
+        catch (e) { body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`; return; }
+        const list = r.order || [];
+        body.innerHTML = `
+            <div class="admin-note">
+                拖动 / 上下来调整玩家端看到的小游戏排序。点击「💾 保存」后立刻生效，未保存的更改显示「⚠ 未保存」。
+            </div>
+            <div class="card">
+                <h3>当前排序（${list.length} 个）</h3>
+                <div id="order-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px"></div>
+                <div class="row" style="margin-top:12px;gap:8px">
+                    <button class="btn primary" id="ord-save">💾 保存排序</button>
+                    <button class="btn ghost" id="ord-reset">↺ 恢复默认</button>
+                    <span id="ord-status" style="font-size:12px;color:#b9b3d8"></span>
+                </div>
+            </div>
+        `;
+        const ol = body.querySelector('#order-list');
+        const render = () => {
+            ol.innerHTML = list.map((id, i) => `
+                <div class="ord-row" data-id="${id}" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 10px">
+                    <span style="font-size:11px;color:#ffd56b;width:20px;text-align:right">${i + 1}</span>
+                    <span style="flex:1;font-size:13px">${id}</span>
+                    <button class="btn ghost small" data-act="up">▲</button>
+                    <button class="btn ghost small" data-act="dn">▼</button>
+                    <button class="btn ghost small" data-act="top">⤒</button>
+                    <button class="btn ghost small" data-act="bot">⤓</button>
+                </div>
+            `).join('');
+            ol.querySelectorAll('.ord-row').forEach((el, idx) => {
+                const id = el.dataset.id;
+                el.querySelector('[data-act=up]').onclick = () => { if (idx > 0) { [list[idx - 1], list[idx]] = [list[idx], list[idx - 1]]; render(); dirty(); } };
+                el.querySelector('[data-act=dn]').onclick = () => { if (idx < list.length - 1) { [list[idx], list[idx + 1]] = [list[idx + 1], list[idx]]; render(); dirty(); } };
+                el.querySelector('[data-act=top]').onclick = () => { list.splice(idx, 1); list.unshift(id); render(); dirty(); };
+                el.querySelector('[data-act=bot]').onclick = () => { list.splice(idx, 1); list.push(id); render(); dirty(); };
+            });
+        };
+        let saved = true;
+        const status = body.querySelector('#ord-status');
+        const dirty = () => { saved = false; status.textContent = '⚠ 未保存'; status.style.color = '#ff7a8b'; };
+        const clean = () => { saved = true; status.textContent = '✓ 已保存'; status.style.color = '#7ad86a'; };
+        render(); clean();
+        body.querySelector('#ord-save').onclick = async () => {
+            try {
+                await AdminAPI.api('/api/admin/minigame/order', 'POST', { order: list });
+                clean(); U.toast('排序已保存，玩家端立即生效');
+            } catch (e) { U.toast('保存失败：' + e.message); }
+        };
+        body.querySelector('#ord-reset').onclick = () => {
+            // 恢复默认：从游戏清单的静态顺序（通过 GAMES 数组同步）
+            // 这里直接重新拉一遍（清空后服务端返回 []，玩家端走默认顺序）
+            list.length = 0;
+            render(); dirty();
+        };
     },
 
     async renderGift(body) {
