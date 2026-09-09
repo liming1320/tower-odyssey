@@ -113,31 +113,54 @@
         if (S.fnd.every(v => v === 13)) api.finish({ win: true, stars: 3, lines: ['全部归位，接龙成功！'] });
     }
 
-    // ============ 2. 蜘蛛纸牌（简易）============
+    // ============ 2. 蜘蛛纸牌（拖拽 + 点击自动移动）============
     E.def('spider', {
         levels: E.nm(),
         params: (i, t) => ({ strict: i > 9, cols: 8 }),
         w: 396, h: 500,
-        hint: '把牌按 K→A 降序排列（点牌自动移动）；凑齐 K 到 A 的整条即消除',
+        hint: '拖动牌串放到目标列（松手自动落位）；也可点牌自动移动。凑齐 K→A 整条即消除',
         init: P => {
             const d = deck(1).slice(0, 48);   // 48 张：8 列 × 4 张 + 16 张牌库
             const cols = Array.from({ length: 8 }, () => []);
             for (let n = 0; n < 4; n++) for (let k = 0; k < 8; k++) { const c = d.pop(); c.up = (n === 3); cols[k].push(c); }
-            return { cols, stock: d, done: 0, msg: '开始！点牌库发一排' };
+            return { cols, stock: d, done: 0, msg: '开始！点牌库发一排', drag: null };
         },
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#1f4a5c', '#0d2230');
             const CW = 44, CH = 60;
             E.card(ctx, 8, 12, CW, CH, '#4a7fbf', '#22406f', 6);
             E.txt(ctx, '发' + S.stock.length, 8 + CW / 2, 42, 14, '#fff', true);
+            const dragging = S.drag && S.drag.moved;
             for (let k = 0; k < 8; k++) {
                 const col = S.cols[k], x = 8 + k * 48;
-                for (let n = 0; n < col.length; n++) paint(ctx, x, 88 + n * 20, CW, CH, col[n], !col[n].up);
+                // 拖起的牌串不再画在原位
+                const lim = (dragging && S.drag.from === k) ? S.drag.n : col.length;
+                for (let n = 0; n < lim; n++) paint(ctx, x, 88 + n * 20, CW, CH, col[n], !col[n].up);
+                // 目标列高亮（松手可放的列）
+                if (dragging && S.drag.from !== k && col.length) {
+                    const top = col[col.length - 1], seq0 = S.cols[S.drag.from][S.drag.n];
+                    if (seq0 && top && top.r === seq0.r + 1 && (!P.strict || top.s === seq0.s)) {
+                        ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 2.5;
+                        ctx.strokeRect(x - 2, 88 + (col.length - 1) * 20 - 2, CW + 4, CH + 4);
+                    }
+                }
+            }
+            // 拖拽中的牌串：跟随指针 + 浮起阴影
+            if (dragging) {
+                const col = S.cols[S.drag.from];
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 10;
+                for (let i = S.drag.n; i < col.length; i++) {
+                    paint(ctx, S.drag.x - CW / 2, S.drag.y - 26 + (i - S.drag.n) * 20, CW, CH, col[i]);
+                }
+                ctx.restore();
             }
             E.txt(ctx, `已消除 ${S.done} 条 · ${S.msg}`, W / 2, H - 14, 14, '#cfe8f0');
         },
+        // 按下：牌库立即发牌；明牌串则记录拖拽起点（松手未拖动 → 走点击自动移动）
         tap(S, x, y, P, api) {
             const CW = 44, CH = 60;
+            S.drag = null;
             if (hitc(x, y, 8, 12, CW, CH)) {
                 if (S.stock.length >= 8 && S.cols.every(c => c.length)) {
                     for (let k = 0; k < 8; k++) { const c = S.stock.pop(); c.up = true; S.cols[k].push(c); }
@@ -158,20 +181,49 @@
                             if (P.strict && col[m].s !== col[m + 1].s) { ok = false; break; }
                         }
                         if (!ok) return;
-                        const seq = col.slice(n);
-                        for (let t = 0; t < 8; t++) {
-                            if (t === k) continue;
-                            const tc = S.cols[t];
-                            const top = tc[tc.length - 1];
-                            if (!tc.length || !top) continue;
-                            if (top.r === seq[0].r + 1 && (!P.strict || top.s === seq[0].s)) {
-                                tc.push(...seq); col.length = n;
-                                if (col.length && !col[col.length - 1].up) col[col.length - 1].up = true;
-                                spClear(S); return chkSp(S, api);
-                            }
-                        }
+                        S.drag = { from: k, n, x0: x, y0: y, x, y, moved: false };
                         return;
                     }
+                }
+            }
+        },
+        drag(S, x, y, P, api, dx, dy) {
+            if (!S.drag) return;
+            if (!S.drag.moved && Math.hypot(dx, dy) > 6) S.drag.moved = true;
+            S.drag.x = x; S.drag.y = y;
+        },
+        // 松手：拖动过 → 按指针所在列落位（非法弹回）；未拖动 → 点击自动移动
+        dragend(S, x, y, P, api) {
+            const d = S.drag;
+            if (!d) return;
+            S.drag = null;
+            const px = x != null ? x : d.x;
+            const col = S.cols[d.from];
+            if (d.moved) {
+                const t = Math.max(0, Math.min(7, Math.floor((px - 8) / 48)));
+                if (t !== d.from) {
+                    const tc = S.cols[t];
+                    const top = tc[tc.length - 1];
+                    const seq = col.slice(d.n);
+                    if (top && top.r === seq[0].r + 1 && (!P.strict || top.s === seq[0].s)) {
+                        tc.push(...seq); col.length = d.n;
+                        if (col.length && !col[col.length - 1].up) col[col.length - 1].up = true;
+                        spClear(S); return chkSp(S, api);
+                    }
+                }
+                return;   // 非法落点：弹回原位
+            }
+            // 点击（未拖动）：自动找最佳目标列
+            const seq = col.slice(d.n);
+            for (let t = 0; t < 8; t++) {
+                if (t === d.from) continue;
+                const tc = S.cols[t];
+                const top = tc[tc.length - 1];
+                if (!tc.length || !top) continue;
+                if (top.r === seq[0].r + 1 && (!P.strict || top.s === seq[0].s)) {
+                    tc.push(...seq); col.length = d.n;
+                    if (col.length && !col[col.length - 1].up) col[col.length - 1].up = true;
+                    spClear(S); return chkSp(S, api);
                 }
             }
         },

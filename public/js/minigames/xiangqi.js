@@ -48,8 +48,9 @@ MiniGames.xiangqi = {
     ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
-        const idx = this.LEVELS.indexOf(lv);
-        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        // 框架 levelIdx 优先（fillLevels 会生成副本对象导致 indexOf 恒为 -1）
+        const idx = opts.levelIdx != null && opts.levelIdx >= 0 ? opts.levelIdx : this.LEVELS.indexOf(lv);
+        const pIdx = idx >= 0 ? Math.min(idx, this.PARAMS.length - 1) : (opts.endless ? this.PARAMS.length - 1 : 0);
         const [mistakeRate] = this.PARAMS[pIdx] || this.PARAMS[0];
         const C = 9, R = 10, S = 44;
         const INIT = [

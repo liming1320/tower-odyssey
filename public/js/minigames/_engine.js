@@ -56,7 +56,13 @@ window.MG = window.MG || {};
             const dx = p.x - api._dragStart.x, dy = p.y - api._dragStart.y;
             cfg.drag(S, p.x, p.y, P, api, dx, dy); paint();
         };
-        const onUp = () => {
+        const onUp = e => {
+            // 拖拽松手回调（cfg.dragend）：返回松手位置，供纸牌类游戏做落点判定
+            if (api._dragStart && cfg.dragend) {
+                const p = (e && (e.clientX != null || (e.changedTouches && e.changedTouches.length))) ? pos(e) : null;
+                try { cfg.dragend(S, p ? p.x : null, p ? p.y : null, P, api); } catch (err) { if (window.__MG_TEST) throw err; }
+                paint();
+            }
             api._dragStart = null;
         };
         const onKey = e => {

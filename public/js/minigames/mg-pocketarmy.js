@@ -32,6 +32,9 @@ window.MiniGames = window.MiniGames || {};
             dist: 0, target: P.target || 800,
             speed: 0,
             obstacles: [],          // {type:'gate'|'enemy'|'barrel', val, y, x, w, alive, hp?, taken, rot}
+            bullets: [],            // 士兵自动射击的子弹 {x, y, vx, vy, dmg}
+            sparks: [],             // 命中火花 {x, y, t, col}
+            fireCd: 0,              // 开火冷却
             ticker: 0,
             spawnGap: P.spawnGap || 1,
             enemyMul: P.enemyMul || 0.6,
@@ -107,58 +110,138 @@ window.MiniGames = window.MiniGames || {};
                         ctx.fillStyle = 'rgba(255,213,107,0.4)'; ctx.fill();
                     }
                     ctx.restore();
-                } else if (o.type === 'enemy') {
-                    // 敌人方块（红）+ 数字血条
-                    ctx.fillStyle = '#b04848';
-                    ctx.fillRect(sx - 18, sy - 22, 36, 36);
+                } else if (o.type === 'enemy' && o.alive) {
+                    // 敌人：圆润 Q 版小怪（圆头 + 触角 + 表情 + 血条）
+                    const wob = Math.sin(S.animPhase * 6 + o.x) * 2;   // 左右摇摆
+                    ctx.save();
+                    ctx.translate(sx + wob, sy);
+                    // 触角
+                    ctx.strokeStyle = '#5a1818'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+                    ctx.beginPath(); ctx.moveTo(-8, -16); ctx.quadraticCurveTo(-14, -24, -12, -27); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(8, -16); ctx.quadraticCurveTo(14, -24, 12, -27); ctx.stroke();
                     ctx.fillStyle = '#ff7a7a';
-                    ctx.fillRect(sx - 14, sy - 18, 28, 28);
-                    ctx.fillStyle = '#fff'; ctx.fillRect(sx - 8, sy - 12, 4, 4); ctx.fillRect(sx + 4, sy - 12, 4, 4);
-                    ctx.fillStyle = '#000'; ctx.fillRect(sx - 7, sy - 11, 2, 2); ctx.fillRect(sx + 5, sy - 11, 2, 2);
-                    // 触角（红眼小怪）
-                    ctx.fillStyle = '#5a1818';
-                    ctx.fillRect(sx - 14, sy - 26, 4, 6);
-                    ctx.fillRect(sx + 10, sy - 26, 4, 6);
+                    ctx.beginPath(); ctx.arc(-12, -27, 3, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(12, -27, 3, 0, Math.PI * 2); ctx.fill();
+                    // 身体（圆润胶囊：投影 + 渐变）
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
+                    let eg = null; try { eg = ctx.createRadialGradient(-5, -6, 3, 0, 0, 20); eg.addColorStop(0, '#e07a7a'); eg.addColorStop(1, '#a03838'); } catch (e) { }
+                    ctx.fillStyle = eg || '#b04848';
+                    ctx.beginPath();
+                    ctx.moveTo(-16, 6);
+                    ctx.quadraticCurveTo(-18, -14, 0, -16);
+                    ctx.quadraticCurveTo(18, -14, 16, 6);
+                    ctx.quadraticCurveTo(0, 14, -16, 6);
+                    ctx.closePath(); ctx.fill();
+                    ctx.restore();
+                    // 表情（凶巴巴的眼睛 + 嘴）
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath(); ctx.arc(-6, -5, 4.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(6, -5, 4.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#1a1a28';
+                    ctx.beginPath(); ctx.arc(-5, -4.5, 2.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(7, -4.5, 2.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#5a1010'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                    ctx.beginPath(); ctx.moveTo(-4, -12); ctx.lineTo(-9, -9); ctx.moveTo(4, -12); ctx.lineTo(9, -9); ctx.stroke();  // 怒眉
+                    ctx.beginPath(); ctx.arc(0, 4, 4, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();                        // 嘴
+                    ctx.restore();
                     // 血条
                     const hp = o.hp, max = o.maxHp;
-                    ctx.fillStyle = '#1a1f2e'; ctx.fillRect(sx - 18, sy - 36, 36, 4);
+                    ctx.fillStyle = '#1a1f2e'; ctx.fillRect(sx - 18, sy - 36, 36, 5);
                     ctx.fillStyle = hp > max * 0.3 ? '#7ad86a' : '#ff7a8b';
-                    ctx.fillRect(sx - 18, sy - 36, 36 * (hp / max), 4);
+                    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(sx - 17, sy - 35, 34 * (hp / max), 3, 2) : ctx.fillRect(sx - 17, sy - 35, 34 * (hp / max), 3); ctx.fill();
                     // 数字
                     ctx.font = 'bold 11px Arial'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
                     ctx.fillText(hp, sx, sy - 41);
                 }
             }
 
-            // 玩家方阵：底部 V 字形摆开（Q 版方块小兵）
+            // ---- 子弹（亮黄圆头弹 + 拖尾 + 命中火花）----
+            for (const b of S.bullets) {
+                ctx.save();
+                // 拖尾
+                ctx.strokeStyle = 'rgba(255,213,107,0.5)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(b.x, b.y + 14); ctx.lineTo(b.x, b.y + 14 + b.vy * -0.05); ctx.stroke();
+                // 弹体（发光圆）
+                ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 8;
+                ctx.fillStyle = '#ffe08a';
+                ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(b.x - 1, b.y - 1, 1.6, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+            for (const sp of S.sparks) {
+                const k = sp.t / 0.25;
+                ctx.save();
+                ctx.globalAlpha = 1 - k;
+                ctx.strokeStyle = sp.col; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.arc(sp.x, sp.y, 4 + k * 14, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+            }
+
+            // 玩家方阵：底部 V 字形摆开（圆润 Q 版小人）
             const baseX = W / 2 + S.ox;
             const baseY = H - 90;
             const N = S.army;
-            // 主角（蓝衣）
-            ctx.fillStyle = '#5cc7ff';
-            ctx.fillRect(baseX - 13, baseY - 30, 26, 26);
-            ctx.fillStyle = '#a8e8f0';
-            ctx.fillRect(baseX - 10, baseY - 27, 20, 20);
-            ctx.fillStyle = '#fff'; ctx.fillRect(baseX - 6, baseY - 22, 3, 3); ctx.fillRect(baseX + 3, baseY - 22, 3, 3);
-            ctx.fillStyle = '#000'; ctx.fillRect(baseX - 5, baseY - 21, 1.5, 1.5); ctx.fillRect(baseX + 4, baseY - 21, 1.5, 1.5);
+            const ph = S.animPhase;
+            // 画一个圆润小兵：圆头 + 圆角身体 + 眼睛 + 摆动小手
+            const guy = (x, y, sz, c1, c2, isHero) => {
+                const swing = Math.sin(ph * 8 + x * 0.7) * 2;   // 走路摆动
+                ctx.save();
+                ctx.translate(x, y + (isHero ? 0 : swing * 0.4));
+                // 身体（圆角胶囊 + 投影）
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+                let g = null; try { g = ctx.createLinearGradient(0, -sz, 0, sz * 0.6); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) { }
+                ctx.fillStyle = g || c1;
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(-sz * 0.55, -sz * 0.5, sz * 1.1, sz * 1.1, sz * 0.45);
+                else ctx.rect(-sz * 0.55, -sz * 0.5, sz * 1.1, sz * 1.1);
+                ctx.fill();
+                ctx.restore();
+                // 头（大圆，肤色）
+                const hg = (() => { try { const h = ctx.createRadialGradient(-sz * 0.15, -sz * 1.1, sz * 0.1, 0, -sz * 0.85, sz * 0.5); h.addColorStop(0, '#fff0dd'); h.addColorStop(1, '#f5cfa3'); return h; } catch (e) { return '#ffe3c8'; } })();
+                ctx.fillStyle = hg;
+                ctx.beginPath(); ctx.arc(0, -sz * 0.85, sz * 0.48, 0, Math.PI * 2); ctx.fill();
+                // 眼睛
+                ctx.fillStyle = '#1a1a28';
+                ctx.beginPath(); ctx.arc(-sz * 0.16, -sz * 0.9, sz * 0.07, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(sz * 0.16, -sz * 0.9, sz * 0.07, 0, Math.PI * 2); ctx.fill();
+                // 帽子（主角蓝盔 / 士兵头带）
+                if (isHero) {
+                    ctx.fillStyle = '#3a8fd0';
+                    ctx.beginPath(); ctx.arc(0, -sz * 1.05, sz * 0.5, Math.PI, 0); ctx.fill();
+                    ctx.fillStyle = '#ffd56b'; ctx.fillRect(-sz * 0.5, -sz * 1.08, sz, sz * 0.09);
+                } else {
+                    ctx.strokeStyle = c2; ctx.lineWidth = sz * 0.12;
+                    ctx.beginPath(); ctx.arc(0, -sz * 0.85, sz * 0.48, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+                }
+                // 小手（握枪姿势，随行走摆动）
+                ctx.strokeStyle = '#f5cfa3'; ctx.lineWidth = sz * 0.16; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(-sz * 0.4, -sz * 0.1); ctx.lineTo(-sz * 0.52, -sz * 0.35 + swing); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(sz * 0.4, -sz * 0.1); ctx.lineTo(sz * 0.52, -sz * 0.35 - swing); ctx.stroke();
+                // 枪（主角拿枪，朝上）
+                if (isHero) {
+                    ctx.strokeStyle = '#3a3a48'; ctx.lineWidth = sz * 0.12;
+                    ctx.beginPath(); ctx.moveTo(sz * 0.45, -sz * 0.2); ctx.lineTo(sz * 0.45, -sz * 1.1); ctx.stroke();
+                }
+                ctx.restore();
+            };
+            // 主角（蓝衣，稍大）
+            guy(baseX, baseY - 14, 20, '#7ad0ff', '#2a6ab0', true);
             // 队伍（每排 4 个，V 字向下散开；总宽根据 N 自动伸缩）
             const cols = 4;
-            const rowH = 14;
+            const rowH = 17;
             for (let i = 1; i < N; i++) {
                 const row = Math.floor((i - 1) / cols);
                 const col = (i - 1) % cols;
                 const inRow = Math.min(cols, N - 1 - row * cols);
                 const widthBase = Math.max(2, inRow);
-                const dx = (col - (widthBase - 1) / 2) * 16;
-                const dy = row * rowH + 4;
+                const dx = (col - (widthBase - 1) / 2) * 19;
+                const dy = row * rowH + 5;
                 const ox = baseX + dx, oy = baseY - dy;
                 if (oy < H * 0.55) break;
-                ctx.fillStyle = '#7a90d8';
-                ctx.fillRect(ox - 10, oy - 18, 20, 20);
-                ctx.fillStyle = '#b8c8e8';
-                ctx.fillRect(ox - 7, oy - 15, 14, 14);
-                // 小眼
-                ctx.fillStyle = '#fff'; ctx.fillRect(ox - 4, oy - 11, 2, 2); ctx.fillRect(ox + 2, oy - 11, 2, 2);
+                guy(ox, oy - 8, 14, '#9ab0e8', '#5a6fae', false);
             }
             // 队伍数字徽章
             ctx.fillStyle = 'rgba(255,213,107,0.95)';
@@ -251,6 +334,46 @@ window.MiniGames = window.MiniGames || {};
                 o.y += 220 * dt;
                 if (o.type === 'barrel') o.rot = (o.rot || 0) + 3 * dt;
             }
+            // ---- 自动射击：方阵向最近的敌人开火（兵力越多火力越猛）----
+            S.fireCd -= dt;
+            if (S.fireCd <= 0) {
+                let target = null;
+                for (const o of S.obstacles) if (o.type === 'enemy' && o.alive && o.y > -30) {
+                    if (!target || o.y > target.y) target = o;   // 最靠近的敌人
+                }
+                if (target) {
+                    S.fireCd = 0.34;
+                    const n = S.army >= 25 ? 3 : S.army >= 10 ? 2 : 1;   // 兵力 = 火力
+                    for (let i = 0; i < n; i++) {
+                        const sx0 = baseX + (i - (n - 1) / 2) * 10;
+                        const dx = target.x - sx0, dy = target.y - (H - 130);
+                        const len = Math.max(1, Math.hypot(dx, dy));
+                        const spd = 480;
+                        S.bullets.push({ x: sx0, y: H - 130, vx: dx / len * spd, vy: dy / len * spd, dmg: S.atk + (S.buff > 0 ? 1 : 0) });
+                    }
+                } else S.fireCd = 0.12;   // 没有目标时短轮询
+            }
+            // ---- 子弹飞行 + 命中 ----
+            for (const b of S.bullets) {
+                b.x += b.vx * dt; b.y += b.vy * dt;
+                for (const o of S.obstacles) {
+                    if (o.type !== 'enemy' || !o.alive) continue;
+                    if (Math.abs(b.x - o.x) < 20 && Math.abs(b.y - o.y) < 22) {
+                        o.hp -= b.dmg; b.dead = true;
+                        S.sparks.push({ x: b.x, y: b.y, t: 0, col: '#ffd56b' });
+                        if (o.hp <= 0) {
+                            o.alive = false;
+                            S.sparks.push({ x: o.x, y: o.y, t: 0, col: '#ff9d5c' });
+                            S.sparks.push({ x: o.x - 8, y: o.y + 6, t: -0.06, col: '#ffd56b' });
+                            S.sparks.push({ x: o.x + 8, y: o.y - 4, t: -0.06, col: '#ffd56b' });
+                        }
+                        break;
+                    }
+                }
+            }
+            S.bullets = S.bullets.filter(b => !b.dead && b.y > -30 && b.x > -30 && b.x < W + 30);
+            for (const sp of S.sparks) sp.t += dt;
+            S.sparks = S.sparks.filter(sp => sp.t < 0.25);
             // 碰撞（方阵 = 主角位置 ± 半宽）
             const baseX = W / 2 + S.ox;
             const baseY = H - 90;
