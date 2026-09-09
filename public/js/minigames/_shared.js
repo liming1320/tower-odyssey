@@ -288,10 +288,19 @@ const MG = {
         };
         const showLevels = () => {
             clearCurrent();
+            // 无尽模式：不需要解锁任何关卡，直接可玩
+            const extra = [];
+            if (cfg.endless) {
+                extra.push({
+                    label: '∞ 无尽模式（无需解锁，直接玩）',
+                    onClick: () => runLevel(-1, Object.assign({ name: '无尽', desc: '无限玩 · 失败为止' }, cfg.endless)),
+                });
+            }
             this.levelSelect(container, {
                 game: cfg.id,
                 title: cfg.title,
                 levels: cfg.levels,
+                extra,
                 onStart: (idx, lv) => runLevel(idx, lv),
             });
         };
@@ -299,22 +308,24 @@ const MG = {
             clearCurrent();
             const scoreEl = cfg.scoreEl || null;
             const onScore = cfg.onScore || (scoreEl ? (s => scoreEl.textContent = s != null ? s : '') : null);
+            const endless = idx < 0;
             current = cfg.start(container, {
                 level: lv,
                 levelIdx: idx,
+                endless,
                 totalLevels: cfg.levels.length,
                 onScore,
                 onComplete: result => {
                     clearCurrent();
                     const stars = result.stars || 0;
-                    if (result.win) this.recordStars(cfg.id, idx + 1, stars);
-                    else this.recordStars(cfg.id, idx + 1, stars);  // 也记录分数（用于显示）
+                    if (!endless) this.recordStars(cfg.id, idx + 1, stars);
+                    else this.setBest(cfg.id, result.score || 0);
                     this.result(container, {
                         win: !!result.win,
                         title: result.title || (result.win ? '🏆 胜利！' : '💥 失败'),
-                        stars,
-                        lines: result.lines || [],
-                        hasNext: idx < cfg.levels.length - 1,
+                        stars: endless ? null : stars,
+                        lines: (result.lines || []).concat(endless && this.getBest(cfg.id) ? [`🏅 历史最高 ${this.getBest(cfg.id)}`] : []),
+                        hasNext: !endless && idx < cfg.levels.length - 1,
                         hasBack: true,
                         onRetry: () => runLevel(idx, lv),
                         onNext: () => idx + 1 < cfg.levels.length && runLevel(idx + 1, cfg.levels[idx + 1]),
@@ -325,6 +336,13 @@ const MG = {
         };
         showLevels();
         return { stop() { clearCurrent(); } };
+    },
+    // 无尽模式最高分（localStorage）
+    bestKey(id) { return 'mg-best-' + id; },
+    getBest(id) { try { return +(localStorage.getItem(this.bestKey(id)) || 0); } catch (e) { return 0; } },
+    setBest(id, v) {
+        if (v > this.getBest(id)) { try { localStorage.setItem(this.bestKey(id), String(v)); } catch (e) {} }
+        return this.getBest(id);
     },
 };
 window.MG = MG;

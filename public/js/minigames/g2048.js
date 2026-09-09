@@ -116,10 +116,13 @@ MiniGames.g2048 = {
         { name: '磐石塔',   target: 11, moves: 2100, rocks: 4, desc: '击败 蛇精 · 2100 步 · 🪨4' },
         { name: '诛妖·终',  target: 11, moves: 1800, rocks: 6, desc: '击败 蛇精 · 1800 步 · 🪨6' },
     ],
+    // 无尽模式：格子没满就能一直玩，棋盘锁死即结束（无需解锁任何关卡）
+    ENDLESS: { name: '无尽 · 降妖', desc: '格子没满就一直合，合出蛇精也不停' },
     // 由 MG.runGame 统一管理关卡选择；g2048.start 只负责对局逻辑
-    // opts.levelIdx: 关卡索引（0-based）；opts.level === 0 表示无尽模式
+    // opts.levelIdx: 关卡索引（0-based）；opts.levelIdx === -1 表示无尽模式
     start(container, opts) {
-        const level = opts.levelIdx != null ? opts.levelIdx + 1 : (opts.level | 0);
+        const endless = opts.endless === true || opts.levelIdx === -1;
+        const level = endless ? 0 : ((opts.levelIdx != null ? opts.levelIdx + 1 : (opts.level | 0)) || 1);
         const api = { stop() {} };
         g2048Round(container, opts, level, api);
         return api;
@@ -273,14 +276,27 @@ function g2048Round(container, opts, level, api) {
             const ratio = (maxMoves - moves) / maxMoves;
             stars = win ? (ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1) : 0;
         }
+        const maxL = Math.max(...board.flat(), 0);
+        // 无尽模式：记录最高分 / 最高等级
+        let bestTxt = '';
+        if (level === 0) {
+            let best = { score: 0, lv: 0 };
+            try { best = JSON.parse(localStorage.getItem('mg-g2048-endless')) || best; } catch (e) {}
+            const isNew = score > (best.score || 0);
+            best = { score: Math.max(best.score || 0, score), lv: Math.max(best.lv || 0, maxL) };
+            try { localStorage.setItem('mg-g2048-endless', JSON.stringify(best)); } catch (e) {}
+            bestTxt = `${isNew ? '🎉 新纪录！' : ''}历史最高 ${best.score} 分 · Lv${best.lv}`;
+        }
         if (opts.onComplete) {
-            const maxL = Math.max(...board.flat(), 0);
             opts.onComplete({
-                win,
+                win: level > 0 ? win : false,
                 stars,
-                title: win ? `🏆 击败 ${MON_NAME(target)}！` : '💥 妖怪太强了…',
-                lines: [reason || '', `分数 ${score} · 用了 ${moves} 步`, `最高 Lv${maxL}（${MON_NAME(maxL) || '-'}）`].filter(Boolean),
+                title: level === 0 ? '🏁 棋盘满了！' : (win ? `🏆 击败 ${MON_NAME(target)}！` : '💥 妖怪太强了…'),
+                lines: (level === 0
+                    ? [reason || '', `本局 ${score} 分 · ${moves} 步`, `最高 Lv${maxL}（${MON_NAME(maxL) || '-'}）`, bestTxt]
+                    : [reason || '', `分数 ${score} · 用了 ${moves} 步`, `最高 Lv${maxL}（${MON_NAME(maxL) || '-'}）`]).filter(Boolean),
                 score,
+                endless: level === 0,
             });
         } else {
             MG.recordStars('g2048', level, stars);   // 无框架调用时兜底记录
@@ -317,7 +333,7 @@ function g2048Round(container, opts, level, api) {
             add();
         }
         draw();
-        if (board.flat().includes(target)) return finish(true, `在 ${moves} 步内合出了 ${MON_NAME(target)}！`);
+        if (level > 0 && board.flat().includes(target)) return finish(true, `在 ${moves} 步内合出了 ${MON_NAME(target)}！`);
         if (level > 0 && moves >= maxMoves) return finish(false, `步数用完（${maxMoves} 步）还没凑出 ${MON_NAME(target)}`);
         // 死局检测
         const can = ['L', 'R', 'U', 'D'].some(d => {
@@ -327,7 +343,7 @@ function g2048Round(container, opts, level, api) {
             board = JSON.parse(snap); score = sc;
             return changed;
         });
-        if (!can) finish(level === 0, '棋盘锁死，无路可走');
+        if (!can) finish(false, level === 0 ? '棋盘满了，无处可动' : '棋盘锁死，无路可走');
     };
 
     // ============ 输入：键盘（方向键 + WASD）============

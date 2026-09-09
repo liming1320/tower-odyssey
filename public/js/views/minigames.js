@@ -59,6 +59,7 @@ const MinigamesView = {
                 const levels = (game.LEVELS && game.LEVELS.length) ? game.LEVELS : defaultLevels(g);
                 MG.runGame(stage, {
                     id: g.id, title: g.name, levels,
+                    endless: game.ENDLESS || null,
                     start: (c, opts, lv) => game.start(c, opts, lv),
                     scoreEl,
                 });
@@ -78,30 +79,125 @@ function defaultLevels(g) {
     return out;
 }
 
-// 20 个小游戏清单
-// thumb: sceneThumb 场景缩略图（88x60 渐变底 + emoji 组合），风格与游戏内一致
-// 各 id 与 /js/minigames/<id>.js 的实现一一对应
+// 100 个小游戏清单（id 与 /js/minigames/*.js 一一对应）
+// sc(id, 名称, 简介, 底色1, 底色2, [emoji...]) —— 自动生成场景缩略图
+function sc(id, name, desc, c1, c2, emos) {
+    const n = emos.length;
+    const step = n > 3 ? 21 : 26;
+    const size = n > 3 ? 18 : 23;
+    const items = emos.map((e, i) => [e, 44 + (i - (n - 1) / 2) * step, 32, size]);
+    return { id, name, desc, thumb: sceneThumb(c1, c2, items) };
+}
 const GAMES = [
-    { id: 'gomoku',   name: '五子棋',     desc: '经典 15×15 对战，挑战 AI', thumb: sceneThumb('#e8c890', '#a87840', [['⚫', 30, 34, 22], ['⚪', 54, 26, 22]]) },
-    { id: 'g2048',    name: '2048',        desc: '20 关妖怪挑战 · 击败蛇精', thumb: g2048Thumb() },
-    { id: 'banqi',    name: '暗棋圣手',    desc: '15 关闯关 · 宋金小人 · 必杀技', thumb: banqiThumb() },
-    { id: 'xiangqi',  name: '中国象棋',     desc: '红黑对弈，车马炮冲锋',       thumb: sceneThumb('#e8b088', '#9a5a28', [['♟', 28, 30, 22], ['♞', 56, 36, 20]]) },
-    { id: 'link',     name: '连连看',       desc: '20 关挑战 · 岩石挡路',       thumb: sceneThumb('#7ad0ff', '#2a6adf', [['🔗', 30, 26, 21], ['🔗', 56, 40, 21], ['🪨', 72, 18, 12]]) },
-    { id: 'match3',   name: '消消乐',       desc: '20 关挑战 · 配额与石块',     thumb: sceneThumb('#ffb86b', '#e0642a', [['🍬', 26, 24, 20], ['🍭', 50, 38, 20], ['🍬', 70, 20, 15]]) },
-    { id: 'snake',    name: '贪吃蛇',       desc: '方向键控制，吃豆长大',       thumb: sceneThumb('#a0e8a0', '#2e8a3e', [['🐍', 38, 34, 30], ['🍎', 70, 22, 16]]) },
-    { id: 'tetris',   name: '俄罗斯方块',   desc: '经典方块，消除得分',         thumb: sceneThumb('#8aa8ff', '#2a3a8f', [['🟪', 28, 22, 16], ['🟨', 50, 34, 16], ['🟦', 70, 22, 16], ['🟥', 38, 46, 14]]) },
-    { id: 'mole',     name: '打地鼠',       desc: '限时敲击地鼠',               thumb: sceneThumb('#d8a878', '#7a5228', [['🐹', 34, 30, 24], ['🔨', 62, 24, 20]]) },
-    { id: 'mine',     name: '扫雷',         desc: '9×9 经典 10 雷',             thumb: sceneThumb('#c8ccd8', '#5a6278', [['💣', 36, 32, 24], ['🚩', 64, 22, 16]]) },
-    { id: 'memory',   name: '记忆翻牌',     desc: '找出所有配对',               thumb: sceneThumb('#d0a8ff', '#5a2ea8', [['🃏', 30, 32, 24], ['❓', 62, 24, 18]]) },
-    { id: 'slide15',  name: '数字华容道',   desc: '1-15 滑动排序',              thumb: sceneThumb('#8ac8ff', '#2a5ac0', [['🔢', 32, 30, 22], ['➡️', 62, 34, 15]]) },
-    { id: 'bulls',    name: '猜数字',       desc: 'A×B 逻辑推理',               thumb: sceneThumb('#ffcf8a', '#b06818', [['🔢', 32, 30, 22], ['💡', 64, 24, 18]]) },
-    { id: 'sudoku6',  name: '迷你数独',     desc: '6×6 入门题',                 thumb: sceneThumb('#a0e8a0', '#2e8a3e', [['6️⃣', 34, 32, 24], ['🧩', 64, 24, 16]]) },
-    { id: 'hanoi',    name: '汉诺塔',       desc: 'N 层盘子三柱移动',           thumb: sceneThumb('#ffd0a0', '#b06030', [['🗼', 44, 30, 26], ['🟠', 22, 42, 12], ['🔴', 24, 28, 12]]) },
-    { id: 'piano',    name: '别踩白块',     desc: '只点黑块，反应速度',         thumb: sceneThumb('#e8e8f4', '#8a90a8', [['🎹', 34, 32, 24], ['🎵', 66, 24, 16]]) },
-    { id: 'reaction', name: '反应力测试',   desc: '颜色变化就点',               thumb: sceneThumb('#ffe88a', '#c89418', [['⚡', 38, 30, 26], ['🎯', 66, 24, 16]]) },
-    { id: 'breakout', name: '打砖块',       desc: '弹球消砖经典',               thumb: sceneThumb('#8ad0ff', '#2060b0', [['🧱', 32, 26, 18], ['🏓', 60, 40, 20]]) },
-    { id: 'jump',     name: '跳一跳',       desc: '蓄力跳跃，精准定距',         thumb: sceneThumb('#c8f0c8', '#3a9040', [['🦘', 38, 32, 26], ['🎯', 68, 24, 15]]) },
-    { id: 'shooter',  name: '飞机大战',     desc: '射击陨石升级',               thumb: sceneThumb('#8a9ad8', '#141c3a', [['🚀', 34, 38, 24], ['👾', 62, 22, 20], ['⭐', 20, 16, 9], ['⭐', 76, 44, 7]]) },
+    sc('gomoku', '五子棋', '20 关 AI 对战，失误率递减', '#e8c890', '#a87840', ['\u26ab', '\u26aa']),
+    sc('g2048', '2048 降妖', '20 关妖怪合并 · 无尽模式', '#5a7a9f', '#2c3e6a', ['\u2733']),
+    sc('banqi', '暗棋圣手', '15 关 · 宋金小人 · 必杀技', '#8a5a2f', '#4a2c12', ['\u2694']),
+    sc('xiangqi', '中国象棋', '20 关红黑对弈，车马炮冲锋', '#e8b088', '#9a5a28', ['\u265f', '\u265e']),
+    sc('link', '连连看', '20 关 · 岩石挡路 · 限时', '#7ad0ff', '#2a6adf', ['\ud83d\udd17', '\ud83e\udea8']),
+    sc('match3', '消消乐', '20 关 · 配额目标 · 石块', '#ffb86b', '#e0642a', ['\ud83c\udf6c', '\ud83c\udf6d']),
+    sc('snake', '贪吃蛇', '20 关 · 地图与目标递增', '#a0e8a0', '#2e8a3e', ['\ud83d\udc0d', '\ud83c\udf4e']),
+    sc('tetris', '俄罗斯方块', '20 关 · 下落提速', '#8aa8ff', '#2a3a8f', ['\ud83d\udfea', '\ud83d\udfe8']),
+    sc('mole', '打地鼠', '20 关 · 地洞变多地鼠变快', '#d8a878', '#7a5228', ['\ud83d\udc39', '\ud83d\udd28']),
+    sc('mine', '扫雷', '20 关 · 棋盘与雷数递增', '#c8ccd8', '#5a6278', ['\ud83d\udca3', '\ud83d\udea9']),
+    sc('memory', '记忆翻牌', '20 关 · 牌对递增', '#d0a8ff', '#5a2ea8', ['\ud83c\udccf', '\u2753']),
+    sc('slide15', '数字华容道', '20 关 · 3×3 到 5×5', '#8ac8ff', '#2a5ac0', ['\ud83d\udd22', '\u27a1']),
+    sc('bulls', '猜数字', '20 关 · A×B 逻辑推理', '#ffcf8a', '#b06818', ['\ud83d\udd22', '\ud83d\udca1']),
+    sc('sudoku6', '迷你数独', '20 关 · 6×6 入门', '#a0e8a0', '#2e8a3e', ['6\ufe0f\u20e3', '\ud83e\udde9']),
+    sc('hanoi', '汉诺塔', '20 关 · 3 到 9 层', '#ffd0a0', '#b06030', ['\ud83d\uddfc', '\ud83d\udfe0']),
+    sc('piano', '别踩白块', '20 关 · 速度递增', '#e8e8f4', '#8a90a8', ['\ud83c\udfb9', '\ud83c\udfb5']),
+    sc('reaction', '反应力测试', '20 关 · 等待时间递减', '#ffe88a', '#c89418', ['\u26a1', '\ud83c\udfaf']),
+    sc('breakout', '打砖块', '20 关 · 砖块与球速递增', '#8ad0ff', '#2060b0', ['\ud83e\uddf1', '\ud83c\udfd3']),
+    sc('jump', '跳一跳', '20 关 · 平台越来越窄', '#c8f0c8', '#3a9040', ['\ud83e\udd98', '\ud83c\udfaf']),
+    sc('shooter', '飞机大战', '20 关 · 敌机与血量递增', '#8a9ad8', '#141c3a', ['\ud83d\ude80', '\ud83d\udc7e']),
+
+    sc('tictactoe', '井字棋', '20 关 · AI 失误率递减', '#7ad0ff', '#2a4a8f', ['\u2715', '\u25cb']),
+    sc('connect4', '四子棋', '20 关 · 四子连珠', '#5a7ad0', '#1a2a5f', ['\ud83d\udd34', '\ud83d\udfe1']),
+    sc('reversi', '黑白棋', '20 关 · 翻转夹击', '#2e6a4a', '#0f2a1c', ['\u26aa', '\u26ab']),
+    sc('nim', '取石子', '20 关 · 博弈必胜策略', '#8a6a3a', '#3a2a14', ['\ud83e\udea8', '\u270b']),
+    sc('battleship', '海战棋', '20 关 · 有限炮弹击沉敌舰', '#2a6a9f', '#0e2a4a', ['\ud83d\udef2', '\ud83d\udd25']),
+    sc('dots', '点格棋', '20 关 · 围格占领', '#5a4a8f', '#221a3f', ['\u2500', '\u2502']),
+    sc('mancala', '非洲棋', '20 关 · 播撒石子入库', '#8a5a2f', '#3a2010', ['\ud83e\udea8', '\ud83c\udff4']),
+    sc('queens', 'N 皇后', '20 关 · 5 到 8 皇后', '#6a4a8f', '#2a1a4f', ['\u265b', '\u2655']),
+    sc('peg', '孔明棋', '20 关 · 跳吃剩子越少越好', '#8a6a3a', '#2a1c0e', ['\u26aa', '\u2b21']),
+    sc('breakthru', '突破棋', '20 关 · 兵阵突破底线', '#4a5878', '#161e30', ['\ud83d\udd35', '\ud83d\udd34']),
+
+    sc('chess', '国际象棋', '20 关 · 完整走子规则', '#6b7fa8', '#2a3450', ['\u2654', '\u265a']),
+    sc('junqi', '军棋翻翻棋', '20 关 · 军衔·炸弹·地雷·军旗', '#3d4a2e', '#1e2616', ['\ud83d\udee1', '\ud83d\udea9']),
+
+    sc('solitaire', '纸牌接龙', '20 关 · Klondike 经典', '#1f5c3a', '#0d2e1d', ['\u2660', '\u2665']),
+    sc('spider', '蜘蛛纸牌', '20 关 · K→A 序列消除', '#1f4a5c', '#0d2230', ['\ud83d\udd77', '\u2660']),
+    sc('freecell', '空当接龙', '20 关 · 4 空当 52 张归位', '#3a2f52', '#1a1430', ['\ud83c\udccf', '\u2663']),
+    sc('pyramid', '金字塔纸牌', '20 关 · 凑 13 消除', '#4a3a26', '#241a10', ['\ud83d\udd0d', '\u2666']),
+    sc('blackjack', '21 点', '20 关 + 无尽 · 筹码翻倍', '#1f5c3a', '#0a2418', ['\ud83c\udccf', '\ud83d\udcb0']),
+    sc('poker', '五张比牌', '20 关 · 换牌比牌型', '#2f3a52', '#141c2c', ['\u2660', '\u2665', '\u2666']),
+    sc('war', '纸牌大战', '20 关 · 点数大者胜', '#3a2f52', '#1a1430', ['\ud83c\udccf', '\u2694']),
+    sc('monopoly', '大富翁', '20 关 · 掷骰买地收租', '#2f4a3a', '#12241c', ['\ud83c\udfe0', '\ud83c\udfb2']),
+
+    sc('maze', '迷宫', '20 关 · 迷宫越来越大', '#2f3a52', '#141c2c', ['\ud83c\udfc1', '\ud83c\udfc3']),
+    sc('lightsout', '点灯', '20 关 · 全部熄灭', '#ffe08a', '#3a3452', ['\ud83d\udca1']),
+    sc('floodit', '洪水填充', '20 关 · 最少步数同化全盘', '#ff6b7f', '#5cc7ff', ['\ud83c\udf08']),
+    sc('pipes', '接水管', '20 关 · 旋转接通水源', '#1e2a3a', '#0e1622', ['\ud83d\udca7', '\ud83d\udeb0']),
+    sc('nonogram', '数织', '20 关 · 按提示还原图案', '#5cc7ff', '#2a2440', ['\ud83d\udcd0']),
+    sc('sudoku9', '九宫数独', '20 关 · 挖洞数递增', '#22304a', '#0e1626', ['\ud83d\udd22']),
+    sc('numberpath', '数字连线', '20 关 · 按序连点', '#26304a', '#12182a', ['1', '2', '3']),
+    sc('sokoban', '推箱子', '20 关 · 经典仓库番', '#3a2f22', '#1a1410', ['\ud83d\udce6', '\ud83c\udfaf']),
+    sc('blockpuzzle', '方块填充', '20 关 + 无尽 · 消行得分', '#1e2a3a', '#0c141e', ['\ud83d\udfea', '\ud83d\udfe6']),
+    sc('mastermind', '色码破译', '20 关 · 红白点提示推理', '#2a2438', '#15121e', ['\ud83d\udd34', '\ud83d\udd35']),
+
+    sc('flappy', '飞扬的小鸟', '20 关 + 无尽 · 穿越管道', '#7ec8f0', '#3a90c0', ['\ud83d\udc24']),
+    sc('dodge', '躲避方块', '20 关 + 无尽 · 坚持不中', '#2a2440', '#14102a', ['\ud83d\udeb6', '\ud83d\udfe5']),
+    sc('catcher', '接苹果', '20 关 + 无尽 · 别接炸弹', '#3a5a2e', '#16281a', ['\ud83c\udf4e', '\ud83d\udca3']),
+    sc('balloonpop', '扎气球', '20 关 + 无尽 · 别让它飞走', '#4a7fd0', '#1a3a70', ['\ud83c\udf88']),
+    sc('archery', '射箭', '20 关 + 无尽 · 越近靶心越高', '#5a7a4a', '#22381a', ['\ud83c\udff9', '\ud83c\udfaf']),
+    sc('basketball', '投篮', '20 关 + 无尽 · 空心入网', '#8a5a2f', '#3a2412', ['\ud83c\udfc0', '\u26f9']),
+    sc('darts', '飞镖', '20 关 + 无尽 · 正中红心', '#3a2f52', '#1a1430', ['\ud83c\udfaf']),
+    sc('fishing', '钓鱼', '20 关 + 无尽 · 别钓上鞋子', '#2a6a9f', '#0e2a4a', ['\ud83d\udc1f', '\ud83e\udd7e']),
+    sc('helicopter', '直升机', '20 关 + 无尽 · 穿越障碍', '#2a3a5f', '#121c32', ['\ud83d\ude81']),
+    sc('stacker', '叠方块', '20 关 + 无尽 · 越叠越高', '#3a2f52', '#1a1430', ['\ud83d\udfe6', '\ud83d\udfea']),
+
+    sc('mathquiz', '速算挑战', '20 关 · 加减乘除混合', '#5cc7ff', '#2a5ac0', ['\u2795', '\u2797']),
+    sc('stroop', '色字干扰', '20 关 · 选字体颜色', '#e03a4a', '#3a7fd0', ['\ud83c\udf08']),
+    sc('higherlower', '比大小', '20 关 · 猜大还是小', '#ffd56b', '#b06818', ['\u2b06', '\u2b07']),
+    sc('oddone', '找不同', '20 关 · 找出不一样的', '#7adf7a', '#2e8a3e', ['\ud83d\udc36', '\ud83d\udc31']),
+    sc('idiom', '成语填空', '20 关 · 四字成语补字', '#ffb86b', '#b04818', ['\ud83d\udcd6']),
+    sc('trivia', '常识问答', '20 关 · 百科知识', '#b78bff', '#5a2ea8', ['\u2753', '\ud83d\udcda']),
+    sc('counting', '数一数', '20 关 · 数量越来越多', '#ff9d5c', '#b04818', ['\ud83d\udd34', '\u2b50']),
+    sc('estimate', '眼力估算', '20 关 · 误差范围递减', '#5cc7ff', '#2a6adf', ['\ud83d\udccf']),
+    sc('clockread', '读时钟', '20 关 · 认表盘时间', '#2a2440', '#14102a', ['\ud83d\udd57']),
+    sc('sequence', '数列推理', '20 关 · 找规律填数', '#7adf7a', '#2e8a3e', ['1', '2', '3', '?']),
+
+    sc('flashnum', '闪记数字', '20 关 · 数字位数递增', '#3a2f52', '#1a1430', ['\ud83d\udd22', '\u26a1']),
+    sc('chimp', '猩猩记忆', '20 关 · 位置顺序记忆', '#2f4a3a', '#14241c', ['\ud83e\udd8d', '\ud83d\udd22']),
+    sc('simon', '色彩记忆', '20 关 + 无尽 · 照序点亮', '#262038', '#12101e', ['\ud83d\udfe5', '\ud83d\udfe6']),
+    sc('cardmem', '记牌', '20 关 · 记住亮过的牌', '#2f4a3a', '#14241c', ['\u2660', '\u2665']),
+    sc('wordmem', '记词', '20 关 · 词语闪记', '#ffb86b', '#b04818', ['\ud83d\udcd6']),
+    sc('spot', '找隐藏', '20 关 · 图案越来越密', '#3a3350', '#1a1730', ['\ud83d\udd0d', '\u2b50']),
+    sc('pathmem', '路径记忆', '20 关 · 顺序点亮格子', '#2a3a52', '#141c2c', ['\ud83d\udfe8', '\u2728']),
+    sc('shadowmatch', '影子配对', '20 关 · 剪影辨物', '#5a4a8f', '#221a3f', ['\ud83d\udc36', '\ud83d\udc31']),
+    sc('whatmiss', '缺什么', '20 关 · 找出被拿走的', '#7adf7a', '#2e8a3e', ['\u2757', '\ud83c\udf4e']),
+    sc('reversenum', '倒背数字', '20 关 · 数字倒序', '#ffd56b', '#b06818', ['\ud83d\udd04', '\ud83d\udd22']),
+
+    sc('coinflip', '抛硬币', '20 关 + 无尽 · 连胜挑战', '#3a2f52', '#1a1430', ['\ud83e\ude99']),
+    sc('dicehi', '骰子比大小', '20 关 + 无尽 · 猜大小', '#2f4a3a', '#14241c', ['\ud83c\udfb2']),
+    sc('slots', '老虎机', '20 关 + 无尽 · 三连中奖', '#5a2f4a', '#2a1020', ['\ud83c\udfb0', '\ud83d\udc8e']),
+    sc('bingo', '宾果', '20 关 · 连成指定线数', '#3a2f52', '#1a1430', ['\ud83d\udd22', '\u2714']),
+    sc('spinner', '幸运转盘', '20 关 + 无尽 · 转到高分', '#4a2f52', '#20103a', ['\ud83c\udfaf']),
+    sc('rpsgame', '猜拳连胜', '20 关 + 无尽 · 石头剪刀布', '#2f3a52', '#141c2c', ['\u270a', '\u270c', '\u270b']),
+    sc('plinko', '弹珠台', '20 关 + 无尽 · 落高分槽', '#1f3a52', '#0c1e2e', ['\ud83d\udfe1', '\ud83c\udfaf']),
+    sc('lucky7', '幸运七', '20 关 + 无尽 · 猜两骰之和', '#3a2f22', '#1a1410', ['\ud83c\udfb2', '7']),
+    sc('tapburst', '连点挑战', '20 关 + 无尽 · 手速比拼', '#2f4a5f', '#12283a', ['\ud83d\udc46', '\u26a1']),
+    sc('gacha', '扭蛋抽卡', '20 关 + 无尽 · 抽 SSR', '#4a2f52', '#20103a', ['\ud83e\udd5a', '\u2b50']),
+
+    sc('towerdef', '迷你塔防', '20 关 + 无尽 · 建塔守家', '#2f4a3a', '#14241c', ['\ud83d\uddfc', '\ud83d\udc7e']),
+    sc('idleclick', '放置点击', '20 关 + 无尽 · 挂机赚钱', '#4a3f22', '#241d10', ['\ud83e\ude99', '\u2b06']),
+    sc('life', '生命游戏', '20 关 · 细胞演化存活数', '#1f2a3a', '#0c1420', ['\ud83e\uddec', '\ud83d\udfe9']),
+    sc('virus', '病毒扩散', '20 关 · 有限次数治愈', '#2a2038', '#140f1e', ['\ud83e\udda0', '\ud83d\udc8a']),
+    sc('sandfall', '流沙填充', '20 关 + 无尽 · 填到目标线', '#3a2f22', '#1a1410', ['\ud83c\udfd6', '\ud83d\udca7']),
+    sc('ballance', '平衡杆', '20 关 + 无尽 · 别让球掉', '#2f3a52', '#141c2c', ['\ud83d\udd34', '\u2696']),
+    sc('rocketland', '火箭着陆', '20 关 + 无尽 · 安全降落', '#0e1430', '#05080f', ['\ud83d\ude80']),
+    sc('orbit', '轨道跳跃', '20 关 + 无尽 · 躲开陨石', '#0e1430', '#05080f', ['\ud83d\udef0', '\u2604']),
+    sc('traffic', '交通调度', '20 关 · 避免路口相撞', '#2f3a3a', '#141c1c', ['\ud83d\ude97', '\ud83d\uded1']),
+    sc('growfarm', '开心农场', '20 关 + 无尽 · 种植收获', '#3a5a2e', '#16281a', ['\ud83c\udf31', '\ud83c\udf3e']),
 ];
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合
@@ -207,5 +303,11 @@ function g2048Thumb() {
         <text x="44" y="52" text-anchor="middle" font-size="6.5" font-weight="bold" fill="#ffd56b" font-family="Microsoft YaHei, sans-serif" stroke="#1a2a4a" stroke-width="1.5" paint-order="stroke">降妖伏魔</text>
     </svg>`;
 }
+
+// 2048 / 暗棋 使用专属手绘缩略图
+(function () {
+    const g2 = GAMES.find(g => g.id === 'g2048'); if (g2) g2.thumb = g2048Thumb();
+    const g3 = GAMES.find(g => g.id === 'banqi'); if (g3) g3.thumb = banqiThumb();
+})();
 
 window.MinigamesView = MinigamesView;
