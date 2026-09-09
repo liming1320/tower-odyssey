@@ -209,30 +209,43 @@ function linkRound(container, opts, level, api, onBack, onReplay) {
 
     // ---- 渲染 ----
     const draw = () => {
-        ctx.fillStyle = '#2a2540'; ctx.fillRect(0, 0, w, h);
+        MG.ui.board(ctx, w, h);
         for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
             const x = 2 + j * cellW, y = 2 + i * cellH;
             if (rocks.has(i * COLS + j)) {  // 岩石：挡路不可消
-                ctx.fillStyle = '#4a4438'; ctx.fillRect(x, y, cellW - 2, cellH - 2);
-                ctx.fillStyle = '#5e5748';
-                ctx.beginPath(); ctx.arc(x + cellW * 0.38, y + cellH * 0.4, 8, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(x + cellW * 0.62, y + cellH * 0.62, 10, 0, Math.PI * 2); ctx.fill();
+                MG.ui.rr(ctx, x + 2, y + 2, cellW - 4, cellH - 4, 8);
+                ctx.fillStyle = '#4a4438'; ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = '#26221a'; ctx.stroke();
+                MG.ui.emoji(ctx, '🪨', x + cellW / 2, y + cellH / 2, Math.min(cellW, cellH) * 0.6);
                 continue;
             }
-            ctx.fillStyle = (i + j) % 2 ? '#3a3258' : '#454063';
-            ctx.fillRect(x, y, cellW - 2, cellH - 2);
+            // 棋盘格底色（柔和双色）
+            MG.ui.rr(ctx, x + 1, y + 1, cellW - 3, cellH - 3, 8);
+            ctx.fillStyle = (i + j) % 2 ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.09)';
+            ctx.fill();
             if (board[i][j]) {
-                ctx.font = '28px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(board[i][j], x + cellW / 2, y + cellH / 2);
+                MG.ui.rr(ctx, x + 3, y + 3, cellW - 6, cellH - 6, 9);
+                ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill();
+                MG.ui.emoji(ctx, board[i][j], x + cellW / 2, y + cellH / 2 - 1, Math.min(cellW, cellH) * 0.66);
             }
-            if (sel && sel[0] === i && sel[1] === j) { ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.strokeRect(x + 1, y + 1, cellW - 4, cellH - 4); }
+            if (sel && sel[0] === i && sel[1] === j) {
+                ctx.save();
+                ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 10;
+                ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3;
+                MG.ui.rr(ctx, x + 2, y + 2, cellW - 4, cellH - 4, 9); ctx.stroke();
+                ctx.restore();
+            }
         }
         if (path) {
-            ctx.strokeStyle = '#5cd65c'; ctx.lineWidth = 3;
+            ctx.save();
+            ctx.shadowColor = '#5cd65c'; ctx.shadowBlur = 8;
+            ctx.strokeStyle = '#8ae87a'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            ctx.setLineDash([10, 7]);
             ctx.beginPath();
             ctx.moveTo(path[0][1] * cellW + cellW / 2, path[0][0] * cellH + cellH / 2);
             for (let k = 1; k < path.length; k++) ctx.lineTo(path[k][1] * cellW + cellW / 2, path[k][0] * cellH + cellH / 2);
             ctx.stroke();
+            ctx.restore();
         }
         opts.onScore && opts.onScore(`第 ${level} 关 · 已消 ${cleared}/${totalPairs} 对 · ⏱${Math.ceil(timeLeft)}s`);
     };

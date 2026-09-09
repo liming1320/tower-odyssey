@@ -62,7 +62,11 @@ MiniGames.mole = {
         const cells = [];
         for (let i = 0; i < cols * rows; i++) {
             const cell = document.createElement('div');
-            cell.style.cssText = `background:#6b4226;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:${cellSize * 0.55}px;cursor:pointer;user-select:none;width:${cellSize}px;height:${cellSize}px;transition:transform 0.1s;`;
+            // 草地格：绿渐变 + 内阴影（模拟地洞口）
+            cell.style.cssText = `background:radial-gradient(ellipse at 50% 68%, #2e1a0a 0 26%, transparent 42%),linear-gradient(165deg,#7cae52,#4f7a2e 70%,#3e6323);`
+                + `border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:${cellSize * 0.62}px;cursor:pointer;user-select:none;`
+                + `width:${cellSize}px;height:${cellSize}px;transition:transform 0.1s;box-shadow:inset 0 2px 6px rgba(0,0,0,0.35), inset 0 -2px 4px rgba(255,255,255,0.15);`
+                + `border:1px solid rgba(0,0,0,0.2);`;
             cell.textContent = '';
             grid.appendChild(cell);
             cells.push(cell);
@@ -78,7 +82,11 @@ MiniGames.mole = {
             cells.forEach((c, i) => { if (!newSet.has(i)) c.textContent = ''; });
             newSet.forEach(i => { if (cur.has(i) && Math.random() < 0.5) { cells[i].textContent = ''; newSet.delete(i); } });
             while (newSet.size < Math.min(moles, cols * rows)) newSet.add(MG.ri(0, cols * rows - 1));
-            newSet.forEach(i => cells[i].textContent = '🐹');
+            newSet.forEach(i => {
+                cells[i].textContent = '🐹';
+                cells[i].style.transform = 'scale(1.06)';
+                setTimeout(() => { if (cells[i].textContent) cells[i].style.transform = ''; }, 130);
+            });
             cur = newSet;
         };
         const timer = setInterval(() => {

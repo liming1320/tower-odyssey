@@ -57,22 +57,32 @@ MiniGames.sudoku6 = {
         const initial = board.map(r => r.slice());
         for (const k of maskSet) { const i = Math.floor(k / N), j = k % N; board[i][j] = 0; initial[i][j] = 0; }
         const draw = () => {
-            ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
-            ctx.strokeStyle = '#5a4880'; ctx.lineWidth = 2;
+            MG.ui.board(ctx, w, h);
+            // 2x3 子宫格交替底色（增强可读性）
             for (let bi = 0; bi < N; bi += 3) for (let bj = 0; bj < N; bj += 2) {
-                ctx.strokeRect(2 + bj * S, 2 + bi * S, 2 * S, 3 * S);
+                if (((bi / 3) + (bj / 2)) % 2) {
+                    MG.ui.rr(ctx, 3 + bj * S, 3 + bi * S, 2 * S - 2, 3 * S - 2, 8);
+                    ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill();
+                }
             }
-            ctx.strokeStyle = '#3a3258'; ctx.lineWidth = 1;
+            // 细网格线
+            ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1;
             for (let i = 0; i <= N; i++) {
                 ctx.beginPath(); ctx.moveTo(2, 2 + i * S); ctx.lineTo(2 + N * S, 2 + i * S); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(2 + i * S, 2); ctx.lineTo(2 + i * S, 2 + N * S); ctx.stroke();
             }
+            // 子宫格粗线
+            ctx.strokeStyle = 'rgba(255,213,107,0.55)'; ctx.lineWidth = 2.5;
+            for (let bi = 0; bi < N; bi += 3) for (let bj = 0; bj < N; bj += 2) {
+                MG.ui.rr(ctx, 2 + bj * S, 2 + bi * S, 2 * S, 3 * S, 6); ctx.stroke();
+            }
+            // 数字：题面白 / 玩家填金
             for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
                 const v = board[i][j];
                 if (!v) continue;
                 ctx.fillStyle = initial[i][j] ? '#fff' : '#ffd56b';
-                ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(v, 2 + j * S + S / 2, 2 + i * S + S / 2);
+                ctx.font = 'bold ' + (S * 0.5) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(v, 2 + j * S + S / 2, 2 + i * S + S / 2 + 1);
             }
             // 计算空格数和已填数
             let filled = 0, total = 0;

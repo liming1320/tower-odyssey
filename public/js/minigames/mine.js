@@ -72,20 +72,22 @@ MiniGames.mine = {
             return true;
         };
         const draw = () => {
-            ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
+            MG.ui.board(ctx, w, h);
             for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
                 const x = 2 + j * S, y = 2 + i * S;
                 if (revealed[i][j]) {
-                    ctx.fillStyle = '#3a3258'; ctx.fillRect(x, y, S - 2, S - 2);
-                    if (board[i][j] === -1) { ctx.fillStyle = '#ff5252'; ctx.font = (S * 0.6) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💣', x + S / 2, y + S / 2); }
+                    MG.ui.rr(ctx, x + 1, y + 1, S - 3, S - 3, 5);
+                    ctx.fillStyle = '#2e2a48'; ctx.fill();
+                    if (board[i][j] === -1) { MG.ui.emoji(ctx, '💣', x + S / 2, y + S / 2, S * 0.62); }
                     else if (board[i][j] > 0) {
                         ctx.fillStyle = ['#5cc7ff', '#5cd65c', '#ff5252', '#b78bff', '#ff9d5c', '#5cc7ff', '#888', '#888'][board[i][j] - 1];
-                        ctx.font = 'bold ' + (S * 0.55) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                        ctx.fillText(board[i][j], x + S / 2, y + S / 2);
+                        ctx.font = 'bold ' + (S * 0.52) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.fillText(board[i][j], x + S / 2, y + S / 2 + 1);
                     }
                 } else {
-                    ctx.fillStyle = '#5a4880'; ctx.fillRect(x, y, S - 2, S - 2);
-                    if (flagged[i][j]) { ctx.fillStyle = '#ffd56b'; ctx.font = (S * 0.55) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🚩', x + S / 2, y + S / 2); }
+                    // 未翻格：紫色渐变凸起按钮
+                    MG.ui.tile(ctx, x, y, S, '#7a68b0', '#52427e', '#3a2f5c', 6);
+                    if (flagged[i][j]) MG.ui.emoji(ctx, '🚩', x + S / 2, y + S / 2 - 1, S * 0.55);
                 }
             }
         };

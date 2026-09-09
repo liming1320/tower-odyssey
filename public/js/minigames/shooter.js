@@ -46,19 +46,32 @@ MiniGames.shooter = {
                 lines: ['击落：' + kills + ' / 目标 ' + target, lv.desc],
             });
         };
+        // 星空背景（固定种子，避免每帧闪烁）
+        const stars = Array.from({ length: 46 }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + 0.4, a: Math.random() * 0.6 + 0.2 }));
         const draw = () => {
-            ctx.fillStyle = '#0a0e1a'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#5cc7ff';
-            ctx.beginPath();
-            ctx.moveTo(ship.x, ship.y - ship.h / 2);
-            ctx.lineTo(ship.x - ship.w / 2, ship.y + ship.h / 2);
-            ctx.lineTo(ship.x, ship.y + ship.h / 3);
-            ctx.lineTo(ship.x + ship.w / 2, ship.y + ship.h / 2);
-            ctx.closePath(); ctx.fill();
-            ctx.fillStyle = '#ffd56b'; ctx.fillRect(ship.x - 3, ship.y - ship.h / 2, 6, 8);
-            ctx.fillStyle = '#ffd56b';
-            bullets.forEach(b => ctx.fillRect(b.x - 2, b.y - 6, 4, 12));
-            enemies.forEach(e => { ctx.fillStyle = '#ff5252'; ctx.fillRect(e.x - e.w / 2, e.y - e.h / 2, e.w, e.h); });
+            // 深空渐变
+            let bg = null;
+            try { bg = ctx.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#101a3a'); bg.addColorStop(1, '#060812'); } catch (e) {}
+            ctx.fillStyle = bg || '#0a0e1a'; ctx.fillRect(0, 0, w, h);
+            // 星星
+            for (const s of stars) {
+                ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+            }
+            // 玩家：火箭 emoji（朝上）
+            MG.ui.emoji(ctx, '🚀', ship.x, ship.y + 2, 34);
+            // 子弹：光弹
+            for (const b of bullets) {
+                ctx.save();
+                ctx.shadowColor = '#ffe870'; ctx.shadowBlur = 8;
+                let g = null;
+                try { g = ctx.createLinearGradient(0, b.y - 8, 0, b.y + 6); g.addColorStop(0, '#fff'); g.addColorStop(1, '#ffb020'); } catch (e) {}
+                ctx.fillStyle = g || '#ffd56b';
+                MG.ui.rr(ctx, b.x - 2.5, b.y - 8, 5, 14, 2.5); ctx.fill();
+                ctx.restore();
+            }
+            // 敌机：外星人 emoji
+            enemies.forEach(e => MG.ui.emoji(ctx, '👾', e.x, e.y, e.w + 8));
             opts.onScore && opts.onScore('击落：' + kills + ' / ' + target + ' · 剩余 ' + timeLeft + 's');
         };
         const step = () => {

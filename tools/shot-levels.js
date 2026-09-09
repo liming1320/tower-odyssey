@@ -203,6 +203,31 @@ class CDP {
         }
     }
 
+    // 7) 对局画面验证（美术升级后）：进入第 1 关截图
+    const gameShots = ['snake', 'mine', 'memory', 'gomoku', 'tetris', 'mole', 'shooter'];
+    for (const gid of gameShots) {
+        try {
+            await cdp.eval(`MinigamesView.launch(GAMES.find(g=>g.id==='${gid}'))`);
+            await sleep(500);
+            await cdp.eval(`(() => {
+                const c = document.querySelector('#mini-stage .mg-ls-cell');
+                if (c && c.onclick) c.onclick();
+            })()`);
+            await sleep(900);
+            await cdp.shot(path.join(OUT, 'lv-' + gid + '-game.png'));
+            const st = await cdp.eval(`(() => ({
+                errs: window._shotErrs || [],
+                score: (document.getElementById('mini-score')||{}).textContent || '',
+                hasCanvas: !!document.querySelector('#mini-stage canvas'),
+            }))()`);
+            console.log(`   🎮 ${gid} 对局: canvas=${st.hasCanvas} ${st.score.slice(0, 40)}`);
+            await cdp.eval(`document.getElementById('mini-back').click()`);
+            await sleep(300);
+        } catch (e) {
+            console.log(`   ✗ ${gid} game: ${e.message}`);
+        }
+    }
+
     const errs = await cdp.eval(`window._shotErrs || []`);
     if (errs.length) console.log('   ⚠ 页面错误:', JSON.stringify(errs).slice(0, 500));
 

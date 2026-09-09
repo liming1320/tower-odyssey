@@ -173,22 +173,37 @@ function match3Round(container, opts, level, api, onBack, onReplay) {
 
     // ---- 渲染 ----
     const draw = () => {
-        ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
+        MG.ui.board(ctx, w, h);
         for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
             const v = board[i][j];
             const x = 2 + j * cellW, y = 2 + i * cellH;
             if (v === ROCK) {  // 石块
-                ctx.fillStyle = '#4a4438'; ctx.fillRect(x + 3, y + 3, cellW - 8, cellH - 8);
-                ctx.fillStyle = '#5e5748';
-                ctx.beginPath(); ctx.arc(x + cellW * 0.4, y + cellH * 0.42, 7, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(x + cellW * 0.6, y + cellH * 0.6, 9, 0, Math.PI * 2); ctx.fill();
+                MG.ui.rr(ctx, x + 3, y + 3, cellW - 8, cellH - 8, 8);
+                ctx.fillStyle = '#4a4438'; ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = '#26221a'; ctx.stroke();
+                MG.ui.emoji(ctx, '🪨', x + cellW / 2, y + cellH / 2, Math.min(cellW, cellH) * 0.58);
             } else if (v >= 0) {
-                ctx.fillStyle = COL[v];
-                ctx.beginPath(); ctx.arc(x + cellW / 2, y + cellH / 2, 18, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = 'rgba(255,255,255,0.35)';
-                ctx.beginPath(); ctx.arc(x + cellW / 2 - 5, y + cellH / 2 - 6, 5, 0, Math.PI * 2); ctx.fill();
+                // 糖果：径向渐变球 + 高光 + 描边 + 投影
+                const cx = x + cellW / 2, cy = y + cellH / 2, r = Math.min(cellW, cellH) * 0.36;
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
+                let g = null;
+                try { g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.15, cx, cy, r); g.addColorStop(0, '#fff'); g.addColorStop(0.35, COL[v]); g.addColorStop(1, 'rgba(0,0,0,0.25)'); } catch (e) {}
+                ctx.fillStyle = g || COL[v];
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+                ctx.lineWidth = 2; ctx.strokeStyle = COL[v];
+                ctx.beginPath(); ctx.arc(cx, cy, r - 1, 0, Math.PI * 2); ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,0.75)';
+                ctx.beginPath(); ctx.ellipse(cx - r * 0.32, cy - r * 0.42, r * 0.26, r * 0.16, -0.6, 0, Math.PI * 2); ctx.fill();
             }
-            if (sel && sel[0] === i && sel[1] === j) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.strokeRect(x + 3, y + 3, cellW - 8, cellH - 8); }
+            if (sel && sel[0] === i && sel[1] === j) {
+                ctx.save();
+                ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 10;
+                ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3;
+                MG.ui.rr(ctx, x + 3, y + 3, cellW - 8, cellH - 8, 9); ctx.stroke();
+                ctx.restore();
+            }
         }
         const q = Object.keys(quota).map(k => `${MiniGames.match3.COLNAME[k]}${quota[k]}`).join(' ');
         opts.onScore && opts.onScore(`第 ${level} 关 · ${score}/${lv.score}分 · 剩${moves}步${q ? ' · 🎯' + q : ''}`);

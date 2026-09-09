@@ -1,8 +1,13 @@
 // 汉诺塔：20 关挑战，盘子数递增
 window.MiniGames = window.MiniGames || {};
+// hex 颜色变暗（渐变下半段用）
+const shade = (hex, f) => {
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.round(((n >> 16) & 255) * (f || 0.62)), g = Math.round(((n >> 8) & 255) * (f || 0.62)), b = Math.round((n & 255) * (f || 0.62));
+    return `rgb(${r},${g},${b})`;
+};
 MiniGames.hanoi = {
-    LEVELS: [
-        { name: '三盘入门', desc: '3 盘 · 理论最少 7 步' },
+    LEVELS: [        { name: '三盘入门', desc: '3 盘 · 理论最少 7 步' },
         { name: '三盘熟练', desc: '3 盘' },
         { name: '四盘入门', desc: '4 盘 · 理论最少 15 步' },
         { name: '四盘熟练', desc: '4 盘' },
@@ -46,17 +51,20 @@ MiniGames.hanoi = {
             pegDivs.forEach((d, i) => {
                 d.innerHTML = '';
                 const base = document.createElement('div');
-                base.style.cssText = 'width:90%;height:14px;background:#8a5732;border-radius:4px;margin-top:6px;';
+                base.style.cssText = 'width:92%;height:14px;background:linear-gradient(180deg,#a8743e,#6a3e18);border-radius:7px;margin-top:6px;box-shadow:0 3px 6px rgba(0,0,0,0.4);';
                 d.appendChild(base);
                 const pole = document.createElement('div');
-                pole.style.cssText = 'width:6px;height:' + Math.max(100, N * 22) + 'px;background:#5a3a1c;margin:0 auto;';
+                pole.style.cssText = 'width:8px;height:' + Math.max(100, N * 22) + 'px;background:linear-gradient(90deg,#8a5a28,#c89858,#8a5a28);border-radius:4px;margin:0 auto;box-shadow:0 0 6px rgba(0,0,0,0.3);';
                 d.appendChild(pole);
                 pegs[i].forEach((size, _) => {
                         const disk = document.createElement('div');
                         const w = 20 + size * 14;
                         const isSel = sel === i;
                         const palette = ['#ff5252', '#ff9d5c', '#ffd56b', '#5cd65c', '#5cc7ff', '#b78bff', '#ff7a8b', '#7adf7a', '#5b8cff'];
-                        disk.style.cssText = `width:${w}px;height:18px;background:${isSel ? '#ffd56b' : palette[size % palette.length]};border-radius:4px;margin-bottom:2px;`;
+                        const col = palette[size % palette.length];
+                        disk.style.cssText = `width:${w}px;height:19px;background:linear-gradient(180deg,${isSel ? '#fff0a0' : col},${isSel ? '#e0a020' : shade(col)});`
+                            + `border-radius:10px;margin-bottom:3px;border:1.5px solid rgba(0,0,0,0.25);`
+                            + `box-shadow:${isSel ? '0 0 10px rgba(255,213,107,0.8), ' : ''}0 2px 4px rgba(0,0,0,0.35), inset 0 2px 3px rgba(255,255,255,0.4);`;
                         d.appendChild(disk);
                     });
             });

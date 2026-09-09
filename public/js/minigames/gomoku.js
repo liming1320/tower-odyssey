@@ -114,29 +114,40 @@ MiniGames.gomoku = {
             }
         };
         const draw = () => {
-            ctx.fillStyle = '#d4a76a'; ctx.fillRect(0, 0, w, h);
-            ctx.strokeStyle = '#5a3a1c'; ctx.lineWidth = 1;
+            // 木色渐变棋盘 + 描边
+            let bg = null;
+            try { bg = ctx.createLinearGradient(0, 0, w, h); bg.addColorStop(0, '#e8c890'); bg.addColorStop(1, '#c8a060'); } catch (e) {}
+            ctx.fillStyle = bg || '#d4a76a'; ctx.fillRect(0, 0, w, h);
+            ctx.lineWidth = 4; ctx.strokeStyle = '#8a5a28';
+            ctx.strokeRect(2, 2, w - 4, h - 4);
+            ctx.lineWidth = 1; ctx.strokeStyle = '#7a5228';
             for (let i = 0; i < N; i++) {
                 ctx.beginPath(); ctx.moveTo(OFF + i * S, OFF); ctx.lineTo(OFF + i * S, OFF + (N - 1) * S); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(OFF, OFF + i * S); ctx.lineTo(OFF + (N - 1) * S, OFF + i * S); ctx.stroke();
             }
             const stars = [[3, 3], [3, 11], [11, 3], [11, 11], [7, 7]];
-            ctx.fillStyle = '#5a3a1c';
-            stars.forEach(([x, y]) => { ctx.beginPath(); ctx.arc(OFF + x * S, OFF + y * S, 3, 0, Math.PI * 2); ctx.fill(); });
+            ctx.fillStyle = '#6a4218';
+            stars.forEach(([x, y]) => { ctx.beginPath(); ctx.arc(OFF + x * S, OFF + y * S, 3.5, 0, Math.PI * 2); ctx.fill(); });
             for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
                 if (!board[i][j]) continue;
                 const cx = OFF + j * S, cy = OFF + i * S;
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
                 const grad = ctx.createRadialGradient(cx - 3, cy - 3, 2, cx, cy, 12);
-                if (board[i][j] === 1) { grad.addColorStop(0, '#666'); grad.addColorStop(1, '#000'); }
-                else { grad.addColorStop(0, '#fff'); grad.addColorStop(1, '#ccc'); }
+                if (board[i][j] === 1) { grad.addColorStop(0, '#686878'); grad.addColorStop(1, '#0a0a12'); }
+                else { grad.addColorStop(0, '#fff'); grad.addColorStop(1, '#c8c8d0'); }
                 ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx, cy, 11, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
             }
             if (winLine) {
-                ctx.strokeStyle = '#ff5252'; ctx.lineWidth = 3;
+                ctx.save();
+                ctx.shadowColor = '#ff5252'; ctx.shadowBlur = 8;
+                ctx.strokeStyle = '#ff5252'; ctx.lineWidth = 4; ctx.lineCap = 'round';
                 ctx.beginPath();
                 ctx.moveTo(OFF + winLine[0][1] * S, OFF + winLine[0][0] * S);
                 ctx.lineTo(OFF + winLine[4][1] * S, OFF + winLine[4][0] * S);
                 ctx.stroke();
+                ctx.restore();
             }
         };
         MG.bind(c, p => {

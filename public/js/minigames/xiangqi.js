@@ -175,7 +175,12 @@ MiniGames.xiangqi = {
             });
         };
         const draw = () => {
-            ctx.fillStyle = '#d4a76a'; ctx.fillRect(0, 0, w, h);
+            // 木色渐变棋盘 + 外框
+            let bg = null;
+            try { bg = ctx.createLinearGradient(0, 0, w, h); bg.addColorStop(0, '#e8c088'); bg.addColorStop(1, '#c09458'); } catch (e) {}
+            ctx.fillStyle = bg || '#d4a76a'; ctx.fillRect(0, 0, w, h);
+            ctx.lineWidth = 4; ctx.strokeStyle = '#8a5a28';
+            ctx.strokeRect(2, 2, w - 4, h - 4);
             ctx.strokeStyle = '#5a3a1c'; ctx.lineWidth = 1;
             for (let i = 0; i < R; i++) {
                 ctx.beginPath(); ctx.moveTo(10, 10 + i * S); ctx.lineTo(10 + (C - 1) * S, 10 + i * S); ctx.stroke();
@@ -195,12 +200,27 @@ MiniGames.xiangqi = {
                 const p = board[i][j];
                 if (!p) continue;
                 const x = 10 + j * S, y = 10 + i * S;
-                ctx.fillStyle = '#f0d8a0'; ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#5a3a1c'; ctx.lineWidth = 1.5; ctx.stroke();
+                // 棋子：木质渐变 + 投影 + 双圈
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+                let pg = null;
+                try { pg = ctx.createRadialGradient(x - 4, y - 5, 3, x, y, 17); pg.addColorStop(0, '#fbe8bc'); pg.addColorStop(1, '#d8b070'); } catch (e) {}
+                ctx.fillStyle = pg || '#f0d8a0'; ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+                ctx.strokeStyle = '#6a4220'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.beginPath(); ctx.arc(x, y, 12.5, 0, Math.PI * 2);
+                ctx.strokeStyle = p.color === RED ? 'rgba(160,40,40,0.5)' : 'rgba(30,30,40,0.5)';
+                ctx.lineWidth = 1; ctx.stroke();
                 ctx.fillStyle = p.color === RED ? '#a02828' : '#1a1a1a';
-                ctx.font = 'bold 16px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(p.ch, x, y);
-                if (sel && sel[0] === i && sel[1] === j) { ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.stroke(); }
+                ctx.font = 'bold 17px KaiTi,STKaiti,serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(p.ch, x, y + 1);
+                if (sel && sel[0] === i && sel[1] === j) {
+                    ctx.save();
+                    ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 10;
+                    ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.arc(x, y, 18, 0, Math.PI * 2); ctx.stroke();
+                    ctx.restore();
+                }
             }
             opts.onScore && opts.onScore(NAMES[turn] + '方走棋');
         };

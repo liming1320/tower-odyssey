@@ -62,16 +62,34 @@ MiniGames.piano = {
             draw();
         };
         const draw = () => {
-            ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
-            ctx.strokeStyle = '#2a2540'; ctx.lineWidth = 1;
-            for (let i = 1; i < LANES; i++) { ctx.beginPath(); ctx.moveTo(i * laneW, 0); ctx.lineTo(i * laneW, H); ctx.stroke(); }
-            ctx.fillStyle = '#ff5252'; ctx.fillRect(0, H - 60, W, 2);
+            // 钢琴键盘背景：白键列 + 分割线
+            let bg = null;
+            try { bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2e2a40'); bg.addColorStop(1, '#1a1628'); } catch (e) {}
+            ctx.fillStyle = bg || '#241f38'; ctx.fillRect(0, 0, w, h);
+            for (let i = 0; i < LANES; i++) {
+                ctx.fillStyle = i % 2 ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)';
+                ctx.fillRect(i * laneW, 0, laneW, H);
+                ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(i * laneW, 0); ctx.lineTo(i * laneW, H); ctx.stroke();
+            }
+            // 底部判定线：霓虹红
+            ctx.save();
+            ctx.shadowColor = '#ff3860'; ctx.shadowBlur = 8;
+            ctx.fillStyle = '#ff3860'; ctx.fillRect(0, H - 60, W, 3);
+            ctx.restore();
             for (const b of blocks) {
-                ctx.fillStyle = b.hit ? '#888' : '#1a1a1a';
-                ctx.fillRect(b.x + 2, b.y, laneW - 4, 48);
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(b.x + 8, b.y + 8, 4, 4);
-                ctx.fillRect(b.x + laneW - 16, b.y + 8, 4, 4);
+                // 黑键：圆角 + 亮边 + 点击反馈
+                MG.ui.rr(ctx, b.x + 3, b.y, laneW - 6, 48, 8);
+                ctx.fillStyle = b.hit ? '#3a8a4a' : '#15151e';
+                ctx.fill();
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = b.hit ? '#7adf7a' : '#4a4862';
+                ctx.stroke();
+                if (!b.hit) {   // 琴键高光点
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.beginPath(); ctx.arc(b.x + laneW - 14, b.y + 10, 2.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(b.x + 14, b.y + 10, 2.5, 0, Math.PI * 2); ctx.fill();
+                }
             }
             opts.onScore && opts.onScore('分数：' + score + ' / ' + target + ' · 速度 ' + speed);
         };

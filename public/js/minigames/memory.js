@@ -39,15 +39,18 @@ MiniGames.memory = {
             while (board.length < ROWS) { board.push([]); while (board[board.length - 1].length < COLS) board[board.length - 1].push(null); }
         };
         const draw = () => {
-            ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
+            MG.ui.board(ctx, w, h);
             for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
                 const x = 2 + j * S, y = 2 + i * S;
                 const isFlipped = flipped.some(f => f[0] === i && f[1] === j) || board[i][j] === null;
-                ctx.fillStyle = isFlipped ? '#ffd56b' : '#5a4880';
-                ctx.fillRect(x + 4, y + 4, S - 8, S - 8);
-                if (isFlipped && board[i][j]) {
-                    ctx.font = (S * 0.45) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText(board[i][j], x + S / 2, y + S / 2);
+                if (isFlipped) {
+                    // 正面：米黄渐变 + emoji
+                    MG.ui.tile(ctx, x, y, S, '#fff0c8', '#e8c060', '#a08020', 12);
+                    if (board[i][j]) MG.ui.emoji(ctx, board[i][j], x + S / 2, y + S / 2 - 2, S * 0.5);
+                } else {
+                    // 背面：紫色渐变 + ❓
+                    MG.ui.tile(ctx, x, y, S, '#9068d8', '#5a3a9a', '#3a2470', 12);
+                    MG.ui.emoji(ctx, '❓', x + S / 2, y + S / 2 - 2, S * 0.42);
                 }
             }
             opts.onScore && opts.onScore('已配对：' + matched + '/' + realPairs + ' · 次数：' + moves);

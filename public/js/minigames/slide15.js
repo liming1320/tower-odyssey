@@ -66,14 +66,21 @@ MiniGames.slide15 = {
             return board[ROWS - 1][COLS - 1] === 0;
         };
         const draw = () => {
-            ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
+            MG.ui.board(ctx, w, h);
             for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
                 const v = board[i][j];
                 const x = 2 + j * S, y = 2 + i * S;
-                if (v === 0) continue;
-                ctx.fillStyle = '#5b8cff'; ctx.fillRect(x + 4, y + 4, S - 8, S - 8);
-                ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (S * 0.36) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(v, x + S / 2, y + S / 2);
+                if (v === 0) {   // 空格提示
+                    MG.ui.rr(ctx, x + 4, y + 4, S - 8, S - 8, 10);
+                    ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fill();
+                    continue;
+                }
+                const correct = (i * COLS + j + 1) === v;
+                // 就位的块用金色渐变奖励视觉，未就位用蓝
+                MG.ui.tile(ctx, x, y, S, correct ? '#ffe896' : '#7aa0ff', correct ? '#d0a020' : '#3a5ac0', correct ? '#8f6a10' : '#24408e', 10);
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold ' + (S * 0.38) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(v, x + S / 2, y + S / 2 + 1);
             }
             opts.onScore && opts.onScore('步数：' + moves);
         };

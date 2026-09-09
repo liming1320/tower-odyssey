@@ -1,6 +1,49 @@
 // 小游戏共享工具：创建 canvas、基础渲染、按钮、事件、关卡进度系统
 window.MiniGames = window.MiniGames || {};
 const MG = {
+    // ================= 统一美术工具集（2026-09-09 视觉升级）=================
+    // 各游戏的 draw() 复用：棋盘背景 / 渐变格子 / emoji / 高光，风格与 2048 妖怪版一致
+    ui: {
+        EMOJI_FONT: '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif',
+        // 圆角矩形路径（只描路径，不填充）
+        rr(ctx, x, y, w, h, r) {
+            r = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        },
+        // 深蓝渐变棋盘背景 + 圆角 + 描边
+        board(ctx, w, h) {
+            MG.ui.rr(ctx, 0, 0, w, h, 14);
+            let g = null;
+            try { g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#3d5a80'); g.addColorStop(1, '#243a55'); } catch (e) {}
+            ctx.fillStyle = g || '#2e4666'; ctx.fill();
+            ctx.lineWidth = 3; ctx.strokeStyle = '#1a2c44'; ctx.stroke();
+        },
+        // 渐变游戏格子：底板渐变(c1→c2) + 描边(bd) + 顶部高光 + 投影
+        tile(ctx, x, y, s, c1, c2, bd, r) {
+            r = r == null ? 8 : r;
+            MG.ui.rr(ctx, x + 2, y + 3, s - 4, s - 4, r);
+            ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fill();          // 投影
+            MG.ui.rr(ctx, x + 1, y + 1, s - 2, s - 2, r);
+            let g = null;
+            try { g = ctx.createLinearGradient(0, y, 0, y + s); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) {}
+            ctx.fillStyle = g || c1; ctx.fill();
+            ctx.lineWidth = 1.6; ctx.strokeStyle = bd; ctx.stroke();
+            MG.ui.rr(ctx, x + 4, y + 3, s - 8, s * 0.24, Math.min(r, 6));   // 顶部高光
+            ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill();
+        },
+        // emoji 绘制（居中）
+        emoji(ctx, ch, cx, cy, size) {
+            ctx.font = Math.round(size) + 'px ' + MG.ui.EMOJI_FONT;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(ch, cx, cy);
+        },
+    },
     // 创建自适应 canvas（填满容器）
     canvas(parent, w, h) {
         const c = document.createElement('canvas');

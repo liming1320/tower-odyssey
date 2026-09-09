@@ -85,13 +85,17 @@ MiniGames.tetris = {
         };
         const hardDrop = () => { while (move(0, 1)) {} };
         const draw = () => {
-            ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
+            MG.ui.board(ctx, w, h);
+            // 已落定的方块 + 当前方块：渐变格子（每色带亮/暗双色调）
+            const cell = (x, y, ci) => {
+                const DARK = { 1: '#2a7ab0', 2: '#b09020', 3: '#7a50c0', 4: '#2a50b0', 5: '#c06a20', 6: '#2a9030', 7: '#c03030' };
+                MG.ui.tile(ctx, 2 + x * S, 2 + y * S, S, COL[ci], DARK[ci] || '#555', '#1a1a28', 5);
+            };
             for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
-                if (!board[i][j]) continue;
-                ctx.fillStyle = COL[board[i][j]]; ctx.fillRect(2 + j * S, 2 + i * S, S - 2, S - 2);
+                if (board[i][j]) cell(j, i, board[i][j]);
             }
             if (cur) for (let i = 0; i < cur.s.length; i++) for (let j = 0; j < cur.s[0].length; j++) {
-                if (cur.s[i][j]) { ctx.fillStyle = COL[cur.c]; ctx.fillRect(2 + (cur.x + j) * S, 2 + (cur.y + i) * S, S - 2, S - 2); }
+                if (cur.s[i][j]) cell(cur.x + j, cur.y + i, cur.c);
             }
             opts.onScore && opts.onScore('分数：' + score + ' / ' + target);
         };

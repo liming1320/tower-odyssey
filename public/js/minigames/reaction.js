@@ -54,18 +54,33 @@ MiniGames.reaction = {
         const H = Math.min(window.innerHeight - 200, 360);
         const { c, ctx, w, h, destroy } = MG.canvas(container, W, H);
         let phase = 0, startT = 0, greenT = 0, results = [], round = 0, finished = false;
-        const draw = (color, text) => {
-            ctx.fillStyle = color || '#1a1c2a'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#fff'; ctx.font = 'bold ' + Math.floor(H * 0.18) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(text, w / 2, h / 2 - 20);
-            ctx.font = Math.floor(H * 0.07) + 'px sans-serif'; ctx.fillText(`第 ${round + 1}/${maxRound} 轮 · 已完成：${results.length}`, w / 2, h / 2 + 40);
+        const draw = (color, text, emoji) => {
+            // 大色块圆角 + 渐变（保留原色系，加质感）
+            let c1 = color, c2 = color;
+            if (color === '#5cd65c') { c1 = '#8ae87a'; c2 = '#3aa830'; }
+            else if (color === '#ff5252') { c1 = '#ff7a6a'; c2 = '#c02828'; }
+            else if (color === '#ffd56b') { c1 = '#ffe896'; c2 = '#d0a020'; }
+            else if (color === '#333' || color === '#1a1c2a') { c1 = '#3a3650'; c2 = '#1e1a30'; }
+            MG.ui.rr(ctx, 0, 0, w, h, 18);
+            let g = null;
+            try { g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) {}
+            ctx.fillStyle = g || c1; ctx.fill();
+            ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.stroke();
+            if (emoji) MG.ui.emoji(ctx, emoji, w / 2, h / 2 - 56, 52);
+            ctx.fillStyle = '#fff'; ctx.font = 'bold ' + Math.floor(H * 0.15) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 6;
+            ctx.fillText(text, w / 2, h / 2 + 14);
+            ctx.shadowBlur = 0;
+            ctx.font = Math.floor(H * 0.07) + 'px sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.fillText(`第 ${round + 1}/${maxRound} 轮 · 已完成：${results.length}`, w / 2, h / 2 + 58);
         };
         const start = () => {
-            phase = 1; draw('#333', '等绿色...');
+            phase = 1; draw('#333', '等绿色...', '⏳');
             const wait = waitMin + Math.random() * (waitMax - waitMin);
             setTimeout(() => {
                 phase = 2; greenT = performance.now();
-                draw('#5cd65c', '点击!');
+                draw('#5cd65c', '点击!', '✅');
             }, wait);
         };
         const finish = () => {
@@ -80,18 +95,18 @@ MiniGames.reaction = {
         const onTap = () => {
             if (finished) return;
             if (phase === 0) start();
-            else if (phase === 1) { phase = 3; draw('#ff5252', '过早! 点击继续'); setTimeout(start, 1200); }
+            else if (phase === 1) { phase = 3; draw('#ff5252', '过早!', '❌'); setTimeout(start, 1200); }
             else if (phase === 2) {
                 const r = performance.now() - greenT;
                 results.push(r);
                 phase = 4; round++;
-                draw('#ffd56b', Math.round(r) + ' ms');
+                draw('#ffd56b', Math.round(r) + ' ms', '⚡');
                 if (round >= maxRound) setTimeout(finish, 800);
                 else setTimeout(start, 1300);
             }
         };
         MG.bind(c, onTap);
-        draw('#1a1c2a', '点击开始');
+        draw('#1a1c2a', '点击开始', '🎯');
         MG.hint(container, lv.desc + ' · 屏幕变绿就立刻点！');
         return { stop() { destroy(); } };
     }

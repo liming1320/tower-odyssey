@@ -66,12 +66,29 @@ MiniGames.snake = {
             });
         };
         const draw = () => {
-            ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#ff5252'; ctx.fillRect(2 + food.x * S, 2 + food.y * S, S - 2, S - 2);
+            MG.ui.board(ctx, w, h);
+            // 食物：红苹果 emoji（带光晕）
+            ctx.save();
+            ctx.shadowColor = '#ff5252'; ctx.shadowBlur = 10;
+            MG.ui.emoji(ctx, '🍎', 2 + food.x * S + S / 2 - 1, 2 + food.y * S + S / 2, S * 0.85);
+            ctx.restore();
+            // 蛇身：渐变圆角（尾部渐暗），头部带眼睛
             snake.forEach((s, i) => {
-                ctx.fillStyle = i === 0 ? '#7cfc7c' : '#5cd65c';
-                ctx.fillRect(2 + s.x * S, 2 + s.y * S, S - 2, S - 2);
+                const t = i / Math.max(1, snake.length);
+                MG.ui.tile(ctx, 2 + s.x * S, 2 + s.y * S, S, i === 0 ? '#b8ffb8' : '#8ae88a', i === 0 ? '#3a9a3a' : `rgb(${Math.round(70 + t * 25)},${Math.round(190 - t * 60)},${Math.round(80 - t * 20)})`, '#2e6e2e', 6);
             });
+            // 蛇头眼睛
+            const hd = snake[0];
+            if (hd) {
+                const hx = 2 + hd.x * S, hy = 2 + hd.y * S;
+                const ex = dir.x * S * 0.16, ey = dir.y * S * 0.16;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(hx + S * 0.32 + ex, hy + S * 0.34 + ey, S * 0.13, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(hx + S * 0.68 + ex, hy + S * 0.34 + ey, S * 0.13, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#1a1a28';
+                ctx.beginPath(); ctx.arc(hx + S * 0.34 + ex * 1.4, hy + S * 0.36 + ey * 1.4, S * 0.06, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(hx + S * 0.66 + ex * 1.4, hy + S * 0.36 + ey * 1.4, S * 0.06, 0, Math.PI * 2); ctx.fill();
+            }
             opts.onScore && opts.onScore('长度：' + snake.length + ' / 目标 ' + target);
         };
         const setDir = d => { if (d.x === -dir.x && d.y === -dir.y && snake.length > 1) return; dir = d; };
@@ -90,7 +107,7 @@ MiniGames.snake = {
         });
         const loop = setInterval(step, speed);
         draw();
-        MG.hint(container, lv.desc + ' · 方向键/滑动控制蛇移动，吃红色食物');
+        MG.hint(container, lv.desc + ' · 方向键/滑动控制蛇移动，吃 🍎 成长');
         return { stop() { clearInterval(loop); window.removeEventListener('keydown', kbd); destroy(); } };
     }
 };

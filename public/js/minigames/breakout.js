@@ -57,10 +57,31 @@ MiniGames.breakout = {
             });
         };
         const draw = () => {
-            ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
-            for (const b of bricks) if (b.alive) { ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.w, b.h); }
-            ctx.fillStyle = '#fff'; ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
-            ctx.fillStyle = '#ffd56b'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
+            MG.ui.board(ctx, w, h);
+            // 砖块：圆角渐变 + 高光 + 描边
+            for (const b of bricks) if (b.alive) {
+                const DARK = { '#ff5252': '#b02020', '#ff9d5c': '#c06020', '#ffd56b': '#b08a10', '#5cd65c': '#2a8a30', '#5cc7ff': '#2080b0', '#b78bff': '#6a48b0', '#ff7a8b': '#c04050', '#5b8cff': '#2a50b0', '#7adf7a': '#3a9a40', '#9aa2b5': '#5a6070' };
+                MG.ui.rr(ctx, b.x, b.y, b.w, b.h, 4);
+                let g = null;
+                try { g = ctx.createLinearGradient(0, b.y, 0, b.y + b.h); g.addColorStop(0, b.color); g.addColorStop(1, DARK[b.color] || b.color); } catch (e) {}
+                ctx.fillStyle = g || b.color; ctx.fill();
+                ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.stroke();
+                MG.ui.rr(ctx, b.x + 2, b.y + 1.5, b.w - 4, b.h * 0.32, 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fill();
+            }
+            // 挡板：白→浅蓝渐变圆角
+            MG.ui.rr(ctx, paddle.x, paddle.y, paddle.w, paddle.h, 4);
+            let pg = null;
+            try { pg = ctx.createLinearGradient(0, paddle.y, 0, paddle.y + paddle.h); pg.addColorStop(0, '#fff'); pg.addColorStop(1, '#8ac8ff'); } catch (e) {}
+            ctx.fillStyle = pg || '#fff'; ctx.fill();
+            // 球：金色 + 光晕
+            ctx.save();
+            ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 12;
+            let bg2 = null;
+            try { bg2 = ctx.createRadialGradient(ball.x - 2, ball.y - 2, 1, ball.x, ball.y, ball.r); bg2.addColorStop(0, '#fff8d0'); bg2.addColorStop(1, '#ffb020'); } catch (e) {}
+            ctx.fillStyle = bg2 || '#ffd56b';
+            ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
             opts.onScore && opts.onScore('分数：' + score + ' / ' + target + ' · 命 ' + lives);
         };
         const step = () => {

@@ -79,47 +79,49 @@ function defaultLevels(g) {
 }
 
 // 20 个小游戏清单
-// thumb: 小型 SVG 缩略图（88x60），在卡片左侧展示
+// thumb: sceneThumb 场景缩略图（88x60 渐变底 + emoji 组合），风格与游戏内一致
 // 各 id 与 /js/minigames/<id>.js 的实现一一对应
 const GAMES = [
-    { id: 'gomoku',   name: '五子棋',     desc: '经典 15×15 对战，挑战 AI', thumb: thumbGrid('五子棋', '#5cd65c', '⚫') },
+    { id: 'gomoku',   name: '五子棋',     desc: '经典 15×15 对战，挑战 AI', thumb: sceneThumb('#e8c890', '#a87840', [['⚫', 30, 34, 22], ['⚪', 54, 26, 22]]) },
     { id: 'g2048',    name: '2048',        desc: '20 关妖怪挑战 · 击败蛇精', thumb: g2048Thumb() },
     { id: 'banqi',    name: '暗棋圣手',    desc: '15 关闯关 · 宋金小人 · 必杀技', thumb: banqiThumb() },
-    { id: 'xiangqi',  name: '中国象棋',     desc: '红黑对弈，车马炮冲锋',       thumb: thumbGrid('象棋', '#ff7a8b', '♟️') },
-    { id: 'link',     name: '连连看',       desc: '20 关挑战 · 岩石挡路',       thumb: thumbGrid('连连看', '#5cc7ff', '🔗') },
-    { id: 'match3',   name: '消消乐',       desc: '20 关挑战 · 配额与石块',     thumb: thumbGrid('消消乐', '#ff9d5c', '🍬') },
-    { id: 'snake',    name: '贪吃蛇',       desc: '方向键控制，吃豆长大',       thumb: thumbGrid('贪吃蛇', '#7adf7a', '🐍') },
-    { id: 'tetris',   name: '俄罗斯方块',   desc: '经典方块，消除得分',         thumb: thumbGrid('方块', '#5b8cff', '🟪') },
-    { id: 'mole',     name: '打地鼠',       desc: '限时敲击地鼠',               thumb: thumbGrid('地鼠', '#c4a07a', '🔨') },
-    { id: 'mine',     name: '扫雷',         desc: '9×9 经典 10 雷',             thumb: thumbGrid('扫雷', '#9aa2b5', '💣') },
-    { id: 'memory',   name: '记忆翻牌',     desc: '找出所有配对',               thumb: thumbGrid('记忆', '#b78bff', '🃏') },
-    { id: 'slide15',  name: '数字华容道',   desc: '1-15 滑动排序',              thumb: thumbGrid('华容道', '#5cc7ff', '🔀') },
-    { id: 'bulls',    name: '猜数字',       desc: 'A×B 逻辑推理',               thumb: thumbGrid('猜数', '#ff9d5c', '🔢') },
-    { id: 'sudoku6',  name: '迷你数独',     desc: '6×6 入门题',                 thumb: thumbGrid('数独', '#5cd65c', '🧩') },
-    { id: 'hanoi',    name: '汉诺塔',       desc: 'N 层盘子三柱移动',           thumb: thumbGrid('汉诺', '#ff7a8b', '🗼') },
-    { id: 'piano',    name: '别踩白块',     desc: '只点黑块，反应速度',         thumb: thumbGrid('白块', '#cfd2e2', '🎹') },
-    { id: 'reaction', name: '反应力测试',   desc: '颜色变化就点',               thumb: thumbGrid('反应', '#ffd56b', '⚡') },
-    { id: 'breakout', name: '打砖块',       desc: '弹球消砖经典',               thumb: thumbGrid('砖块', '#5cc7ff', '🧱') },
-    { id: 'jump',     name: '跳一跳',       desc: '蓄力跳跃，精准定距',         thumb: thumbGrid('跳跃', '#7adf7a', '🦘') },
-    { id: 'shooter',  name: '飞机大战',     desc: '射击陨石升级',               thumb: thumbGrid('飞机', '#ff5252', '🚀') },
+    { id: 'xiangqi',  name: '中国象棋',     desc: '红黑对弈，车马炮冲锋',       thumb: sceneThumb('#e8b088', '#9a5a28', [['♟', 28, 30, 22], ['♞', 56, 36, 20]]) },
+    { id: 'link',     name: '连连看',       desc: '20 关挑战 · 岩石挡路',       thumb: sceneThumb('#7ad0ff', '#2a6adf', [['🔗', 30, 26, 21], ['🔗', 56, 40, 21], ['🪨', 72, 18, 12]]) },
+    { id: 'match3',   name: '消消乐',       desc: '20 关挑战 · 配额与石块',     thumb: sceneThumb('#ffb86b', '#e0642a', [['🍬', 26, 24, 20], ['🍭', 50, 38, 20], ['🍬', 70, 20, 15]]) },
+    { id: 'snake',    name: '贪吃蛇',       desc: '方向键控制，吃豆长大',       thumb: sceneThumb('#a0e8a0', '#2e8a3e', [['🐍', 38, 34, 30], ['🍎', 70, 22, 16]]) },
+    { id: 'tetris',   name: '俄罗斯方块',   desc: '经典方块，消除得分',         thumb: sceneThumb('#8aa8ff', '#2a3a8f', [['🟪', 28, 22, 16], ['🟨', 50, 34, 16], ['🟦', 70, 22, 16], ['🟥', 38, 46, 14]]) },
+    { id: 'mole',     name: '打地鼠',       desc: '限时敲击地鼠',               thumb: sceneThumb('#d8a878', '#7a5228', [['🐹', 34, 30, 24], ['🔨', 62, 24, 20]]) },
+    { id: 'mine',     name: '扫雷',         desc: '9×9 经典 10 雷',             thumb: sceneThumb('#c8ccd8', '#5a6278', [['💣', 36, 32, 24], ['🚩', 64, 22, 16]]) },
+    { id: 'memory',   name: '记忆翻牌',     desc: '找出所有配对',               thumb: sceneThumb('#d0a8ff', '#5a2ea8', [['🃏', 30, 32, 24], ['❓', 62, 24, 18]]) },
+    { id: 'slide15',  name: '数字华容道',   desc: '1-15 滑动排序',              thumb: sceneThumb('#8ac8ff', '#2a5ac0', [['🔢', 32, 30, 22], ['➡️', 62, 34, 15]]) },
+    { id: 'bulls',    name: '猜数字',       desc: 'A×B 逻辑推理',               thumb: sceneThumb('#ffcf8a', '#b06818', [['🔢', 32, 30, 22], ['💡', 64, 24, 18]]) },
+    { id: 'sudoku6',  name: '迷你数独',     desc: '6×6 入门题',                 thumb: sceneThumb('#a0e8a0', '#2e8a3e', [['6️⃣', 34, 32, 24], ['🧩', 64, 24, 16]]) },
+    { id: 'hanoi',    name: '汉诺塔',       desc: 'N 层盘子三柱移动',           thumb: sceneThumb('#ffd0a0', '#b06030', [['🗼', 44, 30, 26], ['🟠', 22, 42, 12], ['🔴', 24, 28, 12]]) },
+    { id: 'piano',    name: '别踩白块',     desc: '只点黑块，反应速度',         thumb: sceneThumb('#e8e8f4', '#8a90a8', [['🎹', 34, 32, 24], ['🎵', 66, 24, 16]]) },
+    { id: 'reaction', name: '反应力测试',   desc: '颜色变化就点',               thumb: sceneThumb('#ffe88a', '#c89418', [['⚡', 38, 30, 26], ['🎯', 66, 24, 16]]) },
+    { id: 'breakout', name: '打砖块',       desc: '弹球消砖经典',               thumb: sceneThumb('#8ad0ff', '#2060b0', [['🧱', 32, 26, 18], ['🏓', 60, 40, 20]]) },
+    { id: 'jump',     name: '跳一跳',       desc: '蓄力跳跃，精准定距',         thumb: sceneThumb('#c8f0c8', '#3a9040', [['🦘', 38, 32, 26], ['🎯', 68, 24, 15]]) },
+    { id: 'shooter',  name: '飞机大战',     desc: '射击陨石升级',               thumb: sceneThumb('#8a9ad8', '#141c3a', [['🚀', 34, 38, 24], ['👾', 62, 22, 20], ['⭐', 20, 16, 9], ['⭐', 76, 44, 7]]) },
 ];
 
-// 缩略图生成器：渐变底 + 装饰圆点 + 大图形符号
-function thumbGrid(name, color, glyph) {
+// 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合
+// items: [emoji, x, y, size]
+function sceneThumb(c1, c2, items) {
+    const id = 'st' + Math.abs(hashStr(c1 + c2 + items.map(i => i[0]).join('')));
     return `<svg viewBox="0 0 88 60" width="100%" height="100%">
         <defs>
-            <linearGradient id="tg-${name}" x1="0" y1="0" x2="0.6" y2="1">
-                <stop offset="0" stop-color="${color}" stop-opacity="0.45"/>
-                <stop offset="1" stop-color="${color}" stop-opacity="0.08"/>
+            <linearGradient id="${id}" x1="0" y1="0" x2="0.7" y2="1">
+                <stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/>
             </linearGradient>
         </defs>
-        <rect width="88" height="60" fill="url(#tg-${name})"/>
-        <circle cx="14" cy="48" r="18" fill="${color}" stop-opacity="0.6" opacity="0.18"/>
-        <circle cx="78" cy="10" r="14" fill="${color}" opacity="0.14"/>
-        <rect x="2.5" y="2.5" width="83" height="55" rx="8" fill="none" stroke="${color}" stroke-width="1.2" stroke-opacity="0.55"/>
-        <text x="44" y="37" text-anchor="middle" font-size="24">${glyph}</text>
+        <rect width="88" height="60" rx="10" fill="url(#${id})"/>
+        <circle cx="12" cy="50" r="16" fill="#fff" opacity="0.10"/>
+        <circle cx="80" cy="8" r="12" fill="#fff" opacity="0.12"/>
+        <rect x="2.5" y="2.5" width="83" height="55" rx="8" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>
+        ${items.map(([e, x, y, s]) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="${s}">${e}</text>`).join('')}
     </svg>`;
 }
+function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
 
 // 暗棋圣手专属缩略图：宋国小人（长翅幞头）vs 金国小人（皮草帽），Q 版对峙
 function banqiThumb() {
