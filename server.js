@@ -2587,7 +2587,15 @@ api['POST /api/admin/login'] = (req, res, body) => {
 // ---- 小游戏排序：玩家 GET 当前顺序 / 后台 POST 调整 ----
 // DB.minigameOrder = string[]   （按用户后台设置的顺序存）
 api['GET /api/minigame/order'] = (req, res) => {
-    sendJson(res, 200, { order: DB.minigameOrder || [] });
+    // all / full：全部小游戏 id，供管理后台排序页兜底（即使没保存过任何顺序也能列出清单）
+    const all = [...MINIGAME_IDS];
+    const savedOrder = Array.isArray(DB.minigameOrder) ? DB.minigameOrder.filter(x => MINIGAME_IDS.has(x)) : [];
+    const seen = new Set(savedOrder);
+    sendJson(res, 200, {
+        order: DB.minigameOrder || [],
+        all,
+        full: savedOrder.concat(all.filter(id => !seen.has(id))),
+    });
 };
 api['POST /api/admin/minigame/order'] = (req, res, body) => {
     if (!isAdminToken(req)) return sendJson(res, 401, { error: '需要管理员' });

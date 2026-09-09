@@ -753,16 +753,32 @@ const AdminApp = {
     },
 
     // ================= 小游戏排序（管理后台可调整顺序，玩家端同步）=================
+    // 兜底：接口都取不到清单时，直接解析玩家端的小游戏清单文件拿全部 id
+    async _fallbackGameIds() {
+        try {
+            const txt = await (await fetch('/js/views/minigames.js')).text();
+            const start = txt.indexOf('const GAMES');
+            const seg = start < 0 ? txt : txt.slice(start);
+            // GAMES 项既可能是 sc('id',...) 工厂写法，也可能是 { id:'xxx' } 字面量
+            const re = /(?:sc|sc2|scard|g)\(\s*['"]([A-Za-z0-9_-]+)['"]|\bid\s*:\s*['"]([A-Za-z0-9_-]+)['"]/g;
+            const ids = []; let m;
+            while ((m = re.exec(seg))) { const id = m[1] || m[2]; if (id && ids.indexOf(id) < 0) ids.push(id); }
+            return ids;
+        } catch (e) { return []; }
+    },
+
     async renderOrder(body) {
         body.innerHTML = `<div class="card">加载中...</div>`;
-        let r;
-        try { r = await AdminAPI.minigameOrder(); }
-        catch (e) {
-            try { r = await AdminAPI.api('/api/minigame/order', 'GET'); }
-            catch (e2) { body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`; return; }
+        let r = null;
+        try { r = await AdminAPI.minigameOrder(); } catch (e) { r = null; }
+        if (!r) { try { r = await AdminAPI.api('/api/minigame/order', 'GET'); } catch (e) { r = null; } }
+        let list = (r && ((r.order && r.order.length ? r.order : null) || r.full || r.all)) || [];
+        if (!list.length) list = await this._fallbackGameIds();
+        if (!list.length) {
+            body.innerHTML = `<div class="card" style="color:#ff7a8b">取不到小游戏清单：接口没有返回数据，且无法解析 /js/views/minigames.js。请确认服务已重启加载最新代码。</div>`;
+            return;
         }
-        const list = r.order || [];
-        const all = r.all || list.slice();
+        const all = (r && (r.all || r.full)) || list.slice();
         body.innerHTML = `
             <div class="admin-note">
                 拖动 / 上下来调整玩家端看到的小游戏排序。点击「💾 保存」后立刻生效，未保存的更改显示「⚠ 未保存」。
