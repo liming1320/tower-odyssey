@@ -126,10 +126,13 @@ class CDP {
 
     // 3) 2048：关卡选择 + 第 1 关对局
     await cdp.eval(`MinigamesView.launch(GAMES.find(g=>g.id==='g2048'))`);
-    await sleep(800);
+    await sleep(1500);
     await cdp.shot(path.join(OUT, 'lv-2048-select.png'));
-    await cdp.eval(`document.querySelector('#mini-stage .mg-ls-cell').click()`);
-    await sleep(800);
+    await cdp.eval(`(() => {
+        const c = document.querySelector('#mini-stage .mg-ls-cell');
+        if (c && c.onclick) c.onclick();
+    })()`);
+    await sleep(1500);
     await cdp.shot(path.join(OUT, 'lv-2048-game.png'));
     const g2048state = await cdp.eval(`(() => ({ errs: window._shotErrs || [], score: (document.getElementById('mini-score')||{}).textContent || '' }))()`);
     console.log('   📊 2048:', JSON.stringify(g2048state));

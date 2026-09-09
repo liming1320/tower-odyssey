@@ -83,7 +83,7 @@ function defaultLevels(g) {
 // 各 id 与 /js/minigames/<id>.js 的实现一一对应
 const GAMES = [
     { id: 'gomoku',   name: '五子棋',     desc: '经典 15×15 对战，挑战 AI', thumb: thumbGrid('五子棋', '#5cd65c', '⚫') },
-    { id: 'g2048',    name: '2048',        desc: '20 关目标挑战 + 无尽模式', thumb: thumbGrid('2048', '#ffd56b', '2️⃣') },
+    { id: 'g2048',    name: '2048',        desc: '20 关妖怪挑战 · 击败蛇精', thumb: g2048Thumb() },
     { id: 'banqi',    name: '暗棋圣手',    desc: '15 关闯关 · 宋金小人 · 必杀技', thumb: banqiThumb() },
     { id: 'xiangqi',  name: '中国象棋',     desc: '红黑对弈，车马炮冲锋',       thumb: thumbGrid('象棋', '#ff7a8b', '♟️') },
     { id: 'link',     name: '连连看',       desc: '20 关挑战 · 岩石挡路',       thumb: thumbGrid('连连看', '#5cc7ff', '🔗') },
@@ -164,6 +164,45 @@ function banqiThumb() {
         </g>
         <!-- VS -->
         <text x="44" y="34" text-anchor="middle" font-size="13" font-weight="900" fill="#ffd56b" stroke="#40260f" stroke-width="2.5" paint-order="stroke" font-family="Arial Black, sans-serif">VS</text>
+    </svg>`;
+}
+
+// 2048 专属缩略图：绿毒蛇 + 蓝毒蛇 + 蛇精对峙（葫芦娃妖怪风）
+function g2048Thumb() {
+    return `<svg viewBox="0 0 88 60" width="100%" height="100%">
+        <defs>
+            <linearGradient id="tg2048" x1="0" y1="0" x2="0.6" y2="1">
+                <stop offset="0" stop-color="#5a7a9f"/><stop offset="1" stop-color="#2c3e6a"/>
+            </linearGradient>
+        </defs>
+        <rect width="88" height="60" fill="url(#tg2048)"/>
+        <rect x="2.5" y="2.5" width="83" height="55" rx="8" fill="none" stroke="#ffd56b" stroke-width="1.2" stroke-opacity="0.55"/>
+        <!-- L1 绿蛇（左下） -->
+        <g transform="translate(8 26)">
+            <path d="M0 12 Q5 8 10 12 Q15 16 20 8" stroke="#5a8a3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <ellipse cx="20" cy="8" rx="4.5" ry="3.5" fill="#7adf7a" stroke="#5a8a3a" stroke-width="0.8"/>
+            <circle cx="22" cy="7" r="1.4" fill="#fff"/><circle cx="22.2" cy="7" r="0.7" fill="#000"/>
+            <circle cx="6.5" cy="9" r="2.4" fill="#fff"/><text x="6.5" y="10" text-anchor="middle" font-size="3" font-weight="bold" fill="#3a7a3a">1</text>
+        </g>
+        <!-- L2 蓝蛇（中上） -->
+        <g transform="translate(28 8)">
+            <path d="M0 10 Q4 4 8 8 Q12 14 18 6" stroke="#3a4d8f" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <ellipse cx="18" cy="6" rx="4.8" ry="3.5" fill="#a8b8f0" stroke="#3a4d8f" stroke-width="0.8" transform="rotate(-15 18 6)"/>
+            <path d="M16 5 L21 4 L17.5 7 Z" fill="#3a4d8f"/>
+            <circle cx="20" cy="5" r="1.4" fill="#fff"/><circle cx="20.2" cy="5" r="0.7" fill="#000"/>
+            <circle cx="6.5" cy="6" r="2.4" fill="#fff"/><text x="6.5" y="7" text-anchor="middle" font-size="3" font-weight="bold" fill="#3a4d8f">2</text>
+        </g>
+        <!-- L11 蛇精（右上 + 王冠） -->
+        <g transform="translate(54 12)">
+            <path d="M0 22 Q-4 14 4 10 Q12 6 18 14" stroke="#3a1a5f" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <ellipse cx="20" cy="14" rx="5.5" ry="4" fill="#b59cd8" stroke="#3a1a5f" stroke-width="0.8"/>
+            <path d="M16 9 L18 6 L20 9 L22 5 L24 9" stroke="#ffd56b" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <ellipse cx="19" cy="13.5" rx="1.2" ry="0.6" fill="#ff5050" transform="rotate(20 19 13.5)"/>
+            <ellipse cx="22" cy="14.5" rx="1.2" ry="0.6" fill="#ff5050" transform="rotate(-15 22 14.5)"/>
+            <circle cx="6" cy="11" r="3" fill="#fff"/><text x="6" y="12" text-anchor="middle" font-size="3.6" font-weight="bold" fill="#3a1a5f">11</text>
+        </g>
+        <!-- 标题 -->
+        <text x="44" y="52" text-anchor="middle" font-size="6.5" font-weight="bold" fill="#ffd56b" font-family="Microsoft YaHei, sans-serif" stroke="#1a2a4a" stroke-width="1.5" paint-order="stroke">降妖伏魔</text>
     </svg>`;
 }
 

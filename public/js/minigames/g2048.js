@@ -1,50 +1,356 @@
-// 2048：20 关目标挑战（目标方块 + 步数限制 + 岩石障碍）+ 经典无尽模式
+// 2048 · 葫芦娃妖怪版：11 级妖怪合并（L1+L1→L2，最高 L11）
+// 每只怪物都是独立 Canvas API 绘制（Q 版葫芦娃妖怪风），左上角显示等级
 window.MiniGames = window.MiniGames || {};
+
+// ============ 11 只妖怪定义（按用户给的等级表）============
+// L1 毒蛇绿 → L2 毒蛇蓝 → L3 黄蜂精 → L4 蛤蟆绿 → L5 蛤蟆蓝 → L6 蛤蟆红
+// → L7 蜈蚣精 → L8 蜘蛛精 → L9 鳄鱼精 → L10 蝎子精 → L11 蛇精
+const MON = [
+    { n: '毒蛇·绿', bg: '#bce99e', bd: '#5a8a3a' },
+    { n: '毒蛇·蓝', bg: '#a8b8f0', bd: '#3a4d8f' },
+    { n: '黄蜂精',  bg: '#ffe28a', bd: '#a07020' },
+    { n: '蛤蟆·绿', bg: '#9be09b', bd: '#3a7a3a' },
+    { n: '蛤蟆·蓝', bg: '#b8a0f5', bd: '#4d2a8f' },
+    { n: '蛤蟆·红', bg: '#ff9090', bd: '#8f2020' },
+    { n: '蜈蚣精',  bg: '#ffc28a', bd: '#8f4a20' },
+    { n: '蜘蛛精',  bg: '#d8b8f5', bd: '#5a2a8f' },
+    { n: '鳄鱼精',  bg: '#ffae70', bd: '#8f3a10' },
+    { n: '蝎子精',  bg: '#ffa070', bd: '#8f3a10' },
+    { n: '蛇精',    bg: '#b59cd8', bd: '#3a1a5f' },
+];
+
+// =================== 11 个 draw 函数（每只妖怪 8-15 行）===================
+// 画布坐标系 (0,0) 在格子中心，s 为可绘制边长
+
+// L1 毒蛇·绿：S 形蛇身 + 圆头 + 大眼
+function drawSnakeG(ctx, s) {
+    ctx.strokeStyle = '#5a8a3a'; ctx.lineWidth = s * 0.18; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.35, s * 0.35);
+    ctx.bezierCurveTo(-s * 0.1, s * 0.1, -s * 0.15, -s * 0.2, -s * 0.28, -s * 0.28);
+    ctx.bezierCurveTo(-s * 0.4, -s * 0.36, s * 0.05, -s * 0.2, s * 0.25, 0);
+    ctx.stroke();
+    ctx.fillStyle = '#7adf7a';
+    ctx.beginPath(); ctx.ellipse(s * 0.3, 0, s * 0.13, s * 0.1, -0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(s * 0.34, -s * 0.02, s * 0.04, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(s * 0.35, -s * 0.02, s * 0.022, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ff4a4a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(s * 0.42, 0.01 * s); ctx.lineTo(s * 0.5, 0.05 * s); ctx.stroke();
+}
+
+// L2 毒蛇·蓝：紫色蛇身 + 蓝色三角条 + 翘头
+function drawSnakeB(ctx, s) {
+    ctx.strokeStyle = '#3a4d8f'; ctx.lineWidth = s * 0.18; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.32, s * 0.4);
+    ctx.bezierCurveTo(-s * 0.05, s * 0.18, s * 0.1, -s * 0.18, -s * 0.18, -s * 0.32);
+    ctx.bezierCurveTo(-s * 0.42, -s * 0.42, s * 0.05, -s * 0.22, s * 0.32, -s * 0.05);
+    ctx.stroke();
+    ctx.fillStyle = '#a8b8f0';
+    ctx.beginPath(); ctx.ellipse(s * 0.36, -s * 0.08, s * 0.15, s * 0.11, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3a4d8f';
+    ctx.beginPath(); ctx.moveTo(s * 0.25, -s * 0.1); ctx.lineTo(s * 0.48, -s * 0.08); ctx.lineTo(s * 0.34, 0.02 * s); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(s * 0.4, -s * 0.1, s * 0.04, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(s * 0.42, -s * 0.09, s * 0.022, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(s * 0.34, -s * 0.18); ctx.lineTo(s * 0.48, -s * 0.13); ctx.stroke();
+}
+
+// L3 黄蜂精：椭圆 + 黑条纹 + 半透翅膀 + 蜂针
+function drawBee(ctx, s) {
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath(); ctx.ellipse(-s * 0.08, -s * 0.32, s * 0.22, s * 0.13, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(s * 0.12, -s * 0.34, s * 0.2, s * 0.12, 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffe28a';
+    ctx.beginPath(); ctx.ellipse(0, s * 0.05, s * 0.36, s * 0.26, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#a07020'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#3a2a1a';
+    ctx.fillRect(-s * 0.2, -s * 0.06, s * 0.07, s * 0.22);
+    ctx.fillRect(-0.02 * s, -s * 0.14, s * 0.07, s * 0.36);
+    ctx.fillRect(s * 0.13, -s * 0.06, s * 0.07, s * 0.22);
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-s * 0.1, -s * 0.04, s * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.1, -s * 0.04, s * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-s * 0.1, -s * 0.04, s * 0.025, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.1, -s * 0.04, s * 0.025, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, s * 0.3); ctx.lineTo(0, s * 0.44); ctx.stroke();
+}
+
+// L4 蛤蟆·绿：圆头 + 两大眼 + 张嘴
+function drawToadG(ctx, s) {
+    ctx.fillStyle = '#9be09b';
+    ctx.beginPath(); ctx.ellipse(0, 0, s * 0.4, s * 0.34, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#3a7a3a'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-s * 0.2, -s * 0.2, s * 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.2, -s * 0.2, s * 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-s * 0.18, -s * 0.18, s * 0.06, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.22, -s * 0.18, s * 0.06, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#3a7a3a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, s * 0.12, s * 0.18, 0, Math.PI); ctx.stroke();
+}
+
+// L5 蛤蟆·蓝：紫色 + 背刺 + 红眼 + 大嘴
+function drawToadB(ctx, s) {
+    ctx.fillStyle = '#b8a0f5';
+    ctx.beginPath(); ctx.ellipse(0, 0, s * 0.4, s * 0.34, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#4d2a8f'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#4d2a8f';
+    ctx.beginPath(); ctx.moveTo(-s * 0.34, -s * 0.14); ctx.lineTo(-s * 0.4, -s * 0.34); ctx.lineTo(-s * 0.22, -s * 0.18); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0, -s * 0.34); ctx.lineTo(s * 0.04, -s * 0.48); ctx.lineTo(s * 0.12, -s * 0.3); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(s * 0.28, -s * 0.18); ctx.lineTo(s * 0.4, -s * 0.36); ctx.lineTo(s * 0.2, -s * 0.22); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-s * 0.18, -s * 0.08, s * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.18, -s * 0.08, s * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ff3030';
+    ctx.beginPath(); ctx.arc(-s * 0.18, -s * 0.08, s * 0.045, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.18, -s * 0.08, s * 0.045, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3a1a5f';
+    ctx.beginPath(); ctx.arc(0, s * 0.12, s * 0.2, 0, Math.PI); ctx.fill();
+}
+
+// L6 蛤蟆·红：红椭圆 + 3 背刺 + 凶眉 + 红眼 + 大嘴
+function drawToadR(ctx, s) {
+    ctx.fillStyle = '#ff9090';
+    ctx.beginPath(); ctx.ellipse(0, 0, s * 0.42, s * 0.36, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#8f2020'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#8f2020';
+    for (const dx of [-0.32, -0.08, 0.18]) {
+        ctx.beginPath();
+        ctx.moveTo(dx * s, -s * 0.16);
+        ctx.lineTo(dx * s, -s * 0.42);
+        ctx.lineTo((dx + 0.05) * s, -s * 0.18);
+        ctx.fill();
+    }
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(-s * 0.32, -s * 0.24); ctx.lineTo(-s * 0.1, -s * 0.15); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s * 0.32, -s * 0.24); ctx.lineTo(s * 0.1, -s * 0.15); ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-s * 0.2, -s * 0.08, s * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.18, -s * 0.08, s * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ff2020';
+    ctx.beginPath(); ctx.arc(-s * 0.2, -s * 0.08, s * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.18, -s * 0.08, s * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3a0a0a';
+    ctx.beginPath(); ctx.arc(0, s * 0.14, s * 0.22, 0, Math.PI); ctx.fill();
+}
+
+// L7 蜈蚣精：触角 + 3 节身 + 6 足 + 头
+function drawCentipede(ctx, s) {
+    ctx.strokeStyle = '#8f4a20'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-s * 0.32, s * 0.0); ctx.lineTo(-s * 0.42, -s * 0.18); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s * 0.32, s * 0.0); ctx.lineTo(s * 0.42, -s * 0.18); ctx.stroke();
+    ctx.fillStyle = '#ffc28a';
+    for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.ellipse(-s * 0.25 + i * s * 0.25, s * 0.1 - i * s * 0.04, s * 0.18, s * 0.13, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#8f4a20'; ctx.lineWidth = 2; ctx.stroke();
+    }
+    ctx.strokeStyle = '#8f4a20'; ctx.lineWidth = 2;
+    for (let i = 0; i < 6; i++) {
+        const x = -s * 0.32 + i * s * 0.13;
+        ctx.beginPath(); ctx.moveTo(x, s * 0.16); ctx.lineTo(x + 4, s * 0.3); ctx.stroke();
+    }
+    ctx.fillStyle = '#ffc28a';
+    ctx.beginPath(); ctx.arc(-s * 0.34, s * 0.04, s * 0.13, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#8f4a20'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-s * 0.4, -s * 0.0, s * 0.04, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-s * 0.4, -s * 0.0, s * 0.022, 0, Math.PI * 2); ctx.fill();
+}
+
+// L8 蜘蛛精：8 腿 + 大圆腹 + 8 红眼
+function drawSpider(ctx, s) {
+    ctx.strokeStyle = '#5a2a8f'; ctx.lineWidth = s * 0.045; ctx.lineCap = 'round';
+    for (let i = 0; i < 4; i++) {
+        const ang = -Math.PI / 2 + (i - 1.5) * 0.5;
+        ctx.beginPath(); ctx.moveTo(0, s * 0.05);
+        ctx.lineTo(Math.cos(ang) * s * 0.46, Math.sin(ang) * s * 0.46);
+        ctx.stroke();
+    }
+    ctx.fillStyle = '#d8b8f5';
+    ctx.beginPath(); ctx.ellipse(0, s * 0.1, s * 0.34, s * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#5a2a8f'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = '#d8b8f5';
+    ctx.beginPath(); ctx.arc(0, -s * 0.18, s * 0.13, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#5a2a8f'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#ff3030';
+    for (const [dx, dy] of [[-0.08, -0.2], [0, -0.22], [0.08, -0.2], [-0.04, -0.14], [0.04, -0.14]]) {
+        ctx.beginPath(); ctx.arc(dx * s, dy * s, s * 0.022, 0, Math.PI * 2); ctx.fill();
+    }
+}
+
+// L9 鳄鱼精：长嘴 + 牙齿 + 背刺 + 红眼
+function drawCroc(ctx, s) {
+    ctx.fillStyle = '#ffae70';
+    ctx.beginPath(); ctx.ellipse(0, s * 0.05, s * 0.4, s * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#8f3a10'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#ffae70';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.05, -s * 0.18);
+    ctx.quadraticCurveTo(s * 0.38, -s * 0.28, s * 0.45, -s * 0.04);
+    ctx.lineTo(s * 0.4, s * 0.04);
+    ctx.quadraticCurveTo(s * 0.32, s * 0.04, s * 0.28, 0);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#8f3a10'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.moveTo(s * 0.18, -s * 0.08); ctx.lineTo(s * 0.22, -s * 0.01); ctx.lineTo(s * 0.26, -s * 0.08); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(s * 0.3, -s * 0.06); ctx.lineTo(s * 0.34, 0.01); ctx.lineTo(s * 0.38, -s * 0.06); ctx.fill();
+    ctx.fillStyle = '#8f3a10';
+    for (const dx of [-0.22, -0.05, 0.12]) {
+        ctx.beginPath();
+        ctx.moveTo(dx * s, -s * 0.2);
+        ctx.lineTo((dx + 0.05) * s, -s * 0.34);
+        ctx.lineTo((dx + 0.1) * s, -s * 0.2);
+        ctx.fill();
+    }
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-s * 0.22, -s * 0.18, s * 0.08, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ff3030';
+    ctx.beginPath(); ctx.arc(-s * 0.22, -s * 0.18, s * 0.045, 0, Math.PI * 2); ctx.fill();
+}
+
+// L10 蝎子精：双钳 + 椭圆身 + 翘尾带钩 + 眼
+function drawScorpion(ctx, s) {
+    ctx.fillStyle = '#ffa070'; ctx.strokeStyle = '#8f3a10'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(-s * 0.38, -s * 0.16, s * 0.13, s * 0.08, 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(-s * 0.5, -s * 0.28, s * 0.06, s * 0.04, 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(s * 0.38, -s * 0.16, s * 0.13, s * 0.08, -0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(s * 0.5, -s * 0.28, s * 0.06, s * 0.04, -0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffa070';
+    ctx.beginPath(); ctx.ellipse(0, s * 0.05, s * 0.32, s * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#8f3a10'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = '#ffa070'; ctx.lineWidth = s * 0.13; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, s * 0.25);
+    ctx.bezierCurveTo(s * 0.06, s * 0.42, -s * 0.06, s * 0.46, -s * 0.12, s * 0.34);
+    ctx.stroke();
+    ctx.fillStyle = '#8f3a10';
+    ctx.beginPath(); ctx.moveTo(-s * 0.12, s * 0.34); ctx.lineTo(-s * 0.2, s * 0.3); ctx.lineTo(-s * 0.08, s * 0.42); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-s * 0.1, -s * 0.05, s * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.1, -s * 0.05, s * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-s * 0.1, -s * 0.05, s * 0.025, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.1, -s * 0.05, s * 0.025, 0, Math.PI * 2); ctx.fill();
+}
+
+// L11 蛇精（终极 BOSS）：高挑 S 身 + 王冠 + 长眯眼 + 翘笑
+function drawSnakeQueen(ctx, s) {
+    ctx.strokeStyle = '#3a1a5f'; ctx.lineWidth = s * 0.18; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.15, s * 0.46);
+    ctx.bezierCurveTo(-s * 0.32, s * 0.22, s * 0.12, s * 0.08, -s * 0.1, -s * 0.1);
+    ctx.bezierCurveTo(-s * 0.32, -s * 0.3, s * 0.06, -s * 0.36, s * 0.18, -s * 0.18);
+    ctx.stroke();
+    ctx.fillStyle = '#b59cd8';
+    ctx.beginPath(); ctx.ellipse(s * 0.18, -s * 0.2, s * 0.16, s * 0.13, 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#3a1a5f'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#ffd56b';
+    ctx.beginPath();
+    ctx.moveTo(s * 0.02, -s * 0.38); ctx.lineTo(s * 0.06, -s * 0.48); ctx.lineTo(s * 0.12, -s * 0.38); ctx.lineTo(s * 0.18, -s * 0.5); ctx.lineTo(s * 0.24, -s * 0.38); ctx.lineTo(s * 0.3, -s * 0.48); ctx.lineTo(s * 0.36, -s * 0.38);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#8f4a10'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#ff5050';
+    ctx.beginPath(); ctx.ellipse(s * 0.12, -s * 0.22, s * 0.045, s * 0.022, 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(s * 0.24, -s * 0.18, s * 0.045, s * 0.022, -0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#3a1a5f'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(s * 0.2, -s * 0.1, s * 0.06, 0.3, Math.PI - 0.3); ctx.stroke();
+}
+
+// =================== 通用渲染 ===================
+const MON_DRAW = [drawSnakeG, drawSnakeB, drawBee, drawToadG, drawToadB, drawToadR, drawCentipede, drawSpider, drawCroc, drawScorpion, drawSnakeQueen];
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function drawMonsterCell(ctx, level, x, y, s) {
+    const m = MON[level - 1]; if (!m) return;
+    // 圆角矩形底
+    roundRect(ctx, x + 3, y + 3, s - 6, s - 6, 10);
+    ctx.fillStyle = m.bg; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = m.bd; ctx.stroke();
+    // 怪物身体（中心偏下，给徽标留位置）
+    ctx.save();
+    ctx.translate(x + s / 2, y + s / 2 + 7);
+    MON_DRAW[level - 1](ctx, s * 0.72);
+    ctx.restore();
+    // 等级徽标（左上角）
+    ctx.beginPath();
+    ctx.arc(x + 17, y + 17, 11.5, 0, Math.PI * 2);
+    ctx.fillStyle = m.bd; ctx.fill();
+    ctx.lineWidth = 1.8; ctx.strokeStyle = '#fff'; ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 13px "Microsoft YaHei", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(level, x + 17, y + 17);
+}
+
+// 等级 → 妖怪名
+const MON_NAME = level => MON[level - 1].n;
+
+// =================== 关卡配置（20 关，目标 = 凑出指定等级怪物）===================
+// 关卡名 / 目标等级 / 步数预算 / 岩石障碍
 MiniGames.g2048 = {
     LEVELS: [
-        { name: '见习', target: 64, moves: 100 }, { name: '学徒', target: 128, moves: 170 },
-        { name: '进阶', target: 128, moves: 140 }, { name: '高手', target: 256, moves: 280 },
-        { name: '岩石初现', target: 256, moves: 250, rocks: 2 }, { name: '精通', target: 256, moves: 220 },
-        { name: '大师', target: 512, moves: 480 }, { name: '乱石阵', target: 512, moves: 430, rocks: 3 },
-        { name: '宗师', target: 512, moves: 380 }, { name: '半程试炼', target: 1024, moves: 800 },
-        { name: '石林', target: 1024, moves: 700, rocks: 3 }, { name: '超凡', target: 1024, moves: 620 },
-        { name: '碎石带', target: 1024, moves: 560, rocks: 4 }, { name: '登峰', target: 2048, moves: 1400 },
-        { name: '顽石', target: 2048, moves: 1250, rocks: 4 }, { name: '造极', target: 2048, moves: 1100 },
-        { name: '石阵深渊', target: 2048, moves: 980, rocks: 5 }, { name: '传说', target: 4096, moves: 2400 },
-        { name: '磐石', target: 4096, moves: 2100, rocks: 4 }, { name: '合体之神', target: 4096, moves: 1800, rocks: 6 },
+        { name: '伏蛇',     target: 2,  moves: 100, desc: '击败 毒蛇·蓝 · 100 步' },
+        { name: '蜂起',     target: 3,  moves: 170, desc: '击败 黄蜂精 · 170 步' },
+        { name: '通灵',     target: 3,  moves: 140, desc: '击败 黄蜂精 · 140 步' },
+        { name: '蛤蟆咒',   target: 4,  moves: 280, desc: '击败 蛤蟆·绿 · 280 步' },
+        { name: '石门试炼', target: 4,  moves: 250, rocks: 2, desc: '击败 蛤蟆·绿 · 250 步 · 🪨2' },
+        { name: '呱声震谷', target: 5,  moves: 220, desc: '击败 蛤蟆·蓝 · 220 步' },
+        { name: '毒潭',     target: 5,  moves: 480, desc: '击败 蛤蟆·蓝 · 480 步' },
+        { name: '乱石沼',   target: 6,  moves: 430, rocks: 3, desc: '击败 蛤蟆·红 · 430 步 · 🪨3' },
+        { name: '魔音窟',   target: 6,  moves: 380, desc: '击败 蛤蟆·红 · 380 步' },
+        { name: '百足径',   target: 7,  moves: 800, desc: '击败 蜈蚣精 · 800 步' },
+        { name: '石林',     target: 7,  moves: 700, rocks: 3, desc: '击败 蜈蚣精 · 700 步 · 🪨3' },
+        { name: '蛛丝洞',   target: 8,  moves: 620, desc: '击败 蜘蛛精 · 620 步' },
+        { name: '碎石带',   target: 8,  moves: 560, rocks: 4, desc: '击败 蜘蛛精 · 560 步 · 🪨4' },
+        { name: '鳄潭',     target: 9,  moves: 1400, desc: '击败 鳄鱼精 · 1400 步' },
+        { name: '顽石岗',   target: 9,  moves: 1250, rocks: 4, desc: '击败 鳄鱼精 · 1250 步 · 🪨4' },
+        { name: '蝎尾崖',   target: 10, moves: 1100, desc: '击败 蝎子精 · 1100 步' },
+        { name: '深渊石阵', target: 10, moves: 980,  rocks: 5, desc: '击败 蝎子精 · 980 步 · 🪨5' },
+        { name: '蛇穴',     target: 11, moves: 2400, desc: '击败 蛇精 · 2400 步' },
+        { name: '磐石塔',   target: 11, moves: 2100, rocks: 4, desc: '击败 蛇精 · 2100 步 · 🪨4' },
+        { name: '诛妖·终',  target: 11, moves: 1800, rocks: 6, desc: '击败 蛇精 · 1800 步 · 🪨6' },
     ],
+    // 由 MG.runGame 统一管理关卡选择；g2048.start 只负责对局逻辑
+    // opts.levelIdx: 关卡索引（0-based），opts.level === 0 表示无尽模式（levelIdx=undefined）
     start(container, opts) {
-        let alive = true;
-        const api = { stop() { alive = false; } };
-        const showSelect = () => {
-            if (!alive) return;
-            const levels = this.LEVELS.map((lv, i) => ({
-                name: lv.name || `第 ${i + 1} 关`,
-                desc: `${lv.target || 64} · ${lv.moves}步${lv.rocks ? ' · 🪨' + lv.rocks : ''}`,
-            }));
-            MG.levelSelect(container, {
-                game: 'g2048', title: '2048 · 目标挑战', levels,
-                extra: [{ label: '∞ 无尽模式（经典玩法）', onClick: () => runRound(0) }],
-                onStart: idx => runRound(idx + 1),
-            });
-        };
-        const runRound = level => { if (alive) g2048Round(container, opts, level, api, showSelect, runRound); };
-        showSelect();
+        const level = (opts.levelIdx != null ? opts.levelIdx + 1 : 0);
+        const api = { stop() {} };
+        g2048Round(container, opts, level, api, () => { if (api._back) api._back(); }, lvl => { if (api._restart) api._restart(lvl); });
         return api;
     },
 };
 
+// =================== 单局游戏主逻辑（opts.level 由 MG.runGame 传入）==================
 function g2048Round(container, opts, level, api, onBack, onReplay) {
     const N = 4, SIZE = 100;
-    const lv = level > 0 ? MiniGames.g2048.LEVELS[level - 1] : { target: Infinity, moves: Infinity, rocks: 0 };
-    const target = lv.target || 64, maxMoves = lv.moves || 40, rockN = lv.rocks || 0;
+    const lv = level > 0 ? MiniGames.g2048.LEVELS[level - 1] : { target: 11, moves: Infinity, rocks: 0 };
+    const target = lv.target || 11, maxMoves = lv.moves || Infinity, rockN = lv.rocks || 0;
     const { c, ctx, w, h, destroy } = MG.canvas(container, N * SIZE + 20, N * SIZE + 20);
-    const COLORS = { 2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563', 32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61', 512: '#edc850', 1024: '#edc53f', 2048: '#edc22e', 4096: '#3cff9e' };
-    const TXTCOLOR = { 2: '#776e65', 4: '#776e65' };
 
     let board = Array.from({ length: N }, () => Array(N).fill(0));
     let score = 0, moves = 0, over = false;
-    // 岩石障碍：随机放置，避开初始两格
+
+    // 岩石障碍（避开初始 2×2）
     const rocks = new Set();
     const rockKey = (i, j) => i * N + j;
     if (rockN) {
@@ -53,49 +359,86 @@ function g2048Round(container, opts, level, api, onBack, onReplay) {
         MG.shuffle(cells);
         for (const [i, j] of cells) {
             if (rocks.size >= rockN) break;
-            if (!(i < 2 && j < 2)) rocks.add(rockKey(i, j)); // 保护初始区域
+            if (!(i < 2 && j < 2)) rocks.add(rockKey(i, j));
         }
     }
+
+    // 等级 → 分数（升级时累加，等级越高奖励越多）
+    const levelScore = l => l * l * 5;
+
+    // 加权 spawn：根据目标等级动态调整（防止卡死也防止太轻松）
+    const spawnLevel = () => {
+        const maxSpawn = Math.min(11, Math.max(2, target));
+        if (maxSpawn <= 2) return Math.random() < 0.85 ? 1 : 2;
+        if (maxSpawn <= 4) {
+            const r = Math.random();
+            if (r < 0.7) return 1;
+            if (r < 0.92) return 2;
+            return MG.ri(3, maxSpawn);
+        }
+        if (maxSpawn <= 7) {
+            const r = Math.random();
+            if (r < 0.55) return 1;
+            if (r < 0.78) return 2;
+            if (r < 0.9) return 3;
+            return MG.ri(4, maxSpawn);
+        }
+        const r = Math.random();
+        if (r < 0.4) return 1;
+        if (r < 0.65) return 2;
+        if (r < 0.82) return 3;
+        return MG.ri(4, maxSpawn);
+    };
+
     const add = () => {
         const empty = [];
         for (let i = 0; i < N; i++) for (let j = 0; j < N; j++)
             if (!board[i][j] && !rocks.has(rockKey(i, j))) empty.push([i, j]);
         if (!empty.length) return;
         const [x, y] = MG.pick(empty);
-        board[x][y] = Math.random() < 0.9 ? 2 : 4;
+        board[x][y] = spawnLevel();
     };
+
     const draw = () => {
-        ctx.fillStyle = '#bbada0'; ctx.fillRect(0, 0, w, h);
+        // 棋盘背景（蓝灰）
+        ctx.fillStyle = '#5a7a9f';
+        ctx.fillRect(0, 0, w, h);
         for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
-            const x = 10 + j * SIZE + 4, y = 10 + i * SIZE + 4;
-            if (rocks.has(rockKey(i, j))) {  // 岩石
-                ctx.fillStyle = '#5a5448'; ctx.fillRect(x, y, SIZE - 8, SIZE - 8);
-                ctx.fillStyle = '#6e685a';
+            const x = 10 + j * SIZE, y = 10 + i * SIZE;
+            if (rocks.has(rockKey(i, j))) {
+                // 岩石格（不可移动）
+                roundRect(ctx, x + 4, y + 4, SIZE - 8, SIZE - 8, 10);
+                ctx.fillStyle = '#3a3a44'; ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = '#1a1a20'; ctx.stroke();
+                ctx.fillStyle = '#5a5a64';
                 ctx.beginPath(); ctx.arc(x + SIZE * 0.38, y + SIZE * 0.36, SIZE * 0.16, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(x + SIZE * 0.62, y + SIZE * 0.58, SIZE * 0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + SIZE * 0.62, y + SIZE * 0.6, SIZE * 0.2, 0, Math.PI * 2); ctx.fill();
                 continue;
             }
             const v = board[i][j];
-            ctx.fillStyle = COLORS[v] || (v ? '#2ee6a8' : '#1a1c2a');
-            ctx.fillRect(x, y, SIZE - 8, SIZE - 8);
-            if (v) {
-                ctx.fillStyle = TXTCOLOR[v] || '#fff';
-                ctx.font = `${v >= 1000 ? 28 : v >= 100 ? 36 : 44}px bold sans-serif`;
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(v, x + (SIZE - 8) / 2, y + (SIZE - 8) / 2);
+            if (v) drawMonsterCell(ctx, v, x, y, SIZE);
+            else {
+                roundRect(ctx, x + 6, y + 6, SIZE - 12, SIZE - 12, 10);
+                ctx.fillStyle = '#486890'; ctx.fill();
             }
         }
+        const maxL = Math.max(...board.flat(), 0);
         if (level > 0) {
-            opts.onScore && opts.onScore(`目标 ${target} · 已用 ${moves}/${maxMoves} 步 · 分数 ${score}`);
+            opts.onScore && opts.onScore(`目标：${MON_NAME(target)} (Lv${target}) · 最高 Lv${maxL} · ${moves}/${maxMoves} 步 · 击退 ${score}`);
         } else {
-            opts.onScore && opts.onScore(`分数：${score}`);
+            opts.onScore && opts.onScore(`分数 ${score} · 最高 Lv${maxL} · ${moves} 步`);
         }
     };
-    // 带岩石的行压缩：按岩石分段，段内滑动合并
+
+    // 段内压缩：n + n → n+1（封顶 11）
     const compressSeg = seg => {
         const a = seg.filter(v => v);
         for (let i = 0; i < a.length - 1; i++) {
-            if (a[i] === a[i + 1]) { a[i] *= 2; score += a[i]; a.splice(i + 1, 1); }
+            if (a[i] === a[i + 1] && a[i] < 11) {
+                a[i] += 1;
+                score += levelScore(a[i]);
+                a.splice(i + 1, 1);
+            }
         }
         while (a.length < seg.length) a.push(0);
         return a;
@@ -118,30 +461,25 @@ function g2048Round(container, opts, level, api, onBack, onReplay) {
         if (over) return;
         over = true;
         let stars = 0;
-        if (win && level > 0) {
+        if (level > 0) {
             const ratio = (maxMoves - moves) / maxMoves;
-            stars = ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1;
+            stars = win ? (ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1) : 0;
             MG.recordStars('g2048', level, stars);
         }
-        if (level > 0) {
-            MG.result(container, {
-                win, stars,
-                title: win ? `🏆 第 ${level} 关达成 ${target}！` : '💥 挑战失败',
-                lines: [reason || '', `分数 ${score} · 用了 ${moves} 步`].filter(Boolean),
-                hasNext: win && level < MiniGames.g2048.LEVELS.length,
-                onRetry: () => { destroy(); onReplay(level); },
-                onNext: () => { destroy(); onReplay(level + 1); },
-                onBack,
-            });
-        } else {
-            MG.result(container, {
-                win: true, title: '本局结束',
-                lines: [`分数 ${score}`, `最大方块 ${Math.max(...board.flat().filter(v => v > 0), 0)}`],
-                onRetry: () => { destroy(); onReplay(0); }, onBack,
+        // 通知 MG.runGame 处理结算弹窗（重试/下一关/选关）
+        if (opts.onComplete) {
+            const maxL = Math.max(...board.flat(), 0);
+            opts.onComplete({
+                win,
+                stars,
+                title: win ? `🏆 击败 ${MON_NAME(target)}！` : '💥 妖怪太强了…',
+                lines: [reason || '', `分数 ${score} · 用了 ${moves} 步`, `最高 Lv${maxL}（${MON_NAME(maxL)}）`].filter(Boolean),
+                score,
             });
         }
         draw();
     };
+
     const move = dir => {
         if (over) return;
         const before = JSON.stringify(board);
@@ -151,9 +489,9 @@ function g2048Round(container, opts, level, api, onBack, onReplay) {
         if (dir === 'D') for (let j = 0; j < N; j++) setCol(j, compressRow(getCol(j).reverse()).reverse());
         if (JSON.stringify(board) !== before) { moves++; add(); }
         draw();
-        if (board.flat().includes(target)) return finish(true, `在 ${moves} 步内合出了 ${target}！`);
-        if (level > 0 && moves >= maxMoves) return finish(false, `步数用完（${maxMoves} 步）还没合出 ${target}`);
-        // 死局检测：任何方向都无法移动
+        if (board.flat().includes(target)) return finish(true, `在 ${moves} 步内合出了 ${MON_NAME(target)}！`);
+        if (level > 0 && moves >= maxMoves) return finish(false, `步数用完（${maxMoves} 步）还没凑出 ${MON_NAME(target)}`);
+        // 死局检测
         const can = ['L', 'R', 'U', 'D'].some(d => {
             const snap = JSON.stringify(board), sc = score;
             if (d === 'L') for (let i = 0; i < N; i++) setRow(i, compressRow(getRow(i)));
@@ -166,6 +504,7 @@ function g2048Round(container, opts, level, api, onBack, onReplay) {
         });
         if (!can) finish(level === 0, '棋盘锁死，无路可走');
     };
+
     const kbd = e => {
         const k = { ArrowLeft: 'L', ArrowRight: 'R', ArrowUp: 'U', ArrowDown: 'D' }[e.key];
         if (k) { e.preventDefault(); move(k); }
@@ -186,13 +525,16 @@ function g2048Round(container, opts, level, api, onBack, onReplay) {
 
     add(); add(); draw();
     MG.hint(container, level > 0
-        ? `第 ${level} 关：${maxMoves} 步内合出 ${target}${rockN ? '（🪨岩石无法移动）' : ''}`
-        : '滑动屏幕（或方向键）合并方块，挑战 2048！');
-    // 测试钩子（仅测试模式）
+        ? `第 ${level} 关：${maxMoves} 步内击败 ${MON_NAME(target)}${rockN ? '（🪨岩石无法移动）' : ''}`
+        : '滑动屏幕（或方向键）合并妖怪，最高 Lv11 蛇精！');
+
+    // 测试钩子（无头测试用）
     if (typeof window !== 'undefined' && window.__MG_TEST) {
         window.__g2048 = {
-            get board() { return board; }, get score() { return score; }, get moves() { return moves; }, get over() { return over; },
+            get board() { return board; }, get moves() { return moves; }, get over() { return over; },
+            get score() { return score; },
             move, target, maxMoves, rocks,
+            N, SIZE, add, drawMonsterCell, MON,
         };
     }
     return api;

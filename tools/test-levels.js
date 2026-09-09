@@ -205,9 +205,9 @@ setSeed(2048); console.log('\n③ 2048 关卡');
         const merged = b.flat().reduce((s, v) => s + v, 0) - bd.flat().reduce((s, v) => s + v, 0);
         return JSON.stringify(b) === JSON.stringify(bd) ? null : merged;
     };
-    let wins = 0;
+    let wins = 0, lossReasons = {};
     for (let t = 0; t < 20; t++) {
-        const api = MiniGames.g2048.start(fakeEl(), { onScore: () => {} });
+        const api = MiniGames.g2048.start(fakeEl(), { onScore: () => {}, levelIdx: 0 });
         const G = window.__g2048;
         let guard = 0;
         while (!G.over && guard++ < 60) {
@@ -218,7 +218,11 @@ setSeed(2048); console.log('\n③ 2048 关卡');
             G.move(pick || 'L');
             if (lastErr) { console.log('    ⚠ ' + lastErr.message); lastErr = null; break; }
         }
-        if (G.over && lastResult && lastResult.win && G.board.flat().includes(64)) wins++;
+        if (G.over && G.board.flat().includes(G.target)) wins++;
+        else {
+            const r = guard >= 60 ? 'guard=60' : 'no-target';
+            lossReasons[r] = (lossReasons[r] || 0) + 1;
+        }
         api.stop();
     }
     assert(wins >= 14, `第 1 关角落策略玩家通关率 ≥70%（实际 ${wins}/20）`);
@@ -226,7 +230,7 @@ setSeed(2048); console.log('\n③ 2048 关卡');
     const api2 = MiniGames.g2048.start(fakeEl(), { onScore: () => {} });
     gameLevel5();
     function gameLevel5() {
-        // 手工以第 5 关开局
+        // 手工以第 5 关开局（凑出 L4 蛤蟆·绿）
         api2.stop();
         g2048Round(fakeEl(), { onScore: () => {} }, 5, { stop() {} }, () => {}, () => {});
         const G = window.__g2048;
