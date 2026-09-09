@@ -63,7 +63,7 @@ const MG = {
         return b;
     },
 
-    // ================= 关卡进度系统（localStorage 持久化）=================
+    // ================= 关卡进度系统（localStorage 持久化 + 服务器同步）=================
     PKEY: 'mg-progress-v1',
     progress() {
         try { return JSON.parse(localStorage.getItem(this.PKEY)) || {}; } catch (e) { return {}; }
@@ -73,6 +73,7 @@ const MG = {
         return this.progress()[gameId] || { unlocked: 1, stars: {} };
     },
     // 记录星级（取历史最高）并解锁下一关；level=0 表示无尽模式（只存 best）
+    // 同时上报服务器（登录用户）：首通/升星发钻石金币奖励
     recordStars(gameId, level, stars) {
         const p = this.progress();
         const g = p[gameId] || { unlocked: 1, stars: {} };
@@ -81,11 +82,65 @@ const MG = {
         if (level > 0 && stars > 0 && level >= g.unlocked) g.unlocked = level + 1;
         p[gameId] = g;
         this.saveProgress(p);
+        this.report(gameId, level, stars);
         return g;
     },
     totalStars(gameId) {
         const g = this.getGameProgress(gameId);
         return Object.values(g.stars).reduce((a, b) => a + b, 0);
+    },
+
+    // ---- 服务器进度/奖励（游客自动跳过，不影响单机体验）----
+    report(gameId, level, stars) {
+        const tk = localStorage.getItem('game-token');
+        if (!tk || !(level > 0)) return;
+        fetch('/api/minigame/report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk },
+            body: JSON.stringify({ game: gameId, level, stars }),
+        }).then(r => r.ok ? r.json() : null).then(r => {
+            if (r && r.reward && (r.reward.gems || r.reward.gold)) this.rewardToast(r.reward);
+        }).catch(() => {});
+    },
+    // 登录后拉服务器进度，与本地合并（换设备不丢进度）
+    sync() {
+        const tk = localStorage.getItem('game-token');
+        if (!tk) return Promise.resolve();
+        return fetch('/api/minigame/progress', { headers: { 'Authorization': 'Bearer ' + tk } })
+            .then(r => r.ok ? r.json() : null).then(r => {
+                if (!r || !r.progress) return;
+                const p = this.progress();
+                Object.keys(r.progress).forEach(gid => {
+                    const g = p[gid] || { unlocked: 1, stars: {} };
+                    Object.keys(r.progress[gid]).forEach(lv => {
+                        const st = (r.progress[gid][lv] || {}).stars || 0;
+                        if (st > (g.stars[lv] || 0)) g.stars[lv] = st;
+                        const n = parseInt(lv);
+                        if (n > 0 && st > 0 && n >= g.unlocked) g.unlocked = n + 1;
+                    });
+                    p[gid] = g;
+                });
+                this.saveProgress(p);
+            }).catch(() => {});
+    },
+    // 闯关奖励浮层 + 顶栏资源即时刷新
+    rewardToast(reward) {
+        try {
+            if (window.App && App.user && App.user.state) {
+                const r = App.user.state.resources || (App.user.state.resources = {});
+                r.gems = (r.gems || 0) + (reward.gems || 0);
+                r.gold = (r.gold || 0) + (reward.gold || 0);
+                App.refresh();
+            }
+        } catch (e) {}
+        try {
+            const d = document.createElement('div');
+            d.className = 'mg-reward-toast';
+            d.innerHTML = `<div class="mg-rt-title">🎉 小游戏闯关奖励</div>
+                <div class="mg-rt-body">💎 +${reward.gems || 0}　💰 +${reward.gold || 0}</div>`;
+            document.body.appendChild(d);
+            setTimeout(() => d.remove(), 2700);
+        } catch (e) {}
     },
 
     // ================= 关卡选择界面 =================
@@ -132,7 +187,7 @@ const MG = {
         o.innerHTML = `
             <div class="mg-result-card">
                 <div class="mg-result-title">${cfg.title || (cfg.win ? '🏆 胜利！' : '💥 失败')}</div>
-                ${cfg.stars != null ? `<div class="mg-result-stars">${'★'.repeat(cfg.stars)}<span>${'☆'.repeat(3 - cfg.stars)}</span></div>` : ''}
+                ${cfg.stars != null ? `<div class="mg-result-stars">${'<i>★</i>'.repeat(cfg.stars)}${'<i class="off">☆</i>'.repeat(3 - cfg.stars)}</div>` : ''}
                 <div class="mg-result-lines">${(cfg.lines || []).map(l => `<div>${l}</div>`).join('')}</div>
                 <div class="mg-result-btns">
                     <button class="mg-btn" data-a="retry">↻ 重试</button>

@@ -108,7 +108,9 @@ const App = {
             </div>
             <div style="display:flex;gap:8px">
                 <button class="btn" id="nick-save">保存昵称</button>
+                <!-- 短信通道暂停（2026-09-09）：绑定手机需验证码，暂不展示
                 <button class="btn ghost" id="btn-bind-phone">📱 ${u.phoneBound ? '换绑手机' : '绑定手机'}</button>
+                -->
                 <button class="btn ghost" id="btn-set-password">${u.hasPassword ? '修改密码' : '设置密码'}</button>
             </div>
         `);
@@ -128,10 +130,13 @@ const App = {
         };
         document.getElementById('nick-save').onclick = doSave;
         inp.addEventListener('keydown', e => { if (e.key === 'Enter') doSave(); });
-        document.getElementById('btn-bind-phone').onclick = () => this.bindPhone();
+        // 绑定手机按钮已随短信通道下线（元素不存在时安全跳过）
+        const bindBtn = document.getElementById('btn-bind-phone');
+        if (bindBtn) bindBtn.onclick = () => this.bindPhone();
         document.getElementById('btn-set-password').onclick = () => this.setPassword();
     },
-    // 绑定 / 换绑手机号
+    // 绑定 / 换绑手机号（短信通道暂停中：服务器 SMS_ENABLED=false，发送验证码会返回
+    // 「短信通道暂未开放」；接通付费厂商后置 true 并恢复前端入口即可）
     bindPhone() {
         U.openModal(`
             <h3>${this.user.phoneBound ? '换绑手机号' : '绑定手机号'}</h3>

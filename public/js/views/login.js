@@ -1,20 +1,23 @@
-// 登录视图：账号通道（账号/手机号+密码） + 手机号通道（验证码登录/注册）
+// 登录视图：账号通道（账号+密码）
+// 手机号验证码通道暂停（2026-09-09）：真实短信需购买厂商套餐，前端入口已注释；
+// 恢复方法：还原 index.html 的手机号 tab/box，并去掉下方 SMS_ENABLED 判断。
+const SMS_ENABLED = false;
 const LoginView = {
     smsCountdown: 0,
     init() {
-        // 通道切换
+        // 通道切换（手机号通道下线时 tab-phone 不存在，安全跳过）
         const tabA = document.getElementById('tab-account');
         const tabP = document.getElementById('tab-phone');
         const boxA = document.getElementById('login-account-box');
         const boxP = document.getElementById('login-phone-box');
         const switchTo = phone => {
-            tabA.classList.toggle('active', !phone);
-            tabP.classList.toggle('active', !!phone);
-            boxA.classList.toggle('hidden', !!phone);
-            boxP.classList.toggle('hidden', !phone);
+            if (tabA) tabA.classList.toggle('active', !phone);
+            if (tabP) tabP.classList.toggle('active', !!phone);
+            if (boxA) boxA.classList.toggle('hidden', !!phone);
+            if (boxP) boxP.classList.toggle('hidden', !phone);
         };
-        tabA.onclick = () => switchTo(false);
-        tabP.onclick = () => switchTo(true);
+        if (tabP && boxP) tabP.onclick = () => switchTo(true);
+        if (tabA) tabA.onclick = () => switchTo(false);
 
         // 账号通道
         document.getElementById('btn-login').onclick = () => this.submit(false);
@@ -23,10 +26,13 @@ const LoginView = {
             if (e.key === 'Enter') this.submit(false);
         });
 
-        // 手机号通道
-        document.getElementById('btn-send-sms').onclick = () => this.sendSms();
-        document.getElementById('btn-phone-login').onclick = () => this.phoneLogin();
-        document.getElementById('login-sms').addEventListener('keydown', e => {
+        // 手机号通道（下线中：元素不存在时自动跳过）
+        const btnSms = document.getElementById('btn-send-sms');
+        const btnPhone = document.getElementById('btn-phone-login');
+        const smsInput = document.getElementById('login-sms');
+        if (btnSms && SMS_ENABLED) btnSms.onclick = () => this.sendSms();
+        if (btnPhone) btnPhone.onclick = () => this.phoneLogin();
+        if (smsInput) smsInput.addEventListener('keydown', e => {
             if (e.key === 'Enter') this.phoneLogin();
         });
     },

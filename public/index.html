@@ -14,19 +14,24 @@
     <div class="login-card">
         <h1 class="game-title">塔界远征</h1>
         <p class="subtitle">肉鸽推塔 · 部落远征</p>
+        <!-- 短信通道暂停（2026-09-09）：真实短信需接入付费厂商套餐，恢复时取消注释，
+             并还原 login.js 中 tab-phone 相关注册代码 -->
+        <div class="login-tabs">
+            <button id="tab-account" class="active">账 号</button>
+        </div>
+        <!-- 账号通道 -->
+        <div id="login-account-box">
+            <input id="login-username" placeholder="账号">
+            <input id="login-password" type="password" placeholder="密码 (4 位以上)">
+            <button id="btn-login">登 录</button>
+            <button id="btn-register" class="ghost">注 册</button>
+            <p class="hint" style="margin-top:6px">账号注册：4-16 位英文字母+数字。</p>
+        </div>
+        <!-- 手机号通道（短信服务商未接入，暂时下线）
         <div class="login-tabs">
             <button id="tab-account" class="active">账 号</button>
             <button id="tab-phone">手机号</button>
         </div>
-        <!-- 账号通道 -->
-        <div id="login-account-box">
-            <input id="login-username" placeholder="账号 / 绑定的手机号">
-            <input id="login-password" type="password" placeholder="密码 (4 位以上)">
-            <button id="btn-login">登 录</button>
-            <button id="btn-register" class="ghost">注 册</button>
-            <p class="hint" style="margin-top:6px">账号注册：4-16 位英文字母+数字，可随时绑定手机号。</p>
-        </div>
-        <!-- 手机号通道 -->
         <div id="login-phone-box" class="hidden">
             <input id="login-phone" placeholder="手机号" maxlength="11" inputmode="numeric">
             <div class="sms-row">
@@ -37,6 +42,7 @@
             <button id="btn-phone-login">验证码登录 / 注册</button>
             <p class="hint" style="margin-top:6px">未注册的手机号将自动创建账号，一个手机号只有一个账号。</p>
         </div>
+        -->
     </div>
 </div>
 
@@ -97,45 +103,45 @@
 <!-- 弹窗容器 -->
 <div id="modal-root"></div>
 
-<script src="/js/api.js?v=20260909a"></script>
-<script src="/js/utils.js?v=20260909a"></script>
-<script src="/js/battle.js?v=20260909a"></script>
-<script src="/js/views/login.js?v=20260909a"></script>
-<script src="/js/views/camp.js?v=20260909a"></script>
-<script src="/js/views/aid.js?v=20260909a"></script>
-<script src="/js/views/hero.js?v=20260909a"></script>
-<script src="/js/views/hero-detail.js?v=20260909a"></script>
-<script src="/js/views/tower.js?v=20260909a"></script>
-<script src="/js/views/world.js?v=20260909a"></script>
-<script src="/js/views/clan.js?v=20260909a"></script>
-<script src="/js/views/ancient.js?v=20260909a"></script>
-<script src="/js/views/chat.js?v=20260909a"></script>
-<script src="/js/views/mail.js?v=20260909a"></script>
-<script src="/js/views/event.js?v=20260909a"></script>
-<script src="/js/views/personal.js?v=20260909a"></script>
-<script src="/js/views/settings.js?v=20260909a"></script>
-<script src="/js/views/minigames.js?v=20260909a"></script>
-<script src="/js/minigames/_shared.js?v=20260909a"></script>
-<script src="/js/minigames/gomoku.js?v=20260909a"></script>
-<script src="/js/minigames/g2048.js?v=20260909a"></script>
-<script src="/js/minigames/banqi.js?v=20260909a"></script>
-<script src="/js/minigames/xiangqi.js?v=20260909a"></script>
-<script src="/js/minigames/link.js?v=20260909a"></script>
-<script src="/js/minigames/match3.js?v=20260909a"></script>
-<script src="/js/minigames/snake.js?v=20260909a"></script>
-<script src="/js/minigames/tetris.js?v=20260909a"></script>
-<script src="/js/minigames/mole.js?v=20260909a"></script>
-<script src="/js/minigames/mine.js?v=20260909a"></script>
-<script src="/js/minigames/memory.js?v=20260909a"></script>
-<script src="/js/minigames/slide15.js?v=20260909a"></script>
-<script src="/js/minigames/bulls.js?v=20260909a"></script>
-<script src="/js/minigames/sudoku6.js?v=20260909a"></script>
-<script src="/js/minigames/hanoi.js?v=20260909a"></script>
-<script src="/js/minigames/piano.js?v=20260909a"></script>
-<script src="/js/minigames/reaction.js?v=20260909a"></script>
-<script src="/js/minigames/breakout.js?v=20260909a"></script>
-<script src="/js/minigames/jump.js?v=20260909a"></script>
-<script src="/js/minigames/shooter.js?v=20260909a"></script>
-<script src="/js/app.js?v=20260909a"></script>
+<script src="/js/api.js?v=20260909b"></script>
+<script src="/js/utils.js?v=20260909b"></script>
+<script src="/js/battle.js?v=20260909b"></script>
+<script src="/js/views/login.js?v=20260909b"></script>
+<script src="/js/views/camp.js?v=20260909b"></script>
+<script src="/js/views/aid.js?v=20260909b"></script>
+<script src="/js/views/hero.js?v=20260909b"></script>
+<script src="/js/views/hero-detail.js?v=20260909b"></script>
+<script src="/js/views/tower.js?v=20260909b"></script>
+<script src="/js/views/world.js?v=20260909b"></script>
+<script src="/js/views/clan.js?v=20260909b"></script>
+<script src="/js/views/ancient.js?v=20260909b"></script>
+<script src="/js/views/chat.js?v=20260909b"></script>
+<script src="/js/views/mail.js?v=20260909b"></script>
+<script src="/js/views/event.js?v=20260909b"></script>
+<script src="/js/views/personal.js?v=20260909b"></script>
+<script src="/js/views/settings.js?v=20260909b"></script>
+<script src="/js/views/minigames.js?v=20260909b"></script>
+<script src="/js/minigames/_shared.js?v=20260909b"></script>
+<script src="/js/minigames/gomoku.js?v=20260909b"></script>
+<script src="/js/minigames/g2048.js?v=20260909b"></script>
+<script src="/js/minigames/banqi.js?v=20260909b"></script>
+<script src="/js/minigames/xiangqi.js?v=20260909b"></script>
+<script src="/js/minigames/link.js?v=20260909b"></script>
+<script src="/js/minigames/match3.js?v=20260909b"></script>
+<script src="/js/minigames/snake.js?v=20260909b"></script>
+<script src="/js/minigames/tetris.js?v=20260909b"></script>
+<script src="/js/minigames/mole.js?v=20260909b"></script>
+<script src="/js/minigames/mine.js?v=20260909b"></script>
+<script src="/js/minigames/memory.js?v=20260909b"></script>
+<script src="/js/minigames/slide15.js?v=20260909b"></script>
+<script src="/js/minigames/bulls.js?v=20260909b"></script>
+<script src="/js/minigames/sudoku6.js?v=20260909b"></script>
+<script src="/js/minigames/hanoi.js?v=20260909b"></script>
+<script src="/js/minigames/piano.js?v=20260909b"></script>
+<script src="/js/minigames/reaction.js?v=20260909b"></script>
+<script src="/js/minigames/breakout.js?v=20260909b"></script>
+<script src="/js/minigames/jump.js?v=20260909b"></script>
+<script src="/js/minigames/shooter.js?v=20260909b"></script>
+<script src="/js/app.js?v=20260909b"></script>
 </body>
 </html>

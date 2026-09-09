@@ -50,7 +50,9 @@ const PersonalView = {
             <h4 style="margin-top:14px">冒险阵容</h4>
             <div class="pi-lineup">${lineupHTML || emptySlots}</div>
             <div class="pi-actions">
+                <!-- 绑定手机入口随短信通道暂停（2026-09-09）
                 <button class="btn ghost" id="pi-bind">📱 ${u.phoneBound ? '换绑手机' : '绑定手机'}</button>
+                -->
                 <button class="btn ghost" id="pi-pw">${u.hasPassword ? '修改密码' : '设置密码'}</button>
                 <button class="btn ghost" id="pi-settings">⚙ 设置</button>
             </div>
@@ -68,7 +70,9 @@ const PersonalView = {
                 U.toast('昵称已更新');
             } catch (e) { U.toast(e.message); }
         };
-        document.getElementById('pi-bind').onclick = () => app.bindPhone();
+        // 绑定手机按钮已随短信通道下线（元素不存在时安全跳过）
+        const bindBtn = document.getElementById('pi-bind');
+        if (bindBtn) bindBtn.onclick = () => app.bindPhone();
         document.getElementById('pi-pw').onclick = () => app.setPassword();
         document.getElementById('pi-settings').onclick = () => SettingsView.open(app);
     }

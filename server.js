@@ -916,6 +916,10 @@ function maskPhone(p) {
 }
 
 // ---------------- 短信验证码 ----------------
+// 短信通道总开关（2026-09-09 下线）：
+//   真实短信需购买厂商套餐（腾讯云/阿里云 SMS 按条计费，约 0.045 元/条），
+//   当前未接入付费服务商，整条手机验证码通道暂停 —— 保留代码，接通后置 true 即恢复。
+const SMS_ENABLED = false;
 // 开发模式（默认）：验证码打印到服务端控制台，并提供后台接口查看，方便联调；
 // 接真实短信：设置 SMS_PROVIDER=tencent 后在此处接入厂商 SDK（见 deploy/README.md）。
 const SMS = {
@@ -926,6 +930,7 @@ const SMS = {
     resendGap: (parseInt(process.env.SMS_RESEND_SEC) || 60) * 1000, // 同号重发间隔（测试可调小）
     recentMax: 30,
     send(phone) {
+        if (!SMS_ENABLED) return { ok: false, error: '短信通道暂未开放，请使用账号密码登录' };
         const now = Date.now();
         const ns = this.nextSend.get(phone) || 0;
         if (now < ns) {
@@ -2463,6 +2468,48 @@ api['POST /api/mail/claim'] = (req, res, body) => {
     }
     save();
     sendJson(res, 200, { ok: true, state: user.state });
+};
+
+// ---- 小游戏闯关进度 + 奖励 ----
+// 进度存档：u.state.minigames = { [gameId]: { [level]: { stars, clears } } }
+// 奖励规则（防刷）：首次通关送钻（关卡越高越多）+ 金币；已通关只升星补差价；重复通关不送
+const MINIGAME_IDS = new Set(['gomoku','g2048','banqi','xiangqi','link','match3','snake','tetris','mole','mine','memory','slide15','bulls','sudoku6','hanoi','piano','reaction','breakout','jump','shooter']);
+api['POST /api/minigame/report'] = (req, res, body) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const game = String(body.game || '');
+    const level = parseInt(body.level);
+    const stars = parseInt(body.stars);
+    if (!MINIGAME_IDS.has(game)) return sendJson(res, 400, { error: '未知小游戏' });
+    if (!(level >= 1 && level <= 60)) return sendJson(res, 400, { error: '关卡号不合法' });
+    if (!(stars >= 1 && stars <= 3)) return sendJson(res, 400, { error: '星级不合法' });
+    const u = user.state;
+    u.minigames = u.minigames || {};
+    u.minigames[game] = u.minigames[game] || {};
+    const rec = u.minigames[game][level] || { stars: 0, clears: 0 };
+    const reward = {};
+    if (stars > rec.stars) {
+        if (rec.clears) {                          // 已通关，只升星：补差价
+            reward.gems = (stars - rec.stars) * 4;
+            reward.gold = 100;
+        } else {                                   // 首次通关：大奖
+            reward.gems = 10 + level * 2 + (stars - 1) * 4;
+            reward.gold = 400 + level * 150;
+        }
+        u.resources.gems = (u.resources.gems || 0) + reward.gems;
+        u.resources.gold = (u.resources.gold || 0) + reward.gold;
+    }
+    rec.stars = Math.max(rec.stars, stars);
+    rec.clears = (rec.clears || 0) + 1;
+    u.minigames[game][level] = rec;
+    save();
+    sendJson(res, 200, { ok: true, reward, resources: u.resources, progress: u.minigames[game] });
+};
+// 客户端登录后拉取，与本地 localStorage 进度合并（换设备不丢进度）
+api['GET /api/minigame/progress'] = (req, res) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    sendJson(res, 200, { progress: (user.state && user.state.minigames) || {} });
 };
 
 // ---- 后台 ----

@@ -47,6 +47,11 @@ global.localStorage = (() => {
 })();
 window.__MG_TEST = true;
 
+// 固定种子随机数：让含随机的用例可复现（AI 对局 / 2048 发牌），消除测试抖动
+let _seed = 1;
+const setSeed = n => { _seed = n >>> 0 || 1; };
+Math.random = () => { _seed = (_seed * 1664525 + 1013904223) >>> 0; return _seed / 4294967296; };
+
 // MG 桩：替换 levelSelect/rps/hint/canvas/result，bind 捕获 onTap
 let lastOnTap = null, lastResult = null;
 const load = f => vm.runInThisContext(fs.readFileSync(path.join(__dirname, '../public/js/minigames', f), 'utf8'), { filename: f });
@@ -67,13 +72,15 @@ load('g2048.js');
 
 const cellXY = (i, j) => ({ x: 2 + j * 50 + 25, y: 2 + i * 56 + 28 });
 const tapMove = m => {
-    if (m.t === 'flip') { lastOnTap(cellXY(m.i, m.j)); return; }
-    lastOnTap(cellXY(m.fi, m.fj));   // 选中
-    lastOnTap(cellXY(m.ti, m.tj));   // 走/吃
+    const B = window.__banqi;
+    if (m.t === 'flip') { B.tap(m.i, m.j); return; }
+    B.tap(m.fi, m.fj);   // 选中
+    B.tap(m.ti, m.tj);   // 走/吃
 };
+const isKing = n => n === '帥' || n === '將';   // 红帅 / 黑将同为主将
 
 // ---------- 1) 暗棋规则单元测试 ----------
-console.log('\n① 暗棋规则');
+setSeed(20260909); console.log('\n① 暗棋规则');
 {
     const api = MiniGames.banqi.start(fakeEl(), { onScore: () => {} });
     const B = window.__banqi;
@@ -108,7 +115,7 @@ console.log('\n① 暗棋规则');
 }
 
 // ---------- 2) 暗棋 AI 对局（脚本玩家 vs 各难度） ----------
-console.log('\n② 暗棋 AI 对局收敛 + 难度梯度');
+setSeed(9527); console.log('\n② 暗棋 AI 对局收敛 + 难度梯度');
 const smartPlayer = B => {
     const ms = B.legalMoves(1);
     if (!ms.length) return null;
@@ -135,9 +142,9 @@ const smartPlayer = B => {
         let v = Math.random() * 3;
         if (m.t === 'm') {
             const a = B.board[m.fi][m.fj], victim = B.board[m.ti][m.tj];
-            if (victim) v += victim.n === '帥' ? 1000 : victim.r * 12;
+            if (victim) v += isKing(victim.n) ? 1000 : victim.r * 12;
             v -= danger(m.ti, m.tj, a) * 1.1;
-            if (a.n === '帥') v -= 10;
+            if (isKing(a.n)) v -= 10;
         } else if (Math.random() < 0.35) v += 4;  // 前期适度翻子
         if (v > bestV) { bestV = v; best = m; }
     }
@@ -180,7 +187,7 @@ const playBanqiGame = level => {
 }
 
 // ---------- 3) 2048 关卡 ----------
-console.log('\n③ 2048 关卡');
+setSeed(2048); console.log('\n③ 2048 关卡');
 {
     // 第 1 关（64 / 40 步）贪心玩家（每步选合并收益最大方向）通关率
     const compressSeg = seg => {
