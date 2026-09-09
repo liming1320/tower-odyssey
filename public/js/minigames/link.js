@@ -1,124 +1,267 @@
-// 连连看：8x6 棋盘（48 张 24 对），找相同图案用 ≤2 个折点的路径连起来
+// 连连看：20 关挑战——棋盘渐大、时限渐紧、岩石挡路；提示/洗牌道具随关卡递减
 window.MiniGames = window.MiniGames || {};
 MiniGames.link = {
+    LEVELS: [
+        { name: '热身', cols: 4, rows: 4, time: 90 },
+        { name: '入门', cols: 5, rows: 4, time: 120 },
+        { name: '上手', cols: 6, rows: 4, time: 140 },
+        { name: '进阶', cols: 6, rows: 5, time: 170 },
+        { name: '乱石滩', cols: 6, rows: 5, time: 180, rocks: 2 },
+        { name: '长廊', cols: 7, rows: 4, time: 160 },
+        { name: '开阔地', cols: 8, rows: 4, time: 180 },
+        { name: '石径', cols: 8, rows: 5, time: 220, rocks: 2 },
+        { name: '限时抢消', cols: 8, rows: 5, time: 190 },
+        { name: '半程试炼', cols: 8, rows: 6, time: 240 },
+        { name: '乱石岗', cols: 8, rows: 6, time: 240, rocks: 4 },
+        { name: '大棋盘', cols: 9, rows: 6, time: 260 },
+        { name: '碎石坡', cols: 9, rows: 6, time: 250, rocks: 4 },
+        { name: '旷野', cols: 10, rows: 6, time: 280 },
+        { name: '巨石阵', cols: 10, rows: 6, time: 280, rocks: 6 },
+        { name: '高墙', cols: 10, rows: 7, time: 330, rocks: 4 },
+        { name: '迷阵', cols: 10, rows: 7, time: 320, rocks: 6 },
+        { name: '一望无际', cols: 10, rows: 8, time: 360 },
+        { name: '乱石深渊', cols: 10, rows: 8, time: 350, rocks: 6 },
+        { name: '连连看之神', cols: 11, rows: 8, time: 400, rocks: 8 },
+    ],
+    ICONS: ['🍎', '🍊', '🍋', '🍉', '🍇', '🍓', '🍒', '🍑', '🥝', '🥥', '🍍', '🥭', '🍅', '🍆', '🥕', '🌽', '🌰', '🍄', '🥬', '🥦', '🌶', '🧄'],
     start(container, opts) {
-        const COLS = 8, ROWS = 6;
-        const ICONS = ['🍎','🍊','🍋','🍉','🍇','🍓','🍒','🍑','🥝','🥥','🍍','🥭'];
-        const initBoard = () => {
-            const pairs = COLS*ROWS/2;
-            const arr = [];
-            for (let i = 0; i < pairs; i++) { const ico = ICONS[i % ICONS.length]; arr.push(ico, ico); }
-            MG.shuffle(arr);
-            const b = [];
-            for (let i = 0; i < ROWS; i++) b.push(arr.slice(i*COLS, (i+1)*COLS));
-            return b;
+        let alive = true;
+        const api = { stop() { alive = false; } };
+        const showSelect = () => {
+            if (!alive) return;
+            const levels = this.LEVELS.map((lv, i) => ({
+                name: lv.name || `第 ${i + 1} 关`,
+                desc: `${lv.cols}×${lv.rows} · ${lv.time}s${lv.rocks ? ' · 🪨' + lv.rocks : ''}`,
+            }));
+            MG.levelSelect(container, {
+                game: 'link', title: '连连看 · 20 关挑战', levels,
+                onStart: idx => runRound(idx + 1),
+            });
         };
-        let board = initBoard(), sel = null, path = null, score = 0, timeLeft = 180;
-        const cellW = 50, cellH = 50;
-        const { c, ctx, w, h, destroy } = MG.canvas(container, COLS*cellW + 4, ROWS*cellH + 4);
-        // 路径（≤2 折）：用 BFS 搜扩展图（棋盘外 + 1 圈空白）
-        const canConnect = (a, b) => {
-            if (a[0]===b[0] && a[1]===b[1]) return null;
-            // 临时去掉两格
-            const saved = [board[a[0]][a[1]], board[b[0]][b[1]]];
-            board[a[0]][a[1]] = ''; board[b[0]][b[1]] = '';
-            const found = searchPath(a, b);
-            board[a[0]][a[1]] = saved[0]; board[b[0]][b[1]] = saved[1];
-            return found;
-        };
-        const searchPath = (start, end) => {
-            // 棋盘外加一圈空白：cols+2 x rows+2，索引 1..cols, 1..rows
-            const W = COLS + 2, H = ROWS + 2;
-            const inB = (x, y) => x>=0 && x<W && y>=0 && y<H;
-            const blocked = (x, y) => {
-                if (x === 0 || x === W-1 || y === 0 || y === H-1) return false; // 边界空白
-                return !!board[y-1][x-1];
-            };
-            const sx = start[1]+1, sy = start[0]+1, ex = end[1]+1, ey = end[0]+1;
-            // BFS 记折点 ≤ 2：state = (x, y, lastDir, turns)
-            // 简化：直线相连（折点 0）+ L 型（折点 1）+ Z 型（折点 2）
-            const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
-            // 先尝试 0 折（同行/列）
-            if (sx === ex) {
-                const lo = Math.min(sy, ey), hi = Math.max(sy, ey);
-                let ok = true; for (let y = lo+1; y < hi; y++) if (blocked(sx, y)) { ok = false; break; }
-                if (ok) return [[sx-1, sy-1], [ex-1, ey-1]];
-            }
-            if (sy === ey) {
-                const lo = Math.min(sx, ex), hi = Math.max(sx, ex);
-                let ok = true; for (let x = lo+1; x < hi; x++) if (blocked(x, sy)) { ok = false; break; }
-                if (ok) return [[sx-1, sy-1], [ex-1, ey-1]];
-            }
-            // 1-2 折：枚举所有转角点
-            for (let cx = 0; cx < W; cx++) {
-                for (let cy = 0; cy < H; cy++) {
-                    if (cx === sx && cy === sy) continue;
-                    if (cx === ex && cy === ey) continue;
-                    if (blocked(cx, cy)) continue;
-                    // 路径：start → (cx,cy) → end
-                    if (line(sx, sy, cx, cy) && line(cx, cy, ex, ey)) {
-                        return [[sx-1, sy-1], [cx-1, cy-1], [ex-1, ey-1]];
-                    }
-                }
-            }
-            return null;
-        };
-        const line = (x1, y1, x2, y2) => {
-            if (x1 === x2) {
-                const lo = Math.min(y1, y2), hi = Math.max(y1, y2);
-                for (let y = lo+1; y < hi; y++) if (blocked(x1, y)) return false;
-                return true;
-            }
-            if (y1 === y2) {
-                const lo = Math.min(x1, x2), hi = Math.max(x1, x2);
-                for (let x = lo+1; x < hi; x++) if (blocked(x, y1)) return false;
-                return true;
-            }
-            return false;
-        };
-        const draw = () => {
-            ctx.fillStyle = '#2a2540'; ctx.fillRect(0, 0, w, h);
-            for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
-                const x = 2 + j*cellW, y = 2 + i*cellH;
-                ctx.fillStyle = (i+j)%2 ? '#3a3258' : '#454063';
-                ctx.fillRect(x, y, cellW-2, cellH-2);
-                if (board[i][j]) {
-                    ctx.font = '30px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText(board[i][j], x + cellW/2, y + cellH/2);
-                }
-                if (sel && sel[0]===i && sel[1]===j) { ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.strokeRect(x+1, y+1, cellW-4, cellH-4); }
-            }
-            if (path) {
-                ctx.strokeStyle = '#5cd65c'; ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(path[0][1]*cellW + cellW/2, path[0][0]*cellH + cellH/2);
-                for (let k = 1; k < path.length; k++) ctx.lineTo(path[k][1]*cellW + cellW/2, path[k][0]*cellH + cellH/2);
-                ctx.stroke();
-            }
-            opts.onScore && opts.onScore('已消：' + score + ' · 剩余 ' + Math.floor(timeLeft) + 's');
-        };
-        const onTap = p => {
-            const j = Math.floor(p.x / cellW), i = Math.floor(p.y / cellH);
-            if (i<0||i>=ROWS||j<0||j>=COLS) return;
-            const cur = board[i][j];
-            if (!cur) return;
-            if (!sel) { sel = [i, j]; path = null; }
-            else if (sel[0]===i && sel[1]===j) { sel = null; path = null; }
-            else if (board[sel[0]][sel[1]] === cur) {
-                const pth = canConnect(sel, [i, j]);
-                if (pth) {
-                    board[i][j] = ''; board[sel[0]][sel[1]] = '';
-                    score += 10; sel = null; path = null;
-                } else { sel = [i, j]; path = null; }
-            } else { sel = [i, j]; path = null; }
-            draw();
-            if (!board.flat().some(x => x)) { opts.onScore && opts.onScore('🏆 全部清空！得分 ' + score); stopTimer(); }
-        };
-        const timer = setInterval(() => { timeLeft -= 1; if (timeLeft <= 0) { timeLeft = 0; opts.onScore && opts.onScore('⏰ 时间到！得分 ' + score); clearInterval(timer); } draw(); }, 1000);
-        const stopTimer = () => clearInterval(timer);
-        MG.bind(c, onTap);
-        draw();
-        MG.hint(container, '点击两张相同图案，路径折点 ≤2 可消除');
-        return { stop() { stopTimer(); destroy(); } };
-    }
+        const runRound = level => { if (alive) linkRound(container, opts, level, api, showSelect, runRound); };
+        showSelect();
+        return api;
+    },
 };
+
+function linkRound(container, opts, level, api, onBack, onReplay) {
+    const lv = MiniGames.link.LEVELS[level - 1];
+    const COLS = lv.cols, ROWS = lv.rows, ROCKS = lv.rocks || 0, TIME = lv.time;
+    const cellW = 50, cellH = 50;
+    const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * cellW + 4, ROWS * cellH + 4);
+
+    let board, sel = null, path = null, cleared = 0, totalPairs, timeLeft = TIME;
+    let hints = Math.max(1, 3 - Math.floor(level / 7)), shuffles = 2;
+    let over = false, rocks = new Set();
+
+    const init = () => {
+        rocks = new Set();
+        if (ROCKS) {
+            const cells = [];
+            for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) cells.push([i, j]);
+            MG.shuffle(cells);
+            for (let k = 0; k < Math.min(ROCKS, cells.length - 4); k++) rocks.add(cells[k][0] * COLS + cells[k][1]);
+        }
+        const free = ROWS * COLS - rocks.size;
+        totalPairs = Math.floor(free / 2);
+        const arr = [];
+        for (let i = 0; i < totalPairs; i++) {
+            const ico = MiniGames.link.ICONS[i % MiniGames.link.ICONS.length];
+            arr.push(ico, ico);
+        }
+        MG.shuffle(arr);
+        board = Array.from({ length: ROWS }, () => Array(COLS).fill(''));
+        let k = 0;
+        for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
+            if (rocks.has(i * COLS + j)) continue;
+            board[i][j] = arr[k++] || '';
+        }
+    };
+    init();
+
+    // ---- 路径搜索（≤2 折，外圈可绕行；岩石阻挡路径）----
+    const isBlocked = (i, j) => {
+        if (i < 0 || i >= ROWS || j < 0 || j >= COLS) return false; // 棋盘外可通行
+        return !!board[i][j] || rocks.has(i * COLS + j);
+    };
+    const lineOK = (x1, y1, x2, y2) => {  // 网格坐标，中间必须全空
+        if (x1 === x2) { const lo = Math.min(y1, y2), hi = Math.max(y1, y2); for (let y = lo + 1; y < hi; y++) if (isBlocked(x1, y)) return false; return true; }
+        if (y1 === y2) { const lo = Math.min(x1, x2), hi = Math.max(x1, x2); for (let x = lo + 1; x < hi; x++) if (isBlocked(x, y1)) return false; return true; }
+        return false;
+    };
+    const searchPath = (a, b) => {  // a/b = [i,j]
+        const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+        // 0 折
+        if (lineOK(a[0], a[1], b[0], b[1])) return [a, b];
+        // 1-2 折：从 a 出发沿 4 方向扫描所有可达空点（含外圈），再连 b
+        const open = [];
+        for (const [di, dj] of dirs) {
+            let x = a[0] + di, y = a[1] + dj;
+            while (x >= -1 && x <= ROWS && y >= -1 && y <= COLS) {
+                if (isBlocked(x, y)) break;  // 被挡住 → 不能作为转角
+                open.push([x, y]);
+                x += di; y += dj;
+            }
+        }
+        for (const [cx, cy] of open) {
+            if (lineOK(a[0], a[1], cx, cy) && lineOK(cx, cy, b[0], b[1])) {
+                if (cx === b[0] && cy === b[1]) continue;
+                return [a, [cx, cy], b];
+            }
+        }
+        // 2 折：open 点再延伸一步
+        for (const [cx, cy] of open) {
+            if (cx === a[0] && cy === a[1]) continue;
+            for (const [di, dj] of dirs) {
+                let x = cx + di, y = cy + dj;
+                while (x >= -1 && x <= ROWS && y >= -1 && y <= COLS) {
+                    if (x === b[0] && y === b[1] && lineOK(cx, cy, x, y)) return [a, [cx, cy], [x, y], b];
+                    if (isBlocked(x, y)) break;
+                    if (lineOK(cx, cy, x, y)) {
+                        if (lineOK(x, y, b[0], b[1])) return [a, [cx, cy], [x, y], b];
+                    }
+                    x += di; y += dj;
+                }
+            }
+        }
+        return null;
+    };
+    const canConnect = (a, b) => {
+        const saved = [board[a[0]][a[1]], board[b[0]][b[1]]];
+        board[a[0]][a[1]] = ''; board[b[0]][b[1]] = '';
+        const p = searchPath(a, b);
+        board[a[0]][a[1]] = saved[0]; board[b[0]][b[1]] = saved[1];
+        return p;
+    };
+    const findAllPairs = () => {
+        const byIcon = {};
+        for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
+            const v = board[i][j]; if (!v) continue;
+            (byIcon[v] = byIcon[v] || []).push([i, j]);
+        }
+        const pairs = [];
+        for (const k in byIcon) {
+            const list = byIcon[k];
+            for (let a = 0; a < list.length; a++) for (let b = a + 1; b < list.length; b++) {
+                if (canConnect(list[a], list[b])) { pairs.push([list[a], list[b]]); return pairs; }
+            }
+        }
+        return pairs;
+    };
+    const autoShuffle = () => {
+        const vals = [];
+        for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) if (board[i][j]) vals.push(board[i][j]);
+        MG.shuffle(vals);
+        let k = 0;
+        for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) if (board[i][j]) board[i][j] = vals[k++];
+        opts.onScore && opts.onScore('🔄 场上无可连对，已自动重排！');
+    };
+
+    // ---- 道具栏 ----
+    const itembar = document.createElement('div');
+    itembar.className = 'mg-itembar';
+    const renderItems = () => {
+        itembar.innerHTML =
+            `<button class="mg-item ${hints > 0 ? '' : 'off'}" data-a="hint">💡提示 <b>×${hints}</b></button>` +
+            `<button class="mg-item ${shuffles > 0 ? '' : 'off'}" data-a="shuf">🔄打乱 <b>×${shuffles}</b></button>` +
+            `<span class="mg-coins">⏱ ${Math.ceil(timeLeft)}s</span>`;
+        itembar.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+            if (over) return;
+            if (b.dataset.a === 'hint' && hints > 0) {
+                const pairs = findAllPairs();
+                if (!pairs.length) return;
+                hints--; sel = pairs[0][0]; draw();
+                setTimeout(() => { sel = null; draw(); }, 900);
+            } else if (b.dataset.a === 'shuf' && shuffles > 0) {
+                shuffles--; autoShuffle(); draw();
+            }
+            renderItems();
+        });
+    };
+    container.appendChild(itembar);
+
+    // ---- 计时 ----
+    const timer = setInterval(() => {
+        if (over) return;
+        timeLeft -= 1;
+        if (timeLeft <= 0) { timeLeft = 0; finish(false, '时间到！'); }
+        renderItems(); draw();
+    }, 1000);
+    const origStop = api.stop;
+    api.stop = function () { clearInterval(timer); origStop(); };
+
+    const finish = (win, reason) => {
+        if (over) return;
+        over = true; clearInterval(timer);
+        const stars = win ? (timeLeft / TIME >= 0.5 ? 3 : timeLeft / TIME >= 0.25 ? 2 : 1) : 0;
+        if (win) MG.recordStars('link', level, stars);
+        MG.result(container, {
+            win, stars,
+            title: win ? `🏆 第 ${level} 关清空！` : '💥 挑战失败',
+            lines: [reason || '', `剩余时间 ${Math.ceil(timeLeft)}s`].filter(Boolean),
+            hasNext: win && level < MiniGames.link.LEVELS.length,
+            onRetry: () => { destroy(); onReplay(level); },
+            onNext: () => { destroy(); onReplay(level + 1); },
+            onBack,
+        });
+        draw();
+    };
+
+    // ---- 渲染 ----
+    const draw = () => {
+        ctx.fillStyle = '#2a2540'; ctx.fillRect(0, 0, w, h);
+        for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
+            const x = 2 + j * cellW, y = 2 + i * cellH;
+            if (rocks.has(i * COLS + j)) {  // 岩石：挡路不可消
+                ctx.fillStyle = '#4a4438'; ctx.fillRect(x, y, cellW - 2, cellH - 2);
+                ctx.fillStyle = '#5e5748';
+                ctx.beginPath(); ctx.arc(x + cellW * 0.38, y + cellH * 0.4, 8, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + cellW * 0.62, y + cellH * 0.62, 10, 0, Math.PI * 2); ctx.fill();
+                continue;
+            }
+            ctx.fillStyle = (i + j) % 2 ? '#3a3258' : '#454063';
+            ctx.fillRect(x, y, cellW - 2, cellH - 2);
+            if (board[i][j]) {
+                ctx.font = '28px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(board[i][j], x + cellW / 2, y + cellH / 2);
+            }
+            if (sel && sel[0] === i && sel[1] === j) { ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.strokeRect(x + 1, y + 1, cellW - 4, cellH - 4); }
+        }
+        if (path) {
+            ctx.strokeStyle = '#5cd65c'; ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(path[0][1] * cellW + cellW / 2, path[0][0] * cellH + cellH / 2);
+            for (let k = 1; k < path.length; k++) ctx.lineTo(path[k][1] * cellW + cellW / 2, path[k][0] * cellH + cellH / 2);
+            ctx.stroke();
+        }
+        opts.onScore && opts.onScore(`第 ${level} 关 · 已消 ${cleared}/${totalPairs} 对 · ⏱${Math.ceil(timeLeft)}s`);
+    };
+
+    const onTap = p => {
+        if (over) return;
+        const j = Math.floor((p.x - 2) / cellW), i = Math.floor((p.y - 2) / cellH);
+        if (i < 0 || i >= ROWS || j < 0 || j >= COLS) return;
+        if (rocks.has(i * COLS + j)) return;
+        const cur = board[i][j];
+        if (!cur) return;
+        if (!sel) { sel = [i, j]; path = null; }
+        else if (sel[0] === i && sel[1] === j) { sel = null; path = null; }
+        else if (board[sel[0]][sel[1]] === cur) {
+            const pth = canConnect(sel, [i, j]);
+            if (pth) {
+                path = pth;
+                board[i][j] = ''; board[sel[0]][sel[1]] = '';
+                cleared++; sel = null;
+                draw();
+                setTimeout(() => { path = null; draw(); }, 260);
+                if (cleared >= totalPairs) return finish(true);
+                if (!findAllPairs().length) autoShuffle();  // 死局自动重排
+            } else { sel = [i, j]; path = null; }
+        } else { sel = [i, j]; path = null; }
+        draw();
+    };
+    MG.bind(c, onTap);
+    renderItems(); draw();
+    MG.hint(container, `第 ${level} 关 ${COLS}×${ROWS}${ROCKS ? ' · 🪨岩石会挡住连线' : ''} · 折点 ≤2 可消除`);
+    return api;
+}

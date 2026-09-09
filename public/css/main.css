@@ -811,3 +811,39 @@ body.in-battle .avatar-btn { display: none; }
     margin-top: 8px;
 }
 .mg-hint { position: absolute; top: 8px; left: 8px; right: 8px; text-align: center; color: #b9b3d8; font-size: 12px; pointer-events: none; }
+
+/* ===== 小游戏关卡系统 ===== */
+.mg-levelsel { position: absolute; inset: 0; overflow-y: auto; padding: 14px 10px 20px; }
+.mg-ls-title { color: #ffd56b; font-size: 17px; font-weight: bold; text-align: center; margin-bottom: 12px; }
+.mg-ls-total { display: block; font-size: 12px; color: #b9b3d8; font-weight: normal; margin-top: 2px; }
+.mg-ls-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 420px; margin: 0 auto; }
+.mg-ls-cell { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+    padding: 10px 4px 8px; text-align: center; cursor: pointer; transition: transform .1s, background .15s; }
+.mg-ls-cell:active { transform: scale(0.94); }
+.mg-ls-cell.done { background: rgba(92,213,92,0.12); border-color: rgba(92,213,92,0.4); }
+.mg-ls-cell.locked { opacity: 0.38; cursor: not-allowed; }
+.mg-ls-num { font-size: 19px; font-weight: bold; color: #fff; }
+.mg-ls-name { font-size: 11px; color: #cfd2e2; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mg-ls-stars { font-size: 11px; color: #ffd56b; letter-spacing: 1px; }
+.mg-ls-stars span { color: rgba(255,255,255,0.22); }
+.mg-ls-extra { display: block; margin: 14px auto 0; }
+.mg-result { position: absolute; inset: 0; background: rgba(10,8,20,0.72); display: flex; align-items: center; justify-content: center; z-index: 30; }
+.mg-result-card { background: #262044; border: 1px solid rgba(255,213,107,0.35); border-radius: 14px; padding: 20px 24px;
+    width: min(84%, 320px); text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+.mg-result-title { font-size: 20px; font-weight: bold; color: #ffd56b; margin-bottom: 6px; }
+.mg-result-stars { font-size: 26px; color: #ffd56b; letter-spacing: 4px; margin: 4px 0; }
+.mg-result-stars span { color: rgba(255,255,255,0.2); }
+.mg-result-lines { color: #cfd2e2; font-size: 13px; line-height: 1.9; margin: 6px 0 12px; }
+.mg-result-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.mg-result-btns .mg-btn.primary { background: #ff9d5c; color: #221606; }
+.mg-rps-btns { display: flex; gap: 10px; justify-content: center; margin-top: 8px; }
+.mg-rps-btns .mg-btn { min-width: 76px; font-size: 26px; line-height: 1.2; padding: 8px 10px; }
+.mg-itembar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 6px; align-items: center;
+    justify-content: center; padding: 6px 8px; background: rgba(12,10,24,0.82); z-index: 20; flex-wrap: wrap; }
+.mg-item { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff;
+    border-radius: 16px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+.mg-item b { color: #ffd56b; }
+.mg-item.off { opacity: 0.35; cursor: not-allowed; }
+.mg-item.armed { border-color: #ffd56b; background: rgba(255,213,107,0.18); box-shadow: 0 0 8px rgba(255,213,107,0.4); }
+.mg-coins { color: #ffd56b; font-size: 13px; font-weight: bold; margin-right: 4px; }
+.mini-name .mini-stars { float: right; font-size: 11px; color: #ffd56b; font-weight: normal; margin-left: 6px; }

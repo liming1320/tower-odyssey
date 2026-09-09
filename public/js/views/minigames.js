@@ -10,11 +10,12 @@ const MinigamesView = {
         `;
         const hub = document.getElementById('mini-hub');
         GAMES.forEach(g => {
+            const stars = MG.totalStars(g.id);
             const card = U.el(`
                 <div class="mini-card" data-id="${g.id}">
                     <div class="mini-thumb">${g.thumb}</div>
                     <div class="mini-meta">
-                        <div class="mini-name">${g.name}</div>
+                        <div class="mini-name">${g.name}${stars > 0 ? `<span class="mini-stars">⭐ ${stars}</span>` : ''}</div>
                         <div class="mini-desc">${g.desc || ''}</div>
                     </div>
                     <div class="mini-arrow">›</div>
@@ -59,11 +60,11 @@ const MinigamesView = {
 // 各 id 与 /js/minigames/<id>.js 的实现一一对应
 const GAMES = [
     { id: 'gomoku',   name: '五子棋',     desc: '经典 15×15 对战，挑战 AI', thumb: thumbGrid('五子棋', '#5cd65c') },
-    { id: 'g2048',    name: '2048',        desc: '滑动合并方块，挑战 2048!',   thumb: thumbGrid('2048', '#ffd56b') },
-    { id: 'banqi',    name: '暗棋圣手',    desc: '翻棋吃子，DOS 经典重现',     thumb: thumbGrid('暗棋', '#b78bff') },
+    { id: 'g2048',    name: '2048',        desc: '20 关目标挑战 + 无尽模式', thumb: thumbGrid('2048', '#ffd56b') },
+    { id: 'banqi',    name: '暗棋圣手',    desc: '15 关闯关 · 猜拳 · 道具秘技', thumb: thumbGrid('暗棋', '#b78bff') },
     { id: 'xiangqi',  name: '中国象棋',     desc: '红黑对弈，车马炮冲锋',       thumb: thumbGrid('象棋', '#ff7a8b') },
-    { id: 'link',     name: '连连看',       desc: '找出相同图案，限 3 次折线',  thumb: thumbGrid('连连看', '#5cc7ff') },
-    { id: 'match3',   name: '消消乐',       desc: '三消合成，挑战连击',         thumb: thumbGrid('消消乐', '#ff9d5c') },
+    { id: 'link',     name: '连连看',       desc: '20 关挑战 · 岩石挡路',       thumb: thumbGrid('连连看', '#5cc7ff') },
+    { id: 'match3',   name: '消消乐',       desc: '20 关挑战 · 配额与石块',     thumb: thumbGrid('消消乐', '#ff9d5c') },
     { id: 'snake',    name: '贪吃蛇',       desc: '方向键控制，吃豆长大',       thumb: thumbGrid('贪吃蛇', '#7adf7a') },
     { id: 'tetris',   name: '俄罗斯方块',   desc: '经典方块，消除得分',         thumb: thumbGrid('方块', '#5b8cff') },
     { id: 'mole',     name: '打地鼠',       desc: '限时敲击地鼠',               thumb: thumbGrid('地鼠', '#c4a07a') },
