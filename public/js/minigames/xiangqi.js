@@ -1,4 +1,4 @@
-// 中国象棋：20 关挑战，AI 失误率递减（贪心选择 + 随机失误）
+// 中国象棋：50 关挑战，AI 失误率递减（贪心选择 + 随机失误）
 window.MiniGames = window.MiniGames || {};
 MiniGames.xiangqi = {
     LEVELS: [
@@ -23,17 +23,32 @@ MiniGames.xiangqi = {
         { name: '鬼手', desc: 'AI 随机率 0.15%' },
         { name: '神机', desc: 'AI 随机率 0.05%' },
         { name: '棋圣', desc: 'AI 随机率 0% · 终极' },
-    ],
-    PARAMS: [
-        [0.60], [0.50], [0.40], [0.30], [0.24],
-        [0.18], [0.14], [0.10], [0.07], [0.05],
-        [0.035], [0.025], [0.018], [0.012], [0.008],
-        [0.005], [0.003], [0.0015], [0.0005], [0.0],
-    ],
+    ].concat((function () {
+        // 21~50 关：AI 失误率继续递减到 0（必须在这里生成，否则补齐关卡会回落成最弱档）
+        const POOL = ['登堂', '入室', '观海', '凌云', '穿云', '裂石', '开山', '辟地', '观星', '摘星',
+            '踏浪', '逐日', '奔月', '御风', '乘雷', '破军', '定海', '镇岳', '通天', '彻地',
+            '洞玄', '知微', '若谷', '归真', '玄武', '朱雀', '白虎', '青龙', '棋神', '无极'];
+        const out = [];
+        for (let i = 20; i < 50; i++) {
+            const t = i / 49;
+            const mr = +(0.6 * Math.pow(1 - t, 2.2)).toFixed(5);
+            out.push({ name: POOL[i - 20], desc: `AI 随机率 ${(mr * 100).toFixed(2)}%` });
+        }
+        return out;
+    })()),
+    // 50 关的 AI 失误率：0.6 → 0 平滑递减（与 LEVELS 一一对应）
+    PARAMS: (function () {
+        const out = [];
+        for (let i = 0; i < 50; i++) {
+            const t = i / 49;
+            out.push([i >= 49 ? 0 : +(0.6 * Math.pow(1 - t, 2.2)).toFixed(5)]);
+        }
+        return out;
+    })(),
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [mistakeRate] = this.PARAMS[idx] || this.PARAMS[0];
+        const [mistakeRate] = this.PARAMS[idx >= 0 ? idx : 0] || this.PARAMS[0];
         const C = 9, R = 10, S = 44;
         const INIT = [
             ['车', '马', '相', '仕', '帅', '仕', '相', '马', '车'],

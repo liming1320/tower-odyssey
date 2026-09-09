@@ -135,20 +135,30 @@ window.MG = window.MG || {};
     };
 
     // ---------------- 游戏定义助手 ----------------
-    // cfg.levels: 20 个关卡名；cfg.params(i, t) -> 关卡参数；cfg.endless: 无尽参数
+    // cfg.levels: 关卡名（可少于 50）；cfg.params(i, t) -> 关卡参数；cfg.endless: 无尽参数
+    // 【重要】这里统一生成 50 关：先用名字池补足关卡名，再为「每一关」都调用 params 生成参数。
+    // 旧实现只生成 20 关，剩下 30 关由选关页 fillLevels 补足 —— 补出来的关卡没有 params 参数，
+    // 导致第 21~50 关游戏参数全是 undefined（NaN / 直接不能玩）。
+    const LEVEL_COUNT = 50;
+    function buildLevels(cfg) {
+        const raw = cfg.levels || [];
+        const names = (MG.fillLevels ? MG.fillLevels(raw.map(n => ({ name: n })), LEVEL_COUNT) : raw.map(n => ({ name: n })));
+        return names.map((lv, i) => Object.assign(
+            { name: lv.name, desc: lv.desc || '' },
+            (cfg.params ? cfg.params(i, names.length > 1 ? i / (names.length - 1) : 0) : {})
+        ));
+    }
     E.def = function (id, cfg) {
-        const names = cfg.levels || [];
         const g = (window.MiniGames[id] = {
-            LEVELS: names.map((name, i) => Object.assign({ name, desc: '' }, (cfg.params ? cfg.params(i, names.length > 1 ? i / (names.length - 1) : 0) : {}))),
+            LEVELS: buildLevels(cfg),
             start(c, o) { return E.game(c, o, cfg); },
         });
         if (cfg.endless) g.ENDLESS = cfg.endless;
         return g;
     };
     E.defd = function (id, cfg) {
-        const names = cfg.levels || [];
         const g = (window.MiniGames[id] = {
-            LEVELS: names.map((name, i) => Object.assign({ name, desc: '' }, (cfg.params ? cfg.params(i, names.length > 1 ? i / (names.length - 1) : 0) : {}))),
+            LEVELS: buildLevels(cfg),
             start(c, o) { return E.dgame(c, o, cfg); },
         });
         if (cfg.endless) g.ENDLESS = cfg.endless;

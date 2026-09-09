@@ -91,24 +91,48 @@ MiniGames.sudoku6 = {
             }
             opts.onScore && opts.onScore('已填 ' + filled + ' / ' + total + ' 空');
         };
+        let sel = null; // 当前选中的空格 {i,j}
+        // 选中高亮
+        const drawSel = () => {
+            if (sel) {
+                ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3;
+                MG.ui.rr(ctx, 3 + sel.j * S, 3 + sel.i * S, S - 2, S - 2, 6); ctx.stroke();
+            }
+        };
+        // 数字键盘（替代 prompt，兼容移动端 / 嵌入场景）
+        const pad = document.createElement('div');
+        pad.className = 'mg-sudoku-pad';
+        pad.style.cssText = 'display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap';
+        const checkWin = () => {
+            for (let ii = 0; ii < N; ii++) for (let jj = 0; jj < N; jj++) {
+                if (board[ii][jj] !== sol[ii][jj]) return;
+            }
+            opts.onComplete && opts.onComplete({ win: true, stars: 3, lines: ['全部填对！', lv.desc] });
+        };
+        const mkBtn = (label, val) => {
+            const b = document.createElement('button');
+            b.textContent = label;
+            b.style.cssText = 'min-width:44px;height:44px;border:none;border-radius:10px;background:#3a3f5a;color:#fff;font-size:18px;font-weight:bold;cursor:pointer';
+            b.onclick = () => {
+                if (!sel) return;
+                board[sel.i][sel.j] = val; // val=0 表示擦除
+                sel = null; render(); checkWin();
+            };
+            return b;
+        };
+        for (let n = 1; n <= 6; n++) pad.appendChild(mkBtn('' + n, n));
+        pad.appendChild(mkBtn('✕', 0));
+        container.appendChild(pad);
+        const render = () => { draw(); drawSel(); };
         const onTap = p => {
             const j = Math.floor(p.x / S), i = Math.floor(p.y / S);
-            if (initial[i][j]) return;
-            const v = prompt('填入数字 1-6（留空取消）');
-            if (!v) return;
-            const n = parseInt(v);
-            if (n < 1 || n > 6) return;
-            board[i][j] = n;
-            draw();
-            let allOk = true;
-            for (let ii = 0; ii < N; ii++) for (let jj = 0; jj < N; jj++) {
-                if (board[ii][jj] !== sol[ii][jj]) { allOk = false; break; }
-                if (allOk === false) break;
-            }
-            if (allOk) opts.onComplete && opts.onComplete({ win: true, stars: 3, lines: ['全部填对！', lv.desc] });
+            if (i < 0 || i >= N || j < 0 || j >= N) return;
+            if (initial[i][j]) { sel = null; render(); return; }
+            sel = { i, j };
+            render();
         };
-        MG.bind(c, onTap); draw();
-        MG.hint(container, lv.desc + ' · 点击空格填入 1-6，每行/列/子宫不重复');
-        return { stop() { destroy(); } };
+        MG.bind(c, onTap); render();
+        MG.hint(container, lv.desc + ' · 点击空格选中，再点下方数字填入 1-6（✕ 擦除）');
+        return { stop() { pad.remove(); destroy(); } };
     }
 };

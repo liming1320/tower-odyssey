@@ -87,7 +87,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.fillText('🏆 万刃归一', W / 2, H / 2);
             }
             ctx.font = '11px "Microsoft YaHei"'; ctx.fillStyle = '#b9b3d8'; ctx.textAlign = 'left';
-            ctx.fillText('关卡 ' + (P.endless ? '∞' : i_round(P)), 8, H - 8);
+            ctx.fillText(P.endless ? '∞ 无尽·转刀' : ('刀 ' + ((S.knives && S.knives.length) || 0) + ' / ' + (P.knives || 0)), 8, H - 8);
         },
         tap: (S, x, y, P, api) => {
             if (S.phase !== 'idle') return;

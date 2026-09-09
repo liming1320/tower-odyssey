@@ -1029,3 +1029,65 @@ body.in-battle .avatar-btn { display: none; }
 
 /* ================= 冒险页小游戏按钮 ================= */
 .btn-mini-game { background: linear-gradient(160deg, #ff7a8b, #d04848); color: #fff; border: none; }
+
+/* ==================== 大富翁（monopoly）==================== */
+.mgy-wrap { display: flex; flex-direction: column; gap: 6px; padding: 4px 2px 8px; max-width: 420px; margin: 0 auto; }
+.mgy-plays { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.mgy-pcard { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; border-radius: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03)); border: 1px solid rgba(255,255,255,.12); transition: .2s; }
+.mgy-pcard.active { background: linear-gradient(180deg, rgba(255,213,107,.16), rgba(255,213,107,.05)); }
+.mgy-pcard.out { opacity: .38; filter: grayscale(1); }
+.mgy-pav { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.mgy-pname { font-size: 10px; color: #cfd8ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.mgy-pcash { font-size: 11px; font-weight: 700; color: #ffd56b; }
+.mgy-pest { font-size: 9px; color: #7a90d8; }
+.mgy-board { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(7, 1fr);
+    gap: 2px; aspect-ratio: 1 / 1; width: 100%; padding: 3px; border-radius: 12px;
+    background: radial-gradient(circle at 50% 45%, #1d3a2c 0%, #12241c 70%, #0d1a14 100%);
+    border: 2px solid #3a6a4e; box-shadow: inset 0 0 24px rgba(0,0,0,.5), 0 6px 18px rgba(0,0,0,.35); }
+.mgy-center { grid-area: 2 / 2 / 7 / 7; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    border-radius: 10px; background: radial-gradient(circle at 50% 30%, rgba(255,213,107,.12), rgba(0,0,0,.25));
+    border: 1px dashed rgba(255,213,107,.3); overflow: hidden; }
+.mgy-logo { font-size: 20px; font-weight: 800; color: #ffd56b; letter-spacing: 2px; text-shadow: 0 2px 6px rgba(0,0,0,.5); }
+.mgy-logo span { display: block; font-size: 11px; letter-spacing: 4px; color: #e8e0c0; }
+.mgy-round { font-size: 10px; color: #9ee87a; }
+.mgy-goal { font-size: 10px; color: #ff9f6b; }
+.mgy-dice { display: flex; gap: 6px; margin-top: 3px; }
+.mgy-dice i { width: 24px; height: 24px; border-radius: 6px; background: linear-gradient(180deg, #fff, #dcd6c4);
+    color: #23201a; font-style: normal; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,.4); }
+.mgy-cell { position: relative; border-radius: 5px; background: linear-gradient(180deg, #f4ecd8, #d8ccb0);
+    border: 1px solid #8a7a5a; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow: hidden; padding-top: 3px; }
+.mgy-cell.prop { border-top-width: 3px; }
+.mgy-cell.go { background: linear-gradient(135deg, #ffe9a8, #f0c96a); }
+.mgy-cell.jail, .mgy-cell.gotojail { background: linear-gradient(135deg, #cfd8e8, #9aa8c0); }
+.mgy-cell.chance { background: linear-gradient(135deg, #fff0c2, #ffd56b); }
+.mgy-cell.chest { background: linear-gradient(135deg, #e2d4ff, #b9a3e8); }
+.mgy-cell.tax { background: linear-gradient(135deg, #ffd9d2, #f2a99c); }
+.mgy-cell.park { background: linear-gradient(135deg, #d6f5e0, #96d8ae); }
+.mgy-cell.mort { filter: grayscale(.8) brightness(.75); }
+.mgy-gbar { position: absolute; top: 0; left: 0; right: 0; height: 5px; }
+.mgy-ce { font-size: 13px; line-height: 1; }
+.mgy-cn { font-size: 8px; color: #3a3122; font-weight: 700; line-height: 1.1; text-align: center; padding: 0 1px; }
+.mgy-cb { font-size: 8px; font-weight: 700; line-height: 1.1; }
+.mgy-pips { position: absolute; left: 1px; bottom: 1px; right: 1px; display: flex; flex-wrap: wrap; gap: 1px; justify-content: center; }
+.mgy-pips b { width: 11px; height: 11px; border-radius: 50%; font-size: 7px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(0,0,0,.35); box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.mgy-panel { min-height: 30px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4px 8px;
+    border-radius: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+.mgy-msg { font-size: 12px; color: #e8e0c0; line-height: 1.35; }
+.mgy-acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.mgy-wait { font-size: 12px; color: #7a90d8; padding: 6px; }
+.mgy-log { max-height: 92px; overflow: auto; font-size: 10.5px; line-height: 1.5; padding: 5px 8px; border-radius: 8px;
+    background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.08); }
+.mgy-tip { font-size: 10px; color: #7a90d8; text-align: center; }
+.mgy-build { position: absolute; inset: 0; background: rgba(0,0,0,.62); display: flex; align-items: center; justify-content: center; z-index: 20; }
+.mgy-build-card { width: 88%; max-width: 320px; background: linear-gradient(180deg, #2a3550, #1b2338); border: 1px solid #4a5a80;
+    border-radius: 12px; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.mgy-bt { font-size: 14px; font-weight: 700; color: #ffd56b; text-align: center; margin-bottom: 8px; }
+.mgy-blist { display: flex; flex-direction: column; gap: 5px; max-height: 260px; overflow: auto; }
+.mgy-blist button { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); color: #e8e0c0; font-size: 12px; cursor: pointer; }
+.mgy-blist button:hover { background: rgba(255,213,107,.16); }
+.mgy-bcost { color: #9ee87a; font-size: 11px; }

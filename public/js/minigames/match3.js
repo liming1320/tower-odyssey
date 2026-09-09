@@ -1,4 +1,4 @@
-// 消消乐：20 关挑战——目标分数 + 颜色配额 + 石块障碍 + 步数限制
+// 消消乐：50 关挑战——目标分数 + 颜色配额 + 石块障碍 + 步数限制
 window.MiniGames = window.MiniGames || {};
 MiniGames.match3 = {
     LEVELS: [
@@ -22,7 +22,22 @@ MiniGames.match3 = {
         { name: '五彩令', score: 15000, moves: 32, quotas: { 0: 25, 1: 25, 2: 25, 3: 25, 4: 25 } },
         { name: '乱石深渊', score: 17000, moves: 34, rocks: 6 },
         { name: '消消乐之神', score: 20000, moves: 36, quotas: { 0: 20, 1: 20, 2: 20, 3: 20, 4: 20 }, rocks: 4 },
-    ],
+    ].concat((function () {
+        // 21~50 关：目标分数持续走高、步数收紧、穿插颜色配额与石块
+        // （必须带参数生成，否则选关页补足的关卡会缺 score/moves → 目标 NaN）
+        const POOL = ['登堂', '入室', '观海', '凌云', '穿云', '裂石', '开山', '辟地', '观星', '摘星',
+            '踏浪', '逐日', '奔月', '御风', '乘雷', '破军', '定海', '镇岳', '通天', '彻地',
+            '洞玄', '知微', '若谷', '归真', '玄武', '朱雀', '白虎', '青龙', '麒麟', '混沌'];
+        const out = [];
+        for (let i = 20; i < 50; i++) {
+            const k = i - 19;
+            const lv = { name: POOL[i - 20], score: Math.round(20000 + k * 2600), moves: Math.min(46, 36 + Math.floor(k / 3)) };
+            if (k % 3 === 0) lv.quotas = { 0: 25 + k, 1: 25 + k, 2: 20 + k, 3: 20 + k, 4: 15 + k };
+            if (k % 4 === 0) lv.rocks = Math.min(10, 4 + Math.floor(k / 4));
+            out.push(lv);
+        }
+        return out;
+    })()),
     COLNAME: ['红', '黄', '绿', '蓝', '紫'],
     start(container, opts) {
         let alive = true;
@@ -34,7 +49,7 @@ MiniGames.match3 = {
                 desc: `${lv.score}分/${lv.moves}步${lv.rocks ? ' · 🪨' + lv.rocks : ''}${lv.quotas ? ' · 🎯' + Object.keys(lv.quotas).length + '色' : ''}`,
             }));
             MG.levelSelect(container, {
-                game: 'match3', title: '消消乐 · 20 关挑战', levels,
+                game: 'match3', title: '消消乐 · 50 关挑战', levels,
                 onStart: idx => runRound(idx + 1),
             });
         };

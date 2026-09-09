@@ -22,7 +22,25 @@ MiniGames.link = {
         { name: '一望无际', cols: 10, rows: 8, time: 360 },
         { name: '乱石深渊', cols: 10, rows: 8, time: 350, rocks: 6 },
         { name: '连连看之神', cols: 11, rows: 8, time: 400, rocks: 8 },
-    ],
+    ].concat((function () {
+        // 21~50 关：在前 20 关基础上继续加大棋盘、压缩时间、增加岩石
+        // （必须在这里带参数生成，否则选关页补足的关卡会缺 cols/rows/time → 棋盘 NaN）
+        const POOL = ['登堂', '入室', '观海', '凌云', '穿云', '裂石', '开山', '辟地', '观星', '摘星',
+            '踏浪', '逐日', '奔月', '御风', '乘雷', '破军', '定海', '镇岳', '通天', '彻地',
+            '洞玄', '知微', '若谷', '归真', '玄武', '朱雀', '白虎', '青龙', '麒麟', '混沌'];
+        const out = [];
+        for (let i = 20; i < 50; i++) {
+            const k = i - 19;
+            out.push({
+                name: POOL[i - 20],
+                cols: Math.min(14, 11 + Math.floor(k / 8)),
+                rows: Math.min(10, 8 + Math.floor(k / 14)),
+                time: Math.max(260, 400 - k * 4),
+                rocks: Math.min(18, 8 + Math.floor(k / 2)),
+            });
+        }
+        return out;
+    })()),
     ICONS: ['🍎', '🍊', '🍋', '🍉', '🍇', '🍓', '🍒', '🍑', '🥝', '🥥', '🍍', '🥭', '🍅', '🍆', '🥕', '🌽', '🌰', '🍄', '🥬', '🥦', '🌶', '🧄'],
     start(container, opts) {
         let alive = true;

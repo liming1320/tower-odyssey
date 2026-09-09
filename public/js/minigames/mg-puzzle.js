@@ -325,12 +325,12 @@
             sdFill(b, 0);
             const sol = b.map(r => r.slice());
             const init = b.map(r => r.slice());
-            let removed = 0, guard = 0;
-            while (removed < P.holes && guard++ < 2000) {
+            let removed = 0, guard = 0, miss = 0;
+            while (removed < P.holes && guard++ < 900 && miss < 200) {
                 const i = ri(0, 8), j = ri(0, 8);
                 if (!init[i][j]) continue;
                 const backup = init[i][j]; init[i][j] = 0;
-                if (sdCount(init) !== 1) init[i][j] = backup; else removed++;
+                if (sdCount(init) !== 1) { init[i][j] = backup; miss++; } else { removed++; miss = 0; }
             }
             return { b: init.map(r => r.slice()), sol, init, sel: null };
         },
