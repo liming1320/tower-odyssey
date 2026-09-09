@@ -21,6 +21,7 @@
     E.def('solitaire', {
         levels: E.nm(),
         params: (i, t) => ({ draw: i < 10 ? 1 : 3 }),
+        desc: (i, t, p) => '翻牌 ' + p.draw + ' 张',
         w: 392, h: 500,
         hint: '点牌堆翻牌；点明牌会自动尝试移到基础区或叠到花色交替的降序牌上',
         init: P => {
@@ -191,6 +192,7 @@
     E.def('freecell', {
         levels: E.nm(),
         params: () => ({}),
+        desc: (i, t) => '空当接龙 · 第 ' + (i + 1) + ' 局',
         w: 396, h: 500,
         hint: '点牌自动移动到基础区 / 空当区 / 可叠放列，把 52 张全部归位即胜',
         init: () => {

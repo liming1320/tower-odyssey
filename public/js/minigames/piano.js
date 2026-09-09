@@ -30,10 +30,12 @@ MiniGames.piano = {
         [4, 21, 220], [4, 24, 260], [5, 22, 280], [5, 25, 320], [5, 28, 380],
         [5, 32, 440], [5, 36, 500], [5, 40, 560], [5, 45, 620], [5, 50, 700],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [LANES, startSpeed, target] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [LANES, startSpeed, target] = this.PARAMS[pIdx] || this.PARAMS[0];
         const W = Math.min(container.clientWidth - 16, 380);
         const H = Math.min(window.innerHeight - 200, 480);
         const laneW = W / LANES;

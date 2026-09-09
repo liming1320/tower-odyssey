@@ -31,10 +31,12 @@ MiniGames.bulls = {
         [6, 10], [6, 9], [6, 8],
         [7, 10], [8, 11], [9, 12],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [digits, maxTries] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [digits, maxTries] = this.PARAMS[pIdx] || this.PARAMS[0];
         container.innerHTML = '';
         const wrap = document.createElement('div');
         wrap.style.cssText = 'padding:16px;color:#f3f0e0;width:100%;max-width:380px;margin:0 auto;';

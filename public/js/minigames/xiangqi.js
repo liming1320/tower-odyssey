@@ -45,10 +45,12 @@ MiniGames.xiangqi = {
         }
         return out;
     })(),
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [mistakeRate] = this.PARAMS[idx >= 0 ? idx : 0] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [mistakeRate] = this.PARAMS[pIdx] || this.PARAMS[0];
         const C = 9, R = 10, S = 44;
         const INIT = [
             ['车', '马', '相', '仕', '帅', '仕', '相', '马', '车'],

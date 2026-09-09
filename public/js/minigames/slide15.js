@@ -33,10 +33,12 @@ MiniGames.slide15 = {
         [5, 5, 450], [5, 5, 550], [5, 5, 650],
         [5, 5, 800], [5, 5, 1000],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [ROWS, COLS, shuffles] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [ROWS, COLS, shuffles] = this.PARAMS[pIdx] || this.PARAMS[0];
         const maxW = Math.min(container.clientWidth - 16, 460);
         const S = Math.floor(Math.min(maxW / COLS, 80));
         const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);

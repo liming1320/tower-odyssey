@@ -31,10 +31,12 @@ MiniGames.breakout = {
         [9, 9, 6.5, 81], [9, 9, 7, 81], [10, 9, 7, 90], [10, 9, 7.5, 90],
         [10, 10, 8, 100], [11, 10, 7.5, 110], [12, 10, 8, 120], [12, 10, 9, 120],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [rows, cols, ballSpd, target] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [rows, cols, ballSpd, target] = this.PARAMS[pIdx] || this.PARAMS[0];
         const W = Math.min(container.clientWidth - 16, 400);
         const H = Math.min(window.innerHeight - 200, 480);
         const { c, ctx, w, h, destroy } = MG.canvas(container, W, H);

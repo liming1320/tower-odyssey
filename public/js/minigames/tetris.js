@@ -30,10 +30,12 @@ MiniGames.tetris = {
         [240, 8000], [210, 9000], [190, 10000], [170, 11000], [150, 12000],
         [140, 13000], [130, 14000], [120, 15000], [110, 16000], [100, 18000],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [baseDrop, target] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [baseDrop, target] = this.PARAMS[pIdx] || this.PARAMS[0];
         const COLS = 10, ROWS = 20, S = 22;
         const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);
         const SHAPES = [

@@ -30,10 +30,12 @@ MiniGames.snake = {
         [22, 22, 26, 80], [22, 22, 28, 78], [24, 24, 30, 75], [24, 24, 32, 72], [26, 26, 34, 68],
         [26, 26, 36, 65], [28, 28, 38, 62], [28, 28, 40, 58], [30, 30, 42, 55], [32, 32, 45, 50],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [COLS, ROWS, target, speed] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [COLS, ROWS, target, speed] = this.PARAMS[pIdx] || this.PARAMS[0];
         const maxW = Math.min(container.clientWidth - 16, 480);
         const S = Math.floor(Math.min(maxW / COLS, 28));
         const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);

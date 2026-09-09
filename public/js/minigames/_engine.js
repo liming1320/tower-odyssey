@@ -140,20 +140,58 @@ window.MG = window.MG || {};
     // 旧实现只生成 20 关，剩下 30 关由选关页 fillLevels 补足 —— 补出来的关卡没有 params 参数，
     // 导致第 21~50 关游戏参数全是 undefined（NaN / 直接不能玩）。
     const LEVEL_COUNT = 50;
+    // 把关卡参数对象转成可读的难度说明（用于选关页 desc，避免每款游戏手写 50 条描述）
+    function fmtParams(p) {
+        if (!p || typeof p !== 'object') return '';
+        const L = {
+            cols: '列', rows: '行', w: '宽', h: '高', size: '尺寸',
+            target: '目标', goal: '目标', score: '目标分',
+            speed: '速度', spd: '速度', rate: '频率',
+            time: '限时', sec: '限时',
+            need: '需', n: '阶', max: '上限', moves: '步数',
+            holes: '挖空', ships: '船', shots: '炮',
+            draws: '发牌', rounds: '轮', deals: '局',
+            len: '长度', cnt: '数量', wind: '风力', arrows: '箭',
+            gap: '间隙', tickets: '券', hp: '血量', gens: '代',
+            clicks: '点击', tilt: '倾角', fuel: '燃料', grow: '生长',
+            omega: 'Ω', knives: '刀', baseLen: '长度',
+            types: '种类', count: '数量', mis: '失误率', mistakes: '容错',
+        };
+        const parts = [];
+        for (const k in p) {
+            if (!Object.prototype.hasOwnProperty.call(p, k)) continue;
+            const v = p[k];
+            if (v == null || typeof v === 'object') continue;
+            if (k === 'cols' && p.rows != null) { parts.push(v + '×' + p.rows); continue; }
+            if (k === 'rows' || k === 'h') continue; // 与 cols/w 合并显示
+            if (k === 'w' && p.h != null) { parts.push(v + '×' + p.h); continue; }
+            const label = L[k];
+            if (label) parts.push(label + ' ' + v);
+        }
+        return parts.join(' · ');
+    }
     function buildLevels(cfg) {
         const raw = cfg.levels || [];
         const names = (MG.fillLevels ? MG.fillLevels(raw.map(n => ({ name: n })), LEVEL_COUNT) : raw.map(n => ({ name: n })));
-        return names.map((lv, i) => Object.assign(
-            { name: lv.name, desc: lv.desc || '' },
-            (cfg.params ? cfg.params(i, names.length > 1 ? i / (names.length - 1) : 0) : {})
-        ));
+        return names.map((lv, i) => {
+            const t = names.length > 1 ? i / (names.length - 1) : 0;
+            const params = cfg.params ? cfg.params(i, t) : {};
+            const desc = lv.desc || (cfg.desc ? cfg.desc(i, t, params) : '') || fmtParams(params);
+            return Object.assign({ name: lv.name, desc }, params);
+        });
+    }
+    // 自动生成无尽模式：用最高难度那一关的参数，难度封顶后可持续挑战（直到失败/通关为止）
+    function autoEndless(cfg) {
+        if (!cfg.params) return null;
+        const p = cfg.params(LEVEL_COUNT - 1, 1) || {};
+        return Object.assign({ name: '∞ 无尽', desc: '用最高难度持续挑战，直到失败/通关为止' }, p);
     }
     E.def = function (id, cfg) {
         const g = (window.MiniGames[id] = {
             LEVELS: buildLevels(cfg),
             start(c, o) { return E.game(c, o, cfg); },
         });
-        if (cfg.endless) g.ENDLESS = cfg.endless;
+        g.ENDLESS = cfg.endless || autoEndless(cfg);
         return g;
     };
     E.defd = function (id, cfg) {
@@ -161,7 +199,7 @@ window.MG = window.MG || {};
             LEVELS: buildLevels(cfg),
             start(c, o) { return E.dgame(c, o, cfg); },
         });
-        if (cfg.endless) g.ENDLESS = cfg.endless;
+        g.ENDLESS = cfg.endless || autoEndless(cfg);
         return g;
     };
 

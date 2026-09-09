@@ -13,13 +13,15 @@ MiniGames.memory = {
         { name: '宗匠', desc: '12 对' }, { name: '鬼手', desc: '12 对' },
         { name: '传奇', desc: '13 对' }, { name: '记忆王', desc: '13 对 · 终极' },
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const pairs = Math.min(13, 3 + Math.floor((lv.name && this.LEVELS.indexOf(lv)) / 1.6));
         // 直接从等级序列索引计算（1→4, 2→4, 3→5, 4→5, 5→6, 6→6, 7→7, 8→7, 9→8, 10→8,
         // 11→9, 12→9, 13→10, 14→10, 15→11, 16→11, 17→12, 18→12, 19→13, 20→13）
         const idx = this.LEVELS.indexOf(lv);
-        const realPairs = Math.min(13, 4 + Math.floor(idx * 0.45));
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const realPairs = Math.min(13, 4 + Math.floor(pIdx * 0.45));
         const COLS = realPairs <= 8 ? 4 : 5;
         const ROWS = Math.ceil((realPairs * 2) / COLS);
         const ICONS = ['🍎','🍌','🍇','🍓','🍑','🍒','🥝','🥥','🥑','🍐','🍋','🍉','🌽','🥕'];

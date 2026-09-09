@@ -191,10 +191,14 @@ const BQ_ART = (() => {
 
 MiniGames.banqi = {
     LEVELS: [
-        { name: '初出茅庐' }, { name: '棋摊学徒' }, { name: '街头好手' }, { name: '茶馆常客' },
-        { name: '县城新锐' }, { name: '府城名宿' }, { name: '棋社教头' }, { name: '京城乡试' },
-        { name: '翰林待诏' }, { name: '宫中伴驾' }, { name: '国手挑战' }, { name: '南北擂台' },
-        { name: '棋坛盟主' }, { name: '御前圣战' }, { name: '暗棋圣手' },
+        { name: '初出茅庐', desc: '暗棋入门 · 认子阶段' }, { name: '棋摊学徒', desc: '熟悉棋子走法' },
+        { name: '街头好手', desc: '开始算计' }, { name: '茶馆常客', desc: '中盘缠斗' },
+        { name: '县城新锐', desc: '攻守兼备' }, { name: '府城名宿', desc: '老练布局' },
+        { name: '棋社教头', desc: '试探虚实' }, { name: '京城乡试', desc: '稳扎稳打' },
+        { name: '翰林待诏', desc: '算路深远' }, { name: '宫中伴驾', desc: '步步紧逼' },
+        { name: '国手挑战', desc: '高手对决' }, { name: '南北擂台', desc: '擂台争锋' },
+        { name: '棋坛盟主', desc: '盟主之争' }, { name: '御前圣战', desc: '御前决战' },
+        { name: '暗棋圣手', desc: '终极一战' },
     ],
     ITEMS: [
         { id: 'peek', icon: '🔍', name: '透视镜', cost: 30,  desc: '偷看一枚暗子' },
@@ -202,20 +206,26 @@ MiniGames.banqi = {
         { id: 'soup', icon: '🍲', name: '大补粥', cost: 120, desc: '复活一枚被吃的己方棋子' },
     ],
 
+    ENDLESS: { name: '∞ 无尽', desc: '挑战最强 AI（第15关），反复对战刷新战绩' },
+
     start(container, opts) {
         let alive = true;
         const api = { stop() { alive = false; } };
         const showSelect = () => {
             if (!alive) return;
+            // 无尽模式入口（暗棋不走统一框架，自行提供 ∞ 按钮）
+            const extra = MiniGames.banqi.ENDLESS
+                ? [{ label: '∞ 无尽模式（挑战最强 AI，反复对战）', onClick: () => MG.rps(container, first => play(14, first, true)) }]
+                : [];
             MG.levelSelect(container, {
                 game: 'banqi', title: '暗棋圣手 · 15 关闯关',
-                levels: this.LEVELS,
+                levels: this.LEVELS, extra,
                 onStart: idx => MG.rps(container, first => play(idx, first)),
             });
         };
-        const play = (levelIdx, first) => {
+        const play = (levelIdx, first, endless) => {
             if (!alive) return;
-            gameRound(container, opts, levelIdx + 1, first, api, showSelect, play);
+            gameRound(container, opts, levelIdx + 1, first, api, showSelect, play, endless);
         };
         showSelect();
         return api;
@@ -223,7 +233,8 @@ MiniGames.banqi = {
 };
 
 // 一局对弈（闭包，避免实例间状态串扰）
-function gameRound(container, opts, level, first, api, onBack, onReplay) {
+//   endless：无尽模式（挑战最强 AI 第15关），反复对战、记录是否击败最强 AI
+function gameRound(container, opts, level, first, api, onBack, onReplay, endless) {
     const COLS = 8, ROWS = 4;
     const K = BQ_ART.kindOf;
     // 红方（宋国）：帥仕相俥傌炮兵；黑方（金国）：將士象車馬砲卒 —— 同 kind 等级相同
@@ -415,6 +426,25 @@ function gameRound(container, opts, level, first, api, onBack, onReplay) {
         const mine = pieceCount(1);
         const stars = win ? (mine >= 5 ? 3 : mine >= 3 ? 2 : 1) : 0;
         if (win) MG.recordStars('banqi', level, stars);
+        if (endless) {
+            // 无尽模式：记录「是否击败最强 AI」战绩，重试继续打第15关
+            MG.setBest('banqi', win ? 1 : 0);
+            const best = MG.getBest('banqi');
+            MG.result(container, {
+                win, stars: win ? 3 : 0,
+                title: win ? '👑 击败最强 AI！' : '💥 挑战失败',
+                lines: [
+                    reason || '',
+                    `我方剩余棋子 ${mine} 枚 · 本局金币 🪙${coins}`,
+                    `🏅 无尽最高战绩：${best ? '已击败最强 AI' : '尚未击败'}`,
+                ].filter(Boolean),
+                hasNext: false,
+                onRetry: () => { gameRound(container, opts, level, first, api, onBack, onReplay, true); },
+                onBack,
+            });
+            render();
+            return;
+        }
         MG.result(container, {
             win, stars,
             title: win ? (level >= 15 ? '👑 暗棋圣手！' : `🏆 第 ${level} 关通过`) : '💥 挑战失败',

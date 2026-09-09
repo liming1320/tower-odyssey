@@ -30,10 +30,12 @@ MiniGames.jump = {
         [36, 25], [34, 28], [32, 32], [30, 36], [28, 40],
         [26, 45], [24, 50], [22, 55], [20, 60], [18, 65],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [basePlatformW, targetScore] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [basePlatformW, targetScore] = this.PARAMS[pIdx] || this.PARAMS[0];
         const W = Math.min(container.clientWidth - 16, 400);
         const H = Math.min(window.innerHeight - 200, 500);
         const { c, ctx, w, h, destroy } = MG.canvas(container, W, H);

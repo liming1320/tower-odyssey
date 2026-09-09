@@ -107,17 +107,18 @@ sheep	50	50	types,count
 pocketarmy	50	50	t,target,initArmy,atk,spawnGap,enemyMul,gateMul
 
 === 二、运行时冒烟（第1/25/50关 + 随机交互，每款独立进程 10s 超时）===
+❌ sudoku9	超时/进程被杀（疑似死循环或阻塞）
 
-✓ 全部可正常启动与交互
+共 1 款在启动/交互时出问题
 
 === 二·五、参数值健康 / 可优化项 ===
 
 === 三、问题汇总 ===
 
+【运行时异常】1 款
+  · sudoku9 — 超时/进程被杀（疑似死循环或阻塞）
+
 === 四、可优化项（供决策，不自动改）===
 
-【关卡无描述】86 款
-  g2048、banqi、link、match3、tictactoe、connect4、reversi、nim、battleship、dots、mancala、queens、peg、breakthru、chess、junqi、solitaire、spider、freecell、pyramid、blackjack、poker、war、maze、lightsout、floodit、pipes、nonogram、sudoku9、numberpath、sokoban、blockpuzzle、mastermind、flappy、dodge、catcher、balloonpop、archery、basketball、darts、fishing、helicopter、stacker、mathquiz、stroop、higherlower、oddone、idiom、trivia、counting、estimate、clockread、sequence、flashnum、chimp、simon、cardmem、wordmem、spot、pathmem、shadowmatch、whatmiss、reversenum、coinflip、dicehi、slots、bingo、spinner、rpsgame、plinko、lucky7、tapburst、gacha、towerdef、idleclick、life、virus、sandfall、ballance、rocketland、orbit、traffic、growfarm、knife、sheep、pocketarmy
-
-【无无尽模式】69 款
-  gomoku、banqi、xiangqi、link、match3、snake、tetris、mole、mine、memory、slide15、bulls、sudoku6、hanoi、piano、reaction、breakout、jump、shooter、tictactoe、connect4、reversi、nim、battleship、dots、mancala、queens、peg、breakthru、chess、junqi、solitaire、spider、freecell、pyramid、poker、war、maze、lightsout、floodit、pipes、nonogram、sudoku9、numberpath、sokoban、mastermind、mathquiz、stroop、higherlower、oddone、idiom、trivia、counting、estimate、clockread、sequence、flashnum、chimp、cardmem、wordmem、spot、pathmem、shadowmatch、whatmiss、reversenum、bingo、life、virus、traffic
+【无无尽模式】19 款
+  gomoku、banqi、xiangqi、link、match3、snake、tetris、mole、mine、memory、slide15、bulls、sudoku6、hanoi、piano、reaction、breakout、jump、shooter

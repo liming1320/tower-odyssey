@@ -47,10 +47,12 @@ MiniGames.mole = {
         [7, 7, 5, 550, 40, 450, 360, 270],
         [7, 7, 6, 500, 35, 520, 415, 310],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [cols, rows, moles, interval, time, s3, s2, s1] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [cols, rows, moles, interval, time, s3, s2, s1] = this.PARAMS[pIdx] || this.PARAMS[0];
         container.innerHTML = '';
         const wrap = document.createElement('div');
         wrap.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;';

@@ -28,10 +28,12 @@ MiniGames.sudoku6 = {
         12, 14, 16, 18, 20, 22, 24, 26, 28, 29,
         30, 31, 32, 33, 34, 35, 35, 35, 35, 35,
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const holes = this.PARAMS[idx] || 22;
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const holes = this.PARAMS[pIdx] || 22;
         const N = 6, S = 56;
         const { c, ctx, w, h, destroy } = MG.canvas(container, N * S + 4, N * S + 4);
         const fullBoard = [

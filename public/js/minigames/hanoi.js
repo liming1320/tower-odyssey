@@ -29,10 +29,12 @@ MiniGames.hanoi = {
         { name: '汉诺塔王', desc: '9 盘 · 理论最少 511 步' },
     ],
     PARAMS: [3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const N = this.PARAMS[idx] || 3;
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const N = this.PARAMS[pIdx] || 3;
         container.innerHTML = '';
         const wrap = document.createElement('div');
         wrap.style.cssText = 'position:relative;width:100%;height:100%;background:#1a1c2a;display:flex;flex-direction:column;align-items:center;';

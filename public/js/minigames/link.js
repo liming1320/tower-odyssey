@@ -42,7 +42,9 @@ MiniGames.link = {
         return out;
     })()),
     ICONS: ['🍎', '🍊', '🍋', '🍉', '🍇', '🍓', '🍒', '🍑', '🥝', '🥥', '🍍', '🥭', '🍅', '🍆', '🥕', '🌽', '🌰', '🍄', '🥬', '🥦', '🌶', '🧄'],
+    ENDLESS: { name: '∞ 无尽', desc: '挑战最难棋盘（最大+最紧时限+最多岩石），反复刷新最高消对数' },
     start(container, opts) {
+        opts = opts || {};
         let alive = true;
         const api = { stop() { alive = false; } };
         const showSelect = () => {
@@ -57,6 +59,8 @@ MiniGames.link = {
             });
         };
         const runRound = level => { if (alive) linkRound(container, opts, level, api, showSelect, runRound); };
+        // 无尽模式：直接打最难的最后一关（棋盘最大、时限最紧、岩石最多）
+        if (opts.endless) { runRound(MiniGames.link.LEVELS.length); return api; }
         showSelect();
         return api;
     },
@@ -213,6 +217,16 @@ function linkRound(container, opts, level, api, onBack, onReplay) {
         over = true; clearInterval(timer);
         const stars = win ? (timeLeft / TIME >= 0.5 ? 3 : timeLeft / TIME >= 0.25 ? 2 : 1) : 0;
         if (win) MG.recordStars('link', level, stars);
+        if (opts.endless) {
+            // 无尽模式：以「已消除对数」记最高分，重试由框架回到无尽入口
+            opts.onComplete && opts.onComplete({
+                win, stars: win ? 3 : 0,
+                title: win ? `🏆 第 ${level} 关清空！` : '💥 挑战失败',
+                lines: [reason || '', `本局消除 ${cleared}/${totalPairs} 对`].filter(Boolean),
+                score: cleared,
+            });
+            return;
+        }
         MG.result(container, {
             win, stars,
             title: win ? `🏆 第 ${level} 关清空！` : '💥 挑战失败',

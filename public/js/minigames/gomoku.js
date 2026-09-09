@@ -56,11 +56,14 @@ MiniGames.gomoku = {
         };
     }),
 
+    ENDLESS: { name: '∞ 无尽', desc: '挑战最强 AI，直到落败为止' },
+
     start(container, opts) {
         opts = opts || {};
         const self = this;
         const total = opts.totalLevels || this.LEVELS.length;
-        const idx = Math.max(0, Math.min(this.LEVELS.length - 1, opts.levelIdx != null ? opts.levelIdx : (opts.level ? opts.level - 1 : 0)));
+        // 无尽模式：直接打最高难度（末关），score 用 1/0 记录是否击败最强 AI
+        const idx = opts.endless ? this.LEVELS.length - 1 : Math.max(0, Math.min(this.LEVELS.length - 1, opts.levelIdx != null ? opts.levelIdx : (opts.level ? opts.level - 1 : 0)));
         const lv = this.LEVELS[idx] || this.LEVELS[0];
         const t = total > 1 ? Math.min(1, idx / (total - 1)) : 0;
         const P = paramsFor(t);
@@ -137,6 +140,7 @@ MiniGames.gomoku = {
                     win: p === human, stars: p === human ? 3 : 0,
                     title: p === human ? '🏆 你五连获胜！' : '💥 电脑五连了…',
                     lines: [p === human ? '干得漂亮！' : '再来一局试试', lv.name + ' · ' + lv.desc],
+                    score: p === human ? 1 : 0,
                 });
             }
             return wl;

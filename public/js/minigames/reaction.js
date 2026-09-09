@@ -46,10 +46,12 @@ MiniGames.reaction = {
         [15, 200, 900, 230, 290, 390],
         [20, 200, 800, 220, 280, 380],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [maxRound, waitMin, waitMax, s3, s2, s1] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [maxRound, waitMin, waitMax, s3, s2, s1] = this.PARAMS[pIdx] || this.PARAMS[0];
         const W = Math.min(container.clientWidth - 16, 400);
         const H = Math.min(window.innerHeight - 200, 360);
         const { c, ctx, w, h, destroy } = MG.canvas(container, W, H);

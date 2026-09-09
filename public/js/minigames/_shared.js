@@ -189,9 +189,45 @@ const MG = {
     // ================= 关卡数扩展 =================
     // 把任意游戏的关卡列表扩到 N（默认 50）。少于 N 的用引擎名池（场景/品级/能力三套池）
     // 顺延补足，确保所有游戏统一 50 关（暗棋除外，沿用 DOS 原版 15 关）
+    // 从关卡自身携带的参数推导难度说明（cols/rows/target/moves/time/score/holes/need 等）——用于选关页 desc
+    fmtLevelDesc(l) {
+        if (!l || typeof l !== 'object') return '';
+        const L = {
+            cols: '列', rows: '行', w: '宽', h: '高', size: '尺寸',
+            target: '目标', goal: '目标', score: '目标分',
+            speed: '速度', spd: '速度', rate: '频率',
+            time: '限时', sec: '限时',
+            need: '需', n: '阶', max: '上限', moves: '步数',
+            holes: '挖空', ships: '船', shots: '炮',
+            draws: '发牌', rounds: '轮', deals: '局',
+            len: '长度', cnt: '数量', wind: '风力', arrows: '箭',
+            gap: '间隙', tickets: '券', hp: '血量', gens: '代',
+            clicks: '点击', tilt: '倾角', fuel: '燃料', grow: '生长',
+            omega: 'Ω', knives: '刀', baseLen: '长度',
+            types: '种类', count: '数量', mis: '失误率', mistakes: '容错',
+        };
+        const parts = [];
+        for (const key in l) {
+            if (key === 'name' || key === 'desc') continue;
+            const v = l[key];
+            if (v == null || typeof v === 'object') continue;
+            if (key === 'cols' && l.rows != null) { parts.push(v + '×' + l.rows); continue; }
+            if (key === 'rows' || key === 'h') continue; // 与 cols/w 合并显示
+            if (key === 'w' && l.h != null) { parts.push(v + '×' + l.h); continue; }
+            const label = L[key];
+            if (label) parts.push(label + ' ' + v);
+        }
+        return parts.join(' · ');
+    },
     fillLevels(levels, want) {
         want = want || 50;
-        if (!levels || levels.length >= want) return levels;
+        // 先把原始关卡的 desc 补齐：若关卡本身带参数（cols/rows/target/...），自动推导难度说明
+        const src = (levels || []).map(l => {
+            const o = Object.assign({}, l);
+            if (!o.desc) o.desc = this.fmtLevelDesc(o);
+            return o;
+        });
+        if (src.length >= want) return src.slice(0, want);
         // 三套名池：场景 / 品级 / 阶段。合并后整体去重，得到一份唯一的名字序列，
         // 再顺序取用补足到 50 关。这样每关名字都唯一、不会相邻撞名，也不会与原始关卡名重复。
         const POOLS = [
@@ -224,8 +260,8 @@ const MG = {
             if (!seen.has(n)) { seen.add(n); ALL.push(n); }
         }
         // 原始关卡名也视为已占用，避免补足的名字和游戏自带关卡名撞车
-        const used = new Set((levels || []).map(l => (l && l.name) || '').filter(Boolean));
-        const out = levels.slice();
+        const used = new Set(src.map(l => (l && l.name) || '').filter(Boolean));
+        const out = src.slice();
         let k = 0;
         while (out.length < want) {
             let name = null;
@@ -235,7 +271,7 @@ const MG = {
             }
             if (name === null) name = '第 ' + (out.length + 1) + ' 关';
             used.add(name);
-            const last = levels[levels.length - 1] || {};
+            const last = src[src.length - 1] || {};
             out.push({ name, desc: last.desc || '' });
         }
         return out;
@@ -273,6 +309,7 @@ const MG = {
             el.className = 'mg-ls-cell' + (locked ? ' locked' : (st > 0 ? ' done' : ''));
             el.innerHTML = `<div class="mg-ls-num">${locked ? '🔒' : n}</div>
                 <div class="mg-ls-name">${lv.name || ''}</div>
+                <div class="mg-ls-desc" title="${lv.desc || ''}">${lv.desc || ''}</div>
                 <div class="mg-ls-stars">${'★'.repeat(st)}<span>${'☆'.repeat(3 - st)}</span></div>`;
             if (!locked) el.onclick = () => { wrap.remove(); cfg.onStart(idx, lv); };
             grid.appendChild(el);

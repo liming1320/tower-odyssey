@@ -30,10 +30,12 @@ MiniGames.shooter = {
         [3, 2, 50, 60], [3, 3, 45, 60], [4, 2, 55, 60], [4, 3, 50, 60], [4, 3, 55, 60],
         [4, 3, 60, 60], [5, 3, 65, 60], [5, 4, 60, 60], [6, 4, 70, 60], [6, 5, 80, 60],
     ],
+    ENDLESS: { name: "∞ 无尽", desc: "最高难度持续挑战，直到失败/通关为止" },
     start(container, opts, level) {
         const lv = level || this.LEVELS[0];
         const idx = this.LEVELS.indexOf(lv);
-        const [maxEnemies, hpBase, target, duration] = this.PARAMS[idx] || this.PARAMS[0];
+        const pIdx = idx >= 0 ? idx : (opts.endless ? this.PARAMS.length - 1 : 0);
+        const [maxEnemies, hpBase, target, duration] = this.PARAMS[pIdx] || this.PARAMS[0];
         const W = Math.min(container.clientWidth - 16, 400);
         const H = Math.min(window.innerHeight - 200, 500);
         const { c, ctx, w, h, destroy } = MG.canvas(container, W, H);

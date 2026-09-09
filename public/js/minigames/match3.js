@@ -39,7 +39,9 @@ MiniGames.match3 = {
         return out;
     })()),
     COLNAME: ['红', '黄', '绿', '蓝', '紫'],
+    ENDLESS: { name: '∞ 无尽', desc: '挑战最难关卡（目标分最高+步数最紧+石块配额），反复刷新最高得分' },
     start(container, opts) {
+        opts = opts || {};
         let alive = true;
         const api = { stop() { alive = false; } };
         const showSelect = () => {
@@ -54,6 +56,8 @@ MiniGames.match3 = {
             });
         };
         const runRound = level => { if (alive) match3Round(container, opts, level, api, showSelect, runRound); };
+        // 无尽模式：直接打最难的最后一关（目标分最高、步数最紧、石块/配额最多）
+        if (opts.endless) { runRound(MiniGames.match3.LEVELS.length); return api; }
         showSelect();
         return api;
     },
@@ -165,6 +169,16 @@ function match3Round(container, opts, level, api, onBack, onReplay) {
             const ratio = score / lv.score;
             stars = ratio >= 1.5 ? 3 : ratio >= 1.2 ? 2 : 1;
             MG.recordStars('match3', level, stars);
+        }
+        if (opts.endless) {
+            // 无尽模式：以「当前得分」记最高分，重试由框架回到无尽入口
+            opts.onComplete && opts.onComplete({
+                win, stars: win ? stars : 0,
+                title: win ? `🏆 第 ${level} 关达成目标！` : '💥 步数用完',
+                lines: [reason || '', `得分 ${score}/${lv.score}`].filter(Boolean),
+                score,
+            });
+            return;
         }
         MG.result(container, {
             win, stars,

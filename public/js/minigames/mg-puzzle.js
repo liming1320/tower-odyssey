@@ -488,6 +488,7 @@
     E.def('sokoban', {
         levels: E.nm(),
         params: (i) => ({ idx: i % SKB.length }),
+        desc: (i, t, p) => '推箱子 · 地图 #' + (p.idx + 1),
         w: 380, h: 470,
         hint: '方向键或点击方向按钮推动箱子（📦）到目标点（🎯）',
         init: P => {

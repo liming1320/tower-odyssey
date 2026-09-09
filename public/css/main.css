@@ -824,6 +824,7 @@ body.in-battle .avatar-btn { display: none; }
 .mg-ls-cell.locked { opacity: 0.38; cursor: not-allowed; }
 .mg-ls-num { font-size: 19px; font-weight: bold; color: #fff; }
 .mg-ls-name { font-size: 11px; color: #cfd2e2; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mg-ls-desc { font-size: 9.5px; color: #8fb0c8; opacity: .8; margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
 .mg-ls-stars { font-size: 11px; color: #ffd56b; letter-spacing: 1px; }
 .mg-ls-stars span { color: rgba(255,255,255,0.22); }
 .mg-ls-extra { display: block; margin: 14px auto 0; }
