@@ -42,16 +42,34 @@ window.MG = window.MG || {};
             return { x: (t.clientX - r.left) * sx, y: (t.clientY - r.top) * sy };
         };
         const onDown = e => {
-            if (done || stopped || !cfg.tap) return;
+            if (done || stopped) return;
             const p = pos(e);
-            cfg.tap(S, p.x, p.y, P, api); paint();
+            if (cfg.tap) { cfg.tap(S, p.x, p.y, P, api); paint(); }
+            if (cfg.drag) {
+                api._dragStart = { x: p.x, y: p.y, ox: (S.ox != null ? S.ox : 0), oy: (S.oy != null ? S.oy : 0) };
+            }
+        };
+        const onMove = e => {
+            if (done || stopped || !api._dragStart || !cfg.drag) return;
+            e.preventDefault();
+            const p = pos(e);
+            const dx = p.x - api._dragStart.x, dy = p.y - api._dragStart.y;
+            cfg.drag(S, p.x, p.y, P, api, dx, dy); paint();
+        };
+        const onUp = () => {
+            api._dragStart = null;
         };
         const onKey = e => {
             if (done || stopped || !cfg.key) return;
             cfg.key(S, e.key, P, api); paint();
         };
         c.addEventListener('mousedown', onDown);
+        c.addEventListener('mousemove', onMove);
+        c.addEventListener('mouseup', onUp);
+        c.addEventListener('mouseleave', onUp);
         c.addEventListener('touchstart', e => { e.preventDefault(); onDown(e); }, { passive: false });
+        c.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, { passive: false });
+        c.addEventListener('touchend', onUp);
         if (cfg.key) window.addEventListener('keydown', onKey);
 
         const loop = () => {
@@ -76,6 +94,9 @@ window.MG = window.MG || {};
                 stopped = true;
                 if (raf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(raf);
                 c.removeEventListener('mousedown', onDown);
+                c.removeEventListener('mousemove', onMove);
+                c.removeEventListener('mouseup', onUp);
+                c.removeEventListener('mouseleave', onUp);
                 if (cfg.key) window.removeEventListener('keydown', onKey);
                 cv.destroy();
             },

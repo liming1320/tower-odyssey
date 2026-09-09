@@ -164,7 +164,7 @@ function drawMonsterCell(ctx, level, x, y, s, anim) {
             LV('万界归一', 4800, 7),
         ],
     // 无尽模式：格子没满就能一直玩，棋盘锁死即结束（无需解锁任何关卡）
-    ENDLESS: { name: '无尽 · 降妖', desc: '格子没满就一直合，合出蛇精也不停' },
+    ENDLESS: { name: '无尽 · 降妖', desc: '6×6 大棋盘 · 格子没满就一直合，合出蛇精也不停' },
     // 由 MG.runGame 统一管理关卡选择；g2048.start 只负责对局逻辑
     // opts.levelIdx: 关卡索引（0-based）；opts.levelIdx === -1 表示无尽模式
     start(container, opts) {
@@ -180,12 +180,12 @@ function drawMonsterCell(ctx, level, x, y, s, anim) {
 function g2048Round(container, opts, level, api) {
     // 棋盘大小随目标等级自动放大：低目标紧凑 4×4 保持挑战；高目标扩到 5×5 / 6×6 给腾挪空间
     //   target ≤ 7 → 4×4  target 8-10 → 5×5  target ≥ 11 → 6×6
-    // 无尽模式固定 5×5（空间够大、棋盘填满不易、节奏刚好）
+    // 无尽模式固定 6×6（空间大、凑齐 +1 不易填满、玩得更久）
     const sizeFor = t => t <= 7 ? 4 : (t <= 10 ? 5 : 6);
     const lv = level > 0 ? MiniGames.g2048.LEVELS[level - 1] : { target: 12, moves: Infinity, rocks: 0 };
     const target = lv.target || 12;
-    const N = level > 0 ? sizeFor(target) : 5;
-    const SIZE = Math.floor(Math.min(460, 360 + 40 * N) / N);
+    const N = level > 0 ? sizeFor(target) : 6;
+    const SIZE = Math.floor(Math.min(420, 340 + 36 * N) / N);
     const maxMoves = lv.moves || Infinity, rockN = lv.rocks || 0;
     const { c, ctx, w, h, destroy } = MG.canvas(container, N * SIZE + 20, N * SIZE + 20);
 

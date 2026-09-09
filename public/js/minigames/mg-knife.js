@@ -24,15 +24,11 @@ window.MiniGames = window.MiniGames || {};
             let g = null; try { g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2a3044'); g.addColorStop(1, '#1a1f2e'); } catch (e) {}
             ctx.fillStyle = g || '#2a3044'; ctx.fillRect(0, 0, W, H);
             const cx = W / 2, cy = H * 0.42;
-            // 转盘中心圆
-            ctx.beginPath(); ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+            // 转盘中心圆 + Q 版鸠摩智小人
+            ctx.beginPath(); ctx.arc(cx, cy, 30, 0, Math.PI * 2);
             ctx.fillStyle = '#3d5a80'; ctx.fill();
             ctx.lineWidth = 3; ctx.strokeStyle = '#1a2c44'; ctx.stroke();
-            ctx.font = 'bold 16px "Microsoft YaHei",sans-serif';
-            ctx.fillStyle = '#ffd56b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('鸠摩智', cx, cy - 2);
-            ctx.font = '10px "Microsoft YaHei"'; ctx.fillStyle = '#b9b3d8';
-            ctx.fillText('转刀', cx, cy + 12);
+            drawJiumozhi(ctx, cx, cy);
             // 转盘轨道圈
             ctx.beginPath(); ctx.arc(cx, cy, P.baseLen, 0, Math.PI * 2);
             ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.stroke();
@@ -119,5 +115,74 @@ window.MiniGames = window.MiniGames || {};
         },
         score: S => S.knives.length,
     });
-    function i_round(P) { return (P && P._i) || 1; }
+
+    // ===== Q 版鸠摩智（胸像）=====
+    // 圆脸 + 头巾 + 浓眉大眼 + 八字胡 + 僧袍双肩
+    function drawJiumozhi(ctx, cx, cy) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        // 僧袍双肩（赭红色袈裟）
+        ctx.fillStyle = '#8a2a1a';
+        ctx.beginPath();
+        ctx.moveTo(-22, 20); ctx.quadraticCurveTo(-28, 8, -18, 2);
+        ctx.lineTo(0, 14); ctx.lineTo(18, 2); ctx.quadraticCurveTo(28, 8, 22, 20);
+        ctx.lineTo(22, 30); ctx.lineTo(-22, 30);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#3a1410'; ctx.lineWidth = 1.5; ctx.stroke();
+        // 金色袈裟边
+        ctx.fillStyle = '#ffd56b';
+        ctx.fillRect(-18, 22, 36, 3);
+        // 脖子
+        ctx.fillStyle = '#e8b888';
+        ctx.fillRect(-5, 6, 10, 6);
+        // 头（圆形）
+        ctx.fillStyle = '#e8b888';
+        ctx.beginPath(); ctx.arc(0, -6, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#7a5a30'; ctx.lineWidth = 1.5; ctx.stroke();
+        // 头巾（橙色僧帽）
+        ctx.fillStyle = '#d04848';
+        ctx.beginPath();
+        ctx.moveTo(-13, -10); ctx.quadraticCurveTo(-10, -22, 0, -22);
+        ctx.quadraticCurveTo(10, -22, 13, -10);
+        ctx.quadraticCurveTo(8, -8, 0, -10);
+        ctx.quadraticCurveTo(-8, -8, -13, -10);
+        ctx.closePath(); ctx.fill();
+        // 头巾金边
+        ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 1.5; ctx.stroke();
+        // 头巾顶珠
+        ctx.fillStyle = '#ffd56b';
+        ctx.beginPath(); ctx.arc(0, -23, 2, 0, Math.PI * 2); ctx.fill();
+        // 浓眉
+        ctx.strokeStyle = '#1a0e08'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-8, -10); ctx.lineTo(-3, -11);
+        ctx.moveTo(3, -11); ctx.lineTo(8, -10);
+        ctx.stroke();
+        // 大眼（杏眼）
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.ellipse(-5, -6, 2.5, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(5, -6, 2.5, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1a0e08';
+        ctx.beginPath(); ctx.arc(-5, -6, 1.3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(5, -6, 1.3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(-5.4, -6.6, 0.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(4.6, -6.6, 0.5, 0, Math.PI * 2); ctx.fill();
+        // 八字胡（黑）
+        ctx.strokeStyle = '#1a0e08'; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-7, 0); ctx.quadraticCurveTo(-3, -1, 0, 1);
+        ctx.moveTo(7, 0); ctx.quadraticCurveTo(3, -1, 0, 1);
+        ctx.stroke();
+        // 微笑嘴
+        ctx.strokeStyle = '#5a2a20'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-3, 4); ctx.quadraticCurveTo(0, 6, 3, 4);
+        ctx.stroke();
+        // 耳环（僧人戴金色）
+        ctx.fillStyle = '#ffd56b';
+        ctx.beginPath(); ctx.arc(-13, -4, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(13, -4, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+    }
 })();
