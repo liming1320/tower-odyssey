@@ -38,7 +38,8 @@ class CDP {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdplv-'));
     const proc = spawn(CHROME, [
         '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-        '--disable-extensions', `--user-data-dir=${dir}`, `--remote-debugging-port=${PORT}`,
+        '--disable-extensions', '--no-proxy-server', '--proxy-server=direct://', '--proxy-bypass-list=*',
+        `--user-data-dir=${dir}`, `--remote-debugging-port=${PORT}`,
         '--window-size=420,900', 'about:blank',
     ], { stdio: 'ignore' });
 
@@ -107,6 +108,19 @@ class CDP {
         hint: (document.querySelector('#mini-mask .mg-hint')||{}).textContent || '',
     }))()`);
     console.log('   📊 暗棋:', JSON.stringify(banqiState));
+    // 翻 5 枚棋子看宋金 Q 版小人正面
+    await cdp.eval(`(() => {
+        const B = window.__banqi;
+        if (!B) return;
+        // 先等 AI 走完第一次回到玩家
+        for (let i = 0; i < 8 && B.turn !== 1; i++) B.tap(0, 0);
+        // 玩家先手的话翻 5 枚不同位置
+        if (B.turn === 1) {
+            B.tap(0, 0); B.tap(0, 2); B.tap(0, 4); B.tap(0, 6); B.tap(1, 5);
+        }
+    })()`);
+    await sleep(700);
+    await cdp.shot(path.join(OUT, 'lv-banqi-faces.png'));
     await cdp.eval(`document.getElementById('mini-back').click()`);
     await sleep(400);
 
