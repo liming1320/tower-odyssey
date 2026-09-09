@@ -133,7 +133,26 @@ class CDP {
         if (c && c.onclick) c.onclick();
     })()`);
     await sleep(1500);
+    // 先截初始对局（未操作，看新美术）
     await cdp.shot(path.join(OUT, 'lv-2048-game.png'));
+    // 模拟 PC 鼠标拖拽（下移）：验证 mousedown/mouseup 绑定生效
+    const mouseTest = await cdp.eval(`(() => new Promise(resolve => {
+        const cv = document.querySelector('#mini-stage canvas');
+        if (!cv) { resolve({ err: 'no canvas' }); return; }
+        const score0 = (document.getElementById('mini-score')||{}).textContent || '';
+        const r = cv.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        cv.dispatchEvent(new MouseEvent('mousedown', { clientX: cx, clientY: cy - 60, bubbles: true }));
+        window.dispatchEvent(new MouseEvent('mouseup', { clientX: cx, clientY: cy + 60, bubbles: true }));
+        setTimeout(() => {
+            const score1 = (document.getElementById('mini-score')||{}).textContent || '';
+            resolve({ before: score0, after: score1, moved: score0 !== score1 });
+        }, 400);
+    }))()`);
+    console.log('   🖱 鼠标拖拽测试:', JSON.stringify(mouseTest));
+    // 截拖拽后一帧：未触发胜利则看到格子动画；触发胜利则看到结算
+    await sleep(500);
+    await cdp.shot(path.join(OUT, 'lv-2048-after-drag.png'));
     const g2048state = await cdp.eval(`(() => ({ errs: window._shotErrs || [], score: (document.getElementById('mini-score')||{}).textContent || '' }))()`);
     console.log('   📊 2048:', JSON.stringify(g2048state));
     await cdp.eval(`document.getElementById('mini-back').click()`);

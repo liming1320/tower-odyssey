@@ -17,8 +17,13 @@ const assert = (cond, msg) => {
 
 // ---------- DOM / canvas / MG 桩 ----------
 function fakeCtx() {
+    const grad = { addColorStop() {} };
     return new Proxy({}, {
-        get(t, k) { if (k === 'canvas') return {}; return () => undefined; },
+        get(t, k) {
+            if (k === 'canvas') return {};
+            if (k === 'createLinearGradient' || k === 'createRadialGradient') return () => grad;
+            return () => undefined;
+        },
         set() { return true; },
     });
 }
