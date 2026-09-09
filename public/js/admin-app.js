@@ -779,13 +779,16 @@ const AdminApp = {
             return;
         }
         const all = (r && (r.all || r.full)) || list.slice();
+        const names = (r && r.names) || {};
+        const nm = id => names[id] || id;
         body.innerHTML = `
             <div class="admin-note">
-                拖动 / 上下来调整玩家端看到的小游戏排序。点击「💾 保存」后立刻生效，未保存的更改显示「⚠ 未保存」。
+                上下调整玩家端看到的小游戏排序（显示中文名，括号内是内部 id）。点击「💾 保存」后立刻生效，未保存的更改显示「⚠ 未保存」。
             </div>
             <div class="card">
                 <h3>当前排序（${list.length} 个）</h3>
-                <div id="order-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px"></div>
+                <input id="ord-kw" placeholder="🔍 搜索游戏名 / id" style="margin:8px 0;width:100%;max-width:260px">
+                <div id="order-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px"></div>
                 <div class="row" style="margin-top:12px;gap:8px">
                     <button class="btn primary" id="ord-save">💾 保存排序</button>
                     <button class="btn ghost" id="ord-reset">↺ 恢复默认</button>
@@ -794,29 +797,35 @@ const AdminApp = {
             </div>
         `;
         const ol = body.querySelector('#order-list');
+        let kw = '';
         const render = () => {
-            ol.innerHTML = list.map((id, i) => `
-                <div class="ord-row" data-id="${id}" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 10px">
-                    <span style="font-size:11px;color:#ffd56b;width:20px;text-align:right">${i + 1}</span>
-                    <span style="flex:1;font-size:13px">${id}</span>
+            const key = kw.trim().toLowerCase();
+            const rows = list.map((id, i) => ({ id, i, name: nm(id) }))
+                .filter(o => !key || o.name.toLowerCase().indexOf(key) >= 0 || o.id.toLowerCase().indexOf(key) >= 0);
+            ol.innerHTML = rows.map(o => `
+                <div class="ord-row" data-i="${o.i}" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 10px">
+                    <span style="font-size:11px;color:#ffd56b;width:24px;text-align:right">${o.i + 1}</span>
+                    <span style="flex:1;font-size:13px">${this.esc(o.name)}<span style="opacity:.45;font-size:11px"> · ${o.id}</span></span>
                     <button class="btn ghost small" data-act="up">▲</button>
                     <button class="btn ghost small" data-act="dn">▼</button>
                     <button class="btn ghost small" data-act="top">⤒</button>
                     <button class="btn ghost small" data-act="bot">⤓</button>
                 </div>
-            `).join('');
-            ol.querySelectorAll('.ord-row').forEach((el, idx) => {
-                const id = el.dataset.id;
-                el.querySelector('[data-act=up]').onclick = () => { if (idx > 0) { [list[idx - 1], list[idx]] = [list[idx], list[idx - 1]]; render(); dirty(); } };
-                el.querySelector('[data-act=dn]').onclick = () => { if (idx < list.length - 1) { [list[idx], list[idx + 1]] = [list[idx + 1], list[idx]]; render(); dirty(); } };
-                el.querySelector('[data-act=top]').onclick = () => { list.splice(idx, 1); list.unshift(id); render(); dirty(); };
-                el.querySelector('[data-act=bot]').onclick = () => { list.splice(idx, 1); list.push(id); render(); dirty(); };
+            `).join('') || '<div style="color:#888;padding:12px">没有匹配的小游戏</div>';
+            ol.querySelectorAll('.ord-row').forEach(el => {
+                const i = parseInt(el.dataset.i, 10);
+                const go = () => { render(); dirty(); };
+                el.querySelector('[data-act=up]').onclick = () => { if (i > 0) { const t = list[i - 1]; list[i - 1] = list[i]; list[i] = t; go(); } };
+                el.querySelector('[data-act=dn]').onclick = () => { if (i < list.length - 1) { const t = list[i + 1]; list[i + 1] = list[i]; list[i] = t; go(); } };
+                el.querySelector('[data-act=top]').onclick = () => { const x = list.splice(i, 1)[0]; list.unshift(x); go(); };
+                el.querySelector('[data-act=bot]').onclick = () => { const x = list.splice(i, 1)[0]; list.push(x); go(); };
             });
         };
         let saved = true;
         const status = body.querySelector('#ord-status');
         const dirty = () => { saved = false; status.textContent = '⚠ 未保存'; status.style.color = '#ff7a8b'; };
         const clean = () => { saved = true; status.textContent = '✓ 已保存'; status.style.color = '#7ad86a'; };
+        body.querySelector('#ord-kw').addEventListener('input', e => { kw = e.target.value || ''; render(); });
         render(); clean();
         body.querySelector('#ord-save').onclick = async () => {
             try {

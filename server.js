@@ -2495,6 +2495,23 @@ const MINIGAME_IDS = new Set([
     // 本轮新增
     'knife','sheep','pocketarmy',
 ]);
+
+// 小游戏中文名：解析玩家端清单文件（sc('id','名称',...) / { id:'x', name:'y' } 两种写法都兼容）
+// 只在启动时读一次并缓存，供管理后台排序页显示中文名
+const MINIGAME_NAMES = (() => {
+    const map = {};
+    try {
+        const txt = require('fs').readFileSync(require('path').join(__dirname, 'public', 'js', 'views', 'minigames.js'), 'utf8');
+        const start = txt.indexOf('const GAMES');
+        const seg = start < 0 ? txt : txt.slice(start);
+        let m;
+        const re1 = /(?:sc|sc2|scard|g)\(\s*['"]([A-Za-z0-9_-]+)['"]\s*,\s*['"]([^'"]+)['"]/g;
+        while ((m = re1.exec(seg))) map[m[1]] = m[2];
+        const re2 = /\bid\s*:\s*['"]([A-Za-z0-9_-]+)['"]\s*,\s*name\s*:\s*['"]([^'"]+)['"]/g;
+        while ((m = re2.exec(seg))) if (!map[m[1]]) map[m[1]] = m[2];
+    } catch (e) { /* 读不到就用 id 兜底 */ }
+    return map;
+})();
 api['POST /api/minigame/report'] = (req, res, body) => {
     const user = getUserByToken(req);
     if (!user) return sendJson(res, 401, { error: '未登录' });
@@ -2595,6 +2612,7 @@ api['GET /api/minigame/order'] = (req, res) => {
         order: DB.minigameOrder || [],
         all,
         full: savedOrder.concat(all.filter(id => !seen.has(id))),
+        names: MINIGAME_NAMES,
     });
 };
 api['POST /api/admin/minigame/order'] = (req, res, body) => {
@@ -2612,7 +2630,7 @@ api['GET /api/admin/minigame/order'] = (req, res) => {
     const savedOrder = Array.isArray(DB.minigameOrder) ? DB.minigameOrder.filter(x => MINIGAME_IDS.has(x)) : [];
     const seen = new Set(savedOrder);
     const order = savedOrder.concat(all.filter(id => !seen.has(id)));
-    sendJson(res, 200, { order, all, saved: savedOrder.length > 0 });
+    sendJson(res, 200, { order, all, names: MINIGAME_NAMES, saved: savedOrder.length > 0 });
 };
 
 api['POST /api/admin/mail'] = (req, res, body) => {
