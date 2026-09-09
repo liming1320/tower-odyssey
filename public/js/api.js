@@ -27,6 +27,8 @@ const API = (() => {
         bindPhone: (phone, code) => call('POST', '/api/user/bind-phone', { phone, code }),
         setPassword: (oldPassword, newPassword) => call('POST', '/api/user/set-password', { oldPassword, newPassword }),
         logout: () => call('POST', '/api/logout'),
+        giftRedeem: (code) => call('POST', '/api/gift/redeem', { code }),
+        accountDelete: (password, confirm) => call('POST', '/api/account/delete', { password, confirm }),
         me: () => call('GET', '/api/me'),
         buildingUpgrade: (which) => call('POST', '/api/building/upgrade', { which }),
         camp: () => call('GET', '/api/camp'),

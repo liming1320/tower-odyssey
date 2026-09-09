@@ -19,7 +19,7 @@ const ROOT = path.join(__dirname, '..');
 // game_meta 里以 JSON 存放的全局数据（非玩家私有）
 const META_KEYS = [
     'chat', 'mails', 'clans', 'world', 'ancient', 'events',
-    'wallSkills', 'treasures',
+    'wallSkills', 'treasures', 'giftCodes',
     'equipmentTemplates', 'ringTemplates', 'artifactTemplates', 'gemTemplates',
     '_meta', 'tokens',
 ];

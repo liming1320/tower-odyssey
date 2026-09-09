@@ -24,6 +24,7 @@ const Battle = {
 
     start(canvas, opts) {
         this.stop();
+        document.body.classList.add('in-battle');
         this.cvs = canvas;
         this.ctx = canvas.getContext('2d');
         this.opts = opts || {};
@@ -746,6 +747,11 @@ const Battle = {
     },
 
     addFloat(x, y, text, color, big) {
+        // 飘字开关：设置面板关闭后不再生成（但保留大招/护盾等关键提示）
+        try {
+            const p = JSON.parse(localStorage.getItem('tower-odyssey.prefs') || '{}');
+            if (p.floatText === false && !big) return;
+        } catch (e) {}
         this.floats.push({ x, y, text, color: color || '#fff', life: 0.9, big: !!big });
     },
 

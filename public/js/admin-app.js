@@ -44,6 +44,8 @@ const AdminAPI = (() => {
 
 const AdminApp = {
     tab: 'overview',
+    // HTML 转义
+    esc(s) { return String(s == null ? '' : s).replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[c])); },
 
     init() {
         document.body.classList.add('admin-page');
@@ -101,6 +103,7 @@ const AdminApp = {
             event: () => this.renderEvent(body),
             users: () => this.renderUsers(body),
             sms: () => this.renderSms(body),
+            gift: () => this.renderGift(body),
         }[this.tab];
         fn().catch(e => {
             body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`;
@@ -739,6 +742,96 @@ const AdminApp = {
             </div>
         `;
         body.querySelector('#sms-refresh').onclick = () => this.renderSms(body);
+    },
+
+    async renderGift(body) {
+        let r;
+        try { r = await AdminAPI.giftList(); }
+        catch (e) { body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`; return; }
+        const list = r.list || [];
+        const rows = list.map(g => {
+            const rewards = Object.entries(g.rewards || {}).map(([k, v]) => `${k}×${v}`).join(' ');
+            return `<tr>
+                <td><b style="color:#ffd56b;font-family:monospace;letter-spacing:1px">${g.code}</b><div style="font-size:11px;color:#888">${g.name || ''}</div></td>
+                <td>${rewards || '<i style="color:#888">无</i>'}</td>
+                <td>${g.usedCount}${g.maxUses > 0 ? '/' + g.maxUses : '/∞'}</td>
+                <td>${g.enabled !== false ? '<span style="color:#5cd65c">启用</span>' : '<span style="color:#888">停用</span>'}</td>
+                <td>${g.expires ? new Date(g.expires).toLocaleDateString('zh-CN') : '永不过期'}</td>
+                <td><button class="btn small" data-edit="${g.code}" data-name="${this.esc(g.name||'')}" data-content="${this.esc(g.content||'')}" data-max="${g.maxUses}" data-rewards='${this.esc(JSON.stringify(g.rewards||{}))}'>编辑</button> <button class="btn small danger" data-del="${g.code}">删</button></td>
+            </tr>`;
+        }).join('');
+
+        body.innerHTML = `
+            <div class="admin-note">礼品码：玩家在「设置 → 礼包码」中输入，奖励通过邮件发放。每个码每账号限领一次，maxUses=0 表示无限。</div>
+            <div class="card">
+                <h3>新建 / 编辑礼品码</h3>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                    <input id="gf-code" placeholder="礼包码（4-32 位字母数字-_）" maxlength="32">
+                    <input id="gf-name" placeholder="名称（选填）">
+                    <input id="gf-max" type="number" placeholder="最大使用次数（0=无限）" min="0" value="0">
+                    <input id="gf-exp" type="date" placeholder="过期时间（选填）">
+                    <input id="gf-gold" type="number" placeholder="金币" min="0" value="0">
+                    <input id="gf-wood" type="number" placeholder="木材" min="0" value="0">
+                    <input id="gf-iron" type="number" placeholder="铁矿" min="0" value="0">
+                    <input id="gf-stone" type="number" placeholder="石币" min="0" value="0">
+                    <input id="gf-gems" type="number" placeholder="钻石" min="0" value="0">
+                    <input id="gf-wish" type="number" placeholder="许愿卡" min="0" value="0">
+                </div>
+                <textarea id="gf-content" placeholder="邮件说明文字（选填）" style="width:100%;margin-top:8px;min-height:50px;background:#2a2540;color:#fff;border:1px solid #555;border-radius:6px;padding:6px"></textarea>
+                <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
+                    <label style="font-size:12px"><input type="checkbox" id="gf-enabled" checked> 启用</label>
+                    <button class="btn" id="gf-save" style="margin-left:auto">保存</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>已有礼品码</h3>
+                <table class="admin-table">
+                    <thead><tr><th>码/名称</th><th>奖励</th><th>已用</th><th>状态</th><th>过期</th><th>操作</th></tr></thead>
+                    <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:#777;padding:16px">还没有礼品码</td></tr>'}</tbody>
+                </table>
+            </div>
+        `;
+        const fill = (code, name, content, max, rewards) => {
+            document.getElementById('gf-code').value = code || '';
+            document.getElementById('gf-name').value = name || '';
+            document.getElementById('gf-content').value = content || '';
+            document.getElementById('gf-max').value = max || 0;
+            ['gold','wood','iron','stone','gems','wish'].forEach(k => {
+                const el = document.getElementById('gf-' + k); if (el) el.value = rewards[k] || 0;
+            });
+        };
+        body.querySelector('#gf-save').onclick = async () => {
+            const code = document.getElementById('gf-code').value.trim();
+            const rewards = {};
+            ['gold','wood','iron','stone','gems','wish'].forEach(k => {
+                const v = parseInt(document.getElementById('gf-' + k).value) || 0;
+                if (v > 0) rewards[k] = v;
+            });
+            if (!code) return U.toast('请输入礼包码');
+            if (Object.keys(rewards).length === 0) return U.toast('至少填一项奖励');
+            const exp = document.getElementById('gf-exp').value;
+            try {
+                await AdminAPI.giftSave({
+                    code,
+                    name: document.getElementById('gf-name').value.trim(),
+                    content: document.getElementById('gf-content').value.trim(),
+                    rewards,
+                    maxUses: parseInt(document.getElementById('gf-max').value) || 0,
+                    enabled: document.getElementById('gf-enabled').checked,
+                    expires: exp ? new Date(exp + 'T23:59:59').toISOString() : null,
+                });
+                U.toast('保存成功');
+                this.renderGift(body);
+            } catch (e) { U.toast(e.message); }
+        };
+        body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => {
+            fill(b.dataset.edit, b.dataset.name, b.dataset.content, b.dataset.max, JSON.parse(b.dataset.rewards || '{}'));
+        });
+        body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+            if (!confirm('删除礼品码 ' + b.dataset.del + '？已发放的邮件不会收回')) return;
+            try { await AdminAPI.giftDelete(b.dataset.del); U.toast('已删除'); this.renderGift(body); }
+            catch (e) { U.toast(e.message); }
+        });
     },
 
     _pageItems() {

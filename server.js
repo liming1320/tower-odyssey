@@ -587,6 +587,7 @@ let _dirty = false, _flushTimer = null;
         changed = true;
     }
     if (!Array.isArray(DB.events) || !DB.events.length) { DB.events = seedEvents(); changed = true; }
+    if (!Array.isArray(DB.giftCodes)) { DB.giftCodes = []; changed = true; }
     if (!DB._meta) {
         DB._meta = {
             qualities: QUALITIES, qualityName: QUALITY_NAME, qualityColor: QUALITY_COLOR,
@@ -2528,6 +2529,116 @@ api['POST /api/admin/mail'] = (req, res, body) => {
     });
 };
 
+// ---------------- 礼品码 ----------------
+api['POST /api/gift/redeem'] = (req, res, body) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const code = String((body && body.code) || '').trim();
+    if (!code) return sendJson(res, 400, { error: '请输入礼包码' });
+    if (!Array.isArray(DB.giftCodes) || !DB.giftCodes.length) return sendJson(res, 400, { error: '礼包码无效' });
+    const gift = DB.giftCodes.find(g => g.code && g.code.toLowerCase() === code.toLowerCase());
+    if (!gift) return sendJson(res, 400, { error: '礼包码无效或已过期' });
+    if (gift.enabled === false) return sendJson(res, 400, { error: '该礼包码已停用' });
+    if (gift.expires && Date.now() > +new Date(gift.expires)) return sendJson(res, 400, { error: '该礼包码已过期' });
+    gift.usedBy = Array.isArray(gift.usedBy) ? gift.usedBy : [];
+    if (gift.usedBy.some(u => u.userId === user.id)) return sendJson(res, 400, { error: '该礼包码您已兑换过' });
+    if (gift.maxUses > 0 && gift.usedBy.length >= gift.maxUses) return sendJson(res, 400, { error: '该礼包码已被领完' });
+
+    // 通过邮件系统发放（与后台发奖保持一致，玩家可一键领取）
+    const rewards = gift.rewards || {};
+    const mail = {
+        id: newId(), toAll: false, to: user.id, toName: user.username,
+        title: '🎁 礼包码奖励 · ' + (gift.name || gift.code),
+        content: gift.content || ('感谢您的支持！礼包码 ' + gift.code + ' 兑换成功。'),
+        rewards, time: Date.now(), from: 'gift', claimedBy: [],
+    };
+    DB.mails.push(mail);
+    gift.usedBy.push({ userId: user.id, username: user.username, time: Date.now() });
+    save();
+    sendJson(res, 200, { ok: true, mail, reward: rewards });
+};
+
+api['POST /api/account/delete'] = (req, res, body) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const pw = String((body && body.password) || '');
+    if (!pw) return sendJson(res, 400, { error: '请输入密码' });
+    if (!verifyPassword(pw, user.password)) return sendJson(res, 401, { error: '密码错误' });
+    if (String((body && body.confirm) || '') !== '确认注销') return sendJson(res, 400, { error: '请输入「确认注销」' });
+
+    const uid = user.id;
+    for (const t of Object.keys(DB.tokens)) if (DB.tokens[t] === uid) delete DB.tokens[t];
+    if (Array.isArray(DB.mails)) DB.mails = DB.mails.filter(m => m.to !== uid);
+    if (DB.clans && typeof DB.clans === 'object') {
+        for (const cid of Object.keys(DB.clans)) {
+            const cl = DB.clans[cid];
+            if (cl && Array.isArray(cl.members)) cl.members = cl.members.filter(m => m.userId !== uid);
+        }
+    }
+    if (Store.isMySQL()) {
+        try { Store.deletePlayer(uid); } catch (e) { console.error('[game] 删 MySQL player 失败：' + e.message); }
+    }
+    delete DB.users[uid];
+    save();
+    if (req.headers.authorization) {
+        const tok = String(req.headers.authorization).replace(/^Bearer\s+/i, '').trim();
+        if (tok) delete DB.tokens[tok];
+    }
+    sendJson(res, 200, { ok: true });
+};
+
+// ---------------- 礼品码 后台管理 ----------------
+api['POST /api/admin/gift/save'] = (req, res, body) => {
+    const u = getUserByToken(req);
+    if (!u || (!u.isAdmin && u.id !== 'admin')) return sendJson(res, 403, { error: '无权限' });
+    if (!Array.isArray(DB.giftCodes)) DB.giftCodes = [];
+    const code = String((body && body.code) || '').trim();
+    if (!/^[A-Za-z0-9_-]{4,32}$/.test(code)) return sendJson(res, 400, { error: '礼包码仅允许 4-32 位字母/数字/下划线/短横' });
+    const rewards = body.rewards || {};
+    if (Object.keys(rewards).length === 0) return sendJson(res, 400, { error: '请填写至少一项奖励' });
+    const gift = {
+        code,
+        name: String(body.name || code),
+        content: String(body.content || ''),
+        rewards,
+        maxUses: Math.max(0, parseInt(body.maxUses) || 0),
+        enabled: body.enabled !== false,
+        expires: body.expires || null,
+        usedBy: [],
+        createdAt: Date.now(),
+        createdBy: u.username || 'admin',
+    };
+    const i = DB.giftCodes.findIndex(g => g.code.toLowerCase() === code.toLowerCase());
+    if (i >= 0) {
+        gift.usedBy = DB.giftCodes[i].usedBy || [];
+        gift.createdAt = DB.giftCodes[i].createdAt;
+        gift.createdBy = DB.giftCodes[i].createdBy;
+        DB.giftCodes[i] = gift;
+    } else {
+        DB.giftCodes.push(gift);
+    }
+    save();
+    sendJson(res, 200, { ok: true, gift });
+};
+api['POST /api/admin/gift/delete'] = (req, res, body) => {
+    const u = getUserByToken(req);
+    if (!u || (!u.isAdmin && u.id !== 'admin')) return sendJson(res, 403, { error: '无权限' });
+    const code = String((body && body.code) || '');
+    DB.giftCodes = (DB.giftCodes || []).filter(g => g.code !== code);
+    save();
+    sendJson(res, 200, { ok: true });
+};
+api['GET /api/admin/gift/list'] = (req, res) => {
+    const u = getUserByToken(req);
+    if (!u || (!u.isAdmin && u.id !== 'admin')) return sendJson(res, 403, { error: '无权限' });
+    const list = (DB.giftCodes || []).map(g => ({
+        code: g.code, name: g.name, content: g.content, rewards: g.rewards,
+        maxUses: g.maxUses, usedCount: (g.usedBy || []).length,
+        enabled: g.enabled, expires: g.expires, createdAt: g.createdAt, createdBy: g.createdBy,
+    }));
+    sendJson(res, 200, { ok: true, list });
+};
+
 // 删除玩家（含其 token、邮件、聊天中无关，存档直接抹除）
 api['POST /api/admin/user/delete'] = (req, res, body) => {
     const admin = getUserByToken(req);
@@ -2821,7 +2932,7 @@ const server = http.createServer(async (req, res) => {
             DB.users = st.users;
             DB.tokens = st.tokens || {};
             if ((st.heroes || []).length) DB.heroes = st.heroes;
-            ['chat', 'mails', 'clans', 'world', 'ancient', 'events'].forEach(k => {
+            ['chat', 'mails', 'clans', 'world', 'ancient', 'events', 'giftCodes'].forEach(k => {
                 const v = st[k];
                 if (v === undefined || v === null) return;
                 const empty = Array.isArray(v) ? v.length === 0 : Object.keys(v).length === 0;

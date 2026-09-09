@@ -23,7 +23,8 @@ const App = {
             b.onclick = () => this.switchTab(b.dataset.tab);
         });
         document.getElementById('btn-chat').onclick = () => ChatView.open(this);
-        document.getElementById('btn-profile').onclick = () => this.editNickname();
+        document.getElementById('btn-avatar').onclick = () => PersonalView.open(this);
+        document.getElementById('btn-profile').onclick = () => PersonalView.open(this);
         document.getElementById('btn-mail').onclick = () => MailView.open(this);
         document.getElementById('btn-event').onclick = () => EventView.open(this);
         document.getElementById('btn-menu').onclick = () => {
@@ -45,6 +46,10 @@ const App = {
                         } catch (e) { U.toast(e.message); }
                     } else if (item.dataset.action === 'event') {
                         EventView.open(this);
+                    } else if (item.dataset.action === 'settings') {
+                        SettingsView.open(this);
+                    } else if (item.dataset.action === 'profile') {
+                        PersonalView.open(this);
                     }
                 };
             });
@@ -74,6 +79,9 @@ const App = {
         const uidEl = document.getElementById('p-uid');
         if (nickEl) nickEl.textContent = this.user.nickname || this.user.username || '冒险者';
         if (uidEl) uidEl.textContent = this.user.displayId || '';
+        // 左上角头像
+        const av = document.getElementById('player-avatar');
+        if (av && typeof avatarSVG === 'function') { av.innerHTML = avatarSVG(this.user); }
         document.getElementById('r-gem').textContent = U.num(r.gems || 0);
         document.getElementById('r-gold').textContent = U.fmt(r.gold || 0);
         document.getElementById('r-wood').textContent = U.fmt(r.wood || 0);
