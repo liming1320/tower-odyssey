@@ -45,20 +45,38 @@ const MinigamesView = {
         const stage = document.getElementById('mini-stage');
         const scoreEl = document.getElementById('mini-score');
         const close = () => {
-            try { instance && instance.stop && instance.stop(); } catch (e) {}
             mask.remove();
         };
         document.getElementById('mini-back').onclick = close;
-        let instance = null;
         try {
             const game = window.MiniGames && window.MiniGames[g.id];
             if (!game) throw new Error('未加载到该游戏模块');
-            instance = game.start(stage, { onScore: s => scoreEl.textContent = s != null ? s : '' });
+            // 暗棋保留自己的关卡流程（猜拳→对局），其他统一走 20 关框架
+            if (g.id === 'banqi') {
+                const inst = game.start(stage, { onScore: s => scoreEl.textContent = s != null ? s : '' });
+                inst && (inst._close = close);
+            } else {
+                const levels = (game.LEVELS && game.LEVELS.length) ? game.LEVELS : defaultLevels(g);
+                MG.runGame(stage, {
+                    id: g.id, title: g.name, levels,
+                    start: (c, opts, lv) => game.start(c, opts, lv),
+                    scoreEl,
+                });
+            }
         } catch (e) {
             stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
         }
     }
 };
+
+// 兜底：没有 LEVELS 配置的游戏也具备 20 关（难度参数自增 0..1）
+function defaultLevels(g) {
+    const out = [];
+    for (let i = 1; i <= 20; i++) {
+        out.push({ name: '第' + i + '关', desc: '难度 ' + i + '/20', _fallback: true });
+    }
+    return out;
+}
 
 // 20 个小游戏清单
 // thumb: 小型 SVG 缩略图（88x60），在卡片左侧展示

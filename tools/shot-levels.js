@@ -157,6 +157,29 @@ class CDP {
     await cdp.shot(path.join(OUT, 'lv-match3-game.png'));
     const m3state = await cdp.eval(`(() => ({ errs: window._shotErrs || [], score: (document.getElementById('mini-score')||{}).textContent || '' }))()`);
     console.log('   📊 消消乐:', JSON.stringify(m3state));
+    await cdp.eval(`document.getElementById('mini-back').click()`);
+    await sleep(400);
+
+    // 6) 新游戏关卡选择快速验证：snake / mole / slide15 / hanoi / bulls / sudoku6 / jump / breakout / piano / reaction / memory / mine / shooter / gomoku / xiangqi
+    const newGames = ['snake', 'mole', 'slide15', 'hanoi', 'bulls', 'sudoku6', 'jump', 'breakout', 'piano', 'reaction', 'memory', 'mine', 'shooter', 'gomoku', 'xiangqi'];
+    for (const gid of newGames) {
+        try {
+            await cdp.eval(`MinigamesView.launch(GAMES.find(g=>g.id==='${gid}'))`);
+            await sleep(500);
+            await cdp.shot(path.join(OUT, 'lv-' + gid + '-select.png'));
+            const sel = await cdp.eval(`(() => ({
+                errs: window._shotErrs || [],
+                cellCount: document.querySelectorAll('#mini-stage .mg-ls-cell').length,
+                title: (document.querySelector('#mini-stage .mg-ls-title')||{}).textContent || '',
+                locked: document.querySelectorAll('#mini-stage .mg-ls-cell.locked').length,
+            }))()`);
+            console.log(`   📊 ${gid}: ${sel.cellCount} cells / locked=${sel.locked} / ${(sel.title || '').slice(0, 30)}`);
+            await cdp.eval(`document.getElementById('mini-back').click()`);
+            await sleep(300);
+        } catch (e) {
+            console.log(`   ✗ ${gid}: ${e.message}`);
+        }
+    }
 
     const errs = await cdp.eval(`window._shotErrs || []`);
     if (errs.length) console.log('   ⚠ 页面错误:', JSON.stringify(errs).slice(0, 500));

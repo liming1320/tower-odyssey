@@ -1,9 +1,44 @@
-// 扫雷：9x9 共 10 雷
+// 扫雷：20 关挑战，棋盘尺寸/雷数递增
 window.MiniGames = window.MiniGames || {};
 MiniGames.mine = {
-    start(container, opts) {
-        const COLS = 9, ROWS = 9, MINES = 10, S = 44;
-        const { c, ctx, w, h, destroy } = MG.canvas(container, COLS*S + 4, ROWS*S + 4);
+    LEVELS: [
+        // { name, desc, rows, cols, mines }
+        { name: '入门', desc: '5×5 · 4 雷' },
+        { name: '入门 II', desc: '6×6 · 5 雷' },
+        { name: '基础', desc: '6×6 · 8 雷' },
+        { name: '基础 II', desc: '7×7 · 9 雷' },
+        { name: '练习', desc: '7×7 · 12 雷' },
+        { name: '练习 II', desc: '8×8 · 12 雷' },
+        { name: '经典', desc: '9×9 · 10 雷' },
+        { name: '经典 II', desc: '9×9 · 14 雷' },
+        { name: '进阶', desc: '10×10 · 16 雷' },
+        { name: '进阶 II', desc: '10×10 · 20 雷' },
+        { name: '进阶 III', desc: '10×10 · 25 雷' },
+        { name: '高阶', desc: '12×12 · 25 雷' },
+        { name: '高阶 II', desc: '12×12 · 30 雷' },
+        { name: '高手', desc: '12×14 · 30 雷' },
+        { name: '高手 II', desc: '14×14 · 35 雷' },
+        { name: '硬核', desc: '14×14 · 45 雷' },
+        { name: '硬核 II', desc: '14×16 · 50 雷' },
+        { name: '大师', desc: '16×16 · 50 雷' },
+        { name: '大师 II', desc: '16×16 · 60 雷' },
+        { name: '扫雷王', desc: '16×16 · 70 雷 · 终极' },
+    ],
+    PARAMS: [
+        [5, 5, 4], [6, 6, 5], [6, 6, 8], [7, 7, 9], [7, 7, 12],
+        [8, 8, 12], [9, 9, 10], [9, 9, 14], [10, 10, 16], [10, 10, 20],
+        [10, 10, 25], [12, 12, 25], [12, 12, 30], [12, 14, 30],
+        [14, 14, 35], [14, 14, 45], [14, 16, 50], [16, 16, 50],
+        [16, 16, 60], [16, 16, 70],
+    ],
+    start(container, opts, level) {
+        const lv = level || this.LEVELS[0];
+        const idx = this.LEVELS.indexOf(lv);
+        const [ROWS, COLS, MINES] = this.PARAMS[idx] || this.PARAMS[0];
+        const maxW = Math.min(container.clientWidth - 16, 480);
+        const maxH = Math.min(window.innerHeight - 200, 560);
+        const S = Math.max(18, Math.floor(Math.min(maxW / COLS, maxH / ROWS, 44)));
+        const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);
         let board = [], revealed = [], flagged = [], over = false, win = false;
         const init = () => {
             board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
@@ -11,7 +46,7 @@ MiniGames.mine = {
             flagged = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
             let placed = 0;
             while (placed < MINES) {
-                const x = MG.ri(0, COLS-1), y = MG.ri(0, ROWS-1);
+                const x = MG.ri(0, COLS - 1), y = MG.ri(0, ROWS - 1);
                 if (board[y][x] !== -1) { board[y][x] = -1; placed++; }
             }
             for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
@@ -20,15 +55,15 @@ MiniGames.mine = {
                 for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
                     if (!dy && !dx) continue;
                     const ni = i + dy, nj = j + dx;
-                    if (ni>=0 && ni<ROWS && nj>=0 && nj<COLS && board[ni][nj] === -1) n++;
+                    if (ni >= 0 && ni < ROWS && nj >= 0 && nj < COLS && board[ni][nj] === -1) n++;
                 }
                 board[i][j] = n;
             }
         };
         const flood = (i, j) => {
-            if (i<0||i>=ROWS||j<0||j>=COLS||revealed[i][j]||flagged[i][j]) return;
+            if (i < 0 || i >= ROWS || j < 0 || j >= COLS || revealed[i][j] || flagged[i][j]) return;
             revealed[i][j] = true;
-            if (board[i][j] === 0) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (dy||dx) flood(i+dy, j+dx);
+            if (board[i][j] === 0) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (dy || dx) flood(i + dy, j + dx);
         };
         const checkWin = () => {
             for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
@@ -39,43 +74,47 @@ MiniGames.mine = {
         const draw = () => {
             ctx.fillStyle = '#1a1c2a'; ctx.fillRect(0, 0, w, h);
             for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
-                const x = 2 + j*S, y = 2 + i*S;
+                const x = 2 + j * S, y = 2 + i * S;
                 if (revealed[i][j]) {
-                    ctx.fillStyle = '#3a3258'; ctx.fillRect(x, y, S-2, S-2);
-                    if (board[i][j] === -1) { ctx.fillStyle = '#ff5252'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💣', x + S/2, y + S/2); }
+                    ctx.fillStyle = '#3a3258'; ctx.fillRect(x, y, S - 2, S - 2);
+                    if (board[i][j] === -1) { ctx.fillStyle = '#ff5252'; ctx.font = (S * 0.6) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💣', x + S / 2, y + S / 2); }
                     else if (board[i][j] > 0) {
-                        ctx.fillStyle = ['#5cc7ff','#5cd65c','#ff5252','#b78bff','#ff9d5c','#5cc7ff','#888','#888'][board[i][j]-1];
-                        ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                        ctx.fillText(board[i][j], x + S/2, y + S/2);
+                        ctx.fillStyle = ['#5cc7ff', '#5cd65c', '#ff5252', '#b78bff', '#ff9d5c', '#5cc7ff', '#888', '#888'][board[i][j] - 1];
+                        ctx.font = 'bold ' + (S * 0.55) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.fillText(board[i][j], x + S / 2, y + S / 2);
                     }
                 } else {
-                    ctx.fillStyle = '#5a4880'; ctx.fillRect(x, y, S-2, S-2);
-                    if (flagged[i][j]) { ctx.fillStyle = '#ffd56b'; ctx.font = '22px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🚩', x + S/2, y + S/2); }
+                    ctx.fillStyle = '#5a4880'; ctx.fillRect(x, y, S - 2, S - 2);
+                    if (flagged[i][j]) { ctx.fillStyle = '#ffd56b'; ctx.font = (S * 0.55) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🚩', x + S / 2, y + S / 2); }
                 }
             }
         };
         const onTap = p => {
             if (over) return;
             const j = Math.floor(p.x / S), i = Math.floor(p.y / S);
-            if (i<0||i>=ROWS||j<0||j>=COLS) return;
+            if (i < 0 || i >= ROWS || j < 0 || j >= COLS) return;
             if (p.longTap || p.shift) {
                 flagged[i][j] = !flagged[i][j];
             } else {
                 if (flagged[i][j]) return;
-                if (board[i][j] === -1) { over = true; for (let ii=0;ii<ROWS;ii++) for (let jj=0;jj<COLS;jj++) if (board[ii][jj] === -1) revealed[ii][jj] = true; opts.onScore && opts.onScore('💥 踩雷！'); }
-                else flood(i, j);
-                if (checkWin()) { win = true; over = true; opts.onScore && opts.onScore('🏆 胜利！'); }
+                if (board[i][j] === -1) {
+                    over = true; for (let ii = 0; ii < ROWS; ii++) for (let jj = 0; jj < COLS; jj++) if (board[ii][jj] === -1) revealed[ii][jj] = true;
+                    draw();
+                    opts.onComplete && opts.onComplete({ win: false, stars: 0, lines: ['💥 踩雷！', lv.desc] });
+                    return;
+                }
+                flood(i, j);
+                if (checkWin()) { win = true; over = true; draw(); opts.onComplete && opts.onComplete({ win: true, stars: 3, lines: ['🏆 全部排雷！', lv.desc] }); return; }
             }
             draw();
         };
-        // 长按 = 标记（长按事件在 bind 里简化用右键/长按触屏实现）
         c.addEventListener('contextmenu', e => { e.preventDefault(); onTap({ x: 0, y: 0, longTap: true }); });
         let pressT = 0, pressX = 0, pressY = 0;
         c.addEventListener('touchstart', e => { const t = e.touches[0]; pressT = Date.now(); pressX = t.clientX; pressY = t.clientY; });
         c.addEventListener('touchend', e => { const t = e.changedTouches[0]; const dt = Date.now() - pressT; if (dt > 500) { const r = c.getBoundingClientRect(); onTap({ x: (pressX - r.left) * (c.width / r.width), y: (pressY - r.top) * (c.height / r.height), longTap: true }); } });
         MG.bind(c, onTap);
         init(); draw();
-        MG.hint(container, '点击翻开，长按标记雷（右键也可标记）');
+        MG.hint(container, lv.desc + ' · 点击翻开，长按标记雷');
         return { stop() { destroy(); } };
     }
 };

@@ -225,5 +225,63 @@ const MG = {
             setTimeout(() => { o.remove(); cb(d === 1 ? 'player' : 'ai'); }, 800);
         });
     },
+
+    // ================= 统一游戏关卡化框架 =================
+    // 流程：levelSelect → 选关 → start → 完成 → result(星级) → 重试/下一关/选关
+    //  cfg: {
+    //    id, title, levels:[{name, desc, ...任意游戏参数}],
+    //    start(container, opts, level) => instance{stop()},
+    //    scoreEl?,           // 顶栏 score 元素（实时分数显示）
+    //    onScore?,           // (text) => void 自定义实时分数处理
+    //  }
+    //  游戏内部结束调 opts.onComplete({win, stars, lines, score})
+    runGame(container, cfg) {
+        const self = this;
+        let current = null;  // 当前 instance
+        const clearCurrent = () => {
+            try { current && current.stop && current.stop(); } catch (e) {}
+            current = null;
+            container.innerHTML = '';
+        };
+        const showLevels = () => {
+            clearCurrent();
+            this.levelSelect(container, {
+                game: cfg.id,
+                title: cfg.title,
+                levels: cfg.levels,
+                onStart: (idx, lv) => runLevel(idx, lv),
+            });
+        };
+        const runLevel = (idx, lv) => {
+            clearCurrent();
+            const scoreEl = cfg.scoreEl || null;
+            const onScore = cfg.onScore || (scoreEl ? (s => scoreEl.textContent = s != null ? s : '') : null);
+            current = cfg.start(container, {
+                level: lv,
+                levelIdx: idx,
+                totalLevels: cfg.levels.length,
+                onScore,
+                onComplete: result => {
+                    clearCurrent();
+                    const stars = result.stars || 0;
+                    if (result.win) this.recordStars(cfg.id, idx + 1, stars);
+                    else this.recordStars(cfg.id, idx + 1, stars);  // 也记录分数（用于显示）
+                    this.result(container, {
+                        win: !!result.win,
+                        title: result.title || (result.win ? '🏆 胜利！' : '💥 失败'),
+                        stars,
+                        lines: result.lines || [],
+                        hasNext: idx < cfg.levels.length - 1,
+                        hasBack: true,
+                        onRetry: () => runLevel(idx, lv),
+                        onNext: () => idx + 1 < cfg.levels.length && runLevel(idx + 1, cfg.levels[idx + 1]),
+                        onBack: showLevels,
+                    });
+                },
+            }, lv);
+        };
+        showLevels();
+        return { stop() { clearCurrent(); } };
+    },
 };
 window.MG = MG;

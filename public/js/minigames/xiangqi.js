@@ -1,22 +1,56 @@
-// 中国象棋（简化）：9x10 棋盘，仅走子不吃判断，无 AI，玩家自娱（可双人对战）
+// 中国象棋：20 关挑战，AI 失误率递减（贪心选择 + 随机失误）
 window.MiniGames = window.MiniGames || {};
 MiniGames.xiangqi = {
-    start(container, opts) {
-        const C = 9, R = 10, S = 46;
+    LEVELS: [
+        // { name, desc, mistakeRate, depth (1=贪心) }
+        { name: '学步', desc: 'AI 随机率 60% · 贪心' },
+        { name: '入门', desc: 'AI 随机率 50%' },
+        { name: '小成', desc: 'AI 随机率 40%' },
+        { name: '熟练', desc: 'AI 随机率 30%' },
+        { name: '稳健', desc: 'AI 随机率 24%' },
+        { name: '进阶', desc: 'AI 随机率 18%' },
+        { name: '进阶 II', desc: 'AI 随机率 14%' },
+        { name: '挑战', desc: 'AI 随机率 10%' },
+        { name: '挑战 II', desc: 'AI 随机率 7%' },
+        { name: '高手', desc: 'AI 随机率 5%' },
+        { name: '高手 II', desc: 'AI 随机率 3.5%' },
+        { name: '冲刺', desc: 'AI 随机率 2.5%' },
+        { name: '冲刺 II', desc: 'AI 随机率 1.8%' },
+        { name: '宗匠', desc: 'AI 随机率 1.2%' },
+        { name: '宗匠 II', desc: 'AI 随机率 0.8%' },
+        { name: '大师', desc: 'AI 随机率 0.5%' },
+        { name: '大师 II', desc: 'AI 随机率 0.3%' },
+        { name: '鬼手', desc: 'AI 随机率 0.15%' },
+        { name: '神机', desc: 'AI 随机率 0.05%' },
+        { name: '棋圣', desc: 'AI 随机率 0% · 终极' },
+    ],
+    PARAMS: [
+        [0.60], [0.50], [0.40], [0.30], [0.24],
+        [0.18], [0.14], [0.10], [0.07], [0.05],
+        [0.035], [0.025], [0.018], [0.012], [0.008],
+        [0.005], [0.003], [0.0015], [0.0005], [0.0],
+    ],
+    start(container, opts, level) {
+        const lv = level || this.LEVELS[0];
+        const idx = this.LEVELS.indexOf(lv);
+        const [mistakeRate] = this.PARAMS[idx] || this.PARAMS[0];
+        const C = 9, R = 10, S = 44;
         const INIT = [
-            ['车','马','相','仕','帅','仕','相','马','车'],
-            ['','','','','','','','',''],
-            ['','炮','','','','','','炮',''],
-            ['兵','',  '兵','','兵','','兵','','兵'],
-            ['','',  '','','','','','',''],
-            ['','',  '','','','','','',''],
-            ['卒','',  '卒','','卒','','卒','','卒'],
-            ['','炮','','','','','','炮',''],
-            ['','','','','','','','',''],
-            ['车','马','象','士','将','士','象','马','车'],
+            ['车', '马', '相', '仕', '帅', '仕', '相', '马', '车'],
+            ['', '', '', '', '', '', '', '', ''],
+            ['', '炮', '', '', '', '', '', '炮', ''],
+            ['兵', '', '兵', '', '兵', '', '兵', '', '兵'],
+            ['', '', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', '', ''],
+            ['卒', '', '卒', '', '卒', '', '卒', '', '卒'],
+            ['', '炮', '', '', '', '', '', '炮', ''],
+            ['', '', '', '', '', '', '', '', ''],
+            ['车', '马', '象', '士', '将', '士', '象', '马', '车'],
         ];
         const RED = 1, BLACK = 2;
         const NAMES = { 1: '红', 2: '黑' };
+        const VALUE = { 帅: 10000, 将: 10000, 车: 900, 马: 400, 炮: 450, 相: 200, 象: 200, 仕: 200, 士: 200, 兵: 100, 卒: 100 };
+        const clone = (b) => b.map(r => r.map(c => c ? { ch: c.ch, color: c.color } : null));
         const initBoard = () => {
             const b = [];
             for (let i = 0; i < R; i++) {
@@ -35,7 +69,7 @@ MiniGames.xiangqi = {
             return i <= 2 && j >= 3 && j <= 5;
         };
         const isCrossedRiver = (c, i) => c === RED ? i <= 4 : i >= 5;
-        const at = (board, i, j) => (i<0||i>=R||j<0||j>=C) ? null : board[i][j];
+        const at = (board, i, j) => (i < 0 || i >= R || j < 0 || j >= C) ? null : board[i][j];
         const canMove = (board, fi, fj, ti, tj) => {
             const p = board[fi][fj], t = at(board, ti, tj);
             if (!p) return false;
@@ -44,15 +78,14 @@ MiniGames.xiangqi = {
             const c = p.color;
             const ch = p.ch;
             const between = (i1, j1, i2, j2) => {
-                if (i1 === i2) { const lo = Math.min(j1,j2), hi = Math.max(j1,j2); for (let x = lo+1; x < hi; x++) if (board[i1][x]) return true; }
-                else if (j1 === j2) { const lo = Math.min(i1,i2), hi = Math.max(i1,i2); for (let x = lo+1; x < hi; x++) if (board[x][j1]) return true; }
+                if (i1 === i2) { const lo = Math.min(j1, j2), hi = Math.max(j1, j2); for (let x = lo + 1; x < hi; x++) if (board[i1][x]) return true; }
+                else if (j1 === j2) { const lo = Math.min(i1, i2), hi = Math.max(i1, i2); for (let x = lo + 1; x < hi; x++) if (board[x][j1]) return true; }
                 return false;
             };
             switch (ch) {
                 case '帅': case '将':
                     if (!isInPalace(c, ti, tj)) return false;
                     if (adx + ady !== 1) return false;
-                    // 对面将帅不能直接见面（中间无子）
                     if (c === RED && t && t.ch === '将' && fj === tj && !between(fi, fj, ti, tj)) return false;
                     if (c === BLACK && t && t.ch === '帅' && fj === tj && !between(fi, fj, ti, tj)) return false;
                     return true;
@@ -62,12 +95,11 @@ MiniGames.xiangqi = {
                 case '相': case '象':
                     if (isCrossedRiver(c, ti)) return false;
                     if (adx !== 2 || ady !== 2) return false;
-                    // 象眼不能有子
-                    return !at(board, fi + dx/2, fj + dy/2);
+                    return !at(board, fi + dx / 2, fj + dy / 2);
                 case '马':
                     if (!((adx === 1 && ady === 2) || (adx === 2 && ady === 1))) return false;
-                    const mx = adx === 2 ? fi + dx/2 : fi;
-                    const my = ady === 2 ? fj + dy/2 : fj;
+                    const mx = adx === 2 ? fi + dx / 2 : fi;
+                    const my = ady === 2 ? fj + dy / 2 : fj;
                     return !at(board, mx, my);
                 case '车':
                     if (fi !== ti && fj !== tj) return false;
@@ -76,10 +108,10 @@ MiniGames.xiangqi = {
                     if (fi !== ti && fj !== tj) return false;
                     const blocks = between(fi, fj, ti, tj);
                     if (!t) return !blocks;
-                    return blocks; // 翻山打子
+                    return blocks;
                 case '兵': case '卒':
                     if (c === RED) {
-                        if (dx > 0) return false; // 红兵不能往上走
+                        if (dx > 0) return false;
                         if (isCrossedRiver(c, fi)) return adx + ady === 1;
                         return adx === 1 && ady === 0;
                     } else {
@@ -90,62 +122,141 @@ MiniGames.xiangqi = {
             }
             return false;
         };
-        let board = initBoard(), turn = RED, sel = null;
-        const { c, ctx, w, h, destroy } = MG.canvas(container, C*S + 20, R*S + 20);
-        const draw = () => {
-            ctx.fillStyle = '#d4a76a'; ctx.fillRect(0, 0, w, h);
-            // 网格
-            ctx.strokeStyle = '#5a3a1c'; ctx.lineWidth = 1;
-            for (let i = 0; i < R; i++) {
-                ctx.beginPath(); ctx.moveTo(10, 10 + i*S); ctx.lineTo(10 + (C-1)*S, 10 + i*S); ctx.stroke();
-            }
-            for (let j = 0; j < C; j++) {
-                if (j === 0 || j === C-1 || (j === 3 || j === 5)) {
-                    ctx.beginPath(); ctx.moveTo(10 + j*S, 10); ctx.lineTo(10 + j*S, 10 + (R-1)*S); ctx.stroke();
+        const allMoves = (board, color) => {
+            const moves = [];
+            for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) {
+                const p = board[i][j];
+                if (!p || p.color !== color) continue;
+                for (let ti = 0; ti < R; ti++) for (let tj = 0; tj < C; tj++) {
+                    if (canMove(board, i, j, ti, tj)) moves.push({ fi: i, fj: j, ti, tj });
                 }
             }
-            // 河界
-            ctx.fillStyle = '#5a3a1c'; ctx.font = '14px serif'; ctx.textAlign = 'center';
-            ctx.fillText('楚 河          汉 界', 10 + 4*S, 10 + 4.5*S);
-            // 九宫格斜线
-            ctx.beginPath(); ctx.moveTo(10+3*S, 10); ctx.lineTo(10+5*S, 10+2*S); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(10+5*S, 10); ctx.lineTo(10+3*S, 10+2*S); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(10+3*S, 10+7*S); ctx.lineTo(10+5*S, 10+9*S); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(10+5*S, 10+7*S); ctx.lineTo(10+3*S, 10+9*S); ctx.stroke();
-            // 棋子
+            return moves;
+        };
+        const evalBoard = (board, color) => {
+            let my = 0, op = 0;
             for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) {
                 const p = board[i][j];
                 if (!p) continue;
-                const x = 10 + j*S, y = 10 + i*S;
-                ctx.fillStyle = '#f0d8a0'; ctx.beginPath(); ctx.arc(x, y, 18, 0, Math.PI*2); ctx.fill();
+                const v = VALUE[p.ch] || 0;
+                if (p.color === color) my += v; else op += v;
+            }
+            return my - op;
+        };
+        const aiChoose = (board, color) => {
+            const moves = allMoves(board, color);
+            if (!moves.length) return null;
+            const list = [];
+            for (const m of moves) {
+                const snap = clone(board);
+                snap[m.ti][m.tj] = snap[m.fi][m.fj]; snap[m.fi][m.fj] = null;
+                list.push({ m, s: evalBoard(snap, color) });
+            }
+            list.sort((a, b) => b.s - a.s);
+            const cut = Math.max(1, Math.floor(list.length * (1 - mistakeRate)));
+            const pool = list.slice(0, cut);
+            return pool[MG.ri(0, pool.length - 1)].m;
+        };
+        const findKing = (board, ch) => {
+            for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) {
+                if (board[i][j] && board[i][j].ch === ch) return [i, j];
+            }
+            return null;
+        };
+        let board = initBoard(), turn = RED, sel = null, aiBusy = false, finished = false;
+        const { c, ctx, w, h, destroy } = MG.canvas(container, C * S + 20, R * S + 20);
+        const finalize = (win) => {
+            if (finished) return;
+            finished = true;
+            const stars = win ? 3 : 0;
+            opts.onComplete && opts.onComplete({
+                win, stars,
+                lines: [win ? NAMES[turn] + '方胜利！' : '电脑吃掉你的将帅', lv.desc],
+            });
+        };
+        const draw = () => {
+            ctx.fillStyle = '#d4a76a'; ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = '#5a3a1c'; ctx.lineWidth = 1;
+            for (let i = 0; i < R; i++) {
+                ctx.beginPath(); ctx.moveTo(10, 10 + i * S); ctx.lineTo(10 + (C - 1) * S, 10 + i * S); ctx.stroke();
+            }
+            for (let j = 0; j < C; j++) {
+                if (j === 0 || j === C - 1 || (j === 3 || j === 5)) {
+                    ctx.beginPath(); ctx.moveTo(10 + j * S, 10); ctx.lineTo(10 + j * S, 10 + (R - 1) * S); ctx.stroke();
+                }
+            }
+            ctx.fillStyle = '#5a3a1c'; ctx.font = '14px serif'; ctx.textAlign = 'center';
+            ctx.fillText('楚 河          汉 界', 10 + 4 * S, 10 + 4.5 * S);
+            ctx.beginPath(); ctx.moveTo(10 + 3 * S, 10); ctx.lineTo(10 + 5 * S, 10 + 2 * S); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(10 + 5 * S, 10); ctx.lineTo(10 + 3 * S, 10 + 2 * S); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(10 + 3 * S, 10 + 7 * S); ctx.lineTo(10 + 5 * S, 10 + 9 * S); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(10 + 5 * S, 10 + 7 * S); ctx.lineTo(10 + 3 * S, 10 + 9 * S); ctx.stroke();
+            for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) {
+                const p = board[i][j];
+                if (!p) continue;
+                const x = 10 + j * S, y = 10 + i * S;
+                ctx.fillStyle = '#f0d8a0'; ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = '#5a3a1c'; ctx.lineWidth = 1.5; ctx.stroke();
                 ctx.fillStyle = p.color === RED ? '#a02828' : '#1a1a1a';
-                ctx.font = 'bold 18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.font = 'bold 16px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText(p.ch, x, y);
-                if (sel && sel[0]===i && sel[1]===j) { ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.stroke(); }
+                if (sel && sel[0] === i && sel[1] === j) { ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.stroke(); }
             }
             opts.onScore && opts.onScore(NAMES[turn] + '方走棋');
         };
+        const aiTurn = () => {
+            if (finished) return;
+            aiBusy = true;
+            setTimeout(() => {
+                const m = aiChoose(board, turn);
+                if (!m) { aiBusy = false; finalize(turn === BLACK); return; }
+                const moved = board[m.fi][m.fj];
+                const target = board[m.ti][m.tj];
+                if (target && (target.ch === '帅' || target.ch === '将')) {
+                    board[m.ti][m.tj] = moved; board[m.fi][m.fj] = null;
+                    draw();
+                    finalize(turn === BLACK);
+                    return;
+                }
+                board[m.ti][m.tj] = moved; board[m.fi][m.fj] = null;
+                turn = 3 - turn;
+                aiBusy = false;
+                draw();
+                // 检查玩家是否被将死
+                if (!findKing(board, '帅') || !findKing(board, '将')) {
+                    finalize(true);
+                }
+            }, 350);
+        };
         const onTap = p => {
+            if (finished || aiBusy || turn !== RED) return;
             const j = Math.round((p.x - 10) / S), i = Math.round((p.y - 10) / S);
-            if (i<0||i>=R||j<0||j>=C) return;
+            if (i < 0 || i >= R || j < 0 || j >= C) return;
             const cur = board[i][j];
             if (!sel) {
                 if (cur && cur.color === turn) sel = [i, j];
             } else {
-                if (sel[0]===i && sel[1]===j) { sel = null; }
+                if (sel[0] === i && sel[1] === j) { sel = null; }
                 else if (canMove(board, sel[0], sel[1], i, j)) {
                     const moved = board[sel[0]][sel[1]];
-                    if (cur && (cur.ch === '帅' || cur.ch === '将')) { opts.onScore && opts.onScore('🏆 ' + NAMES[turn] + '方胜利！'); }
+                    const target = board[i][j];
+                    if (target && (target.ch === '帅' || target.ch === '将')) {
+                        board[i][j] = moved; board[sel[0]][sel[1]] = null;
+                        draw();
+                        finalize(true);
+                        return;
+                    }
                     board[i][j] = moved; board[sel[0]][sel[1]] = null;
                     sel = null; turn = 3 - turn;
+                    draw();
+                    aiTurn();
                 } else if (cur && cur.color === turn) { sel = [i, j]; }
             }
             draw();
         };
         MG.bind(c, onTap);
         draw();
-        MG.hint(container, '点击己方棋子 → 点击目标位置。红黑轮流走，吃掉将帅获胜。');
+        MG.hint(container, lv.desc + ' · 红方（你）vs 电脑（黑）· 点击己方棋子 → 点击目标位置');
         return { stop() { destroy(); } };
     }
 };
