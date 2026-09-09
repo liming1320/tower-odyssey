@@ -2597,6 +2597,15 @@ api['POST /api/admin/minigame/order'] = (req, res, body) => {
     save();
     sendJson(res, 200, { ok: true, order: DB.minigameOrder });
 };
+// 后台读取：把「已保存顺序」补齐未排序的新游戏，保证后台能看到全部小游戏
+api['GET /api/admin/minigame/order'] = (req, res) => {
+    if (!isAdminToken(req)) return sendJson(res, 401, { error: '需要管理员' });
+    const all = [...MINIGAME_IDS];
+    const savedOrder = Array.isArray(DB.minigameOrder) ? DB.minigameOrder.filter(x => MINIGAME_IDS.has(x)) : [];
+    const seen = new Set(savedOrder);
+    const order = savedOrder.concat(all.filter(id => !seen.has(id)));
+    sendJson(res, 200, { order, all, saved: savedOrder.length > 0 });
+};
 
 api['POST /api/admin/mail'] = (req, res, body) => {
     const user = getUserByToken(req);

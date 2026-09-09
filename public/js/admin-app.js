@@ -39,6 +39,11 @@ const AdminAPI = (() => {
         userDelete: (data) => call('POST', '/api/admin/user/delete', data),
         mail: (data) => call('POST', '/api/admin/mail', data),
         smsCodes: () => call('GET', '/api/admin/sms-codes'),
+        giftList: () => call('GET', '/api/admin/gift/list'),
+        giftSave: (gift) => call('POST', '/api/admin/gift/save', gift),
+        giftDelete: (code) => call('POST', '/api/admin/gift/delete', { code }),
+        minigameOrder: () => call('GET', '/api/admin/minigame/order'),
+        minigameOrderSave: (order) => call('POST', '/api/admin/minigame/order', { order }),
         // 通用 GET/POST（用于新增的任意后台接口）
         api: (path, method, body) => call(method || 'GET', path, body),
     };
@@ -751,9 +756,13 @@ const AdminApp = {
     async renderOrder(body) {
         body.innerHTML = `<div class="card">加载中...</div>`;
         let r;
-        try { r = await AdminAPI.api('/api/admin/minigame/order', 'GET'); }
-        catch (e) { body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`; return; }
+        try { r = await AdminAPI.minigameOrder(); }
+        catch (e) {
+            try { r = await AdminAPI.api('/api/minigame/order', 'GET'); }
+            catch (e2) { body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`; return; }
+        }
         const list = r.order || [];
+        const all = r.all || list.slice();
         body.innerHTML = `
             <div class="admin-note">
                 拖动 / 上下来调整玩家端看到的小游戏排序。点击「💾 保存」后立刻生效，未保存的更改显示「⚠ 未保存」。
@@ -795,14 +804,14 @@ const AdminApp = {
         render(); clean();
         body.querySelector('#ord-save').onclick = async () => {
             try {
-                await AdminAPI.api('/api/admin/minigame/order', 'POST', { order: list });
+                await AdminAPI.minigameOrderSave(list);
                 clean(); U.toast('排序已保存，玩家端立即生效');
             } catch (e) { U.toast('保存失败：' + e.message); }
         };
         body.querySelector('#ord-reset').onclick = () => {
-            // 恢复默认：从游戏清单的静态顺序（通过 GAMES 数组同步）
-            // 这里直接重新拉一遍（清空后服务端返回 []，玩家端走默认顺序）
+            // 恢复默认：按服务端小游戏清单的原始顺序（清空保存值后玩家端也走默认顺序）
             list.length = 0;
+            all.forEach(id => list.push(id));
             render(); dirty();
         };
     },
