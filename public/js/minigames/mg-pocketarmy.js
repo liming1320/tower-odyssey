@@ -18,12 +18,13 @@ window.MiniGames = window.MiniGames || {};
             '玄铁桥','紫金桥','赤霄桥','耀金桥','圣光桥','暗影桥','轮回桥','涅槃桥','归一桥','永恒桥'
         ],
         params: (i, t) => ({
-            target: 600 + Math.floor(i * 80),                    // 桥长（到达即过关）
-            initArmy: 5 + Math.floor(i / 5),                     // 初始兵力
-            atk: 1 + Math.floor(i / 8),                          // 攻击力
-            speed: 130 + 100 * t,                                // 移速（像素/秒）
+            t,                                                    // 进度 0..1（tick/draw 用）
+            target: 600 + Math.floor(i * 80),                     // 桥长（到达即过关）
+            initArmy: 5 + Math.floor(i / 5),                      // 初始兵力
+            atk: 1 + Math.floor(i / 8),                           // 攻击力
+            speed: 130 + 100 * t,                                 // 移速（像素/秒）
             enemyMul: 0.6 + 0.4 * t,                              // 敌人密度
-            gateMul: 0.4 + 0.6 * t,                              // 加减门密度
+            gateMul: 0.4 + 0.6 * t,                               // 加减门密度
         }),
         endless: { name: '无尽·远征', desc: '桥无限长，看你能跑多远' },
         hint: '👈👉 调整方向 · ⬆ 跳跃 · 撞蓝门增兵 / 红门减兵 / 撞敌人耗血',

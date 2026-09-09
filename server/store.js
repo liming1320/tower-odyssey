@@ -22,7 +22,11 @@ const META_KEYS = [
     'wallSkills', 'treasures', 'giftCodes',
     'equipmentTemplates', 'ringTemplates', 'artifactTemplates', 'gemTemplates',
     '_meta', 'tokens',
+    // 小游戏：积分排行榜（{gameId: [entry]}）+ 后台排序（string[]）
+    'minigameScores', 'minigameOrder',
 ];
+// 这些 key 在库里还没有记录时要初始化成对象（{}），其余初始化成数组（[]）
+const META_OBJ_KEYS = new Set(['tokens', 'world', 'clans', 'minigameScores']);
 
 let pool = null;
 
@@ -173,7 +177,7 @@ async function loadState() {
         if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { /* 保持原样 */ } }
         state[m.meta_key] = v;
     }
-    for (const k of META_KEYS) if (!(k in state)) state[k] = (k === 'tokens' || k === 'world' || k === 'clans') ? {} : [];
+    for (const k of META_KEYS) if (!(k in state)) state[k] = META_OBJ_KEYS.has(k) ? {} : [];
 
     // 邮件独立表（只有表里有数据时才覆盖 game_meta 里的，避免清空）
     try {
