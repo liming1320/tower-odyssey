@@ -22,11 +22,15 @@
         const tk = (typeof localStorage !== 'undefined' && localStorage.getItem('game-token')) || '';
         return Object.assign({ Authorization: 'Bearer ' + tk }, extra || {});
     }
-    // 返回 { roms: [...] }；离线 / 未登录时降级为空列表
+    // 返回 { roms: [...], authError?: true }；未登录（401）时打 authError 标记
+    // 注意：401 不是"管理员没上传"，必须明确告知前端处理，否则会误导玩家
     function romList() {
         return fetch('/api/roms', { headers: authHeaders() })
-            .then(r => r.json())
-            .then(d => ({ roms: (d && d.roms) || [] }))
+            .then(r => {
+                if (r.status === 401) return { _authError: true };
+                return r.json().catch(() => ({}));
+            })
+            .then(d => ({ roms: (d && d.roms) || [], authError: !!(d && d._authError) }))
             .catch(() => ({ roms: [] }));
     }
     function romDownload(id) {
@@ -84,7 +88,7 @@
             };
 
             // ---------- 列表页（玩家只读） ----------
-            function renderList(roms) {
+            function renderList(roms, authError) {
                 if (!alive) return;
                 container.innerHTML = '';
                 const wrap = el('emu-wrap');
@@ -102,7 +106,20 @@
                     '<b>本地双人</b>：玩家 2 在「玩家 2」标签单独设一套按键，或直接插入手柄自动识别<br>' +
                     '菜单里还有 <b>即时存档 / 读档</b>（Save State / Load State）和<b>全屏</b>'));
 
-                if (!roms.length) {
+                if (authError) {
+                    // 401：登录态失效，必须明确告知玩家"重新登录"，而不是"管理员没上传"
+                    const box = el('emu-empty');
+                    box.innerHTML =
+                        '<div style="font-size:14px;color:#ffb37a;margin-bottom:10px">⚠ 登录状态已失效（浏览器缓存被清理 / token 过期）</div>' +
+                        '<div style="font-size:12px;color:#9bb0c8;margin-bottom:14px">电脑正常而手机看不到游戏，多半就是这个原因。点击下方按钮退出账号重新登录一次即可恢复。</div>' +
+                        '<button class="emu-btn emu-btn-play" id="emu-relogin">⏏ 退出账号 · 重新登录</button>';
+                    wrap.appendChild(box);
+                    const btn = box.querySelector('#emu-relogin');
+                    if (btn) btn.onclick = () => {
+                        try { (window.API && API.clearToken) ? API.clearToken() : localStorage.removeItem('game-token'); } catch (e) {}
+                        location.reload();
+                    };
+                } else if (!roms.length) {
                     wrap.appendChild(el('emu-empty', '管理员还没有上传游戏，敬请期待。'));
                 } else {
                     const list = el('emu-list');
@@ -161,9 +178,9 @@
                 });
             }
 
-            function refresh() {
+function refresh() {
                 if (!alive) return;
-                romList().then(d => { if (alive) renderList(d.roms); });
+                romList().then(d => { if (alive) renderList(d.roms, d.authError); });
             }
 
             refresh();

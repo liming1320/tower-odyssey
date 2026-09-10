@@ -230,6 +230,41 @@ class CDP {
     assert(playerView.play === playerView.total, '每个 ROM 一个播放按钮（' + playerView.play + '）');
     await cdp.shot(path.join(OUT, 'emu-player-list.png'));
 
+    // ⑤.c 未登录 → 401 必须明确提示"重新登录"，不能再误导成"管理员没上传"
+    // 关键：别 Page.reload，否则 App.init 把没 token 的用户踢回登录页，后续 tile 点击全部失效
+    // → 直接关掉旧 mask、清 token、再开新 mask，emulator.start() 内部会因 fetch 401 触发 authError 分支
+    console.log('\n⑤.c 未登录 → 401 重登录提示');
+    await cdp.eval(`document.getElementById('emu-back').click()`);
+    await sleep(500);
+    await cdp.eval(`localStorage.removeItem('game-token')`);
+    await cdp.eval(`document.getElementById('btn-avatar').click()`);
+    await sleep(500);
+    await cdp.eval(`document.getElementById('pi-settings').click()`);
+    await sleep(500);
+    await cdp.eval(`document.querySelector('.set-tile[data-act="emu"]').click()`);
+    await sleep(2000);
+    const authErr = await cdp.eval(`(() => ({
+        empty: document.querySelector('.emu-empty') ? document.querySelector('.emu-empty').textContent.replace(/\\s+/g, ' ').trim() : '',
+        btn: !!document.getElementById('emu-relogin'),
+        items: document.querySelectorAll('.emu-item').length,
+        noMisleading: !/管理员还没有上传/.test(document.querySelector('.emu-empty') ? document.querySelector('.emu-empty').textContent : ''),
+    }))()`);
+    assert(authErr.items === 0, '未登录时 ROM 列表为空（不暴露管理员上传的游戏）');
+    assert(authErr.btn, '显示【退出账号 · 重新登录】按钮');
+    assert(/登录状态已失效/.test(authErr.empty) && /重新登录/.test(authErr.empty), '401 提示文案明确（含"登录状态已失效"+"重新登录"）');
+    assert(authErr.noMisleading, '不再显示误导文案"管理员还没有上传"');
+    await cdp.shot(path.join(OUT, 'emu-player-auth-expired.png'));
+    // 恢复 token + 关旧 mask + 再开一次，让 ⑥ 段拿到完整 ROM 列表
+    await cdp.eval(`document.getElementById('emu-back').click()`);
+    await sleep(500);
+    await cdp.eval(`localStorage.setItem('game-token', ${JSON.stringify(playerToken)})`);
+    await cdp.eval(`document.getElementById('btn-avatar').click()`);
+    await sleep(500);
+    await cdp.eval(`document.getElementById('pi-settings').click()`);
+    await sleep(500);
+    await cdp.eval(`document.querySelector('.set-tile[data-act="emu"]').click()`);
+    await sleep(1800);
+
     // ⑥ 玩家播放 nesName
     console.log('\n⑥ 玩家播放（鉴权下载 → blob → EmulatorJS）');
     await cdp.eval(`(() => {
