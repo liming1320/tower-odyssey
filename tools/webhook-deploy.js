@@ -9,6 +9,10 @@
  *
  * 环境变量：
  *   WEBHOOK_PORT   监听端口（默认 9000）
+ *   WEBHOOK_HOST   监听地址（默认 0.0.0.0）
+ *                  若用 Nginx 反代（推荐，见 deploy/nginx/tower-odyssey.conf 的
+ *                  location = /__deploy），这里填 127.0.0.1 —— 这样腾讯云安全组
+ *                  不用放行 9000，外网完全摸不到这个端口。
  *   WEBHOOK_SECRET 签名密钥（强烈建议设置，否则任何人都能触发部署）
  *   DEPLOY_BRANCH  只部署这个分支（默认 master）
  *   APP_DIR        项目目录（默认脚本上级）
@@ -22,6 +26,7 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 
 const PORT = parseInt(process.env.WEBHOOK_PORT || '9000', 10);
+const HOST = process.env.WEBHOOK_HOST || '0.0.0.0';
 const SECRET = process.env.WEBHOOK_SECRET || '';
 const BRANCH = process.env.DEPLOY_BRANCH || 'master';
 const APP_DIR = process.env.APP_DIR || path.join(__dirname, '..');
@@ -56,13 +61,36 @@ function runDeploy(branch, who) {
     state.last = item;
 
     const sh = path.join(APP_DIR, 'deploy/hooks/deploy.sh');
+    // 先自检：脚本不存在时直接失败返回，绝不能让 spawn 抛错把 webhook 进程带崩
+    // （历史坑：spawn 失败只监听 'exit' 不监听 'error'，ENOENT 会以未捕获异常
+    //   终止整个服务，systemd 再 Restart=always 不停拉起 → 崩溃循环，表现就是
+    //   "webhook 配好了但完全不生效"）
+    if (!fs.existsSync(sh)) {
+        state.running = false;
+        item.status = 'failed';
+        item.error = 'deploy.sh 不存在: ' + sh;
+        console.error('[deploy] ✗ ' + item.error);
+        return { error: item.error };
+    }
+
     const child = spawn('bash', [sh, branch], {
         cwd: APP_DIR,
         env: Object.assign({}, process.env, { APP_DIR, SERVICE, PORT: GAME_PORT }),
         stdio: 'ignore',
         detached: true,
     });
+    // 必须监听 error：bash 缺失 / 权限问题 / ENOENT 都会走这里而不是 exit
+    child.on('error', err => {
+        state.running = false;
+        item.status = 'failed';
+        item.error = '启动部署脚本失败: ' + err.message;
+        item.cost = ((Date.now() - started) / 1000).toFixed(1) + 's';
+        state.history.unshift(item);
+        state.history = state.history.slice(0, 20);
+        console.error('[deploy] ✗ ' + item.error);
+    });
     child.on('exit', code => {
+        if (item.status === 'failed' && item.error) return;   // 已由 error 处理过，别覆盖
         state.running = false;
         item.status = code === 0 ? 'success' : 'failed';
         item.exitCode = code;
@@ -114,7 +142,10 @@ const server = http.createServer((req, res) => {
     send(404, { error: 'not found' });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`[webhook] 监听 http://0.0.0.0:${PORT}/hook  （分支 ${BRANCH} → ${APP_DIR}）`);
+server.listen(PORT, HOST, () => {
+    console.log(`[webhook] 监听 http://${HOST}:${PORT}/hook  （分支 ${BRANCH} → ${APP_DIR}）`);
     console.log(`[webhook] 密钥：${SECRET ? '已设置' : '未设置（生产环境务必设置 WEBHOOK_SECRET）'}`);
+    if (HOST === '127.0.0.1' || HOST === 'localhost') {
+        console.log(`[webhook] 仅本机可访问 —— 外网请走 Nginx 反代（默认 /__deploy）`);
+    }
 });

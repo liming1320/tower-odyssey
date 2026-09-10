@@ -228,14 +228,57 @@ curl 127.0.0.1:5180/api/health
 
 ### 2）方式二：自建 WebHook 服务（无面板 / 任何机器都能用，零依赖）
 
+**一键安装**（自动探测 node 路径、生成密钥、注册 systemd、自检）：
+
+```bash
+sudo bash deploy/linux/install-webhook.sh
+```
+
+默认只监听 `127.0.0.1:9000`，**外网走 Nginx 反代**（`deploy/nginx/tower-odyssey.conf` 里已带
+`location = /__deploy`，把它加进站点配置后 `nginx -s reload`）。这样腾讯云安全组
+**不用放行 9000**，Gitee 里填：
+
+```
+URL：   http://你的域名/__deploy     ← 注意不是 /__deploy/hook，反代已补上 /hook
+密码：  install 脚本打印出来的 WEBHOOK_SECRET
+事件：  Push
+```
+
+想直接暴露端口（不走 Nginx）：`WEBHOOK_HOST=0.0.0.0 sudo -E bash deploy/linux/install-webhook.sh`，
+然后**必须**去腾讯云安全组放行 9000。
+
+手动安装（不跑脚本）：
 ```bash
 cp deploy/webhook-deploy.service /etc/systemd/system/
-vi /etc/systemd/system/webhook-deploy.service    # 改 WEBHOOK_SECRET 和 APP_DIR
+vi /etc/systemd/system/webhook-deploy.service    # 改 WEBHOOK_SECRET / APP_DIR / ExecStart 的 node 路径
 systemctl daemon-reload && systemctl enable --now webhook-deploy
 curl http://127.0.0.1:9000/                      # 看状态
 ```
-Gitee WebHook 填 `http://你的IP:9000/hook`，密码填 `WEBHOOK_SECRET`。
-（腾讯云安全组需放行 9000，或只放行 Gitee 的出口 IP 段）
+
+**WebHook 配了却不生效？按顺序查这四条：**
+
+| # | 检查 | 命令 / 现象 |
+|---|---|---|
+| 1 | **服务到底起没起** | `systemctl status tower-odyssey-webhook`。<br>`curl -s 127.0.0.1:9000/` 应该返回 JSON；**从外网** `curl -s -m 5 你的IP:9000/` 超时 = 安全组没放行（云厂商那层，本机防火墙放行没用） |
+| 2 | **Gitee 那边有没有真的发出去** | Gitee 仓库 → 管理 → WebHooks → 点那条记录 →「最近请求」。<br>显示「请求失败/超时」= 服务器端口不通或 URL 写错；**压根没有记录** = 这个 WebHook 根本没配或没勾 Push 事件 |
+| 3 | **密钥对不对** | 不一致时服务端日志会打 `签名校验失败，已拒绝`（`journalctl -u tower-odyssey-webhook -n 30`），Gitee 那边看到 401 |
+| 4 | **分支对不对** | 只部署 `master`（`DEPLOY_BRANCH` 可改）。推到别的分支会被忽略，日志打「忽略分支 xxx」 |
+
+**历史坑（已修）**：旧版 `runDeploy` 只监听子进程 `exit`、没监听 `error`。
+`bash` 不在 PATH 或 `deploy.sh` 路径不对时，`spawn` 抛 ENOENT 变成未捕获异常，
+**整个 webhook 进程被带崩**，systemd `Restart=always` 再不停拉起 → 崩溃循环，
+外部表现就是"配好了但完全没反应"。现在会先 `fs.existsSync` 检查脚本、
+监听 `error` 并在状态页 `last.error` 里报出原因，进程不再崩。
+
+**手动触发一次**（不用等 push）：
+```bash
+curl -X POST http://127.0.0.1:9000/hook \
+  -H 'X-Gitee-Token: 你的密钥' \
+  -H 'Content-Type: application/json' \
+  -d '{"ref":"refs/heads/master"}'
+# 正常：{"started":true,"branch":"master"}
+tail -f /www/wwwroot/tower-odyssey/deploy/logs/deploy.log
+```
 
 ### 3）方式三：Gitee Go 流水线（可视化，需开通 Gitee Go）
 
