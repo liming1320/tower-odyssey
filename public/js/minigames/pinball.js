@@ -231,6 +231,8 @@ window.MiniGames = window.MiniGames || {};
             const jets = [0, 0, 0];           // 左侧 3 只引擎命中光
             const cardFace = [0, 0, 0];       // 翻牌当前面：0 背面(未开) 1 正面(徽章)
             const cardAnim = [0, 0, 0];       // 翻牌翻转进度 0→1
+            const cardOver = [false, false, false];       // 牌上正压着球（防同一球反复翻牌）
+            const cardFrameOver = [false, false, false];  // 本帧是否有球压牌（帧末回写 cardOver）
             const flash = { ramp: 0, spin: 0, saucer: 0, target: 0, warp: 0, card: 0, tube: 0 };
 
             /* ── 任务 / 军衔（Space Cadet 风格：达成目标 → 晋升军衔 → 领取大奖）──
@@ -263,6 +265,7 @@ window.MiniGames = window.MiniGames || {};
             let saucerHold = 0;
             let warpHold = 0, warpLock = 0, warpSpin = 0, warpPull = 0, warpFlash = 0;
             let cardReset = 0;
+            let mbCd = 0;                     // 多球冷却：防任务/翻牌连锁把台面刷成球海
             TARGETS.forEach(x => { x.down = false; });
             let toast = '', toastT = 0;
             const lanesOn = [false, false, false, false];
@@ -303,11 +306,19 @@ window.MiniGames = window.MiniGames || {};
                 if (m.mb) startMultiball(m.mb);
             }
             // 多球：额外球自计分洞喷出；主球漏掉时其余球顶上，不算失球
-            function startMultiball(n) {
-                for (let i = 0; i < n; i++) {
+            // 防球海三保险：台面球数封顶(4) / 自动触发 8s 冷却 / 新球 1.2s 保护期(不翻牌不被吸入)
+            const MAX_LIVE = 4, MB_CD = 8;
+            function startMultiball(n, viaApi) {
+                if (!viaApi && mbCd > 0) return;                 // 自动触发受冷却（测试直连绕过）
+                const add = Math.max(0, Math.min(n, MAX_LIVE - live.length));
+                if (add <= 0) return;
+                if (!viaApi) mbCd = MB_CD;
+                for (let i = 0; i < add; i++) {
                     live.push({
-                        x: SAUCER.x + (Math.random() - 0.5) * 26, y: SAUCER.y - 34,
-                        vx: (Math.random() - 0.5) * 300, vy: -560 - Math.random() * 180,
+                        x: SAUCER.x + (i - (add - 1) / 2) * 24, y: SAUCER.y - 34,
+                        vx: (i - (add - 1) / 2) * 100 + (Math.random() - 0.5) * 70,
+                        vy: -560 - Math.random() * 180,
+                        grace: 1.2,
                     });
                 }
                 mbCount = Math.max(mbCount, live.length);
@@ -635,16 +646,17 @@ window.MiniGames = window.MiniGames || {};
                         }
                     }
                 });
-                // 坡道入口（须向上冲）
-                if (!onRail && ball.vy < -40 &&
+                // 坡道入口（须向上冲；仅主球 —— 轨道状态是全局的，额外球误触发会把主球传送上轨道）
+                if (!onRail && ball === live[0] && ball.vy < -40 &&
                     Math.hypot(ball.x - RAMP_ENTRY[0], ball.y - RAMP_ENTRY[1]) < 20 &&
                     canTrigger('ramp', 0.8)) {
                     onRail = true; railU = 0; railMode = RAIL.RAMP; railSpeed = 640;
                     addScore(1800, 'ramp'); combo++; comboT = 2.2; sfx('ramp'); flash.ramp = 1;
                     show('坡道达成 +1,800', 1.2);
                 }
-                // 计分洞
-                if (!saucerHold && Math.hypot(ball.x - SAUCER.x, ball.y - SAUCER.y) < SAUCER.r - 3 &&
+                // 计分洞（仅主球：额外球入洞曾把冻结逻辑错套到主球上，造成"传送/多球"错觉）
+                if (!saucerHold && ball === live[0] &&
+                    Math.hypot(ball.x - SAUCER.x, ball.y - SAUCER.y) < SAUCER.r - 3 &&
                     Math.hypot(ball.vx, ball.vy) < 1500) {
                     saucerHold = 1.15; ball.vx = ball.vy = 0;
                     const win = 2500 + 1500 * (mult - 1);
@@ -665,30 +677,30 @@ window.MiniGames = window.MiniGames || {};
                     shake = Math.max(shake, 0.24); shakeMag = Math.max(shakeMag, 5);
                     spawn(WARP.x, WARP.y, 20, 275, 1.2);
                 }
-                // 翻牌：球滚过徽章牌即翻转，集齐 3 张开大奖
-                if (cardReset <= 0) {
-                    CARDS.forEach((cd, i) => {
-                        if (cardAnim[i] > 0 || cardFace[i] === 1) return;
-                        if (Math.abs(ball.x - cd.x) < cd.w / 2 + 3 &&
-                            Math.abs(ball.y - cd.y) < cd.h / 2 + 3) {
-                            cardFace[i] = 1; cardAnim[i] = 0.001;
-                            addScore(800, 'card'); combo++; comboT = 2.2;
-                            sfx('target'); flash.card = 1;
-                            spawn(cd.x, cd.y, 12, 45, 1);
-                            if (cardFace.every(v => v === 1)) {
-                                cardReset = 1.15;
-                                score += 15000;
-                                show('★ 徽章集齐 +15,000 ★', 2.0);
-                                sfx('jackpot');
-                                spawn(176, 392, 30, 50, 1.4);
-                                shake = Math.max(shake, 0.36); shakeMag = Math.max(shakeMag, 6);
-                                startMultiball(2);
-                            }
-                        }
-                    });
-                }
-                // 左侧火箭管道入口：向上冲进管口即被点火，沿左墙冲顶后喷出
-                if (!onRail && ball.vy < -240 &&
+                // 翻牌：球"新压上"徽章牌才翻转（防压牌连翻），集齐 3 张开大奖
+                CARDS.forEach((cd, i) => {
+                    const over = Math.abs(ball.x - cd.x) < cd.w / 2 + 3 &&
+                        Math.abs(ball.y - cd.y) < cd.h / 2 + 3;
+                    if (over) cardFrameOver[i] = true;
+                    if (!over || cardOver[i] || cardReset > 0 ||
+                        cardAnim[i] > 0 || cardFace[i] === 1 || (ball.grace || 0) > 0) return;
+                    cardOver[i] = true;
+                    cardFace[i] = 1; cardAnim[i] = 0.001;
+                    addScore(800, 'card'); combo++; comboT = 2.2;
+                    sfx('target'); flash.card = 1;
+                    spawn(cd.x, cd.y, 12, 45, 1);
+                    if (cardFace.every(v => v === 1)) {
+                        cardReset = 1.15;
+                        score += 15000;
+                        show('★ 徽章集齐 +15,000 ★', 2.0);
+                        sfx('jackpot');
+                        spawn(176, 392, 30, 50, 1.4);
+                        shake = Math.max(shake, 0.36); shakeMag = Math.max(shakeMag, 6);
+                        startMultiball(2);
+                    }
+                });
+                // 左侧火箭管道入口：向上冲进管口即被点火（仅主球，理由同坡道）
+                if (!onRail && ball === live[0] && ball.vy < -240 &&
                     Math.hypot(ball.x - TUBE_ENTRY[0], ball.y - TUBE_ENTRY[1]) < 24 &&
                     canTrigger('tubeIn', 0.5)) {
                     enterTube(660);
@@ -794,6 +806,8 @@ window.MiniGames = window.MiniGames || {};
                 }
 
                 // 管道滑行（发射巷 / 坡道 / 左侧火箭管道）
+                // 只牵引主球；多球时额外球照常运动（不再整帧 return 冻结全场）
+                let onRailNow = false;
                 if (onRail) {
                     const path = railMode === RAIL.RAMP ? RAMP_PATH
                         : railMode === RAIL.TUBE ? TUBE_PATH : LAUNCH_PATH;
@@ -817,9 +831,10 @@ window.MiniGames = window.MiniGames || {};
                             ball.vy = pl.ty * railSpeed * 0.66;
                             spawn(ball.x, ball.y, 8, 190, 0.7);
                         }
+                    } else {
+                        onRailNow = true;                // 本帧主球仍在轨：跳过它的物理/救球/漏球
                     }
                     pushTrail();
-                    return;
                 }
 
                 // 计分洞捕获（只冻主球；多球时额外球照常运动，不再被整帧 return 卡住）
@@ -850,13 +865,16 @@ window.MiniGames = window.MiniGames || {};
                         mainFrozen = true;
                     }
 
+                // 多球冷却倒计时
+                mbCd = Math.max(0, mbCd - dt);
+
                 // 物理子步：主球 + 多球统一推进
                 // 技巧：每颗球处理前把闭包变量 ball 指向它，collide()/hitFlipper() 无需改动即可复用
                 const hd = dt / SUB;
                 for (let i = 0; i < SUB; i++) {
                     for (let bi = 0; bi < live.length; bi++) {
                         const b = live[bi];
-                        if (bi === 0 && mainFrozen) continue;
+                        if (bi === 0 && (mainFrozen || onRailNow)) continue;
                         ball = b;
                         b.vy += GRAV * GRAVX * hd;
                         b.x += b.vx * hd; b.y += b.vy * hd;
@@ -869,8 +887,13 @@ window.MiniGames = window.MiniGames || {};
                     }
                 }
                 const drag = 1 - 0.22 * dt;
-                for (let bi = 0; bi < live.length; bi++) { live[bi].vx *= drag; live[bi].vy *= drag; }
+                for (let bi = 0; bi < live.length; bi++) {
+                    live[bi].vx *= drag; live[bi].vy *= drag;
+                    if (live[bi].grace > 0) live[bi].grace -= dt;   // 新球保护期倒计时
+                }
                 ball = live[0] || ball;              // 复原：ball 恒为主球引用
+                // 翻牌压牌状态帧末回写：球离开牌面后才会再次判定"新压上"
+                for (let ci = 0; ci < cardOver.length; ci++) { cardOver[ci] = cardFrameOver[ci]; cardFrameOver[ci] = false; }
 
                 // 旋转门
                 spinnerAng += spinnerVel * dt;
@@ -880,9 +903,10 @@ window.MiniGames = window.MiniGames || {};
 
                 if (comboT > 0) { comboT -= dt; if (comboT <= 0) combo = 0; }
 
-                // 外道救球（多球时逐个判定）
+                // 外道救球（多球时逐个判定；在轨/冻结的主球跳过）
                 for (let bi = 0; bi < live.length; bi++) {
                     const b = live[bi];
+                    if (bi === 0 && (onRailNow || mainFrozen)) continue;
                     if (b.y <= 616) continue;
                     if (b.x < 66 && kickback.L) {
                         kickback.L = false; b.vy = -1000; b.vx = 40;
@@ -895,9 +919,10 @@ window.MiniGames = window.MiniGames || {};
                     }
                 }
 
-                // 漏球：额外球漏掉只是消失；只有最后一颗（主球）漏掉才真正失球
+                // 漏球：额外球漏掉只是消失；只有最后一颗（主球）漏掉才真正失球（在轨主球不算漏）
                 let mainDrained = false;
                 for (let bi = live.length - 1; bi >= 0; bi--) {
+                    if (bi === 0 && (onRailNow || mainFrozen)) continue;
                     if (live[bi].y <= PF.bot) continue;
                     spawn(live[bi].x, GH - 24, 12, 200, 1);
                     if (bi === 0) mainDrained = true;
@@ -1757,7 +1782,7 @@ window.MiniGames = window.MiniGames || {};
                     get cards() { return cardFace.slice(); },
                     get warpHold() { return warpHold; },
                     get railMode() { return railMode; },
-                    addScore, finish, missionHit, startMultiball, enterTube,
+                    addScore, finish, missionHit, startMultiball: n => startMultiball(n, true), enterTube,
                     warp() {
                         if (warpHold > 0 || warpLock > 0) return false;
                         onRail = false; saucerHold = 0;

@@ -204,8 +204,14 @@ MiniGames.xiangqi = {
                 ctx.beginPath(); ctx.moveTo(10, 10 + i * S); ctx.lineTo(10 + (C - 1) * S, 10 + i * S); ctx.stroke();
             }
             for (let j = 0; j < C; j++) {
-                if (j === 0 || j === C - 1 || (j === 3 || j === 5)) {
-                    ctx.beginPath(); ctx.moveTo(10 + j * S, 10); ctx.lineTo(10 + j * S, 10 + (R - 1) * S); ctx.stroke();
+                const x = 10 + j * S;
+                if (j === 0 || j === C - 1) {
+                    // 边线上下贯通
+                    ctx.beginPath(); ctx.moveTo(x, 10); ctx.lineTo(x, 10 + (R - 1) * S); ctx.stroke();
+                } else {
+                    // 中间各列在"楚河汉界"处断开（标准棋盘画法）
+                    ctx.beginPath(); ctx.moveTo(x, 10); ctx.lineTo(x, 10 + 4 * S); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(x, 10 + 5 * S); ctx.lineTo(x, 10 + (R - 1) * S); ctx.stroke();
                 }
             }
             // 楚河汉界：用立体文字

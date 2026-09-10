@@ -328,6 +328,8 @@ window.MiniGames = window.MiniGames || {};
         tick: (S, dt, P, api) => {
             const W = api.W || 360;
             const H = api.H || 560;
+            const baseX = W / 2 + S.ox;      // 注意：射击代码也用，必须先声明（曾因 TDZ 报错冻结整个 tick）
+            const baseY = H - 90;
             if (S.finishAt) {
                 S.finishAt += dt;
                 if (S.finishAt > 1.6) {
@@ -410,9 +412,7 @@ window.MiniGames = window.MiniGames || {};
             S.bullets = S.bullets.filter(b => !b.dead && b.y > -30 && b.x > -30 && b.x < W + 30);
             for (const sp of S.sparks) sp.t += dt;
             S.sparks = S.sparks.filter(sp => sp.t < 0.25);
-            // 碰撞（方阵 = 主角位置 ± 半宽）
-            const baseX = W / 2 + S.ox;
-            const baseY = H - 90;
+            // 碰撞（方阵 = 主角位置 ± 半宽）—— baseX/baseY 已在 tick 开头声明
             for (const o of S.obstacles) {
                 if (!o.alive && !o.taken) continue;
                 const dy = Math.abs(o.y - baseY);

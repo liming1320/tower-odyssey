@@ -24,7 +24,7 @@ window.MiniGames = window.MiniGames || {};
             enemySpd: 34 + 26 * t,                            // 敌人速度
             mixFast: i >= 3, mixTank: i >= 6,                 // 3 关起加快速怪，6 关起加壮汉
         }), endless: { name: '无尽·割草', desc: '杀到力竭为止，看你能割多少' },
-        hint: 'WASD/方向键 或 按住屏幕拖动 → 移动 · 飞刀自动旋转杀敌 · 吃经验球升级三选一',
+        hint: '按住屏幕指哪走哪（电脑 WASD/方向键） · 飞刀自动旋转杀敌 · 吃经验球升级三选一',
         w: 360, h: 520,
         init: P => ({
             px: 180, py: 300,                                  // 玩家位置
@@ -35,7 +35,8 @@ window.MiniGames = window.MiniGames || {};
             kills: 0, need: P.need || 8,
             enemies: [], orbs: [], sparks: [],
             spawnT: 0.5, elapsed: 0,
-            dragVec: null, keyVec: null, keyT: 0,
+            keyVec: null, keyT: 0,
+            touch: null,                                     // 按住屏幕的目标点（指哪走哪）
             upgrading: null,                                   // 三选一面板
             flash: 0,                                          // 受伤闪白
         }),
@@ -47,14 +48,17 @@ window.MiniGames = window.MiniGames || {};
             // 升级面板打开时全场暂停
             if (S.upgrading) return;
 
-            // ---- 移动输入 ----
-            let dx = 0, dy = 0;
-            if (S.dragVec) { dx = S.dragVec.x; dy = S.dragVec.y; }
-            else if (S.keyVec && (performance.now() - S.keyT) < 250) { dx = S.keyVec.x; dy = S.keyVec.y; }
-            const dl = Math.hypot(dx, dy);
-            if (dl > 0.01) {
-                S.px += dx / dl * S.spd * dt;
-                S.py += dy / dl * S.spd * dt;
+            // ---- 移动输入：指哪走哪 ----
+            // 按住屏幕/鼠标 → 鸠摩智朝手指位置精确移动（近了自动减速停住，不飘）
+            let mvx = 0, mvy = 0, mSpd = S.spd;
+            if (S.touch) {
+                const tx = S.touch.x - S.px, ty = S.touch.y - S.py, td = Math.hypot(tx, ty);
+                if (td > 3) { mvx = tx; mvy = ty; mSpd = Math.min(S.spd, td * 6); }
+            } else if (S.keyVec && (performance.now() - S.keyT) < 250) { mvx = S.keyVec.x; mvy = S.keyVec.y; }
+            const ml = Math.hypot(mvx, mvy);
+            if (ml > 0.01) {
+                S.px += mvx / ml * mSpd * dt;
+                S.py += mvy / ml * mSpd * dt;
                 S.px = Math.max(20, Math.min(340, S.px));
                 S.py = Math.max(70, Math.min(490, S.py));
             }
@@ -157,12 +161,11 @@ window.MiniGames = window.MiniGames || {};
             }
         },
 
-        // ---- 拖动指向移动 ----
-        drag(S, x, y, P, api, dx, dy) {
-            if (Math.hypot(dx, dy) > 8) S.dragVec = { x: dx, y: dy };
-            else S.dragVec = null;
+        // ---- 指哪走哪：按住期间持续更新目标点 ----
+        drag(S, x, y) {
+            S.touch = { x, y };
         },
-        dragend(S) { S.dragVec = null; },
+        dragend(S) { S.touch = null; },
         key(S, k, P, api) {
             const m = {
                 w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0],
@@ -184,11 +187,8 @@ window.MiniGames = window.MiniGames || {};
                         return;
                     }
                 }
-                return;
             }
-            // 无拖动设备的点按：朝点击方向移动一段（点哪走哪的轻量方案）
-            const dx = x - S.px, dy = y - S.py, d = Math.hypot(dx, dy);
-            if (d > 24) { S.keyVec = { x: dx / d, y: dy / d }; S.keyT = performance.now(); }
+            // 移动不再靠点按 —— 按住屏幕拖动即"指哪走哪"
         },
 
         draw(ctx, S, P, W, H, api) {
@@ -197,6 +197,17 @@ window.MiniGames = window.MiniGames || {};
             ctx.fillStyle = 'rgba(255,255,255,0.03)';
             for (let gx = 0; gx < W; gx += 40) ctx.fillRect(gx, 56, 1, H - 56);
             for (let gy = 80; gy < H; gy += 40) ctx.fillRect(0, gy, W, 1);
+
+            // ---- 手指目标点标记（指哪走哪的视觉反馈）----
+            if (S.touch) {
+                const pu = 0.75 + 0.25 * Math.sin(S.elapsed * 10);
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255,213,107,0.85)'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(S.touch.x, S.touch.y, 11 * pu, 0, Math.PI * 2); ctx.stroke();
+                ctx.fillStyle = 'rgba(255,213,107,0.22)';
+                ctx.beginPath(); ctx.arc(S.touch.x, S.touch.y, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
 
             // ---- 经验球 ----
             for (const o of S.orbs) {
@@ -322,7 +333,7 @@ window.MiniGames = window.MiniGames || {};
     });
 
     // ============ 技能池 ============
-    const SKILL_HINT = '拖动/方向键移动';
+    const SKILL_HINT = '按住屏幕指哪走哪';
 const SKILLS = [
         { name: '小无相功', desc: '攻击力 +1（刀刀更疼）', apply: S => { S.kDmg += 1; } },
         { name: '火焰刀', desc: '飞刀 +1 把', apply: S => { S.knives += 1; } },
