@@ -1,27 +1,14 @@
 // 经典游戏模拟器：内嵌开源 EmulatorJS 引擎（与 yikm / dos.lol / 80joy 同款技术路线）
-// ROM 由管理员上传到服务器（data/roms/ 磁盘文件），所有登录玩家可见可玩
-// 玩家端只读列表 + 播放；导入 / 删除入口仅对管理员账号显示（服务端同样校验权限）
+// ROM 由管理员在后台（/admin → 模拟器ROM）上传到服务器，玩家端只读列表 + 播放
 (function () {
     const CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
-    const CORES = [
-        { id: 'nes',     label: 'FC / NES 红白机',      exts: ['nes'] },
-        { id: 'snes',    label: '超级任天堂 SFC',        exts: ['smc', 'sfc', 'swc'] },
-        { id: 'gb',      label: 'Game Boy / GBC',        exts: ['gb', 'gbc'] },
-        { id: 'gba',     label: 'GBA 掌机',              exts: ['gba'] },
-        { id: 'segaMD',  label: '世嘉 MD',               exts: ['md', 'gen'] },
-        { id: 'n64',     label: 'N64（需较新浏览器）',   exts: [] },
-        { id: 'psx',     label: 'PS1（需较新浏览器）',   exts: [] },
-        { id: 'dosbox',  label: 'DOS 游戏（.zip 整包）', exts: [] },
-        { id: 'arcade',  label: '街机（.zip）',          exts: [] },
-    ];
-    const coreLabel = id => { const c = CORES.find(c => c.id === id); return c ? c.label : id; };
-
-    function detectCore(filename) {
-        const m = /\.([a-z0-9]+)$/i.exec(filename || '');
-        const ext = m ? m[1].toLowerCase() : '';
-        for (const c of CORES) if (c.exts.indexOf(ext) >= 0) return c.id;
-        return null;   // zip / 7z / bin 等无法从后缀判断 → 让管理员手动选择核心
+    function coreLabel(id) {
+        const map = {
+            nes: 'FC / NES 红白机', snes: '超级任天堂 SFC', gb: 'Game Boy / GBC', gba: 'GBA 掌机',
+            segaMD: '世嘉 MD', n64: 'N64', psx: 'PS1', dosbox: 'DOS 游戏', arcade: '街机',
+        };
+        return map[id] || id;
     }
     function fmtSize(n) {
         if (n == null) return '';
@@ -35,43 +22,15 @@
         const tk = (typeof localStorage !== 'undefined' && localStorage.getItem('game-token')) || '';
         return Object.assign({ Authorization: 'Bearer ' + tk }, extra || {});
     }
-    // 返回 { roms: [...], admin: bool }；离线 / 未登录时降级为空列表
+    // 返回 { roms: [...] }；离线 / 未登录时降级为空列表
     function romList() {
         return fetch('/api/roms', { headers: authHeaders() })
             .then(r => r.json())
-            .then(d => ({ roms: (d && d.roms) || [], admin: !!(d && d.admin) }))
-            .catch(() => ({ roms: [], admin: false }));
-    }
-    function romUpload(file, core) {
-        const q = '?name=' + encodeURIComponent(file.name) + '&core=' + encodeURIComponent(core);
-        return readBuffer(file)
-            .then(buf => fetch('/api/roms/upload' + q, {
-                method: 'POST',
-                headers: authHeaders({ 'Content-Type': 'application/octet-stream' }),
-                body: buf,
-            }))
-            .then(r => r.json());
-    }
-    function romDelete(id) {
-        return fetch('/api/roms/delete', {
-            method: 'POST',
-            headers: authHeaders({ 'Content-Type': 'application/json' }),
-            body: JSON.stringify({ id }),
-        }).then(r => r.json()).catch(() => ({}));
+            .then(d => ({ roms: (d && d.roms) || [] }))
+            .catch(() => ({ roms: [] }));
     }
     function romDownload(id) {
         return fetch('/api/roms/download?id=' + encodeURIComponent(id), { headers: authHeaders() });
-    }
-
-    // ---------- 读取文件为 ArrayBuffer（file.arrayBuffer 优先，老浏览器 FileReader） ----------
-    function readBuffer(file) {
-        if (file.arrayBuffer) return file.arrayBuffer();
-        return new Promise((resolve, reject) => {
-            const fr = new FileReader();
-            fr.onload = () => resolve(fr.result);
-            fr.onerror = () => reject(fr.error || new Error('read-fail'));
-            fr.readAsArrayBuffer(file);
-        });
     }
 
     // ---------- EmulatorJS 播放页（iframe 隔离：每次播放都是全新模拟器实例） ----------
@@ -107,7 +66,6 @@
             opts = opts || {};
             let alive = true;
             let objectUrl = null;
-            let isAdmin = false;          // 当前账号是否管理员（由 /api/roms 返回，服务端判定）
             const api = {
                 stop() {
                     alive = false;
@@ -125,7 +83,7 @@
                 return d;
             };
 
-            // ---------- 列表页（管理员额外有导入区 / 删除键） ----------
+            // ---------- 列表页（玩家只读） ----------
             function renderList(roms) {
                 if (!alive) return;
                 container.innerHTML = '';
@@ -135,97 +93,25 @@
                     '游戏 ROM 由管理员统一上传，<b>所有玩家</b>登录后即可游玩原版。<br>' +
                     '<span class="emu-tip">操作：模拟器内 ⚙ 菜单可设置 P1/P2 按键（默认 P1 方向键 + Z/X），支持手柄 · 有即时存/读档和全屏</span>'));
 
-                // 管理员：导入区（点击选择 / 拖拽）
-                if (isAdmin) {
-                    const drop = el('emu-drop',
-                        '📥 点击选择 ROM 文件，或拖拽到此处<br>' +
-                        '<span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）· 上传后全员可见</span>');
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = '.nes,.smc,.sfc,.swc,.gb,.gbc,.gba,.md,.gen,.bin,.zip,.7z';
-                    input.multiple = true;
-                    input.style.display = 'none';
-                    drop.onclick = () => { try { input.click(); } catch (e) {} };
-                    input.onchange = () => {
-                        if (input.files && input.files.length) handleFiles(Array.prototype.slice.call(input.files));
-                        input.value = '';
-                    };
-                    drop.appendChild(input);
-                    wrap.appendChild(drop);
-                }
-
-                // ROM 列表
                 if (!roms.length) {
-                    wrap.appendChild(el('emu-empty', isAdmin
-                        ? '还没有游戏。上方导入 ROM 后，所有玩家都能在这里看到。'
-                        : '管理员还没有上传游戏，敬请期待。'));
+                    wrap.appendChild(el('emu-empty', '管理员还没有上传游戏，敬请期待。'));
                 } else {
                     const list = el('emu-list');
                     roms.slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0)).forEach(rom => {
                         const item = el('emu-item');
                         item.appendChild(el('emu-item-info',
                             '<div class="emu-item-name">' + String(rom.name).replace(/[<>&]/g, '') + '</div>' +
-                            '<div class="emu-item-meta">' + coreLabel(rom.core) + ' · ' + fmtSize(rom.size) + (rom.by ? ' · ' + String(rom.by).replace(/[<>&]/g, '') + ' 上传' : '') + '</div>'));
+                            '<div class="emu-item-meta">' + coreLabel(rom.core) + ' · ' + fmtSize(rom.size) + '</div>'));
                         const play = document.createElement('button');
                         play.className = 'emu-btn emu-btn-play';
                         play.textContent = '▶ 播放';
                         play.onclick = ev => { ev.stopPropagation(); playRom(rom); };
                         item.appendChild(play);
-                        if (isAdmin) {
-                            const del = document.createElement('button');
-                            del.className = 'emu-btn emu-btn-del';
-                            del.textContent = '✕';
-                            del.title = '删除';
-                            del.onclick = ev => {
-                                ev.stopPropagation();
-                                try { if (typeof confirm === 'function' && !confirm('删除「' + rom.name + '」？所有玩家将无法再玩到它')) return; } catch (e) {}
-                                romDelete(rom.id).then(refresh);
-                            };
-                            item.appendChild(del);
-                        }
                         list.appendChild(item);
                     });
                     wrap.appendChild(list);
                 }
                 container.appendChild(wrap);
-            }
-
-            // ---------- 核心选择（zip 等无法自动判断的文件，仅管理员触发） ----------
-            function pickCore(file, onDone) {
-                if (!alive) return;
-                container.innerHTML = '';
-                const wrap = el('emu-wrap');
-                wrap.appendChild(el('emu-note', '「' + String(file.name).replace(/[<>&]/g, '') +
-                    '」无法从后缀判断机型，请选择模拟核心：<br><span class="emu-tip">FC 游戏选「FC / NES 红白机」；DOS 游戏整包 zip 选「DOS」</span>'));
-                const row = el('emu-core-row');
-                CORES.forEach(c => {
-                    const b = document.createElement('button');
-                    b.className = 'emu-core-btn' + (c.id === 'nes' ? ' emu-core-hot' : '');
-                    b.textContent = c.label;
-                    b.onclick = () => onDone(c.id);
-                    row.appendChild(b);
-                });
-                wrap.appendChild(row);
-                const back = document.createElement('button');
-                back.className = 'emu-btn emu-btn-back';
-                back.textContent = '‹ 取消';
-                back.onclick = refresh;
-                wrap.appendChild(back);
-                container.appendChild(wrap);
-            }
-
-            // ---------- 导入（上传到服务器） ----------
-            function handleFiles(files) {
-                let pending = files.slice();
-                const next = () => {
-                    if (!alive) return;
-                    if (!pending.length) return refresh();
-                    const file = pending.shift();
-                    const core = detectCore(file.name);
-                    if (!core) return pickCore(file, coreId => romUpload(file, coreId).then(next));
-                    romUpload(file, core).then(next);
-                };
-                next();
             }
 
             // ---------- 播放（鉴权下载 → blob → EmulatorJS） ----------
@@ -268,21 +154,8 @@
 
             function refresh() {
                 if (!alive) return;
-                romList().then(d => {
-                    if (!alive) return;
-                    isAdmin = !!d.admin;
-                    renderList(d.roms);
-                });
+                romList().then(d => { if (alive) renderList(d.roms); });
             }
-
-            // 拖放支持（容器级，仅管理员会看到导入区，但拖放对管理员随时可用）
-            container.addEventListener('dragover', e => { e.preventDefault(); });
-            container.addEventListener('drop', e => {
-                e.preventDefault();
-                if (!isAdmin) return;
-                const fs = e && e.dataTransfer && e.dataTransfer.files;
-                if (fs && fs.length) handleFiles(Array.prototype.slice.call(fs));
-            });
 
             refresh();
             return api;

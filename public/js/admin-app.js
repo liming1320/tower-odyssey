@@ -44,6 +44,26 @@ const AdminAPI = (() => {
         giftDelete: (code) => call('POST', '/api/admin/gift/delete', { code }),
         minigameOrder: () => call('GET', '/api/admin/minigame/order'),
         minigameOrderSave: (order) => call('POST', '/api/admin/minigame/order', { order }),
+        // ROM 库（列表/删除走通用 call；上传是原始二进制，单独实现）
+        romList: () => call('GET', '/api/roms'),
+        romDelete: (id) => call('POST', '/api/roms/delete', { id }),
+        romUpload: async (file, core) => {
+            const buf = await (file.arrayBuffer ? file.arrayBuffer() : new Promise((res, rej) => {
+                const fr = new FileReader();
+                fr.onload = () => res(fr.result);
+                fr.onerror = () => rej(fr.error);
+                fr.readAsArrayBuffer(file);
+            }));
+            const res = await fetch('/api/roms/upload?name=' + encodeURIComponent(file.name) + '&core=' + encodeURIComponent(core), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream', 'Authorization': 'Bearer ' + token() },
+                body: buf,
+            });
+            let json;
+            try { json = await res.json(); } catch (e) { throw new Error('上传返回异常'); }
+            if (!res.ok) throw new Error(json.error || '上传失败');
+            return json;
+        },
         // 通用 GET/POST（用于新增的任意后台接口）
         api: (path, method, body) => call(method || 'GET', path, body),
     };
@@ -112,6 +132,7 @@ const AdminApp = {
             sms: () => this.renderSms(body),
             gift: () => this.renderGift(body),
             order: () => this.renderOrder(body),
+            roms: () => this.renderRoms(body),
         }[this.tab];
         fn().catch(e => {
             body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`;
@@ -1021,8 +1042,131 @@ const AdminApp = {
         } catch (e) { U.toast(e.message); }
     },
 
-    async _sendMail(body, FIELDS) {
-        const st = this._us;
+    // ================= 模拟器 ROM 管理 =================
+    ROM_CORES: [
+        { id: 'nes',     label: 'FC / NES 红白机',      exts: ['nes'] },
+        { id: 'snes',    label: '超级任天堂 SFC',        exts: ['smc', 'sfc', 'swc'] },
+        { id: 'gb',      label: 'Game Boy / GBC',        exts: ['gb', 'gbc'] },
+        { id: 'gba',     label: 'GBA 掌机',              exts: ['gba'] },
+        { id: 'segaMD',  label: '世嘉 MD',               exts: ['md', 'gen'] },
+        { id: 'n64',     label: 'N64（需较新浏览器）',   exts: [] },
+        { id: 'psx',     label: 'PS1（需较新浏览器）',   exts: [] },
+        { id: 'dosbox',  label: 'DOS 游戏（.zip 整包）', exts: [] },
+        { id: 'arcade',  label: '街机（.zip）',          exts: [] },
+    ],
+    romCoreLabel(id) { const c = this.ROM_CORES.find(c => c.id === id); return c ? c.label : id; },
+    romDetectCore(filename) {
+        const m = /\.([a-z0-9]+)$/i.exec(filename || '');
+        const ext = m ? m[1].toLowerCase() : '';
+        for (const c of this.ROM_CORES) if (c.exts.includes(ext)) return c.id;
+        return null;   // zip/7z/bin → 弹核心选择
+    },
+    romFmtSize(n) {
+        if (n == null) return '';
+        if (n < 1024) return n + ' B';
+        if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+        return (n / 1048576).toFixed(1) + ' MB';
+    },
+
+    async renderRoms(body) {
+        body.innerHTML = `
+            <div class="card">
+                <h3>🕹️ 模拟器 ROM 库</h3>
+                <p style="font-size:13px;color:#b9b3d8">
+                    上传的 ROM 会出现在玩家端「经典模拟器」里，<b>所有登录玩家</b>都可游玩（EmulatorJS 引擎）。
+                    文件保存在服务器 data/roms/，单文件上限 512MB。
+                </p>
+                <div class="emu-drop" id="rom-drop">📥 点击选择 ROM 文件，或拖拽到此处<br>
+                    <span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）</span>
+                    <input type="file" id="rom-file" accept=".nes,.smc,.sfc,.swc,.gb,.gbc,.gba,.md,.gen,.bin,.zip,.7z" multiple style="display:none">
+                </div>
+                <div id="rom-core-pick" style="display:none;margin-top:12px"></div>
+            </div>
+            <div class="card">
+                <h3>已上传（<span id="rom-count">0</span>）</h3>
+                <div class="emu-list" id="rom-list"></div>
+                <p id="rom-empty" style="font-size:12px;color:#777;display:none">还没有上传任何 ROM。</p>
+            </div>
+        `;
+        const drop = body.querySelector('#rom-drop');
+        const fileInput = body.querySelector('#rom-file');
+        const pickBox = body.querySelector('#rom-core-pick');
+        drop.onclick = () => fileInput.click();
+        fileInput.onchange = () => { if (fileInput.files.length) this.romHandleFiles(body, [...fileInput.files]); fileInput.value = ''; };
+        drop.ondragover = e => { e.preventDefault(); drop.style.borderColor = 'rgba(255,213,107,.8)'; };
+        drop.ondragleave = () => { drop.style.borderColor = ''; };
+        drop.ondrop = e => {
+            e.preventDefault();
+            drop.style.borderColor = '';
+            if (e.dataTransfer.files.length) this.romHandleFiles(body, [...e.dataTransfer.files]);
+        };
+        await this.romRefreshList(body);
+    },
+
+    async romRefreshList(body) {
+        const r = await AdminAPI.romList();
+        const list = body.querySelector('#rom-list');
+        const empty = body.querySelector('#rom-empty');
+        const count = body.querySelector('#rom-count');
+        if (!list) return;
+        const roms = (r.roms || []).slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+        count.textContent = roms.length;
+        list.innerHTML = roms.map(rom => `
+            <div class="emu-item">
+                <div class="emu-item-info">
+                    <div class="emu-item-name">${this.esc(rom.name)}</div>
+                    <div class="emu-item-meta">${this.esc(this.romCoreLabel(rom.core))} · ${this.romFmtSize(rom.size)}${rom.by ? ' · ' + this.esc(rom.by) + ' 上传' : ''} · ${new Date(rom.addedAt).toLocaleString('zh-CN')}</div>
+                </div>
+                <button class="emu-btn emu-btn-del" data-del="${this.esc(rom.id)}">✕ 删除</button>
+            </div>
+        `).join('');
+        empty.style.display = roms.length ? 'none' : 'block';
+        list.querySelectorAll('[data-del]').forEach(b => {
+            b.onclick = async () => {
+                if (!U.confirm('删除该 ROM？所有玩家将无法再玩到它（磁盘文件一并清除）')) return;
+                try {
+                    await AdminAPI.romDelete(b.dataset.del);
+                    U.toast('已删除');
+                    this.romRefreshList(body);
+                } catch (e) { U.toast(e.message); }
+            };
+        });
+    },
+
+    romHandleFiles(body, files) {
+        const pickBox = body.querySelector('#rom-core-pick');
+        let pending = [...files];
+        const next = () => {
+            if (!pending.length) { pickBox.style.display = 'none'; pickBox.innerHTML = ''; return this.romRefreshList(body); }
+            const file = pending.shift();
+            const core = this.romDetectCore(file.name);
+            if (core) return this.romUploadOne(body, file, core).then(next);
+            // 无法从后缀判断 → 核心选择
+            pickBox.style.display = 'block';
+            pickBox.innerHTML = `<p style="font-size:13px;color:#ffd56b">「${this.esc(file.name)}」请选择模拟核心（FC 游戏选 FC / NES；DOS 整包 zip 选 DOS）：</p>
+                <div class="emu-core-row">${this.ROM_CORES.map(c =>
+                    `<button class="emu-core-btn${c.id === 'nes' ? ' emu-core-hot' : ''}" data-core="${c.id}">${this.esc(c.label)}</button>`).join('')}</div>`;
+            pickBox.querySelectorAll('[data-core]').forEach(b => {
+                b.onclick = () => {
+                    pickBox.style.display = 'none';
+                    this.romUploadOne(body, file, b.dataset.core).then(next);
+                };
+            });
+        };
+        next();
+    },
+
+    async romUploadOne(body, file, core) {
+        U.toast(`正在上传「${file.name}」…`);
+        try {
+            const r = await AdminAPI.romUpload(file, core);
+            U.toast(`✅ 已上传「${file.name}」（${this.romFmtSize(r.size)}），玩家端立即可见`);
+        } catch (e) {
+            U.toast('❌ ' + (e.message || '上传失败'));
+        }
+    },
+
+    async _sendMail(body, FIELDS) {        const st = this._us;
         const scope = body.querySelector('input[name=gr-scope]:checked').value;
         const rewards = {};
         FIELDS.forEach(([k]) => {

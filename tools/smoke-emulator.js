@@ -1,6 +1,6 @@
-// 模拟器（EmulatorJS + 服务端 ROM 库）端到端冒烟
+// 模拟器 ROM 全链路冒烟（后台管理页 + 玩家端）
 //   node tools/smoke-emulator.js
-// 架构：管理员 HTTP API 上传 ROM → 服务器 data/roms/ 落盘 → 玩家浏览器列表/播放（无导入区）
+// 链路：/admin 模拟器ROM 标签页上传（.nes 自动识别 / .zip 核心选择）→ 玩家端列表可见可玩 → 后台删除 → 玩家端清空
 const http = require('http');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -11,28 +11,26 @@ const BASE = 'http://127.0.0.1:5180';
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const OUT = path.join(__dirname, 'shots');
 const PORT = 9359;
+const TAG = 'emu-smoke-';                       // 唯一名前缀，仅清理/断言本测试上传的 ROM
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let passed = 0, failed = 0;
 const assert = (cond, label) => { if (cond) { passed++; console.log('  ✔', label); } else { failed++; console.log('  ✗', label); } };
 
-function req(method, p, body, headers) {
+function postJSON(p, body) {
     return new Promise((resolve, reject) => {
-        const data = body == null ? null : (Buffer.isBuffer(body) ? body : JSON.stringify(body));
-        const h = Object.assign({}, data && !Buffer.isBuffer(body) ? { 'Content-Type': 'application/json' } : {}, headers || {});
-        if (data) h['Content-Length'] = data.length;
-        const r = http.request(BASE + p, { method, headers: h }, res => {
-            const chunks = [];
-            res.on('data', c => chunks.push(c));
-            res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks) }));
+        const data = JSON.stringify(body);
+        const req = http.request(BASE + p, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': data.length } }, res => {
+            let d = ''; res.on('data', c => d += c); res.on('end', () => { try { resolve(JSON.parse(d)); } catch (e) { reject(new Error(d)); } });
         });
-        r.on('error', reject);
-        if (data) r.write(data);
-        r.end();
+        req.on('error', reject); req.write(data); req.end();
     });
 }
 function getJSON(url) {
     return new Promise((resolve, reject) => {
-        http.get(url, res => { let d = ''; res.on('data', c => d += c); res.on('end', () => { try { resolve(JSON.parse(d)); } catch (e) { reject(new Error(d)); } }); }).on('error', reject);
+        http.get(url, res => {
+            let d = ''; res.on('data', c => d += c);
+            res.on('end', () => { try { resolve(JSON.parse(d)); } catch (e) { reject(new Error(d)); } });
+        }).on('error', reject);
     });
 }
 
@@ -54,27 +52,35 @@ class CDP {
     fs.mkdirSync(OUT, { recursive: true });
     const stamp = Date.now().toString().slice(-8);
 
-    // ① 管理员登录 + 上传测试 ROM
-    console.log('\n① 管理员上传 ROM（HTTP API）');
-    const ad = await req('POST', '/api/admin/login', { username: 'admin', password: 'workbuddy' });
-    const adminToken = JSON.parse(ad.body).token;
-    assert(adminToken, '管理员登录成功');
-    const romBuf = Buffer.alloc(40976, 7);
-    const up = await req('POST', '/api/roms/upload?name=' + encodeURIComponent('smoke-魂斗罗测试.nes') + '&core=nes', romBuf,
-        { Authorization: 'Bearer ' + adminToken, 'Content-Type': 'application/octet-stream' });
-    const upJson = JSON.parse(up.body);
-    assert(up.status === 200 && upJson.id, 'ROM 上传成功（' + upJson.size + ' 字节落盘）');
-    const romId = upJson.id;
+    // ① API 拿令牌（admin-token 与 game-token 是不同 localStorage key，可共存同浏览器）
+    console.log('\n① 准备账号');
+    const ad = await postJSON('/api/admin/login', { username: 'admin', password: 'workbuddy' });
+    assert(ad.token, '管理员登录（API）');
+    const reg = await postJSON('/api/register', { username: 'emutest' + stamp, password: '1234' });
+    const playerToken = reg.token;
+    assert(playerToken, '玩家注册（API）');
 
-    // ② 玩家注册（普通账号，非管理员）
-    const reg = await req('POST', '/api/register', { username: 'emutest' + stamp, password: '1234' });
-    const playerToken = JSON.parse(reg.body).token;
-    assert(playerToken, '玩家注册成功');
+    // ①.b 清掉上一轮冒烟残留（仅以 TAG 为前缀的 ROM，玩家手动上传的不动）
+    const cleanup = (token) => {
+        return new Promise((resolve) => {
+            http.get(BASE + '/api/roms', { headers: { Authorization: 'Bearer ' + token } }, res => {
+                let d = ''; res.on('data', c => d += c); res.on('end', async () => {
+                    try {
+                        const list = JSON.parse(d).roms.filter(r => r.name.indexOf(TAG) === 0);
+                        for (const r of list) await postJSON('/api/roms/delete', { id: r.id });
+                        console.log(`  ℹ 清理上轮残留 ${list.length} 个`);
+                    } catch (e) {}
+                    resolve();
+                });
+            }).on('error', () => resolve());
+        });
+    };
+    await cleanup(ad.token);
 
     const chrome = spawn(CHROME, [
         '--headless=new', '--remote-debugging-port=' + PORT,
         '--no-first-run', '--no-default-browser-check', '--user-data-dir=' + path.join(os.tmpdir(), 'emu-smoke-' + stamp),
-        '--disable-gpu', '--window-size=420,880', 'about:blank',
+        '--disable-gpu', '--window-size=1100,880', 'about:blank',
     ], { stdio: 'ignore' });
     process.on('exit', () => { try { chrome.kill(); } catch (e) {} });
 
@@ -86,91 +92,180 @@ class CDP {
     const cdp = await CDP.connect(targets.find(t => t.type === 'page').webSocketDebuggerUrl);
     await cdp.send('Runtime.enable');
     await cdp.send('Page.enable');
+
+    // ② 后台：/admin → 模拟器ROM 标签
+    console.log('\n② 管理后台：模拟器ROM 标签页');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 880, deviceScaleFactor: 1, mobile: false });
+    await cdp.send('Page.navigate', { url: BASE + '/admin' });
+    await sleep(1500);
+    await cdp.eval(`localStorage.setItem('admin-token', ${JSON.stringify(ad.token)})`);
+    await cdp.send('Page.navigate', { url: BASE + '/admin' });
+    await sleep(1800);
+    const tabOk = await cdp.eval(`(() => ({
+        main: !document.getElementById('ad-main').classList.contains('hidden'),
+        romTab: !!Array.from(document.querySelectorAll('.admin-tabs button')).find(b => b.dataset.t === 'roms'),
+    }))()`);
+    assert(tabOk.main, '后台已登录（token 注入）');
+    assert(tabOk.romTab, '「模拟器ROM」标签存在');
+    await cdp.eval(`Array.from(document.querySelectorAll('.admin-tabs button')).find(b => b.dataset.t === 'roms').click()`);
+    await sleep(900);
+    const romTab = await cdp.eval(`(() => ({
+        drop: !!document.querySelector('#rom-drop'),
+        input: !!document.querySelector('#rom-file'),
+        list: !!document.querySelector('#rom-list'),
+    }))()`);
+    assert(romTab.drop && romTab.input, '拖入区 + 文件选择框');
+    assert(romTab.list, 'ROM 列表容器');
+    await cdp.shot(path.join(OUT, 'emu-admin-tab.png'));
+
+    // ③ 后台上传 .nes（DataTransfer 模拟选文件 → 自动识别 FC 核心）
+    const nesName = TAG + 'contra-' + stamp + '.nes';
+    console.log('\n③ 后台上传 .nes（自动识别 FC）');
+    await cdp.eval(`(() => {
+        const input = document.querySelector('#rom-file');
+        const dt = new DataTransfer();
+        dt.items.add(new File([new Uint8Array(40976)], ${JSON.stringify(nesName)}));
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+    })()`);
+    await sleep(1200);
+    const nesOk = await cdp.eval(`(() => {
+        const rows = Array.from(document.querySelectorAll('.emu-item'));
+        const mine = rows.find(r => (r.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(nesName)});
+        return {
+            count: document.querySelector('#rom-count').textContent,
+            name: mine ? mine.querySelector('.emu-item-name').textContent : '',
+            meta: mine ? mine.querySelector('.emu-item-meta').textContent : '',
+        };
+    })()`);
+    assert(nesOk.name === nesName, '列表出现：' + (nesOk.name || '<缺失>'));
+    assert(/FC/.test(nesOk.meta), '核心自动识别：' + (nesOk.meta.split('·')[0] || '').trim());
+    await cdp.shot(path.join(OUT, 'emu-admin-uploaded.png'));
+
+    // ④ 后台上传 .zip → 核心选择器 → 选 DOS
+    const zipName = TAG + 'dos-' + stamp + '.zip';
+    console.log('\n④ 后台上传 .zip → 核心选择器 → DOS');
+    await cdp.eval(`(() => {
+        const input = document.querySelector('#rom-file');
+        const dt = new DataTransfer();
+        dt.items.add(new File([new Uint8Array(2048)], ${JSON.stringify(zipName)}));
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+    })()`);
+    await sleep(800);
+    const pickerOk = await cdp.eval(`(() => ({
+        shown: document.querySelector('#rom-core-pick').style.display !== 'none',
+        btns: document.querySelectorAll('.emu-core-btn').length,
+    }))()`);
+    assert(pickerOk.shown && pickerOk.btns === 9, '核心选择器出现（' + pickerOk.btns + ' 个核心）');
+    await cdp.eval(`Array.from(document.querySelectorAll('[data-core]')).find(b => b.textContent.indexOf('DOS') >= 0).click()`);
+    await sleep(1200);
+    const zipOk = await cdp.eval(`(() => {
+        const rows = Array.from(document.querySelectorAll('.emu-item'));
+        const mine = rows.find(r => (r.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(zipName)});
+        return { meta: mine ? mine.querySelector('.emu-item-meta').textContent : '' };
+    })()`);
+    assert(/DOS/.test(zipOk.meta), 'zip 以 DOS 核心入库：' + (zipOk.meta.split('·')[0] || '').trim());
+    await cdp.shot(path.join(OUT, 'emu-admin-zip.png'));
+
+    // ⑤ 玩家端：设置 → 小游戏 → 模拟器（列表共享 · 无导入区）
+    console.log('\n⑤ 玩家端：列表共享 · 纯浏览');
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 420, height: 880, deviceScaleFactor: 2, mobile: true });
     await cdp.send('Page.navigate', { url: BASE });
     await sleep(1800);
     await cdp.eval(`localStorage.setItem('game-token', ${JSON.stringify(playerToken)})`);
     await cdp.send('Page.navigate', { url: BASE });
     await sleep(2000);
-
-    // ③ 玩家进入模拟器（设置面板 → 小游戏 → 模拟器卡片）
-    console.log('\n② 玩家视角：列表可见 · 无导入区');
     await cdp.eval(`document.getElementById('btn-avatar').click()`);
     await sleep(500);
     await cdp.eval(`document.getElementById('pi-settings').click()`);
     await sleep(500);
     await cdp.eval(`document.querySelector('.set-tile[data-act="mini"]').click()`);
     await sleep(1200);
-    const cardOk = await cdp.eval(`(() => {
-        const emu = Array.from(document.querySelectorAll('.mini-card')).find(c => c.dataset.id === 'emulator');
-        return { found: !!emu, name: emu ? emu.querySelector('.mini-name').textContent : '' };
-    })()`);
-    assert(cardOk.found, '模拟器卡片在列表中：' + cardOk.name);
     await cdp.eval(`document.querySelector('.mini-card[data-id="emulator"]').click()`);
     await sleep(1000);
-
-    const playerView = await cdp.eval(`(() => ({
-        item: !!document.querySelector('.emu-item'),
-        name: (document.querySelector('.emu-item-name') || {}).textContent || '',
-        meta: (document.querySelector('.emu-item-meta') || {}).textContent || '',
-        drop: !!document.querySelector('.emu-drop'),
-        del: !!document.querySelector('.emu-btn-del'),
-        play: !!document.querySelector('.emu-btn-play'),
-    }))()`);
-    assert(playerView.item && /魂斗罗测试/.test(playerView.name), '玩家看到管理员上传的 ROM：' + playerView.name);
-    assert(/FC/.test(playerView.meta), '核心信息正确：' + playerView.meta);
-    assert(!playerView.drop, '玩家端无导入区（仅管理员可见）');
+    const playerView = await cdp.eval(`(() => {
+        const items = Array.from(document.querySelectorAll('.emu-item'));
+        return {
+            total: items.length,
+            mine: items.filter(i => (i.querySelector('.emu-item-name') || {}).textContent && i.querySelector('.emu-item-name').textContent.indexOf(${JSON.stringify(TAG)}) === 0).length,
+            names: items.map(i => (i.querySelector('.emu-item-name') || {}).textContent || ''),
+            drop: !!document.querySelector('.emu-drop'),
+            del: !!document.querySelector('.emu-btn-del'),
+            play: document.querySelectorAll('.emu-btn-play').length,
+        };
+    })()`);
+    assert(playerView.mine === 2 && playerView.names.some(n => n === nesName) && playerView.names.some(n => n === zipName), '玩家看到后台本轮上传的 2 个 ROM（总 ' + playerView.total + '）');
+    assert(!playerView.drop, '玩家端无导入区');
     assert(!playerView.del, '玩家端无删除按钮');
-    assert(playerView.play, '玩家有播放按钮');
+    assert(playerView.play === playerView.total, '每个 ROM 一个播放按钮（' + playerView.play + '）');
     await cdp.shot(path.join(OUT, 'emu-player-list.png'));
 
-    // ④ 玩家播放：鉴权下载 → blob → EmulatorJS iframe
-    console.log('\n③ 玩家播放（服务端下载 → blob → EmulatorJS）');
-    await cdp.eval(`document.querySelector('.emu-btn-play').click()`);
+    // ⑥ 玩家播放 nesName
+    console.log('\n⑥ 玩家播放（鉴权下载 → blob → EmulatorJS）');
+    await cdp.eval(`(() => {
+        const row = Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(nesName)});
+        row.querySelector('.emu-btn-play').click();
+    })()`);
     await sleep(1500);
     const playOk = await cdp.eval(`(() => {
         const f = document.querySelector('.emu-frame');
-        return {
-            frame: !!f,
-            srcdoc: f ? (f.getAttribute('srcdoc') || '') : '',
-            bar: !!document.querySelector('.emu-playbar'),
-        };
+        return { frame: !!f, srcdoc: f ? (f.getAttribute('srcdoc') || '') : '' };
     })()`);
     assert(playOk.frame, '模拟器 iframe 创建');
-    assert(/EJS_core="nes"/.test(playOk.srcdoc), 'iframe 配置：EJS_core=nes');
-    assert(/EJS_gameUrl="blob:/.test(playOk.srcdoc), 'ROM 经鉴权下载转 blob URL');
-
-    // ⑤ 等 EmulatorJS 引擎加载（联网 ~5-15s）
-    console.log('\n④ 等待 EmulatorJS 引擎加载（需联网）…');
-    await sleep(12000);
-    const engineState = await cdp.eval(`(() => {
+    assert(/EJS_core="nes"/.test(playOk.srcdoc) && /EJS_gameUrl="blob:/.test(playOk.srcdoc), 'EJS_core=nes · ROM 走鉴权 blob');
+    await sleep(10000);
+    const engine = await cdp.eval(`(() => {
         const f = document.querySelector('.emu-frame');
         if (!f || !f.contentDocument) return { doc: false };
-        const d = f.contentDocument;
-        return { doc: true, canvas: !!d.querySelector('canvas'), menus: d.querySelectorAll('[class*=ejs]').length };
+        return { doc: true, canvas: !!f.contentDocument.querySelector('canvas') };
     })()`);
-    if (engineState.doc && (engineState.canvas || engineState.menus > 0)) {
-        assert(true, 'EmulatorJS 引擎已加载' + (engineState.canvas ? '（canvas 已创建）' : '（UI 已渲染）'));
+    if (engine.doc && engine.canvas) {
+        assert(true, 'EmulatorJS 引擎真实加载（canvas 已创建）');
         await cdp.shot(path.join(OUT, 'emu-player-playing.png'));
     } else {
-        console.log('  ℹ 引擎未在 12s 内加载完（无外网或核心下载慢）——iframe 配置已验证');
+        console.log('  ℹ 引擎未在 10s 内加载完（无外网），iframe 配置已验证');
     }
 
-    // ⑥ 管理员删除 → 玩家刷新后列表变空
-    console.log('\n⑤ 管理员删除 → 玩家列表同步');
-    const del = await req('POST', '/api/roms/delete', { id: romId }, { Authorization: 'Bearer ' + adminToken });
-    assert(del.status === 200, '管理员删除 ROM 成功');
+    // ⑦ 后台删除本轮上传 → 玩家端同步清空
+    console.log('\n⑦ 后台删除 → 玩家端同步清空');
     await cdp.eval(`document.querySelector('.emu-playbar .emu-btn-back').click()`);
-    await sleep(1000);
-    const afterDel = await cdp.eval(`(() => ({
-        items: document.querySelectorAll('.emu-item').length,
-        empty: (document.querySelector('.emu-empty') || {}).textContent || '',
-        drop: !!document.querySelector('.emu-drop'),
-    }))()`);
-    assert(afterDel.items === 0, '玩家列表已清空');
-    assert(/管理员还没有上传/.test(afterDel.empty), '空态文案正确：' + afterDel.empty.trim().slice(0, 14) + '…');
-    assert(!afterDel.drop, '玩家端仍无导入区');
-    await cdp.shot(path.join(OUT, 'emu-player-empty.png'));
+    await sleep(600);
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 880, deviceScaleFactor: 1, mobile: false });
+    await cdp.send('Page.navigate', { url: BASE + '/admin' });
+    await sleep(1800);
+    await cdp.eval(`Array.from(document.querySelectorAll('.admin-tabs button')).find(b => b.dataset.t === 'roms').click()`);
+    await sleep(900);
+    await cdp.eval(`window.confirm = () => true;`);
+    // 仅删本轮 TAG 前缀的
+    let delCnt = 0;
+    for (const nm of [nesName, zipName]) {
+        const ok = await cdp.eval(`(() => {
+            const row = Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(nm)});
+            if (!row) return false;
+            row.querySelector('[data-del]').click();
+            return true;
+        })()`);
+        if (ok) {
+            delCnt++;
+            // 等到该行从 DOM 中消失（确认删除 + 刷新完成）
+            for (let t = 0; t < 20; t++) {
+                await sleep(150);
+                const still = await cdp.eval(`!!Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(nm)})`);
+                if (!still) break;
+            }
+        }
+    }
+    const afterDel = await cdp.eval(`(() => {
+        const rows = Array.from(document.querySelectorAll('.emu-item'));
+        const mine = rows.filter(i => (i.querySelector('.emu-item-name') || {}).textContent && i.querySelector('.emu-item-name').textContent.indexOf(${JSON.stringify(TAG)}) === 0);
+        return mine.length;
+    })()`);
+    assert(afterDel === 0, '本轮 ' + delCnt + ' 个已删除（实际残留 ' + afterDel + '）');
+    await cdp.shot(path.join(OUT, 'emu-admin-deleted.png'));
+
+    // 最终清理
+    await cleanup(ad.token);
 
     console.log(`\n===== 冒烟结果：${passed} 通过 / ${failed} 失败 =====`);
     try { chrome.kill(); } catch (e) {}
