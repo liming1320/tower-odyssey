@@ -1,6 +1,6 @@
 // 经典游戏模拟器：内嵌开源 EmulatorJS 引擎（与 yikm / dos.lol / 80joy 同款技术路线）
-// ROM 文件由玩家自行导入（存 IndexedDB，仅保存在本机浏览器，不上传服务器）
-// 支持 FC/NES、SFC、GB/GBC、GBA、世嘉MD、N64、PS1、DOS、街机 等核心
+// ROM 由管理员上传到服务器（data/roms/ 磁盘文件），所有登录玩家可见可玩
+// 玩家端只读列表 + 播放；导入 / 删除入口仅对管理员账号显示（服务端同样校验权限）
 (function () {
     const CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
@@ -21,7 +21,7 @@
         const m = /\.([a-z0-9]+)$/i.exec(filename || '');
         const ext = m ? m[1].toLowerCase() : '';
         for (const c of CORES) if (c.exts.indexOf(ext) >= 0) return c.id;
-        return null;   // zip / 7z / bin 等无法从后缀判断 → 让用户手动选择核心
+        return null;   // zip / 7z / bin 等无法从后缀判断 → 让管理员手动选择核心
     }
     function fmtSize(n) {
         if (n == null) return '';
@@ -30,46 +30,37 @@
         return (n / 1048576).toFixed(1) + ' MB';
     }
 
-    // ---------- IndexedDB 持久化（不支持时降级为内存，仅当前会话可见） ----------
-    const memStore = [];
-    let useMem = false;
-    function dbOpen() {
-        return new Promise((resolve, reject) => {
-            if (useMem || typeof indexedDB === 'undefined') return reject(new Error('no-idb'));
-            const req = indexedDB.open('tower-roms', 1);
-            req.onupgradeneeded = () => { try { req.result.createObjectStore('roms', { keyPath: 'id' }); } catch (e) {} };
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error || new Error('idb-error'));
-            req.onblocked = () => reject(new Error('idb-blocked'));
-        });
+    // ---------- 服务端 API（带玩家令牌） ----------
+    function authHeaders(extra) {
+        const tk = (typeof localStorage !== 'undefined' && localStorage.getItem('game-token')) || '';
+        return Object.assign({ Authorization: 'Bearer ' + tk }, extra || {});
     }
-    function dbTx(mode, fn) {
-        return dbOpen().then(db => new Promise((resolve, reject) => {
-            let result;
-            try {
-                const t = db.transaction('roms', mode);
-                const st = t.objectStore('roms');
-                result = fn(st);
-                t.oncomplete = () => { db.close(); resolve(result && result.result); };
-                t.onerror = () => { db.close(); reject(t.error); };
-                t.onabort = () => { db.close(); reject(t.error || new Error('idb-abort')); };
-            } catch (e) { reject(e); }
-        }));
-    }
+    // 返回 { roms: [...], admin: bool }；离线 / 未登录时降级为空列表
     function romList() {
-        return dbTx('readonly', st => st.getAll()).catch(() => memStore.slice());
+        return fetch('/api/roms', { headers: authHeaders() })
+            .then(r => r.json())
+            .then(d => ({ roms: (d && d.roms) || [], admin: !!(d && d.admin) }))
+            .catch(() => ({ roms: [], admin: false }));
     }
-    function romPut(rom) {
-        return dbTx('readwrite', st => st.put(rom)).catch(() => {
-            const i = memStore.findIndex(r => r.id === rom.id);
-            if (i >= 0) memStore[i] = rom; else memStore.push(rom);
-        });
+    function romUpload(file, core) {
+        const q = '?name=' + encodeURIComponent(file.name) + '&core=' + encodeURIComponent(core);
+        return readBuffer(file)
+            .then(buf => fetch('/api/roms/upload' + q, {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/octet-stream' }),
+                body: buf,
+            }))
+            .then(r => r.json());
     }
-    function romDel(id) {
-        return dbTx('readwrite', st => st.delete(id)).catch(() => {
-            const i = memStore.findIndex(r => r.id === id);
-            if (i >= 0) memStore.splice(i, 1);
-        });
+    function romDelete(id) {
+        return fetch('/api/roms/delete', {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ id }),
+        }).then(r => r.json()).catch(() => ({}));
+    }
+    function romDownload(id) {
+        return fetch('/api/roms/download?id=' + encodeURIComponent(id), { headers: authHeaders() });
     }
 
     // ---------- 读取文件为 ArrayBuffer（file.arrayBuffer 优先，老浏览器 FileReader） ----------
@@ -109,14 +100,14 @@
 
     MiniGames.emulator = {
         // 50 关占位：本游戏不走关卡框架，仅为了让清单/审计口径一致
-        LEVELS: Array.from({ length: 50 }, (_, i) => ({ name: '自由游玩 ' + (i + 1), desc: '导入自己的 ROM 文件畅玩' })),
-        ENDLESS: { name: '∞ 自由玩', desc: '导入自己的 ROM，无限制畅玩' },
+        LEVELS: Array.from({ length: 50 }, (_, i) => ({ name: '自由游玩 ' + (i + 1), desc: '管理员上传的 ROM 全员畅玩' })),
+        ENDLESS: { name: '∞ 自由玩', desc: 'ROM 游戏，无限制畅玩' },
 
         start(container, opts) {
             opts = opts || {};
             let alive = true;
             let objectUrl = null;
-            let current = null;          // 正在播放的 ROM（用于重进列表后回收）
+            let isAdmin = false;          // 当前账号是否管理员（由 /api/roms 返回，服务端判定）
             const api = {
                 stop() {
                     alive = false;
@@ -134,60 +125,64 @@
                 return d;
             };
 
-            // ---------- 列表页 ----------
+            // ---------- 列表页（管理员额外有导入区 / 删除键） ----------
             function renderList(roms) {
                 if (!alive) return;
-                current = null;
                 container.innerHTML = '';
                 const wrap = el('emu-wrap');
                 wrap.appendChild(el('emu-note',
                     '🕹️ <b>经典模拟器</b>（EmulatorJS 引擎，与 yikm / dos.lol 同款技术）<br>' +
-                    '导入你自己的游戏 ROM 文件即可游玩 <b>原版</b>（FC 魂斗罗 / 坦克大战 / 超马里奥…）。' +
-                    '文件只保存在本机浏览器，不会上传。<br>' +
-                    '<span class="emu-tip">操作：模拟器内 ⚙ 菜单可设置 P1/P2 按键（默认 P1 方向键 + Z/X），支持手柄 · 有即时存/读档和全屏 · DOS 游戏选 dosbox 核心</span>'));
+                    '游戏 ROM 由管理员统一上传，<b>所有玩家</b>登录后即可游玩原版。<br>' +
+                    '<span class="emu-tip">操作：模拟器内 ⚙ 菜单可设置 P1/P2 按键（默认 P1 方向键 + Z/X），支持手柄 · 有即时存/读档和全屏</span>'));
 
-                // 拖放 / 点击导入区
-                const drop = el('emu-drop',
-                    '📥 点击选择 ROM 文件，或拖拽到此处<br>' +
-                    '<span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）</span>');
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.nes,.smc,.sfc,.swc,.gb,.gbc,.gba,.md,.gen,.bin,.zip,.7z';
-                input.multiple = true;
-                input.style.display = 'none';
-                drop.onclick = () => { try { input.click(); } catch (e) {} };
-                input.onchange = () => {
-                    if (input.files && input.files.length) handleFiles(Array.prototype.slice.call(input.files));
-                    input.value = '';
-                };
-                drop.appendChild(input);
-                wrap.appendChild(drop);
+                // 管理员：导入区（点击选择 / 拖拽）
+                if (isAdmin) {
+                    const drop = el('emu-drop',
+                        '📥 点击选择 ROM 文件，或拖拽到此处<br>' +
+                        '<span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）· 上传后全员可见</span>');
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.nes,.smc,.sfc,.swc,.gb,.gbc,.gba,.md,.gen,.bin,.zip,.7z';
+                    input.multiple = true;
+                    input.style.display = 'none';
+                    drop.onclick = () => { try { input.click(); } catch (e) {} };
+                    input.onchange = () => {
+                        if (input.files && input.files.length) handleFiles(Array.prototype.slice.call(input.files));
+                        input.value = '';
+                    };
+                    drop.appendChild(input);
+                    wrap.appendChild(drop);
+                }
 
                 // ROM 列表
                 if (!roms.length) {
-                    wrap.appendChild(el('emu-empty', '还没有导入 ROM。上方导入后，这里会出现你的游戏库。'));
+                    wrap.appendChild(el('emu-empty', isAdmin
+                        ? '还没有游戏。上方导入 ROM 后，所有玩家都能在这里看到。'
+                        : '管理员还没有上传游戏，敬请期待。'));
                 } else {
                     const list = el('emu-list');
                     roms.slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0)).forEach(rom => {
                         const item = el('emu-item');
                         item.appendChild(el('emu-item-info',
                             '<div class="emu-item-name">' + String(rom.name).replace(/[<>&]/g, '') + '</div>' +
-                            '<div class="emu-item-meta">' + coreLabel(rom.core) + ' · ' + fmtSize(rom.size) + '</div>'));
+                            '<div class="emu-item-meta">' + coreLabel(rom.core) + ' · ' + fmtSize(rom.size) + (rom.by ? ' · ' + String(rom.by).replace(/[<>&]/g, '') + ' 上传' : '') + '</div>'));
                         const play = document.createElement('button');
                         play.className = 'emu-btn emu-btn-play';
                         play.textContent = '▶ 播放';
                         play.onclick = ev => { ev.stopPropagation(); playRom(rom); };
-                        const del = document.createElement('button');
-                        del.className = 'emu-btn emu-btn-del';
-                        del.textContent = '✕';
-                        del.title = '删除';
-                        del.onclick = ev => {
-                            ev.stopPropagation();
-                            try { if (typeof confirm === 'function' && !confirm('删除「' + rom.name + '」？')) return; } catch (e) {}
-                            romDel(rom.id).then(refresh).catch(refresh);
-                        };
                         item.appendChild(play);
-                        item.appendChild(del);
+                        if (isAdmin) {
+                            const del = document.createElement('button');
+                            del.className = 'emu-btn emu-btn-del';
+                            del.textContent = '✕';
+                            del.title = '删除';
+                            del.onclick = ev => {
+                                ev.stopPropagation();
+                                try { if (typeof confirm === 'function' && !confirm('删除「' + rom.name + '」？所有玩家将无法再玩到它')) return; } catch (e) {}
+                                romDelete(rom.id).then(refresh);
+                            };
+                            item.appendChild(del);
+                        }
                         list.appendChild(item);
                     });
                     wrap.appendChild(list);
@@ -195,7 +190,7 @@
                 container.appendChild(wrap);
             }
 
-            // ---------- 核心选择（zip 等无法自动判断的文件） ----------
+            // ---------- 核心选择（zip 等无法自动判断的文件，仅管理员触发） ----------
             function pickCore(file, onDone) {
                 if (!alive) return;
                 container.innerHTML = '';
@@ -219,7 +214,7 @@
                 container.appendChild(wrap);
             }
 
-            // ---------- 导入 ----------
+            // ---------- 导入（上传到服务器） ----------
             function handleFiles(files) {
                 let pending = files.slice();
                 const next = () => {
@@ -227,58 +222,64 @@
                     if (!pending.length) return refresh();
                     const file = pending.shift();
                     const core = detectCore(file.name);
-                    if (!core) return pickCore(file, coreId => importRom(file, coreId).then(next));
-                    importRom(file, core).then(next);
+                    if (!core) return pickCore(file, coreId => romUpload(file, coreId).then(next));
+                    romUpload(file, core).then(next);
                 };
                 next();
             }
-            function importRom(file, core) {
-                return readBuffer(file).then(buf => romPut({
-                    id: 'rom_' + Date.now() + '_' + Math.floor(Math.random() * 1e6),
-                    name: file.name,
-                    core, size: buf.byteLength, addedAt: Date.now(), data: buf,
-                })).catch(() => {});
-            }
 
-            // ---------- 播放 ----------
+            // ---------- 播放（鉴权下载 → blob → EmulatorJS） ----------
             function playRom(rom) {
                 if (!alive) return;
                 if (typeof Blob === 'undefined' || typeof URL === 'undefined' || !URL.createObjectURL) {
                     container.innerHTML = '<div class="emu-empty">当前环境不支持模拟器播放</div>';
                     return;
                 }
-                if (objectUrl) { try { URL.revokeObjectURL(objectUrl); } catch (e) {} }
-                objectUrl = URL.createObjectURL(new Blob([rom.data]));
-                current = rom;
-                container.innerHTML = '';
-                const play = el('emu-play');
-                const frame = document.createElement('iframe');
-                frame.className = 'emu-frame';
-                frame.setAttribute('srcdoc', buildPlayerHtml(rom.core, objectUrl, rom.name));
-                const bar = el('emu-playbar');
-                const back = document.createElement('button');
-                back.className = 'emu-btn emu-btn-back';
-                back.textContent = '⏏ 返回列表';
-                back.onclick = refresh;
-                const tip = el('emu-playtip', '加载中…首次启动需下载模拟核心（需联网）· ⚙ 菜单可设双人按键 / 存档 / 全屏');
-                bar.appendChild(back);
-                bar.appendChild(tip);
-                play.appendChild(frame);
-                play.appendChild(bar);
-                container.appendChild(play);
-                if (opts.onScore) { try { opts.onScore(''); } catch (e) {} }
+                container.innerHTML = '<div class="emu-empty">正在从服务器加载「' + String(rom.name).replace(/[<>&]/g, '') + '」…</div>';
+                romDownload(rom.id).then(r => {
+                    if (!r.ok) throw new Error('下载失败（' + r.status + '）');
+                    return r.blob();
+                }).then(blob => {
+                    if (!alive) return;
+                    if (objectUrl) { try { URL.revokeObjectURL(objectUrl); } catch (e) {} }
+                    objectUrl = URL.createObjectURL(blob);
+                    container.innerHTML = '';
+                    const play = el('emu-play');
+                    const frame = document.createElement('iframe');
+                    frame.className = 'emu-frame';
+                    frame.setAttribute('srcdoc', buildPlayerHtml(rom.core, objectUrl, rom.name));
+                    const bar = el('emu-playbar');
+                    const back = document.createElement('button');
+                    back.className = 'emu-btn emu-btn-back';
+                    back.textContent = '⏏ 返回列表';
+                    back.onclick = refresh;
+                    const tip = el('emu-playtip', '加载中…首次启动需下载模拟核心（需联网）· ⚙ 菜单可设双人按键 / 存档 / 全屏');
+                    bar.appendChild(back);
+                    bar.appendChild(tip);
+                    play.appendChild(frame);
+                    play.appendChild(bar);
+                    container.appendChild(play);
+                    if (opts.onScore) { try { opts.onScore(''); } catch (e) {} }
+                }).catch(e => {
+                    if (!alive) return;
+                    container.innerHTML = '<div class="emu-empty">加载失败：' + (e && e.message ? e.message : '未知错误') + '</div>';
+                });
             }
 
             function refresh() {
                 if (!alive) return;
-                romList().then(renderList).catch(() => renderList([]));
+                romList().then(d => {
+                    if (!alive) return;
+                    isAdmin = !!d.admin;
+                    renderList(d.roms);
+                });
             }
 
-            // 拖放支持（容器级）
+            // 拖放支持（容器级，仅管理员会看到导入区，但拖放对管理员随时可用）
             container.addEventListener('dragover', e => { e.preventDefault(); });
             container.addEventListener('drop', e => {
                 e.preventDefault();
-                if (current) return;   // 播放中不响应
+                if (!isAdmin) return;
                 const fs = e && e.dataTransfer && e.dataTransfer.files;
                 if (fs && fs.length) handleFiles(Array.prototype.slice.call(fs));
             });

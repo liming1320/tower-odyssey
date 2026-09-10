@@ -2633,6 +2633,102 @@ api['GET /api/admin/minigame/order'] = (req, res) => {
     sendJson(res, 200, { order, all, names: MINIGAME_NAMES, saved: savedOrder.length > 0 });
 };
 
+// ---- 经典模拟器 ROM 库：管理员上传（存 data/roms/ 磁盘文件，元数据进 DB）· 全员游玩 ----
+// ROM 是二进制大文件，不适合塞进 db.json / MySQL 表；业界通行做法（yikm/dos.lol 同理）都是磁盘文件 + 元数据入库
+const ROMS_DIR = path.join(DATA_DIR, 'roms');
+const ROM_MAX_BYTES = 512 * 1024 * 1024;   // 单文件上限 512MB（PS1 级别也够）
+const ROM_CORES = new Set(['nes', 'snes', 'gb', 'gba', 'segaMD', 'n64', 'psx', 'dosbox', 'arcade']);
+
+function romAdminOk(req) {
+    // 双通道：后台独立管理员令牌（admin/workbuddy）或玩家端 isAdmin 账号（第一个注册的玩家）
+    if (isAdminToken(req)) return true;
+    const u = getUserByToken(req);
+    return !!(u && (u.isAdmin || u.id === 'admin'));
+}
+const romMeta = r => ({ id: r.id, name: r.name, core: r.core, size: r.size, addedAt: r.addedAt, by: r.by || '' });
+
+// 玩家：拉取 ROM 列表（含当前账号是否管理员，前端据此决定是否显示导入区）
+api['GET /api/roms'] = (req, res) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    sendJson(res, 200, { roms: (DB.roms || []).map(romMeta), admin: romAdminOk(req) });
+};
+// 玩家：下载 ROM（鉴权后流式回传，前端转 blob 喂给模拟器）
+api['GET /api/roms/download'] = (req, res) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const id = String(url.parse(req.url, true).query.id || '');
+    const rom = (DB.roms || []).find(r => r.id === id);
+    if (!rom || !/^[A-Za-z0-9_-]+$/.test(id)) return sendJson(res, 404, { error: 'ROM 不存在' });
+    const file = path.join(ROMS_DIR, id + '.bin');
+    if (!fs.existsSync(file)) return sendJson(res, 404, { error: 'ROM 文件缺失' });
+    res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': fs.statSync(file).size,
+        'Cache-Control': 'private, max-age=86400',
+    });
+    fs.createReadStream(file).pipe(res);
+};
+// 管理员：上传 ROM（原始二进制流式落盘，不走 readBody 的 JSON 解析）
+api['POST /api/roms/upload'] = (req, res) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员可上传 ROM' });
+    const q = url.parse(req.url, true).query;
+    const name = String(q.name || '').slice(0, 120).replace(/[<>&"'/\\]/g, '');
+    const core = String(q.core || '');
+    if (!name || !ROM_CORES.has(core)) return sendJson(res, 400, { error: '参数不完整（name/core）' });
+    const declared = parseInt(req.headers['content-length'] || '0', 10);
+    if (declared > ROM_MAX_BYTES) return sendJson(res, 413, { error: '文件过大（上限 512MB）' });
+    fs.mkdirSync(ROMS_DIR, { recursive: true });
+    const id = 'rom_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const file = path.join(ROMS_DIR, id + '.bin');
+    let received = 0, over = false, done = false;
+    const finish = (code, data) => { if (done) return; done = true; sendJson(res, code, data); };
+    const cleanup = () => { try { fs.unlinkSync(file); } catch (e) {} };
+    const out = fs.createWriteStream(file);
+    out.on('error', e => { cleanup(); finish(500, { error: '写入失败：' + e.message }); });
+    req.on('data', c => {
+        if (over) return;
+        received += c.length;
+        if (received > ROM_MAX_BYTES) {
+            over = true;
+            out.destroy();
+            cleanup();
+            finish(413, { error: '文件过大（上限 512MB）' });
+            return;
+        }
+        if (!out.write(c)) {          // 写入背压：磁盘忙时暂停接收，drain 后恢复
+            req.pause();
+            out.once('drain', () => req.resume());
+        }
+    });
+    req.on('end', () => {
+        if (over) return;
+        if (done) { cleanup(); return; }
+        if (received === 0) { cleanup(); return finish(400, { error: '空文件' }); }
+        out.end(() => {
+            const u = getUserByToken(req);
+            DB.roms = DB.roms || [];
+            DB.roms.push({ id, name, core, size: received, addedAt: Date.now(), by: (u && u.username) || 'admin' });
+            save();
+            finish(200, { ok: true, id, size: received });
+        });
+    });
+    req.on('error', () => { out.destroy(); cleanup(); finish(500, { error: '上传中断' }); });
+};
+// 管理员：删除 ROM（元数据 + 磁盘文件一起清）
+api['POST /api/roms/delete'] = (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员可删除 ROM' });
+    const id = String((body || {}).id || '');
+    if (!/^[A-Za-z0-9_-]+$/.test(id)) return sendJson(res, 400, { error: 'id 不合法' });
+    DB.roms = DB.roms || [];
+    const i = DB.roms.findIndex(r => r.id === id);
+    if (i < 0) return sendJson(res, 404, { error: 'ROM 不存在' });
+    DB.roms.splice(i, 1);
+    try { fs.unlinkSync(path.join(ROMS_DIR, id + '.bin')); } catch (e) {}
+    save();
+    sendJson(res, 200, { ok: true });
+};
+
 api['POST /api/admin/mail'] = (req, res, body) => {
     const user = getUserByToken(req);
     if (!user) return sendJson(res, 401, { error: '未登录' });
@@ -3070,7 +3166,8 @@ const server = http.createServer(async (req, res) => {
         if (pathname.startsWith('/api/')) {
             const key = req.method + ' ' + pathname;
             const handler = api[key];
-            const body = req.method === 'GET' || req.method === 'DELETE' ? {} : await readBody(req);
+            // ROM 上传是原始二进制流（handler 自己流式落盘），不能过 readBody 的 JSON 字符串解析
+            const body = (req.method === 'GET' || req.method === 'DELETE' || pathname === '/api/roms/upload') ? {} : await readBody(req);
             if (handler) return handler(req, res, body);
             return sendJson(res, 404, { error: 'API 不存在' });
         }

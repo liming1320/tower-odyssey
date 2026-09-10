@@ -13,6 +13,9 @@ data/db.json
 game/data/backups/
 data/backups/
 
+# 模拟器 ROM 文件（管理员上传的二进制，仅存本机/服务器，不进仓库）
+data/roms/
+
 # 临时截图/测试产物（可选保留，默认不同步）
 game/tools/shots/
 game/tools/tmp/
