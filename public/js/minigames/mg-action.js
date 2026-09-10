@@ -95,10 +95,29 @@
             for (const b of S.items) {
                 if (b.y > 520 - 50 && Math.abs(b.x - S.x) < 34) {
                     b.done = true;
-                    if (b.bad) S.life--; else S.got++;
+                    if (b.bad) {
+                        S.life--;
+                        // 炸弹：火花四溅 + 大冲击环 + 强震屏
+                        if (api.boom) api.boom(b.x, b.y, { n: 24, shape: 'spark', speed: 210, life: .5, r: 3.4, colors: ['#ff5252', '#ff9d5c', '#ffd56b'], glow: true });
+                        if (api.ring) api.ring(b.x, b.y, { r: 74, color: '#ff5252', lw: 4 });
+                        if (api.pop) api.pop(b.x, b.y - 22, '-1', { color: '#ff8a8a', size: 22 });
+                        if (api.shake) api.shake(11, .36);
+                    } else {
+                        S.got++;
+                        // 接到苹果：小碎点 + 飘分
+                        if (api.boom) api.boom(b.x, b.y, { n: 8, shape: 'dot', speed: 95, life: .4, r: 3, colors: ['#b8ffb8', '#ffd56b'], glow: true });
+                        if (api.pop) api.pop(b.x, b.y - 18, '+1', { color: '#b8ffb8', size: 18 });
+                    }
                     if (S.life <= 0) return api.finish({ win: false, stars: 0, score: S.got, lines: [`接到 ${S.got} 个后失败`] });
                     if (!P.endless && S.got >= P.target) return api.finish({ win: true, stars: S.life >= 3 ? 3 : 2, score: S.got, lines: [`接到 ${S.got} 个苹果`] });
-                } else if (b.y > 540) { b.done = true; if (!b.bad) { S.life--; if (S.life <= 0) return api.finish({ win: false, stars: 0, score: S.got, lines: ['漏接太多'] }); } }
+                } else if (b.y > 540) {
+                    b.done = true;
+                    if (!b.bad) {
+                        S.life--;
+                        if (api.pop) api.pop(b.x, 470, '漏接 -1', { color: '#ffb0b0', size: 17 });
+                        if (S.life <= 0) return api.finish({ win: false, stars: 0, score: S.got, lines: ['漏接太多'] });
+                    }
+                }
             }
             S.items = S.items.filter(b => !b.done && b.y < 560);
         },
@@ -133,6 +152,14 @@
                 const b = S.items[k];
                 if (Math.abs(b.x - x) < b.s / 2 + 4 && Math.abs(b.y - y) < b.s / 2 + 4) {
                     S.items.splice(k, 1); S.score++;
+                    // 爆裂反馈：彩色碎片 + 冲击环 + 飘分 + 轻微震屏
+                    if (api.boom) api.boom(b.x, b.y, {
+                        n: 16, shape: 'confetti', speed: 155, life: .6, r: b.s / 9,
+                        colors: ['#ff7a8b', '#ffd56b', '#7ad0ff', '#b8ffb8', '#ff9d5c'], glow: true,
+                    });
+                    if (api.ring) api.ring(b.x, b.y, { r: b.s * 0.85, color: '#ffe9b0', lw: 2.5 });
+                    if (api.pop) api.pop(b.x, b.y - b.s / 2, '+1', { color: '#fff3c4', size: 18 });
+                    if (api.shake) api.shake(3, .16);
                     if (!P.endless && S.score >= P.target) api.finish({ win: true, stars: 3, score: S.score, lines: [`戳破 ${S.score} 个`] });
                     return;
                 }

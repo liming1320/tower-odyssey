@@ -20,6 +20,9 @@ window.MG = window.MG || {};
         const S = (cfg.init ? cfg.init(P) : {}) || {};
         S.t = 0;
         let raf = null, last = Date.now(), stopped = false, done = false;
+        // 每个游戏实例独立的粒子池与相机（stop() 自动清理，不会串到下一款游戏）
+        const fx = MG.fxPool ? MG.fxPool() : null;
+        const cam = MG.cam ? MG.cam() : null;
 
         const api = {
             finish(res) {
@@ -30,10 +33,21 @@ window.MG = window.MG || {};
             },
             get over() { return done; },
             P, S, W, H, ctx, draw: () => paint(),
+            // ---- 表现力 API（粒子 / 相机 / 补间），游戏可直接调用 ----
+            fx, cam, tw: MG.tw,
+            boom: (x, y, o) => fx && fx.burst(x, y, o),
+            pop: (x, y, s, o) => fx && fx.text(x, y, s, o),
+            ring: (x, y, o) => fx && fx.ring(x, y, o),
+            shake: (a, d) => cam && cam.shake(a, d),
         };
         const paint = () => {
             ctx.clearRect(0, 0, W, H);
+            ctx.save();
+            // 相机变换（震屏/平移/缩放）→ 游戏绘制 → 粒子层（同受相机影响）
+            if (cam) cam.apply(ctx, W, H);
             try { cfg.draw && cfg.draw(ctx, S, P, W, H, api); } catch (e) { if (window.__MG_TEST) throw e; }
+            if (fx) fx.draw(ctx);
+            ctx.restore();
         };
         const pos = e => {
             const r = c.getBoundingClientRect();
@@ -84,6 +98,10 @@ window.MG = window.MG || {};
             const dt = Math.min(0.05, (now - last) / 1000);
             last = now; S.t += dt;
             try {
+                // 补间 / 粒子 / 相机统一在 tick 之前推进，保证当帧即可见
+                if (MG.tw) MG.tw.update(dt);
+                if (fx) fx.update(dt);
+                if (cam) cam.update(dt);
                 if (cfg.tick) cfg.tick(S, dt, P, api);
                 if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
                 if (cfg.check && !done) { const r = cfg.check(S, P); if (r) { api.finish(r); return; } }
