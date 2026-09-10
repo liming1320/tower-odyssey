@@ -43,7 +43,7 @@ const sleep2 = ms => new Promise(r => setTimeout(r, ms));
 
     // 达标 → 完成并晋升
     T.missionHit('bumper', 3);
-    check('达标后推进到下一任务', T.mission.name === '轨道练习', JSON.stringify(T.mission));
+    check('达标后推进到下一任务', T.mission.name === '引擎试车', JSON.stringify(T.mission));
     check('军衔晋升为少尉', T.mission.rank === '少尉');
 
     /* ── 2. 多球 ── */
@@ -56,11 +56,14 @@ const sleep2 = ms => new Promise(r => setTimeout(r, ms));
     check('多球期间正常计分', T.score > 0, 'score=' + T.score);
 
     /* ── 3. 后续任务与军衔 ── */
+    T.missionHit('jet', 8);
+    check('第二任务完成 → 中尉', T.mission.rank === '中尉' && T.mission.name === '轨道练习', JSON.stringify(T.mission));
+
     T.missionHit('ramp', 3);
-    check('第二任务完成 → 中尉', T.mission.rank === '中尉' && T.mission.name === '目标练习', JSON.stringify(T.mission));
+    check('第三任务完成（轨道练习）', T.mission.name === '目标练习', JSON.stringify(T.mission));
 
     T.missionHit('target', 5);
-    check('第三任务完成自动开多球', T.mission.name === '旋转突击', JSON.stringify(T.mission));
+    check('第四任务完成自动开多球', T.mission.name === '旋转突击', JSON.stringify(T.mission));
 
     /* ── 4. 长时间运行稳定性 ── */
     await sleep2(2000);

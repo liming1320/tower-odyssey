@@ -30,23 +30,37 @@ window.MiniGames = window.MiniGames || {};
 
     const DMD = { x: 20, y: 14, w: 380, h: 84 };   // 加高：第三行显示当前任务与进度
 
-    // 缓冲器（3 只，倒三角）
+    // 顶部涡轮引擎 ×3（倒三角布置，原版 turbo bumper 位）
     const BUMPERS = [
-        { x: 120, y: 246, r: 24, hue: 8 },
-        { x: 232, y: 246, r: 24, hue: 48 },
-        { x: 176, y: 312, r: 24, hue: 200 },
+        { x: 120, y: 250, r: 23, hue: 8 },
+        { x: 232, y: 250, r: 23, hue: 48 },
+        { x: 176, y: 314, r: 23, hue: 200 },
     ];
+    // 左侧涡轮引擎 ×3（竖排，原版左路引擎带）
+    const JETS = [
+        { x: 76, y: 292, r: 18, hue: 168 },
+        { x: 76, y: 344, r: 18, hue: 268 },
+        { x: 76, y: 396, r: 18, hue: 320 },
+    ];
+    // 左上角第 7 只引擎：涡轮虫洞（吸入 → 送进左侧火箭管道重新发射）
+    const WARP = { x: 102, y: 212, r: 16 };
     // 小弹力柱
-    const POSTS = [{ x: 72, y: 266, r: 6 }, { x: 280, y: 266, r: 6 },
+    const POSTS = [{ x: 116, y: 262, r: 6 }, { x: 280, y: 262, r: 6 },
     { x: 46, y: 466, r: 6 }, { x: 306, y: 466, r: 6 }];
-    // 落下靶（左排 4 只，靶面朝右）
-    const TARGETS = [300, 334, 368, 402].map((y, i) => ({ i, x: 62, y, w: 7, h: 28, down: false }));
+    // 落下靶（右排 3 只，靶面朝左）
+    const TARGETS = [300, 346, 392].map((y, i) => ({ i, x: 276, y, w: 7, h: 28, down: false }));
     // 旋转门
-    const SPIN = { x: 278, y: 350, w: 30, h: 9 };
+    const SPIN = { x: 128, y: 430, w: 30, h: 9 };
     // 计分洞
     const SAUCER = { x: 176, y: 452, r: 17 };
+    // 翻牌 ×3（Space Cadet 式翻转徽章牌，集齐 3 张开大奖）
+    const CARDS = [
+        { x: 140, y: 392, w: 30, h: 36 },
+        { x: 176, y: 392, w: 30, h: 36 },
+        { x: 212, y: 392, w: 30, h: 36 },
+    ];
     // 顶部滚道灯
-    const LANES = [{ x: 110, y: 202 }, { x: 152, y: 182 }, { x: 200, y: 182 }, { x: 242, y: 202 }];
+    const LANES = [{ x: 140, y: 194 }, { x: 172, y: 178 }, { x: 214, y: 180 }, { x: 250, y: 198 }];
     // 弹弓（三角形，斜边朝向台面中央）
     const SLINGS = [
         { a: [62, 498], b: [124, 558], c: [62, 558] },
@@ -147,6 +161,10 @@ window.MiniGames = window.MiniGames || {};
         RAMP_ENTRY, [312, 372], [306, 300], [288, 244],
         [252, 200], [206, 174], [160, 170], [116, 186], [80, 220], [58, 266],
     ]);
+    // 左侧火箭发射管道：底部入口（外道救球会自然冲入）→ 沿左墙冲顶 → 左上出口喷回台面
+    const TUBE_ENTRY = [42, 548];
+    const TUBE_PATH = mkPath([TUBE_ENTRY, [42, 420], [42, 320], [44, 258], [54, 226], [72, 208]]);
+    const RAIL = { LAUNCH: 0, RAMP: 1, TUBE: 2 };
 
     /* ══════════════════════ 3. 关卡 / 军衔 ══════════════════════ */
     const NAMES = [
@@ -209,19 +227,25 @@ window.MiniGames = window.MiniGames || {};
                     });
                 }
             };
-            const bumps = [0, 0, 0];
-            const flash = { ramp: 0, spin: 0, saucer: 0, target: 0 };
+            const bumps = [0, 0, 0];          // 顶部 3 只引擎命中光
+            const jets = [0, 0, 0];           // 左侧 3 只引擎命中光
+            const cardFace = [0, 0, 0];       // 翻牌当前面：0 背面(未开) 1 正面(徽章)
+            const cardAnim = [0, 0, 0];       // 翻牌翻转进度 0→1
+            const flash = { ramp: 0, spin: 0, saucer: 0, target: 0, warp: 0, card: 0, tube: 0 };
 
             /* ── 任务 / 军衔（Space Cadet 风格：达成目标 → 晋升军衔 → 领取大奖）──
                每个任务盯一类得分事件（kw），累计 need 次即完成并结算 jackpot；
                带 mb 的任务完成后额外开启多球。全部走完停在最终任务继续刷分。 */
             const MISSIONS = [
-                { n: '基础训练', hint: '撞击缓冲器', kw: 'bumper', need: 6, jack: 5000 },
+                { n: '基础训练', hint: '撞击顶部引擎', kw: 'bumper', need: 6, jack: 5000 },
+                { n: '引擎试车', hint: '撞击左侧引擎', kw: 'jet', need: 8, jack: 14000 },
                 { n: '轨道练习', hint: '冲上坡道', kw: 'ramp', need: 3, jack: 12000 },
                 { n: '目标练习', hint: '打落靶子', kw: 'target', need: 5, jack: 9000, mb: 2 },
                 { n: '旋转突击', hint: '转动旋门', kw: 'spin', need: 6, jack: 8000 },
                 { n: '航道点亮', hint: '点亮滚道灯', kw: 'lane', need: 4, jack: 10000 },
-                { n: '虫洞跳跃', hint: '打入计分洞', kw: 'saucer', need: 3, jack: 15000, mb: 2 },
+                { n: '徽章收集', hint: '翻开徽章牌', kw: 'card', need: 6, jack: 25000, mb: 3 },
+                { n: '虫洞跳跃', hint: '吸入涡轮虫洞', kw: 'warp', need: 2, jack: 18000, mb: 2 },
+                { n: '计分洞', hint: '打入计分洞', kw: 'saucer', need: 3, jack: 15000, mb: 2 },
                 { n: '连击大师', hint: '累计得分次数', kw: 'any', need: 40, jack: 30000 },
                 { n: '最终任务', hint: '累计得分次数', kw: 'any', need: 80, jack: 60000, mb: 3 },
             ];
@@ -233,10 +257,13 @@ window.MiniGames = window.MiniGames || {};
             const live = [ball];        // 台面上的球：live[0] 恒为主球（多球时长度 > 1）
             const trail = [];
             let missionIdx = 0, missionProg = 0, missionFlash = 0, mbCount = 0;
-            let onRail = false, railU = 0, railSpeed = 0, railIsRamp = false;
+            let onRail = false, railU = 0, railSpeed = 0, railMode = RAIL.LAUNCH;
             let plunger = 0, plungerHold = false, chargeSfx = true;
             let combo = 0, comboT = 0, mult = 1;
             let saucerHold = 0;
+            let warpHold = 0, warpLock = 0, warpSpin = 0, warpPull = 0, warpFlash = 0;
+            let cardReset = 0;
+            TARGETS.forEach(x => { x.down = false; });
             let toast = '', toastT = 0;
             const lanesOn = [false, false, false, false];
             const kickback = { L: true, R: true };
@@ -288,6 +315,14 @@ window.MiniGames = window.MiniGames || {};
                 shake = Math.max(shake, 0.6); shakeMag = Math.max(shakeMag, 9);
                 spawn(SAUCER.x, SAUCER.y, 26, 300, 1.2);
                 show('★ 多球风暴 ×' + live.length + ' ★', 2.2);
+            }
+            // 左侧火箭管道：球从底部管口被点火，沿左墙冲上顶部，再由左上出口喷回台面
+            function enterTube(sp) {
+                onRail = true; railU = 0; railMode = RAIL.TUBE; railSpeed = sp;
+                flash.tube = 1; sfx('launch');
+                addScore(1200, 'jet');
+                show('火箭管道发射 +1,200', 1.2);
+                spawn(TUBE_ENTRY[0], TUBE_ENTRY[1], 14, 280, 1, -Math.PI / 2);
             }
 
             /* ══════════ 背景预渲染 ══════════ */
@@ -375,8 +410,9 @@ window.MiniGames = window.MiniGames || {};
                     g.fillText('· T O W E R   O D Y S S E Y ·', 176, 546);
 
                     g.font = 'bold 8px "Segoe UI",sans-serif';
-                    g.fillStyle = 'rgba(255,190,90,0.30)'; g.fillText('TARGETS', 62, 452);
-                    g.fillStyle = 'rgba(255,190,90,0.30)'; g.fillText('SPINNER', 278, 386);
+                    g.fillStyle = 'rgba(255,190,90,0.30)'; g.fillText('TARGETS', 276, 428);
+                    g.fillStyle = 'rgba(255,190,90,0.30)'; g.fillText('SPINNER', 128, 460);
+                    g.fillStyle = 'rgba(170,255,225,0.32)'; g.fillText('JETS', 76, 246);
                     g.fillStyle = 'rgba(120,255,200,0.28)'; g.fillText('RAMP', 296, 448);
                     g.fillStyle = 'rgba(255,120,160,0.26)'; g.fillText('JACKPOT', 176, 488);
                     g.fillStyle = 'rgba(180,200,255,0.22)'; g.fillText('KICKBACK', 40, 612);
@@ -538,6 +574,19 @@ window.MiniGames = window.MiniGames || {};
                         shake = Math.max(shake, 0.09); shakeMag = Math.max(shakeMag, 2.2);
                     }
                 });
+                // 左侧涡轮引擎：命中即喷射加速（比顶部引擎更“推”，负责把球送回上半场）
+                JETS.forEach((jt, i) => {
+                    if (hitCircle(ball, jt.x, jt.y, jt.r, 0.58, 470) > 0) {
+                        jets[i] = 1;
+                        addScore(150, 'jet'); combo++; comboT = 2.2;
+                        sfx('jet');
+                        spawn(jt.x, jt.y, 13, jt.hue, 1.15);
+                        // 喷流：沿球离开方向甩出尾焰
+                        const a = Math.atan2(ball.y - jt.y, ball.x - jt.x);
+                        spawn(jt.x + Math.cos(a) * jt.r, jt.y + Math.sin(a) * jt.r, 5, jt.hue, 1.5, a);
+                        shake = Math.max(shake, 0.08); shakeMag = Math.max(shakeMag, 2);
+                    }
+                });
                 SLINGS.forEach(sl => {
                     const v = hitSeg(ball, { x1: sl.a[0], y1: sl.a[1], x2: sl.b[0], y2: sl.b[1], r: 3 }, 0.5, 430);
                     if (v > 0) {
@@ -556,7 +605,7 @@ window.MiniGames = window.MiniGames || {};
                     if (v > 90) {
                         tg.down = true; addScore(600, 'target'); combo++; comboT = 2.2;
                         flash.target = 1; sfx('target');
-                        spawn(tg.x + 4, tg.y, 12, 40, 1.1, 0);
+                        spawn(tg.x - 4, tg.y, 12, 40, 1.1, Math.PI);
                         shake = Math.max(shake, 0.08); shakeMag = Math.max(shakeMag, 2);
                         if (TARGETS.every(x => x.down)) {
                             addScore(4000); show('靶组全清 +4,000', 1.6); sfx('jackpot');
@@ -590,7 +639,7 @@ window.MiniGames = window.MiniGames || {};
                 if (!onRail && ball.vy < -40 &&
                     Math.hypot(ball.x - RAMP_ENTRY[0], ball.y - RAMP_ENTRY[1]) < 20 &&
                     canTrigger('ramp', 0.8)) {
-                    onRail = true; railU = 0; railIsRamp = true; railSpeed = 640;
+                    onRail = true; railU = 0; railMode = RAIL.RAMP; railSpeed = 640;
                     addScore(1800, 'ramp'); combo++; comboT = 2.2; sfx('ramp'); flash.ramp = 1;
                     show('坡道达成 +1,800', 1.2);
                 }
@@ -603,6 +652,46 @@ window.MiniGames = window.MiniGames || {};
                     show('计分洞 +' + win.toLocaleString(), 1.4);
                     shake = Math.max(shake, 0.2); shakeMag = Math.max(shakeMag, 4);
                     spawn(SAUCER.x, SAUCER.y, 18, 45, 1.2);
+                }
+                // 涡轮虫洞（左上角第 7 只引擎）：吸入 → 送进左侧火箭管道点火发射
+                if (!warpHold && warpLock <= 0 && !onRail && ball === live[0] &&
+                    Math.hypot(ball.x - WARP.x, ball.y - WARP.y) < WARP.r - 2 &&
+                    Math.hypot(ball.vx, ball.vy) < 1700) {
+                    warpHold = 0.72; warpPull = 0; warpFlash = 1; flash.warp = 1;
+                    ball.vx = ball.vy = 0;
+                    addScore(3000, 'warp'); combo++; comboT = 2.2;
+                    sfx('saucer');
+                    show('虫洞吸入 · 火箭管道点火', 1.6);
+                    shake = Math.max(shake, 0.24); shakeMag = Math.max(shakeMag, 5);
+                    spawn(WARP.x, WARP.y, 20, 275, 1.2);
+                }
+                // 翻牌：球滚过徽章牌即翻转，集齐 3 张开大奖
+                if (cardReset <= 0) {
+                    CARDS.forEach((cd, i) => {
+                        if (cardAnim[i] > 0 || cardFace[i] === 1) return;
+                        if (Math.abs(ball.x - cd.x) < cd.w / 2 + 3 &&
+                            Math.abs(ball.y - cd.y) < cd.h / 2 + 3) {
+                            cardFace[i] = 1; cardAnim[i] = 0.001;
+                            addScore(800, 'card'); combo++; comboT = 2.2;
+                            sfx('target'); flash.card = 1;
+                            spawn(cd.x, cd.y, 12, 45, 1);
+                            if (cardFace.every(v => v === 1)) {
+                                cardReset = 1.15;
+                                score += 15000;
+                                show('★ 徽章集齐 +15,000 ★', 2.0);
+                                sfx('jackpot');
+                                spawn(176, 392, 30, 50, 1.4);
+                                shake = Math.max(shake, 0.36); shakeMag = Math.max(shakeMag, 6);
+                                startMultiball(2);
+                            }
+                        }
+                    });
+                }
+                // 左侧火箭管道入口：向上冲进管口即被点火，沿左墙冲顶后喷出
+                if (!onRail && ball.vy < -240 &&
+                    Math.hypot(ball.x - TUBE_ENTRY[0], ball.y - TUBE_ENTRY[1]) < 24 &&
+                    canTrigger('tubeIn', 0.5)) {
+                    enterTube(660);
                 }
                 hitFlipper(ball, FL);
                 hitFlipper(ball, FR);
@@ -656,6 +745,23 @@ window.MiniGames = window.MiniGames || {};
             function step(dt) {
                 if (over) return;
                 dt = Math.min(dt, 0.05);
+                warpLock = Math.max(0, warpLock - dt);
+                warpFlash = Math.max(0, warpFlash - dt * 1.8);
+                // 集齐大奖后延时翻回背面
+                if (cardReset > 0) {
+                    cardReset = Math.max(0, cardReset - dt);
+                    if (cardReset === 0) {
+                        for (let i = 0; i < 3; i++) {
+                            if (cardFace[i] === 1) { cardFace[i] = 0; cardAnim[i] = 0.001; }
+                        }
+                    }
+                }
+                for (let i = 0; i < 3; i++) {
+                    if (cardAnim[i] > 0) {
+                        cardAnim[i] += dt * 2.4;
+                        if (cardAnim[i] >= 1) cardAnim[i] = 0;
+                    }
+                }
 
                 // 挡板
                 [FL, FR].forEach(f => {
@@ -676,7 +782,7 @@ window.MiniGames = window.MiniGames || {};
                         if (chargeSfx) { sfx('charge'); chargeSfx = false; }
                         plunger = Math.min(1, plunger + dt * 1.4);
                     } else if (plunger > 0.08) {
-                        onRail = true; railU = 0; railIsRamp = false;
+                        onRail = true; railU = 0; railMode = RAIL.LAUNCH;
                         railSpeed = 1150 + 620 * plunger;
                         launched = true; plunger = 0; chargeSfx = true;
                         sfx('launch'); shake = Math.max(shake, 0.12); shakeMag = Math.max(shakeMag, 3);
@@ -687,10 +793,12 @@ window.MiniGames = window.MiniGames || {};
                     return;
                 }
 
-                // 管道滑行
+                // 管道滑行（发射巷 / 坡道 / 左侧火箭管道）
                 if (onRail) {
-                    const path = railIsRamp ? RAMP_PATH : LAUNCH_PATH;
-                    railSpeed = Math.max(430, railSpeed - 240 * dt);
+                    const path = railMode === RAIL.RAMP ? RAMP_PATH
+                        : railMode === RAIL.TUBE ? TUBE_PATH : LAUNCH_PATH;
+                    const floor = railMode === RAIL.TUBE ? 540 : 430;
+                    railSpeed = Math.max(floor, railSpeed - 240 * dt);
                     railU += (railSpeed * dt) / path.total;
                     const p = path.at(railU);
                     ball.x = p.x; ball.y = p.y;
@@ -698,9 +806,17 @@ window.MiniGames = window.MiniGames || {};
                     if (railU >= 1) {
                         onRail = false;
                         const pl = path.at(1);
-                        ball.vx = pl.tx * railSpeed * 0.66 - 40;
-                        ball.vy = pl.ty * railSpeed * 0.66;
-                        spawn(ball.x, ball.y, 8, 190, 0.7);
+                        if (railMode === RAIL.TUBE) {
+                            // 出口在左上：向右上高速喷回台面
+                            ball.vx = pl.tx * railSpeed * 0.85 + 40;
+                            ball.vy = pl.ty * railSpeed * 0.85;
+                            warpLock = 0.45;             // 出管瞬间不会被虫洞立刻吸回
+                            sfx('kick'); spawn(ball.x, ball.y, 14, 275, 1.1);
+                        } else {
+                            ball.vx = pl.tx * railSpeed * 0.66 - 40;
+                            ball.vy = pl.ty * railSpeed * 0.66;
+                            spawn(ball.x, ball.y, 8, 190, 0.7);
+                        }
                     }
                     pushTrail();
                     return;
@@ -711,13 +827,28 @@ window.MiniGames = window.MiniGames || {};
                 if (saucerHold > 0) {
                     saucerHold -= dt;
                     ball.x = SAUCER.x; ball.y = SAUCER.y; ball.vx = ball.vy = 0;
-                    if (saucerHold <= 0) {
-                        ball.y = SAUCER.y - 4;
-                        ball.vy = -880; ball.vx = (Math.random() - 0.5) * 220;
-                        sfx('kick'); spawn(SAUCER.x, SAUCER.y, 12, 45, 1);
+                        if (saucerHold <= 0) {
+                            ball.y = SAUCER.y - 4;
+                            ball.vy = -880; ball.vx = (Math.random() - 0.5) * 220;
+                            sfx('kick'); spawn(SAUCER.x, SAUCER.y, 12, 45, 1);
+                        }
+                        mainFrozen = true;
                     }
-                    mainFrozen = true;
-                }
+                    // 涡轮虫洞：漩涡加速吸入 → 传送到左侧管道底部 → 点火冲顶
+                    if (warpHold > 0) {
+                        warpHold -= dt;
+                        warpSpin += dt * (6 + (1 - Math.max(0, warpHold / 0.72)) * 34);
+                        warpPull = Math.min(1, warpPull + dt * 3.4);
+                        ball.x = lerp(ball.x, WARP.x, Math.min(1, dt * 9));
+                        ball.y = lerp(ball.y, WARP.y, Math.min(1, dt * 9));
+                        ball.vx = ball.vy = 0;
+                        if (warpHold <= 0) {
+                            ball.x = TUBE_ENTRY[0]; ball.y = TUBE_ENTRY[1];
+                            warpPull = 0;
+                            enterTube(880);
+                        }
+                        mainFrozen = true;
+                    }
 
                 // 物理子步：主球 + 多球统一推进
                 // 技巧：每颗球处理前把闭包变量 ball 指向它，collide()/hitFlipper() 无需改动即可复用
@@ -948,6 +1079,270 @@ window.MiniGames = window.MiniGames || {};
                 ctx.restore();
             }
 
+            /* ── 涡轮引擎：顶部 3 只 + 左侧 3 只，统一造型（金属环 + 旋转扇叶 + 发光核心）── */
+            function drawTurbine(x, y, r, hue, hit, ph) {
+                ctx.save();
+                const gr = r + 9 + hit * 20;
+                const gg = ctx.createRadialGradient(x, y, r * 0.4, x, y, gr);
+                gg.addColorStop(0, `hsla(${hue},95%,62%,${0.24 + hit * 0.5})`);
+                gg.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = gg;
+                ctx.beginPath(); ctx.arc(x, y, gr, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#161f38';
+                ctx.beginPath(); ctx.ellipse(x, y + 7, r + 4, r * 0.6, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#5f74a8'; ctx.lineWidth = 1.5; ctx.stroke();
+
+                const sk = ctx.createLinearGradient(x, y - r, x, y + r);
+                sk.addColorStop(0, '#e8eefc'); sk.addColorStop(0.42, '#93a6cc');
+                sk.addColorStop(0.64, '#48577c'); sk.addColorStop(1, '#2a3450');
+                ctx.fillStyle = sk;
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#080d1a';
+                ctx.beginPath(); ctx.arc(x, y, r * 0.79, 0, Math.PI * 2); ctx.fill();
+
+                ctx.save();
+                ctx.translate(x, y); ctx.rotate(ph);
+                const blades = 5;
+                for (let i = 0; i < blades; i++) {
+                    ctx.save(); ctx.rotate(i / blades * Math.PI * 2);
+                    const bg = ctx.createLinearGradient(0, 0, r * 0.74, 0);
+                    bg.addColorStop(0, `hsla(${hue},80%,${60 + hit * 20}%,0.95)`);
+                    bg.addColorStop(1, `hsla(${hue},85%,${32 + hit * 22}%,0.7)`);
+                    ctx.fillStyle = bg;
+                    ctx.beginPath();
+                    ctx.moveTo(r * 0.16, -r * 0.08);
+                    ctx.quadraticCurveTo(r * 0.5, -r * 0.36, r * 0.76, -r * 0.07);
+                    ctx.quadraticCurveTo(r * 0.5, r * 0.16, r * 0.16, r * 0.11);
+                    ctx.closePath(); ctx.fill();
+                    ctx.restore();
+                }
+                ctx.restore();
+
+                const cg = ctx.createRadialGradient(x - r * 0.1, y - r * 0.12, r * 0.04, x, y, r * 0.34);
+                cg.addColorStop(0, '#ffffff');
+                cg.addColorStop(0.36, `hsl(${hue},100%,${70 + hit * 20}%)`);
+                cg.addColorStop(1, `hsla(${hue},90%,${38 + hit * 22}%,0.92)`);
+                ctx.fillStyle = cg;
+                ctx.beginPath(); ctx.arc(x, y, r * 0.3, 0, Math.PI * 2); ctx.fill();
+
+                ctx.strokeStyle = 'rgba(220,235,255,0.75)'; ctx.lineWidth = 1.4;
+                ctx.beginPath(); ctx.arc(x, y, r - 0.8, 0, Math.PI * 2); ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 2.6;
+                ctx.beginPath(); ctx.arc(x, y - 1, r * 0.9, -2.4, -0.7); ctx.stroke();
+                for (let i = 0; i < 3; i++) {
+                    const a = i / 3 * Math.PI * 2 + 0.5;
+                    ctx.fillStyle = '#c9d6f0';
+                    ctx.beginPath();
+                    ctx.arc(x + Math.cos(a) * (r + 3), y + Math.sin(a) * (r + 3), 2.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                if (hit > 0.02) {
+                    ctx.strokeStyle = `hsla(${hue},100%,78%,${hit})`;
+                    ctx.lineWidth = 2 + hit * 3;
+                    ctx.beginPath(); ctx.arc(x, y, r + (1 - hit) * 22, 0, Math.PI * 2); ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            function drawBumpers() {
+                BUMPERS.forEach((bp, i) =>
+                    drawTurbine(bp.x, bp.y, bp.r, bp.hue, bumps[i], t * (2.3 + i * 0.7) + i * 1.3));
+            }
+            function drawJets() {
+                JETS.forEach((jt, i) =>
+                    drawTurbine(jt.x, jt.y, jt.r, jt.hue, jets[i], -t * (2.6 + i * 0.5) + i * 1.7));
+            }
+
+            /* ── 左上角第 7 只引擎：涡轮虫洞（吸入 → 送进左侧火箭管道）── */
+            function drawWarpJet() {
+                const x = WARP.x, y = WARP.y, r = WARP.r;
+                ctx.save();
+                const gg = ctx.createRadialGradient(x, y, r * 0.3, x, y, r + 16 + warpFlash * 14);
+                gg.addColorStop(0, `rgba(170,120,255,${0.40 + warpFlash * 0.45})`);
+                gg.addColorStop(0.55, 'rgba(120,70,220,0.18)');
+                gg.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = gg;
+                ctx.beginPath(); ctx.arc(x, y, r + 16 + warpFlash * 14, 0, Math.PI * 2); ctx.fill();
+
+                const sk = ctx.createLinearGradient(x, y - r, x, y + r);
+                sk.addColorStop(0, '#dfe6fb'); sk.addColorStop(0.45, '#8c9ecb');
+                sk.addColorStop(0.72, '#414f76'); sk.addColorStop(1, '#232c46');
+                ctx.fillStyle = sk;
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+
+                for (let i = 0; i < 6; i++) {
+                    const a = i / 6 * Math.PI * 2 + warpSpin * 0.22;
+                    ctx.save();
+                    ctx.translate(x + Math.cos(a) * r * 0.86, y + Math.sin(a) * r * 0.86);
+                    ctx.rotate(a);
+                    ctx.fillStyle = 'rgba(205,185,255,0.55)';
+                    ctx.beginPath(); ctx.ellipse(0, 0, r * 0.2, r * 0.09, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                }
+                ctx.fillStyle = '#03040a';
+                ctx.beginPath(); ctx.arc(x, y, r * 0.74, 0, Math.PI * 2); ctx.fill();
+
+                ctx.save();
+                ctx.translate(x, y); ctx.rotate(warpSpin);
+                ctx.lineCap = 'round';
+                for (let s = 0; s < 3; s++) {
+                    ctx.beginPath();
+                    const a0 = s / 3 * Math.PI * 2;
+                    for (let k = 0; k <= 30; k++) {
+                        const u = k / 30;
+                        const ang = a0 + u * 4.3;
+                        const rad = r * 0.72 * (1 - u * (0.92 - warpPull * 0.28));
+                        const px = Math.cos(ang) * rad, py = Math.sin(ang) * rad;
+                        if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                    }
+                    ctx.strokeStyle = `rgba(${150 + s * 26},${110 + s * 32},255,${0.5 + warpFlash * 0.45})`;
+                    ctx.lineWidth = 2.1; ctx.stroke();
+                }
+                ctx.restore();
+
+                const cg = ctx.createRadialGradient(x, y, 0.5, x, y, r * 0.32);
+                cg.addColorStop(0, '#ffffff');
+                cg.addColorStop(0.4, `rgba(190,150,255,${0.8 + warpFlash * 0.2})`);
+                cg.addColorStop(1, 'rgba(60,20,120,0)');
+                ctx.fillStyle = cg;
+                ctx.beginPath(); ctx.arc(x, y, r * 0.32, 0, Math.PI * 2); ctx.fill();
+
+                ctx.strokeStyle = `rgba(205,185,255,${0.5 + flash.warp * 0.5})`;
+                ctx.lineWidth = 1.6;
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+                ctx.save();
+                ctx.font = 'bold 7px "Segoe UI",sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillStyle = `rgba(190,160,255,${0.45 + flash.warp * 0.5})`;
+                ctx.fillText('WARP', x, y + r + 9);
+                ctx.restore();
+            }
+
+            /* ── 左侧火箭发射管道 ── */
+            function drawTubeLeft() {
+                const P = TUBE_PATH.pts;
+                ctx.save();
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(P[0][0], P[0][1]);
+                for (let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
+                ctx.lineWidth = 17; ctx.strokeStyle = 'rgba(6,10,20,0.88)'; ctx.stroke();
+                const g = ctx.createLinearGradient(30, 200, 60, 560);
+                g.addColorStop(0, 'rgba(165,125,255,0.30)');
+                g.addColorStop(0.5, 'rgba(120,90,220,0.16)');
+                g.addColorStop(1, 'rgba(165,125,255,0.30)');
+                ctx.lineWidth = 13; ctx.strokeStyle = g; ctx.stroke();
+                ctx.lineWidth = 2; ctx.strokeStyle = `rgba(210,190,255,${0.45 + flash.tube * 0.5})`; ctx.stroke();
+                ctx.lineWidth = 0.9; ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.beginPath();
+                ctx.moveTo(P[0][0] - 3, P[0][1]);
+                for (let i = 1; i < P.length; i++) ctx.lineTo(P[i][0] - 3, P[i][1]);
+                ctx.stroke();
+                ctx.restore();
+
+                const flow = (t * (0.3 + flash.tube * 0.85)) % 1;
+                for (let k = 0; k < 4; k++) {
+                    const p = TUBE_PATH.at((flow + k * 0.25) % 1);
+                    ctx.fillStyle = `rgba(205,175,255,${0.3 + flash.tube * 0.55})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 2.1, 0, Math.PI * 2); ctx.fill();
+                }
+                // 底部喇叭口
+                ctx.save();
+                ctx.globalAlpha = 0.75 + 0.25 * Math.sin(t * 4);
+                ctx.fillStyle = '#b79bff';
+                ctx.beginPath();
+                ctx.moveTo(TUBE_ENTRY[0] - 11, TUBE_ENTRY[1] + 9);
+                ctx.lineTo(TUBE_ENTRY[0] + 11, TUBE_ENTRY[1] + 9);
+                ctx.lineTo(TUBE_ENTRY[0] + 6, TUBE_ENTRY[1] - 3);
+                ctx.lineTo(TUBE_ENTRY[0] - 6, TUBE_ENTRY[1] - 3);
+                ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#efe6ff';
+                ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('▲', TUBE_ENTRY[0], TUBE_ENTRY[1] + 17);
+                ctx.restore();
+                // 左上出口箭头
+                const pe = TUBE_PATH.at(1);
+                ctx.save();
+                ctx.translate(pe.x, pe.y);
+                ctx.rotate(Math.atan2(pe.ty, pe.tx));
+                ctx.fillStyle = `rgba(190,220,255,${0.7 + flash.tube * 0.3})`;
+                ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-3, -5); ctx.lineTo(-3, 5);
+                ctx.closePath(); ctx.fill();
+                ctx.restore();
+            }
+
+            /* ── 翻牌 ×3：Space Cadet 式翻转徽章牌 ── */
+            function drawBadge(k) {
+                ctx.save();
+                ctx.translate(0, -6);
+                ctx.fillStyle = '#8a4c05';
+                if (k === 0) {
+                    ctx.beginPath();
+                    for (let i = 0; i < 10; i++) {
+                        const a = -Math.PI / 2 + i * Math.PI / 5;
+                        const rr2 = i % 2 ? 3.4 : 8.2;
+                        const px = Math.cos(a) * rr2, py = Math.sin(a) * rr2;
+                        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath(); ctx.fill();
+                } else if (k === 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(-9, 2); ctx.quadraticCurveTo(-4, -7, 0, -1);
+                    ctx.quadraticCurveTo(4, -7, 9, 2);
+                    ctx.quadraticCurveTo(4, 1, 0, 5);
+                    ctx.quadraticCurveTo(-4, 1, -9, 2);
+                    ctx.closePath(); ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(-7, -7); ctx.lineTo(7, -7); ctx.lineTo(7, 1);
+                    ctx.quadraticCurveTo(0, 9, -7, 1);
+                    ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = '#ffd77a';
+                    ctx.fillRect(-1.2, -5, 2.4, 8);
+                    ctx.fillRect(-4.5, -2.6, 9, 1.8);
+                }
+                ctx.restore();
+            }
+            function drawCards() {
+                CARDS.forEach((cd, i) => {
+                    const p = cardAnim[i];
+                    const sx = p > 0 ? Math.abs(Math.cos(p * Math.PI)) : 1;
+                    const face = (p > 0 && p < 0.5) ? 1 - cardFace[i] : cardFace[i];
+                    const w = cd.w, h = cd.h;
+                    ctx.save();
+                    ctx.translate(cd.x, cd.y);
+                    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, h / 2 + 3, w * 0.42 * sx + 2, 3.6, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.scale(Math.max(0.03, sx), 1);
+                    if (face === 1) {
+                        const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+                        g.addColorStop(0, '#fff3c0'); g.addColorStop(0.45, '#ffc93c'); g.addColorStop(1, '#b8790f');
+                        ctx.fillStyle = g; rr(-w / 2, -h / 2, w, h, 4); ctx.fill();
+                        ctx.strokeStyle = '#fff8dc'; ctx.lineWidth = 1.6; ctx.stroke();
+                        drawBadge(i);
+                        ctx.fillStyle = '#7a4b06';
+                        ctx.font = 'bold 7px "Segoe UI",sans-serif';
+                        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.fillText(['CADET', 'PILOT', 'ACE'][i], 0, h / 2 - 7);
+                    } else {
+                        const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+                        g.addColorStop(0, '#3d4c78'); g.addColorStop(0.5, '#26325a'); g.addColorStop(1, '#18213c');
+                        ctx.fillStyle = g; rr(-w / 2, -h / 2, w, h, 4); ctx.fill();
+                        ctx.strokeStyle = `rgba(150,180,240,${0.6 + flash.card * 0.4})`;
+                        ctx.lineWidth = 1.4; ctx.stroke();
+                        ctx.fillStyle = 'rgba(165,200,255,0.85)';
+                        ctx.font = 'bold 16px "Segoe UI",sans-serif';
+                        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.fillText('?', 0, -2);
+                    }
+                    ctx.restore();
+                });
+            }
+
             function drawRamp() {
                 const P = RAMP_PATH.pts;
                 ctx.save();
@@ -1004,47 +1399,6 @@ window.MiniGames = window.MiniGames || {};
                 }
             }
 
-            function drawBumpers() {
-                BUMPERS.forEach((bp, i) => {
-                    const hit = bumps[i];
-                    ctx.save();
-                    const glowR = bp.r + 10 + hit * 22;
-                    const gg = ctx.createRadialGradient(bp.x, bp.y, bp.r * 0.5, bp.x, bp.y, glowR);
-                    gg.addColorStop(0, `hsla(${bp.hue},95%,62%,${0.30 + hit * 0.5})`);
-                    gg.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = gg;
-                    ctx.beginPath(); ctx.arc(bp.x, bp.y, glowR, 0, Math.PI * 2); ctx.fill();
-
-                    ctx.fillStyle = '#1a2440';
-                    ctx.beginPath(); ctx.ellipse(bp.x, bp.y + 8, bp.r + 4, bp.r * 0.55, 0, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = '#5f74a8'; ctx.lineWidth = 1.6; ctx.stroke();
-
-                    const sk = ctx.createLinearGradient(bp.x, bp.y - 6, bp.x, bp.y + 10);
-                    sk.addColorStop(0, `hsl(${bp.hue},72%,52%)`);
-                    sk.addColorStop(1, `hsl(${bp.hue},72%,24%)`);
-                    ctx.fillStyle = sk;
-                    ctx.beginPath(); ctx.ellipse(bp.x, bp.y + 4, bp.r, bp.r * 0.62, 0, 0, Math.PI * 2); ctx.fill();
-
-                    const dm = ctx.createRadialGradient(bp.x - bp.r * 0.35, bp.y - bp.r * 0.45, bp.r * 0.1, bp.x, bp.y, bp.r);
-                    dm.addColorStop(0, `hsl(${bp.hue},100%,${78 + hit * 14}%)`);
-                    dm.addColorStop(0.45, `hsl(${bp.hue},92%,${56 + hit * 16}%)`);
-                    dm.addColorStop(1, `hsl(${bp.hue},85%,${28 + hit * 12}%)`);
-                    ctx.fillStyle = dm;
-                    ctx.beginPath(); ctx.arc(bp.x, bp.y - 3, bp.r * 0.82, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = `hsla(${bp.hue},100%,80%,0.7)`; ctx.lineWidth = 1.4; ctx.stroke();
-                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                    ctx.beginPath();
-                    ctx.ellipse(bp.x - bp.r * 0.3, bp.y - bp.r * 0.48, bp.r * 0.28, bp.r * 0.16, -0.5, 0, Math.PI * 2);
-                    ctx.fill();
-                    if (hit > 0.02) {
-                        ctx.strokeStyle = `hsla(${bp.hue},100%,75%,${hit})`;
-                        ctx.lineWidth = 2 + hit * 3;
-                        ctx.beginPath(); ctx.arc(bp.x, bp.y, bp.r + (1 - hit) * 24, 0, Math.PI * 2); ctx.stroke();
-                    }
-                    ctx.restore();
-                });
-            }
-
             function drawPosts() {
                 POSTS.forEach(p => {
                     ctx.fillStyle = 'rgba(0,0,0,0.35)';
@@ -1065,16 +1419,16 @@ window.MiniGames = window.MiniGames || {};
                         rr(tg.x - tg.w / 2 - 1, tg.y - h, tg.w + 2, tg.h, 2); ctx.fill();
                         ctx.strokeStyle = 'rgba(90,110,160,0.5)'; ctx.lineWidth = 1; ctx.stroke();
                     } else {
-                        const g = ctx.createLinearGradient(tg.x - 4, tg.y, tg.x + 6, tg.y);
-                        g.addColorStop(0, '#5c6a94'); g.addColorStop(0.35, '#ffd98a');
-                        g.addColorStop(0.7, '#f0a93c'); g.addColorStop(1, '#8a5c12');
+                        const g = ctx.createLinearGradient(tg.x + 5, tg.y, tg.x - 5, tg.y);
+                        g.addColorStop(0, '#5c6a94'); g.addColorStop(0.3, '#8a5c12');
+                        g.addColorStop(0.6, '#f0a93c'); g.addColorStop(1, '#ffd98a');
                         ctx.fillStyle = g;
                         rr(tg.x - tg.w / 2 - 1, tg.y - h, tg.w + 2, tg.h, 2.5); ctx.fill();
                         ctx.strokeStyle = 'rgba(255,240,200,0.85)'; ctx.lineWidth = 1.2; ctx.stroke();
                         ctx.fillStyle = 'rgba(255,255,255,0.55)';
                         ctx.fillRect(tg.x - 2, tg.y - h + 3, 1.6, tg.h - 8);
                         ctx.fillStyle = 'rgba(20,26,44,0.9)';
-                        ctx.fillRect(tg.x - tg.w / 2 - 3, tg.y - h - 2, 2, tg.h + 4);
+                        ctx.fillRect(tg.x + tg.w / 2 + 1, tg.y - h - 2, 2, tg.h + 4);
                     }
                 });
             }
@@ -1353,14 +1707,18 @@ window.MiniGames = window.MiniGames || {};
                 ctx.clearRect(-20, -20, GW + 40, GH + 40);
                 drawCabinet();
                 drawPlayfield();
-                drawLanes();
+                drawTubeLeft();
                 drawRamp();
+                drawLanes();
                 drawWalls();
                 drawLaunchTube();
                 drawSaucer();
+                drawCards();
                 drawTargets();
                 drawSpinner();
                 drawBumpers();
+                drawJets();
+                drawWarpJet();
                 drawPosts();
                 drawSlings();
                 drawKickback();
@@ -1396,10 +1754,25 @@ window.MiniGames = window.MiniGames || {};
                         const m = MISSIONS[missionIdx];
                         return { i: missionIdx, prog: missionProg, name: m && m.n, need: m && m.need, rank: RANKS[Math.min(RANKS.length - 1, missionIdx)] };
                     },
-                    addScore, finish, missionHit, startMultiball,
+                    get cards() { return cardFace.slice(); },
+                    get warpHold() { return warpHold; },
+                    get railMode() { return railMode; },
+                    addScore, finish, missionHit, startMultiball, enterTube,
+                    warp() {
+                        if (warpHold > 0 || warpLock > 0) return false;
+                        onRail = false; saucerHold = 0;
+                        warpHold = 0.72; warpPull = 0; warpFlash = 1; flash.warp = 1;
+                        ball.x = WARP.x; ball.y = WARP.y; ball.vx = ball.vy = 0;
+                        addScore(3000, 'warp'); return true;
+                    },
+                    putBallAt(x, y, vx, vy) {
+                        launched = true; onRail = false; saucerHold = 0;
+                        warpHold = 0; warpLock = 0;
+                        ball.x = x; ball.y = y; ball.vx = vx || 0; ball.vy = vy || 0;
+                    },
                     launch(v) {
                         plungerHold = false; plunger = v == null ? 0.9 : v;
-                        onRail = true; railU = 0; railIsRamp = false;
+                        onRail = true; railU = 0; railMode = RAIL.LAUNCH;
                         railSpeed = 1150 + 620 * plunger;
                         launched = true; plunger = 0;
                     },
