@@ -3253,7 +3253,7 @@ const server = http.createServer(async (req, res) => {
             DB.users = st.users;
             DB.tokens = st.tokens || {};
             if ((st.heroes || []).length) DB.heroes = st.heroes;
-            ['chat', 'mails', 'clans', 'world', 'ancient', 'events', 'giftCodes'].forEach(k => {
+            ['chat', 'mails', 'clans', 'world', 'ancient', 'events', 'giftCodes', 'roms'].forEach(k => {
                 const v = st[k];
                 if (v === undefined || v === null) return;
                 const empty = Array.isArray(v) ? v.length === 0 : Object.keys(v).length === 0;
