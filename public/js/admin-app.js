@@ -803,15 +803,20 @@ const AdminApp = {
         const all = (r && (r.all || r.full)) || list.slice();
         const names = (r && r.names) || {};
         const nm = id => names[id] || id;
+        // 内部用 {id, n} 列表：n 是「数字序号」，按 n 升序就是玩家端看到顺序
+        // 保存时按 n 升序展开成 id[] 提交。
+        const items = list.map((id, i) => ({ id, n: i + 1 }));
+        const renum = () => items.sort((a, b) => a.n - b.n).forEach((o, i) => o.n = i + 1);
         body.innerHTML = `
             <div class="admin-note">
-                上下调整玩家端看到的小游戏排序（显示中文名，括号内是内部 id）。点击「💾 保存」后立刻生效，未保存的更改显示「⚠ 未保存」。
+                调整玩家端小游戏排序。<b>拖动</b>或输入<b>序号</b>（数字越小越靠前）→ 1=最前。点击「💾 保存」后立即生效。<br>
+                序号留空=未设（自动按当前位置）。未保存的更改显示「⚠ 未保存」。
             </div>
             <div class="card">
-                <h3>当前排序（${list.length} 个）</h3>
+                <h3>当前排序（${items.length} 个）</h3>
                 <input id="ord-kw" placeholder="🔍 搜索游戏名 / id" style="margin:8px 0;width:100%;max-width:260px">
-                <div id="order-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px"></div>
-                <div class="row" style="margin-top:12px;gap:8px">
+                <div id="order-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px"></div>
+                <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
                     <button class="btn primary" id="ord-save">💾 保存排序</button>
                     <button class="btn ghost" id="ord-reset">↺ 恢复默认</button>
                     <span id="ord-status" style="font-size:12px;color:#b9b3d8"></span>
@@ -822,25 +827,56 @@ const AdminApp = {
         let kw = '';
         const render = () => {
             const key = kw.trim().toLowerCase();
-            const rows = list.map((id, i) => ({ id, i, name: nm(id) }))
+            const sorted = items.slice().sort((a, b) => a.n - b.n);
+            const rows = sorted.map((o, i) => ({ ...o, name: nm(o.id), display: i + 1 }))
                 .filter(o => !key || o.name.toLowerCase().indexOf(key) >= 0 || o.id.toLowerCase().indexOf(key) >= 0);
             ol.innerHTML = rows.map(o => `
-                <div class="ord-row" data-i="${o.i}" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 10px">
-                    <span style="font-size:11px;color:#ffd56b;width:24px;text-align:right">${o.i + 1}</span>
+                <div class="ord-row" data-id="${this.esc(o.id)}" draggable="true" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 10px;cursor:grab">
+                    <span style="font-size:11px;color:#ffd56b;width:18px;text-align:right">${o.display}</span>
+                    <input class="ord-num" type="number" min="1" step="1" value="${o.n}" data-id="${this.esc(o.id)}" title="直接输入序号，1=最前" style="width:48px;padding:2px 4px;background:#1a1428;color:#ffd56b;border:1px solid #555;border-radius:4px;text-align:center">
                     <span style="flex:1;font-size:13px">${this.esc(o.name)}<span style="opacity:.45;font-size:11px"> · ${o.id}</span></span>
-                    <button class="btn ghost small" data-act="up">▲</button>
-                    <button class="btn ghost small" data-act="dn">▼</button>
-                    <button class="btn ghost small" data-act="top">⤒</button>
-                    <button class="btn ghost small" data-act="bot">⤓</button>
+                    <button class="btn ghost small" data-act="up" title="上移一位">▲</button>
+                    <button class="btn ghost small" data-act="dn" title="下移一位">▼</button>
+                    <button class="btn ghost small" data-act="top" title="置顶">⤒</button>
+                    <button class="btn ghost small" data-act="bot" title="置底">⤓</button>
                 </div>
             `).join('') || '<div style="color:#888;padding:12px">没有匹配的小游戏</div>';
             ol.querySelectorAll('.ord-row').forEach(el => {
-                const i = parseInt(el.dataset.i, 10);
-                const go = () => { render(); dirty(); };
-                el.querySelector('[data-act=up]').onclick = () => { if (i > 0) { const t = list[i - 1]; list[i - 1] = list[i]; list[i] = t; go(); } };
-                el.querySelector('[data-act=dn]').onclick = () => { if (i < list.length - 1) { const t = list[i + 1]; list[i + 1] = list[i]; list[i] = t; go(); } };
-                el.querySelector('[data-act=top]').onclick = () => { const x = list.splice(i, 1)[0]; list.unshift(x); go(); };
-                el.querySelector('[data-act=bot]').onclick = () => { const x = list.splice(i, 1)[0]; list.push(x); go(); };
+                const id = el.dataset.id;
+                const item = items.find(x => x.id === id);
+                if (!item) return;
+                const go = () => { renum(); render(); dirty(); };
+                el.querySelector('[data-act=up]').onclick = () => { item.n -= 0.5; go(); };
+                el.querySelector('[data-act=dn]').onclick = () => { item.n += 0.5; go(); };
+                el.querySelector('[data-act=top]').onclick = () => { item.n = -1; go(); };
+                el.querySelector('[data-act=bot]').onclick = () => { item.n = 1e9; go(); };
+                el.querySelector('.ord-num').onchange = (e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (Number.isFinite(v) && v >= 1) item.n = v;
+                    go();
+                };
+            });
+            // HTML5 拖动排序（PC）：拖到某行 → 插入到该 n 之前
+            let dragId = null;
+            ol.querySelectorAll('.ord-row').forEach(el => {
+                el.addEventListener('dragstart', e => {
+                    dragId = el.dataset.id;
+                    el.style.opacity = '0.4';
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                el.addEventListener('dragend', () => { el.style.opacity = ''; dragId = null; });
+                el.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; el.style.borderColor = 'rgba(255,213,107,.8)'; });
+                el.addEventListener('dragleave', () => { el.style.borderColor = ''; });
+                el.addEventListener('drop', e => {
+                    e.preventDefault();
+                    el.style.borderColor = '';
+                    if (!dragId || dragId === el.dataset.id) return;
+                    const src = items.find(x => x.id === dragId);
+                    const dst = items.find(x => x.id === el.dataset.id);
+                    if (!src || !dst) return;
+                    src.n = dst.n - 0.5;
+                    renum(); render(); dirty();
+                });
             });
         };
         let saved = true;
@@ -851,14 +887,16 @@ const AdminApp = {
         render(); clean();
         body.querySelector('#ord-save').onclick = async () => {
             try {
-                await AdminAPI.minigameOrderSave(list);
+                renum();
+                const order = items.slice().sort((a, b) => a.n - b.n).map(o => o.id);
+                await AdminAPI.minigameOrderSave(order);
                 clean(); U.toast('排序已保存，玩家端立即生效');
             } catch (e) { U.toast('保存失败：' + e.message); }
         };
         body.querySelector('#ord-reset').onclick = () => {
             // 恢复默认：按服务端小游戏清单的原始顺序（清空保存值后玩家端也走默认顺序）
-            list.length = 0;
-            all.forEach(id => list.push(id));
+            items.length = 0;
+            all.forEach((id, i) => items.push({ id, n: i + 1 }));
             render(); dirty();
         };
     },

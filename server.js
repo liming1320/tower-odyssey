@@ -2479,7 +2479,12 @@ api['POST /api/mail/claim'] = (req, res, body) => {
 // 进度存档：u.state.minigames = { [gameId]: { [level]: { stars, clears } } }
 // 奖励规则（防刷）：首次通关送钻（关卡越高越多）+ 金币；已通关只升星补差价；重复通关不送
 // MINIGAME_IDS 同时作为排行榜白名单
-const MINIGAME_IDS = new Set([
+// 小游戏 id 白名单：硬编码存量 + 启动时解析玩家端清单自动补齐新游戏。
+// 历史教训：这里曾经漏掉 tank / contra1 / contra2 / pinball，导致它们
+//   ① 管理后台「小游戏排序」页看不到  ② 成绩上报被拒（未知小游戏）→ 排行榜失效。
+// 现在自动同步注册清单，新增小游戏只需在 minigames.js 里 sc(...) 注册即可。
+const MINIGAME_IDS = (() => {
+    const base = [
     // 旧 20
     'gomoku','g2048','banqi','xiangqi','link','match3','snake','tetris','mole','mine','memory','slide15','bulls','sudoku6','hanoi','piano','reaction','breakout','jump','shooter',
     // 新 80
@@ -2492,9 +2497,17 @@ const MINIGAME_IDS = new Set([
     'flashnum','chimp','simon','cardmem','wordmem','spot','pathmem','shadowmatch','whatmiss','reversenum',
     'coinflip','dicehi','slots','bingo','spinner','rpsgame','plinko','lucky7','tapburst','gacha',
     'towerdef','idleclick','life','virus','sandfall','ballance','rocketland','orbit','traffic','growfarm',
-    // 本轮新增
-    'knife','sheep','pocketarmy',
-]);
+    // 动作类
+    'knife','sheep','pocketarmy','tank','contra1','contra2','pinball',
+    ];
+    try {
+        const txt = require('fs').readFileSync(require('path').join(__dirname, 'public', 'js', 'views', 'minigames.js'), 'utf8');
+        const re = /(?:sc|sc2|scard|g)\(\s*['"]([A-Za-z0-9_-]+)['"]/g;
+        let m;
+        while ((m = re.exec(txt))) if (base.indexOf(m[1]) < 0) base.push(m[1]);
+    } catch (e) { /* 读不到就用硬编码清单 */ }
+    return new Set(base);
+})();
 
 // 小游戏中文名：解析玩家端清单文件（sc('id','名称',...) / { id:'x', name:'y' } 两种写法都兼容）
 // 只在启动时读一次并缓存，供管理后台排序页显示中文名
@@ -3253,7 +3266,13 @@ const server = http.createServer(async (req, res) => {
             DB.users = st.users;
             DB.tokens = st.tokens || {};
             if ((st.heroes || []).length) DB.heroes = st.heroes;
-            ['chat', 'mails', 'clans', 'world', 'ancient', 'events', 'giftCodes', 'roms'].forEach(k => {
+            // 自动从 META_KEYS 派生恢复列表（除内置种子模板）——
+            // 历史教训：曾在这里硬编码恢复列表，漏掉 roms/minigameOrder/minigameScores，
+            // 造成排序保存后重启失效 / 排行榜分数丢失。现在新增 META_KEYS 成员自动覆盖
+            // MySQL 启动恢复，不会再漏。
+            const META_FROM_SEED = new Set(['wallSkills', 'treasures',
+                'equipmentTemplates', 'ringTemplates', 'artifactTemplates', 'gemTemplates']);
+            Store.META_KEYS.filter(k => !META_FROM_SEED.has(k)).forEach(k => {
                 const v = st[k];
                 if (v === undefined || v === null) return;
                 const empty = Array.isArray(v) ? v.length === 0 : Object.keys(v).length === 0;
