@@ -62,8 +62,8 @@ const MinigamesView = {
         try {
             const game = window.MiniGames && window.MiniGames[g.id];
             if (!game) throw new Error('未加载到该游戏模块');
-            // 暗棋保留自己的关卡流程（猜拳→对局），模拟器是 ROM 管理器，都走自己的 start
-            if (g.id === 'banqi' || g.id === 'emulator') {
+            // 暗棋保留自己的关卡流程（猜拳→对局），走自己的 start
+            if (g.id === 'banqi') {
                 const inst = game.start(stage, { onScore: s => scoreEl.textContent = s != null ? s : '' });
                 inst && (inst._close = close);
             } else {
@@ -220,9 +220,6 @@ const GAMES = [
     sc('contra1', '魂斗罗·丛林突击', '50 关 + 无尽 · 本地双人 · 横版跑打', '#2f6a3a', '#12301a', ['\ud83c\udfb2', '\ud83d\udc64', '\ud83d\udc64']),
     sc('contra2', '魂斗罗·工厂渗透', '50 关 + 无尽 · 本地双人 · 机械关', '#3a4460', '#141a2a', ['\ud83e\udd16', '\ud83d\udd2b', '\ud83d\udc64']),
     sc('pinball', '三维弹球', '50 关 + 无尽 · 太空军校生 · 挡板弹射', '#2a2440', '#0e0a1c', ['\ud83d\udccf', '\u2b50', '\ud83d\udca5']),
-
-    // 原版 ROM 模拟器（EmulatorJS 引擎，玩家自己导入 ROM 文件）
-    sc('emulator', '经典模拟器·原版ROM', '导入自己的 ROM · FC/SFC/GBA/DOS · 本地双人', '#3a2a5a', '#140c28', ['\ud83d\udc7e', '\ud83c\udfae', '\ud83d\udce6']),
 ];
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合

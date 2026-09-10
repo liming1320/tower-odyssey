@@ -90,8 +90,15 @@
                 const wrap = el('emu-wrap');
                 wrap.appendChild(el('emu-note',
                     '🕹️ <b>经典模拟器</b>（EmulatorJS 引擎，与 yikm / dos.lol 同款技术）<br>' +
-                    '游戏 ROM 由管理员统一上传，<b>所有玩家</b>登录后即可游玩原版。<br>' +
-                    '<span class="emu-tip">操作：模拟器内 ⚙ 菜单可设置 P1/P2 按键（默认 P1 方向键 + Z/X），支持手柄 · 有即时存/读档和全屏</span>'));
+                    '游戏 ROM 由管理员统一上传，<b>所有玩家</b>登录后即可游玩原版。'));
+                wrap.appendChild(el('emu-keys',
+                    '<b>⌨ 键位与操作</b>（支持自定义）<br>' +
+                    '① 打开游戏后<b>点击画面中央</b>，底部弹出模拟器菜单栏<br>' +
+                    '② 点 <b>⚙ 设置 → Control Settings（控制设置）</b> → 选「玩家 1」或「玩家 2」<br>' +
+                    '③ 点击要改的按键 → <b>按下新按键</b>（键盘 / 手柄都可以）→ 点 Save 保存<br>' +
+                    '④ 默认键位（FC 类）：P1 方向键=十字键 · <b>Z / X = A / B</b> · Enter=开始 · Shift=选择<br>' +
+                    '⑤ 本地双人：给「玩家 2」单独设一套按键，或直接插手柄自动识别；<br>' +
+                    '　　模拟器菜单里还有 <b>即时存档 / 读档</b>（Save State / Load State）和 <b>全屏</b>'));
 
                 if (!roms.length) {
                     wrap.appendChild(el('emu-empty', '管理员还没有上传游戏，敬请期待。'));
@@ -139,7 +146,7 @@
                     back.className = 'emu-btn emu-btn-back';
                     back.textContent = '⏏ 返回列表';
                     back.onclick = refresh;
-                    const tip = el('emu-playtip', '加载中…首次启动需下载模拟核心（需联网）· ⚙ 菜单可设双人按键 / 存档 / 全屏');
+                    const tip = el('emu-playtip', '加载中…首次启动需下载模拟核心（需联网）· 点击画面呼出菜单，⚙ Control Settings 可改 P1/P2 键位、存档、全屏');
                     bar.appendChild(back);
                     bar.appendChild(tip);
                     play.appendChild(frame);

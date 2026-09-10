@@ -168,22 +168,47 @@ class CDP {
     assert(/DOS/.test(zipOk.meta), 'zip 以 DOS 核心入库：' + (zipOk.meta.split('·')[0] || '').trim());
     await cdp.shot(path.join(OUT, 'emu-admin-zip.png'));
 
-    // ⑤ 玩家端：设置 → 小游戏 → 模拟器（列表共享 · 无导入区）
-    console.log('\n⑤ 玩家端：列表共享 · 纯浏览');
+    // ⑤ 玩家端：设置面板 → 经典模拟器（独立入口 · 列表共享 · 无导入区）
+    console.log('\n⑤ 玩家端：设置面板独立入口');
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 420, height: 880, deviceScaleFactor: 2, mobile: true });
     await cdp.send('Page.navigate', { url: BASE });
     await sleep(1800);
     await cdp.eval(`localStorage.setItem('game-token', ${JSON.stringify(playerToken)})`);
     await cdp.send('Page.navigate', { url: BASE });
     await sleep(2000);
+
+    // ⑤.a 先确认小游戏列表已无模拟器卡片
     await cdp.eval(`document.getElementById('btn-avatar').click()`);
     await sleep(500);
     await cdp.eval(`document.getElementById('pi-settings').click()`);
     await sleep(500);
     await cdp.eval(`document.querySelector('.set-tile[data-act="mini"]').click()`);
+    await sleep(1400);
+    const miniList = await cdp.eval(`(() => ({
+        emu: document.querySelectorAll('.mini-card[data-id="emulator"]').length,
+        total: document.querySelectorAll('.mini-card').length,
+    }))()`);
+    assert(miniList.emu === 0, '小游戏列表已无模拟器卡片（共 ' + miniList.total + ' 款）');
+    await cdp.eval(`App.switchTab(App.tab)`);
+    await sleep(600);
+
+    // ⑤.b 设置面板 → 经典模拟器 tile（应紧挨在小游戏后面）
+    await cdp.eval(`document.getElementById('btn-avatar').click()`);
+    await sleep(500);
+    await cdp.eval(`document.getElementById('pi-settings').click()`);
+    await sleep(500);
+    const setTiles = await cdp.eval(`(() => {
+        const tiles = Array.from(document.querySelectorAll('.set-tile'));
+        const idx = tiles.findIndex(t => t.dataset.act === 'mini');
+        const emu = tiles.find(t => t.dataset.act === 'emu');
+        return { emu: !!emu, afterMini: emu ? tiles.indexOf(emu) === idx + 1 : false };
+    })()`);
+    assert(setTiles.emu, '设置面板出现「经典模拟器」入口');
+    assert(setTiles.afterMini, '入口位于「小游戏」后面');
+    await cdp.shot(path.join(OUT, 'emu-settings-tile.png'));
+    await cdp.eval(`document.querySelector('.set-tile[data-act="emu"]').click()`);
     await sleep(1200);
-    await cdp.eval(`document.querySelector('.mini-card[data-id="emulator"]').click()`);
-    await sleep(1000);
+
     const playerView = await cdp.eval(`(() => {
         const items = Array.from(document.querySelectorAll('.emu-item'));
         return {
@@ -193,8 +218,12 @@ class CDP {
             drop: !!document.querySelector('.emu-drop'),
             del: !!document.querySelector('.emu-btn-del'),
             play: document.querySelectorAll('.emu-btn-play').length,
+            keys: !!document.querySelector('.emu-keys'),
+            mask: !!document.getElementById('emu-mask'),
         };
     })()`);
+    assert(playerView.mask, '独立全屏容器（mini-mask）打开');
+    assert(playerView.keys, '键位说明区显示');
     assert(playerView.mine === 2 && playerView.names.some(n => n === nesName) && playerView.names.some(n => n === zipName), '玩家看到后台本轮上传的 2 个 ROM（总 ' + playerView.total + '）');
     assert(!playerView.drop, '玩家端无导入区');
     assert(!playerView.del, '玩家端无删除按钮');

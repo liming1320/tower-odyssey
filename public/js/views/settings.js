@@ -29,6 +29,10 @@ const SettingsView = {
                     <div class="set-tile-ico">🎮</div>
                     <div>小游戏</div>
                 </div>
+                <div class="set-tile" data-act="emu">
+                    <div class="set-tile-ico">🕹️</div>
+                    <div>经典模拟器</div>
+                </div>
                 <div class="set-tile" data-act="privacy">
                     <div class="set-tile-ico">📜</div>
                     <div>隐私政策</div>
@@ -71,6 +75,8 @@ const SettingsView = {
         if (act === 'mini') {
             U.closeModal();
             MinigamesView.open(app);
+        } else if (act === 'emu') {
+            this.openEmulator(app);
         } else if (act === 'privacy') {
             this.showDoc('隐私政策', PRIVACY_DOC);
         } else if (act === 'agreement') {
@@ -86,6 +92,32 @@ const SettingsView = {
         } else if (act === 'logout') {
             U.closeModal();
             (async () => { try { await API.logout(); } catch (e) {} API.clearToken(); location.reload(); })();
+        }
+    },
+
+    // 经典模拟器：独立全屏入口（不在小游戏列表里）
+    openEmulator(app) {
+        U.closeModal();
+        const mask = U.el(`<div class="mini-mask" id="emu-mask">
+            <div class="mini-topbar">
+                <button class="btn-back" id="emu-back">‹ 返回</button>
+                <div class="mini-title">🕹️ 经典模拟器</div>
+                <div class="mini-score" id="emu-score"></div>
+            </div>
+            <div class="mini-stage" id="emu-stage"></div>
+        </div>`);
+        document.body.appendChild(mask);
+        const stage = document.getElementById('emu-stage');
+        const scoreEl = document.getElementById('emu-score');
+        const close = () => mask.remove();
+        document.getElementById('emu-back').onclick = close;
+        try {
+            const game = window.MiniGames && window.MiniGames.emulator;
+            if (!game) throw new Error('未加载到模拟器模块');
+            const inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; } });
+            inst && (inst._close = close);
+        } catch (e) {
+            stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
         }
     },
 
