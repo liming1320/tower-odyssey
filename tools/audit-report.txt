@@ -1,0 +1,130 @@
+已加载脚本 35 个 · 游戏清单 103 款
+
+=== 一、关卡与参数完整性 ===
+游戏	原关卡	补齐后	关卡参数字段
+gomoku	50	50	-
+g2048	50	50	target,moves,rocks
+banqi	15	15	-
+xiangqi	50	50	-
+link	50	50	cols,rows,time
+match3	50	50	score,moves
+snake	20	50	-
+tetris	20	50	-
+mole	20	50	-
+mine	20	50	-
+memory	20	50	-
+slide15	20	50	-
+bulls	20	50	-
+sudoku6	20	50	-
+hanoi	20	50	-
+piano	20	50	-
+reaction	20	50	-
+breakout	20	50	-
+jump	20	50	-
+shooter	20	50	-
+tictactoe	50	50	mis
+connect4	50	50	mis
+reversi	50	50	mis
+nim	50	50	n,max,mis
+battleship	50	50	n,ships,shots
+dots	50	50	n,mis
+mancala	50	50	seed,mis
+queens	50	50	n
+peg	50	50	goal
+breakthru	50	50	n,mis
+chess	50	50	mis
+junqi	50	50	n,mis
+solitaire	50	50	draw
+spider	50	50	strict,cols
+freecell	50	50	-
+pyramid	50	50	deals
+blackjack	50	50	goal
+poker	50	50	rounds
+war	50	50	n
+monopoly	50	50	start,goal,rounds,ai,mul
+maze	50	50	n
+lightsout	50	50	n
+floodit	50	50	n,c
+pipes	50	50	n
+nonogram	50	50	n
+sudoku9	50	50	holes
+numberpath	50	50	n,len
+sokoban	50	50	idx
+blockpuzzle	50	50	n,goal
+mastermind	50	50	len,col,tries
+flappy	50	50	gap,spd,target
+dodge	50	50	spd,rate,time
+catcher	50	50	spd,rate,target,miss
+balloonpop	50	50	spd,rate,target
+archery	50	50	wind,move,target,arrows
+basketball	50	50	move,target,shots
+darts	50	50	spd,target,darts
+fishing	50	50	spd,n,target
+helicopter	50	50	spd,gap,target
+stacker	50	50	spd,target
+mathquiz	50	50	need,ops
+stroop	50	50	need,mode
+higherlower	50	50	need,range
+oddone	50	50	need,n
+idiom	50	50	need
+trivia	50	50	need
+counting	50	50	need,n
+estimate	50	50	need,tol
+clockread	50	50	need,fine
+sequence	50	50	need,hard
+flashnum	50	50	need,len,ms
+chimp	50	50	need,ms
+simon	50	50	need,spd
+cardmem	50	50	need,cnt,ms
+wordmem	50	50	need,cnt,ms
+spot	50	50	need,n
+pathmem	50	50	need,len,spd
+shadowmatch	50	50	need
+whatmiss	50	50	need,cnt,ms
+reversenum	50	50	need,len
+coinflip	50	50	need
+dicehi	50	50	need
+slots	50	50	need
+bingo	50	50	need,draws
+spinner	50	50	need,seg
+rpsgame	50	50	need
+plinko	50	50	need
+lucky7	50	50	need
+tapburst	50	50	need,sec
+gacha	50	50	need,tickets
+towerdef	50	50	need,hp
+idleclick	50	50	need
+life	50	50	n,gens,target
+virus	50	50	n,rate,clicks
+sandfall	50	50	target
+ballance	50	50	need,tilt
+rocketland	50	50	need,fuel
+orbit	50	50	need,spd
+traffic	50	50	need,spd
+growfarm	50	50	need,grow
+knife	50	50	omega,knives,baseLen
+sheep	50	50	types,count
+pocketarmy	50	50	t,target,initArmy,atk,spawnGap,enemyMul,gateMul
+
+=== 二、运行时冒烟（第1/25/50关 + 随机交互，每款独立进程 10s 超时）===
+❌ sudoku6	第1关 prompt is not defined @ onTap (/js/minigames/sudoku6.js:97:23) ｜ 第25关 prompt is not defined @ onTap (/js/minigames/sudoku6.js:97:23) ｜ 第50关 prompt is not defined @ onTap (/js/minigames/sudoku6.js:97:23)
+
+共 1 款在启动/交互时出问题
+
+=== 二·五、参数值健康 / 可优化项 ===
+
+=== 三、问题汇总 ===
+
+【运行时异常】1 款
+  · sudoku6 — 第1关 prompt is not defined @ onTap (/js/minigames/sudoku6.js:97:23) ｜ 第25关 prompt is not defined @ onTap (/js/minigames/sudoku6.js:97:23) ｜ 第50关 prompt is not defined @ onTap (/js/minigames/sudoku6.js:97:23)
+
+=== 四、可优化项（供决策，不自动改）===
+
+【关卡名重复】93 款
+  snake、tetris、mole、mine、memory、slide15、bulls、sudoku6、hanoi、piano、reaction、breakout、jump、shooter、tictactoe、connect4、reversi、nim、battleship、dots、mancala、queens、peg、breakthru、chess、junqi、solitaire、spider、freecell、pyramid、blackjack、poker、war、maze、lightsout、floodit、pipes、nonogram、sudoku9、numberpath、sokoban、blockpuzzle、mastermind、flappy、dodge、catcher、balloonpop、archery、basketball、darts、fishing、helicopter、stacker、mathquiz、stroop、higherlower、oddone、idiom、trivia、counting、estimate、clockread、sequence、flashnum、chimp、simon、cardmem、wordmem、spot、pathmem、shadowmatch、whatmiss、reversenum、coinflip、dicehi、slots、bingo、spinner、rpsgame、plinko、lucky7、tapburst、gacha、towerdef、idleclick、life、virus、sandfall、ballance、rocketland、orbit、traffic、growfarm
+
+【关卡无描述】86 款
+  g2048、banqi、link、match3、tictactoe、connect4、reversi、nim、battleship、dots、mancala、queens、peg、breakthru、chess、junqi、solitaire、spider、freecell、pyramid、blackjack、poker、war、maze、lightsout、floodit、pipes、nonogram、sudoku9、numberpath、sokoban、blockpuzzle、mastermind、flappy、dodge、catcher、balloonpop、archery、basketball、darts、fishing、helicopter、stacker、mathquiz、stroop、higherlower、oddone、idiom、trivia、counting、estimate、clockread、sequence、flashnum、chimp、simon、cardmem、wordmem、spot、pathmem、shadowmatch、whatmiss、reversenum、coinflip、dicehi、slots、bingo、spinner、rpsgame、plinko、lucky7、tapburst、gacha、towerdef、idleclick、life、virus、sandfall、ballance、rocketland、orbit、traffic、growfarm、knife、sheep、pocketarmy
+
+【无无尽模式】69 款
+  gomoku、banqi、xiangqi、link、match3、snake、tetris、mole、mine、memory、slide15、bulls、sudoku6、hanoi、piano、reaction、breakout、jump、shooter、tictactoe、connect4、reversi、nim、battleship、dots、mancala、queens、peg、breakthru、chess、junqi、solitaire、spider、freecell、pyramid、poker、war、maze、lightsout、floodit、pipes、nonogram、sudoku9、numberpath、sokoban、mastermind、mathquiz、stroop、higherlower、oddone、idiom、trivia、counting、estimate、clockread、sequence、flashnum、chimp、cardmem、wordmem、spot、pathmem、shadowmatch、whatmiss、reversenum、bingo、life、virus、traffic

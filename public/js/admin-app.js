@@ -794,7 +794,9 @@ const AdminApp = {
         let r = null;
         try { r = await AdminAPI.minigameOrder(); } catch (e) { r = null; }
         if (!r) { try { r = await AdminAPI.api('/api/minigame/order', 'GET'); } catch (e) { r = null; } }
-        let list = (r && ((r.order && r.order.length ? r.order : null) || r.full || r.all)) || [];
+        // 优先 r.full（后端把「已保存顺序 + 未排序的新游戏」拼好的完整序列），
+        // 避免 r.order 是局部子集时被截短。r.all / r.order 兜底。
+        let list = (r && (r.full || r.all || r.order)) || [];
         if (!list.length) list = await this._fallbackGameIds();
         if (!list.length) {
             body.innerHTML = `<div class="card" style="color:#ff7a8b">取不到小游戏清单：接口没有返回数据，且无法解析 /js/views/minigames.js。请确认服务已重启加载最新代码。</div>`;

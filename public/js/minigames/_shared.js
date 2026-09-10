@@ -236,23 +236,39 @@ const MG = {
             },
         },
     },
-    // 创建自适应 canvas（填满容器）
+    // 创建自适应 canvas（填满容器，HiDPI 锐化）
+    //   逻辑坐标系 (w,h) 不变；底层 backing store = w * deviceScale 像素
+    //   ctx.setTransform(deviceScale) 让游戏继续按 w,h 画，自动按 backing 倍数
+    //   输出。设备像素比 + 容器放大倍数共同决定 deviceScale（封顶 3）。
     canvas(parent, w, h) {
         const c = document.createElement('canvas');
-        c.width = w; c.height = h;
-        c.style.maxWidth = '100%'; c.style.maxHeight = '100%';
+        c.style.maxWidth = '100%';
+        c.style.maxHeight = '100%';
         c.style.touchAction = 'none';
         parent.innerHTML = '';
         parent.appendChild(c);
         const ctx = c.getContext('2d');
-        // 自适应缩放：保持宽高比，居中
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        let deviceScale = dpr;          // 第一次 fit 之前先给个初值
+        const applyTransform = () => ctx.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
         const fit = () => {
             const pw = parent.clientWidth, ph = parent.clientHeight;
             const s = Math.min(pw / w, ph / h);
             c.style.width = (w * s) + 'px';
             c.style.height = (h * s) + 'px';
+            // backing 像素 = 逻辑 * dpr * 显示放大，封顶 3（避免低端机过载）
+            const target = Math.min(3, dpr * Math.max(1, s));
+            if (Math.abs(target - deviceScale) > 0.05 || c.width !== Math.round(w * target)) {
+                deviceScale = target;
+                c.width = Math.round(w * deviceScale);
+                c.height = Math.round(h * deviceScale);
+                applyTransform();
+            }
         };
+        // 初次也走一次真正的 backing 设置（让位图级 font/lineWidth 不糊）
         fit();
+        // 暴露给游戏在 viewport 变化后强制重排
+        parent.__mgRefit = fit;
         window.addEventListener('resize', fit);
         return { c, ctx, w, h, fit, destroy() { window.removeEventListener('resize', fit); } };
     },
