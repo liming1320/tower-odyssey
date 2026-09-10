@@ -57,12 +57,26 @@ echo
 
 # ---------- 4. 端口被谁占了 ----------
 say "④ 端口 $PORT 占用情况"
+PORT_UP=""
 if command -v ss >/dev/null 2>&1; then
     ss -lntp 2>/dev/null | grep -E ":$PORT\b|Local" | sed 's/^/  /'
+    ss -lnt 2>/dev/null | grep -qE ":$PORT\b" && PORT_UP=1
 elif command -v netstat >/dev/null 2>&1; then
     netstat -lntp 2>/dev/null | grep -E ":$PORT\b|Proto" | sed 's/^/  /'
+    netstat -lnt 2>/dev/null | grep -qE ":$PORT\b" && PORT_UP=1
 else
     warn "没有 ss / netstat"
+fi
+# 「systemd 显示 active 但端口没监听」是最容易被误判的情况：
+# 进程在、日志也正常，但初始化阶段抛异常把 server.listen() 带没了。
+if [ -z "$PORT_UP" ]; then
+    bad "$PORT 没有任何监听 —— 这就是网页打不开的直接原因"
+    echo "  ↳ 若 ② 显示 active (running)，说明进程活着但没走到 listen()，"
+    echo "    去看 ③ 日志里紧跟在「已载入 N 名玩家」后面的第一条异常。"
+else
+    ok "$PORT 已在监听"
+    echo "  ↳ 本机自检：curl -s -o /dev/null -w '%{http_code}' --noproxy '*' http://127.0.0.1:$PORT/api/health" \
+        " → 实际：$(curl -s -o /dev/null -w '%{http_code}' -m 3 --noproxy '*' "http://127.0.0.1:$PORT/api/health" 2>/dev/null)"
 fi
 echo
 
@@ -79,12 +93,21 @@ echo
 
 # ---------- 6. node 在不在（宝塔常见坑）----------
 say "⑥ Node 环境"
-NODE_BIN="$(grep -m1 '^ExecStart=' "$UNIT" 2>/dev/null | awk '{print $2}')"
+# 注意：ExecStart=/path/to/node /path/to/server.js
+# 整行按空格切的话 $2 是**脚本**不是 node，必须先剥掉 "ExecStart=" 前缀再取第一个字段。
+# （曾经写成 awk '{print $2}'，结果永远报「node 不可执行: .../server.js」的假红）
+EXEC_LINE="$(grep -m1 '^ExecStart=' "$UNIT" 2>/dev/null | sed 's/^ExecStart=//; s/^-//')"
+NODE_BIN="$(echo "$EXEC_LINE" | awk '{print $1}')"
+# ExecStart 可能是 wrapper（/bin/bash -c "..."），这时第一个字段不是 node，退回去找 PATH 里的
+case "$NODE_BIN" in
+    */node|node) ;;
+    *) [ -n "$NODE_BIN" ] && warn "ExecStart 第一个字段不像 node（$NODE_BIN）—— 可能是 wrapper，改用 PATH 里的 node"; NODE_BIN="";;
+esac
 if [ -n "$NODE_BIN" ]; then
     if [ -x "$NODE_BIN" ]; then ok "ExecStart 里的 node 可用：$NODE_BIN（$("$NODE_BIN" -v 2>&1)）"
-    else bad "ExecStart 里的 node 不可执行：$NODE_BIN（宝塔装的通常在 /www/server/nodejs/<版本>/bin/node）"; fi
+    else bad "ExecStart 里的 node 不可执行：$NODE_BIN（宝塔装的通常在 /www/server/nodejs/<版本>/bin/node）"; NODE_BIN=""; fi
 else
-    warn "读不到 ExecStart"
+    warn "读不到有效的 ExecStart"
 fi
 echo "  PATH 里的 node：$(command -v node || echo '（不在 PATH）') $(node -v 2>/dev/null)"
 echo "  常见路径："
@@ -137,8 +160,14 @@ cat <<EOF
        cd $APP_DIR && npm i mysql2
        # 或者先用文件存档顶上：在 $UNIT 里加 Environment=DB_DRIVER=json
 
-  5) 只是想立刻恢复访问：
-       cd $APP_DIR && nohup $RUN_NODE server.js > /tmp/to.log 2>&1 &
-       sleep 3; curl 127.0.0.1:$PORT/api/health
+  5) 只是想立刻恢复访问（别用 nohup 手启，会留下游离进程再占端口）：
+       pkill -f "node .*server\.js"; sleep 2
+       systemctl restart $SERVICE; sleep 3
+       curl -s -o /dev/null -w '%{http_code}' --noproxy '*' http://127.0.0.1:$PORT/api/health
+       # 想看实时日志：journalctl -u $SERVICE -f
+
+  6) ④ 报「端口没监听」但 ② 是 active：
+     进程活着却没 listen()，一定是启动初始化抛异常了。
+     看 ③ 里「已载入 N 名玩家」之后的第一条 TypeError，修掉即可。
 EOF
 echo

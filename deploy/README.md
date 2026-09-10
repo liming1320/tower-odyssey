@@ -139,6 +139,8 @@ sudo bash deploy/linux/doctor.sh
 | 日志里 `node: No such file` | 宝塔装的 node 不在 `/usr/bin/node` | `sudo bash deploy/linux/install.sh`（自动探测真实路径） |
 | 日志里 `✗ 未安装 mysql2` | `DB_DRIVER=mysql` 但没装驱动 | `cd /www/wwwroot/tower-odyssey && npm i mysql2`，或临时改回 `DB_DRIVER=json` |
 | 日志空、一直重启 | 未处理的 Promise 拒绝（Node 15+ 会直接杀进程） | 新版 `server.js` 已加 `unhandledRejection` 兜底，拉最新代码即可 |
+| **systemd 显示 `active (running)`，但网页打不开、④ 报「端口没监听」** | 启动初始化抛异常（如 `Store.META_KEYS.filter` 之类），把后面的 `server.listen()` 一起带没了 —— 进程在、MySQL 也连上了、日志看着正常，就是不通 | 看 ③ 里「已载入 N 名玩家」**之后**的第一条异常并修掉；新版 `server.js` 已把初始化包进 try/catch，失败也会监听端口（降级用本地存档） |
+| `✗ MySQL 连接失败` 后进程直接没了 | `store.js` 连不上库会 `process.exit(1)`，站点必然全挂 | 修好 MySQL；想先让站点活着：单元里加 `Environment=DB_STRICT=0` → 自动降级为本地 `db.json`（不回写 MySQL），MySQL 修好后重启即恢复 |
 
 ---
 

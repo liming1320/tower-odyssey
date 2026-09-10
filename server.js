@@ -775,15 +775,19 @@ function flush() {
 // 兜底：每 10 秒补写一次，以及进程退出 / 崩溃前强制落盘
 setInterval(flush, 10000);
 function flushAndExit(code) {
+    // 注意：SIGINT/SIGTERM 处理器传进来的是**信号名字符串**（'SIGTERM'），
+    // 直接喂给 process.exit 会抛 ERR_INVALID_ARG_TYPE（历史 bug）→ 进程退不掉
+    // → systemd stop-sigterm 超时 → SIGKILL，日志刷「Failed with result 'timeout'」。
+    const exitCode = typeof code === 'number' ? code : 0;
     if (Store.isMySQL()) {
         Store.saveState(DB)
             .then(() => Store.close())
             .catch(e => console.error('[game] 退出前保存失败：' + e.message))
-            .finally(() => process.exit(code || 0));
+            .finally(() => process.exit(exitCode));
         return;
     }
     flush();
-    process.exit(code || 0);
+    process.exit(exitCode);
 }
 process.on('SIGINT', flushAndExit);
 process.on('SIGTERM', flushAndExit);
@@ -3270,30 +3274,18 @@ const server = http.createServer(async (req, res) => {
 });
 
 // MySQL 模式：先连库载入真实数据（玩家 + 英雄），再开始监听，避免请求打到空数据
-(async () => {
-    if (Store.isMySQL()) {
-        await Store.init({ ensureSchema: process.env.DB_AUTO_SCHEMA === '1' });
-        const st = await Store.loadState();
-        if (st) {
-            // 玩家与英雄以数据库为准；静态模板（装备/神器/宝石等）若库里为空，沿用内置种子
-            DB.users = st.users;
-            DB.tokens = st.tokens || {};
-            if ((st.heroes || []).length) DB.heroes = st.heroes;
-            // 自动从 META_KEYS 派生恢复列表（除内置种子模板）——
-            // 历史教训：曾在这里硬编码恢复列表，漏掉 roms/minigameOrder/minigameScores，
-            // 造成排序保存后重启失效 / 排行榜分数丢失。现在新增 META_KEYS 成员自动覆盖
-            // MySQL 启动恢复，不会再漏。
-            const META_FROM_SEED = new Set(['wallSkills', 'treasures',
-                'equipmentTemplates', 'ringTemplates', 'artifactTemplates', 'gemTemplates']);
-            Store.META_KEYS.filter(k => !META_FROM_SEED.has(k)).forEach(k => {
-                const v = st[k];
-                if (v === undefined || v === null) return;
-                const empty = Array.isArray(v) ? v.length === 0 : Object.keys(v).length === 0;
-                if (!empty) DB[k] = v;
-            });
-        }
-    }
-    migrateNicknames();
+//
+// 历史教训（2026-09-10 线上事故，勿删）：这段初始化曾经抛异常（store.js 没导出
+// META_KEYS → Store.META_KEYS.filter 抛 TypeError），异常直接冒泡出这个 IIFE，
+// **后面的 server.listen() 一行都没执行**。外部表现极具迷惑性：
+//   systemd 显示 active (running)、MySQL 连上了、日志里「已载入 15 名玩家」都正常，
+//   但端口 5180 没有任何监听 → 网页打不开。
+// 现在改成：初始化失败也要监听端口（降级用本地 db.json 种子），
+//   保证站点永远可访问、/admin 永远能进去排错。再加一个 15 秒看门狗防 await 卡死。
+let _listening = false;
+function startListen() {
+    if (_listening) return;
+    _listening = true;
     server.listen(PORT, '0.0.0.0', async () => {
         console.log(`[game] listening on http://localhost:${PORT}`);
         if (Store.isMySQL()) {
@@ -3305,4 +3297,45 @@ const server = http.createServer(async (req, res) => {
         // 后台补算存量 ROM 内容指纹（去重用），不阻塞端口监听
         romsBackfillHash().catch(e => console.error('[game] ROM 指纹补算失败：' + e.message));
     });
+}
+// 看门狗：任何 await 卡死（MySQL 连不上且无超时）也不能让端口不通
+const _listenWatchdog = setTimeout(() => {
+    if (!_listening) {
+        console.error('[game] 启动 15 秒仍未监听端口，强制监听（数据可能未从数据库载入）');
+        startListen();
+    }
+}, 15000);
+if (_listenWatchdog.unref) _listenWatchdog.unref();
+
+(async () => {
+    try {
+        if (Store.isMySQL()) {
+            await Store.init({ ensureSchema: process.env.DB_AUTO_SCHEMA === '1' });
+            const st = await Store.loadState();
+            if (st) {
+                // 玩家与英雄以数据库为准；静态模板（装备/神器/宝石等）若库里为空，沿用内置种子
+                if (st.users) DB.users = st.users;
+                if (st.tokens) DB.tokens = st.tokens;
+                if ((st.heroes || []).length) DB.heroes = st.heroes;
+                // 自动从 META_KEYS 派生恢复列表（除内置种子模板）——
+                // 历史教训：曾在这里硬编码恢复列表，漏掉 roms/minigameOrder/minigameScores，
+                // 造成排序保存后重启失效 / 排行榜分数丢失。现在新增 META_KEYS 成员自动覆盖
+                // MySQL 启动恢复，不会再漏。
+                const META_FROM_SEED = new Set(['wallSkills', 'treasures',
+                    'equipmentTemplates', 'ringTemplates', 'artifactTemplates', 'gemTemplates']);
+                const metaKeys = Array.isArray(Store.META_KEYS) ? Store.META_KEYS : [];
+                if (!metaKeys.length) console.error('[game] 警告：Store.META_KEYS 不可用，MySQL 的全局数据（ROM/排序/排行榜）本次不会恢复');
+                metaKeys.filter(k => !META_FROM_SEED.has(k)).forEach(k => {
+                    const v = st[k];
+                    if (v === undefined || v === null) return;
+                    const empty = Array.isArray(v) ? v.length === 0 : Object.keys(v).length === 0;
+                    if (!empty) DB[k] = v;
+                });
+            }
+        }
+        migrateNicknames();
+    } catch (e) {
+        console.error('[game] 启动初始化失败（已降级，端口仍会监听，数据用本地 db.json）：', e && e.stack || e);
+    }
+    startListen();
 })();

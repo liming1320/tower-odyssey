@@ -32,6 +32,9 @@ const META_KEYS = [
 const META_OBJ_KEYS = new Set(['tokens', 'world', 'clans', 'minigameScores']);
 
 let pool = null;
+// 降级标记：DB_STRICT=0 时，MySQL 连不上就不再自杀，改用本地 db.json 继续服务
+// （默认 DB_STRICT=1 保持原行为：连不上立刻退出，避免用空数据覆盖真实存档）
+let degraded = false;
 
 // ---------------------------------------------------------------- 初始化
 async function init(opts = {}) {
@@ -63,6 +66,12 @@ async function init(opts = {}) {
         console.error('[store] ✗ MySQL 连接失败：' + e.message);
         console.error(`       host=${cfg.host} port=${cfg.port} user=${cfg.user} db=${cfg.database}`);
         console.error('       检查：数据库是否创建（deploy/mysql/schema.sql）、账号密码、安全组/防火墙');
+        if ((process.env.DB_STRICT || '1') === '0') {
+            // 降级：站点继续可访问（数据用本地 db.json，本次不会回写 MySQL）
+            console.error('[store] DB_STRICT=0 → 降级为本地文件存档，进程继续（修好 MySQL 后重启即可恢复）');
+            degraded = true; pool = null;
+            return false;
+        }
         process.exit(1);
     }
     if (opts.ensureSchema) await ensureSchema();
@@ -140,7 +149,7 @@ async function ensureSchema() {
 // ---------------------------------------------------------------- 读取
 /** 返回完整 state（users/tokens/heroes/...）；JSON 模式返回 null（交给 server.js 读文件） */
 async function loadState() {
-    if (DRIVER !== 'mysql') return null;
+    if (DRIVER !== 'mysql' || !pool) return null;
 
     const [players] = await pool.query('SELECT * FROM `players`');
     const [states] = await pool.query('SELECT `player_id`, `state` FROM `player_state`');
@@ -202,7 +211,7 @@ async function loadState() {
 
 /** 只重新读取英雄配置（后台「重载英雄」用，改完库立刻生效，不用重启） */
 async function loadHeroes() {
-    if (DRIVER !== 'mysql') return null;
+    if (DRIVER !== 'mysql' || !pool) return null;
     const [rows] = await pool.query('SELECT * FROM `heroes` ORDER BY `sort_order`, `id`');
     const [skills] = await pool.query('SELECT * FROM `hero_skills` ORDER BY `hero_id`, `slot`');
     const byHero = {};
@@ -238,7 +247,7 @@ async function loadHeroes() {
 // ---------------------------------------------------------------- 写入
 /** 保存整个 state（玩家存档 + 全局数据） */
 async function saveState(state) {
-    if (DRIVER !== 'mysql') return false;
+    if (DRIVER !== 'mysql' || !pool) return false;
     if (!state) return false;
 
     // 1) 玩家账号 + 存档
@@ -286,7 +295,7 @@ async function saveState(state) {
 
 /** 保存英雄配置（后台改名 / 改技能后写回） */
 async function saveHeroes(heroes) {
-    if (DRIVER !== 'mysql') return false;
+    if (DRIVER !== 'mysql' || !pool) return false;
     if (!Array.isArray(heroes)) return false;
     for (let i = 0; i < heroes.length; i++) {
         const h = heroes[i];
@@ -332,7 +341,7 @@ async function saveHeroes(heroes) {
 
 /** 删除玩家（后台清理测试号） */
 async function deletePlayer(id) {
-    if (DRIVER !== 'mysql') return false;
+    if (DRIVER !== 'mysql' || !pool) return false;
     await pool.execute('DELETE FROM `players` WHERE `id`=?', [id]);
     return true;
 }
@@ -341,6 +350,14 @@ async function close() { if (pool) { try { await pool.end(); } catch (e) { /* ig
 
 module.exports = {
     driver: DRIVER,
-    isMySQL: () => DRIVER === 'mysql',
+    // 降级后（DB_STRICT=0 且 MySQL 连不上）对外表现等同 json 模式，
+    // 这样 server.js 的读写分支、启动日志、退出保存都会自动走文件存档
+    isMySQL: () => DRIVER === 'mysql' && !degraded,
+    isDegraded: () => degraded,
     init, ensureSchema, loadState, saveState, loadHeroes, saveHeroes, deletePlayer, close,
+    // 导出给 server.js 派生「MySQL 启动恢复列表」——
+    // 历史教训（2026-09-10 线上事故）：这里漏导出，server.js 的 Store.META_KEYS.filter
+    // 抛 TypeError，把后面的 server.listen() 一起带没了 → 进程在、MySQL 也连上了，
+    // 但端口没有任何监听，表现就是「网页打不开」。新增 META_KEYS 成员时会自动覆盖。
+    META_KEYS,
 };
