@@ -252,6 +252,40 @@ class CDP {
     if (engine.doc && engine.canvas) {
         assert(true, 'EmulatorJS 引擎真实加载（canvas 已创建）');
         await cdp.shot(path.join(OUT, 'emu-player-playing.png'));
+
+        // ⑥.b 验证 iframe 全尺寸 + 控制设置 modal 打开后可见按键行
+        const frameSize = await cdp.eval(`(() => {
+            const f = document.querySelector('.emu-frame');
+            return f ? { w: f.clientWidth, h: f.clientHeight } : null;
+        })()`);
+        assert(frameSize && frameSize.h > 600, '模拟器 iframe 填满可视区（' + (frameSize ? frameSize.w + 'x' + frameSize.h : '?') + '，之前因 flex 缺 min-height:0 一直只有 150）');
+
+        // 打开控制设置 modal + 切到「键盘」子切换
+        await cdp.eval(`(() => {
+            const d = document.querySelector('.emu-frame').contentDocument;
+            const vis = n => !!(n && n.getClientRects && n.getClientRects().length);
+            const item = Array.from(d.querySelectorAll('*')).find(n => vis(n) && (n.textContent || '').trim() === '控制设置');
+            if (item) item.click();
+        })()`);
+        await sleep(1500);
+        await cdp.eval(`(() => {
+            const d = document.querySelector('.emu-frame').contentDocument;
+            const vis = n => !!(n && n.getClientRects && n.getClientRects().length);
+            const kb = Array.from(d.querySelectorAll('*')).find(n => vis(n) && (n.textContent || '').trim() === '键盘');
+            if (kb) kb.click();
+        })()`);
+        await sleep(700);
+        const modalOk = await cdp.eval(`(() => {
+            const d = document.querySelector('.emu-frame').contentDocument;
+            const vis = n => !!(n && n.getClientRects && n.getClientRects().length);
+            const rows = Array.from(d.querySelectorAll('*')).filter(n => vis(n) && /^(A|B|选择|开始|向上|向下|向左|向右|SWAP|EJECT|快速保存|快速加载|改变状态槽|快进|慢动作|快退)\\s*[:：]/.test((n.textContent || '').trim()) && n.textContent.length < 20);
+            // EmulatorJS v4.2.3 设置按钮是 <a class="ejs_control_set_button">
+            const setBtns = d.querySelectorAll('a.ejs_control_set_button').length;
+            return { rows: rows.length, setBtns };
+        })()`);
+        assert(modalOk.rows >= 8, '控制设置 modal 可见按键行（A/B/选择/开始/向上…）共 ' + modalOk.rows + ' 行');
+        assert(modalOk.setBtns >= 8, '每行右侧【设置】按钮可见 ' + modalOk.setBtns + ' 个（<a class="ejs_control_set_button">，修正 iframe 高度 bug 后全部显示）');
+        await cdp.shot(path.join(OUT, 'emu-player-controls.png'));
     } else {
         console.log('  ℹ 引擎未在 10s 内加载完（无外网），iframe 配置已验证');
     }
