@@ -131,7 +131,7 @@ class CDP {
     await sleep(1200);
     const nesOk = await cdp.eval(`(() => {
         const rows = Array.from(document.querySelectorAll('.emu-item'));
-        const mine = rows.find(r => (r.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(nesName)});
+        const mine = rows.find(r => (r.querySelector('.emu-item-name') || {}).textContent.indexOf(${JSON.stringify(nesName)}) === 0);
         return {
             count: document.querySelector('#rom-count').textContent,
             name: mine ? mine.querySelector('.emu-item-name').textContent : '',
@@ -141,6 +141,17 @@ class CDP {
     assert(nesOk.name === nesName, '列表出现：' + (nesOk.name || '<缺失>'));
     assert(/FC/.test(nesOk.meta), '核心自动识别：' + (nesOk.meta.split('·')[0] || '').trim());
     await cdp.shot(path.join(OUT, 'emu-admin-uploaded.png'));
+
+    // ③.b 重复上传：同一内容再传 → 409 拒绝（内容指纹去重）
+    const dupRes = await new Promise((resolve, reject) => {
+        const data = Buffer.alloc(40976);   // 与 ③ 相同的全零内容
+        const req = http.request(BASE + '/api/roms/upload?name=' + encodeURIComponent(TAG + 'dup-' + stamp + '.nes') + '&core=nes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': data.length, 'Authorization': 'Bearer ' + ad.token },
+        }, res => { let d = ''; res.on('data', c => d += c); res.on('end', () => { try { resolve({ status: res.statusCode, json: JSON.parse(d) }); } catch (e) { resolve({ status: res.statusCode, raw: d }); } }); });
+        req.on('error', reject); req.write(data); req.end();
+    });
+    assert(dupRes.status === 409 && /重复上传/.test(dupRes.json && dupRes.json.error || ''), '重复内容被拒（409：' + ((dupRes.json && dupRes.json.error) || dupRes.raw || '').slice(0, 40) + '…）');
 
     // ④ 后台上传 .zip → 核心选择器 → 选 DOS
     const zipName = TAG + 'dos-' + stamp + '.zip';
@@ -162,11 +173,44 @@ class CDP {
     await sleep(1200);
     const zipOk = await cdp.eval(`(() => {
         const rows = Array.from(document.querySelectorAll('.emu-item'));
-        const mine = rows.find(r => (r.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(zipName)});
+        const mine = rows.find(r => (r.querySelector('.emu-item-name') || {}).textContent.indexOf(${JSON.stringify(zipName)}) === 0);
         return { meta: mine ? mine.querySelector('.emu-item-meta').textContent : '' };
     })()`);
     assert(/DOS/.test(zipOk.meta), 'zip 以 DOS 核心入库：' + (zipOk.meta.split('·')[0] || '').trim());
     await cdp.shot(path.join(OUT, 'emu-admin-zip.png'));
+
+    // ④.b 管理端：每行应有 分类下拉 / 排序输入 / 保存按钮
+    const ctlOk = await cdp.eval(`(() => ({
+        cats: document.querySelectorAll('#rom-list [data-cat]').length,
+        sorts: document.querySelectorAll('#rom-list [data-sort]').length,
+        saves: document.querySelectorAll('#rom-list [data-save]').length,
+        catOpts: (document.querySelector('#rom-list [data-cat]') || {}).options ? document.querySelector('#rom-list [data-cat]').options.length : 0,
+    }))()`);
+    assert(ctlOk.cats >= 2 && ctlOk.sorts >= 2 && ctlOk.saves >= 2, '管理端每行带 分类下拉(' + ctlOk.cats + ') / 排序输入(' + ctlOk.sorts + ') / 保存按钮(' + ctlOk.saves + ')');
+    assert(ctlOk.catOpts === 2, '分类下拉含 普通版/无敌版 两项');
+
+    // ④.c 管理端 UI 操作：把本轮上传的 .nes 设为无敌版 + 置顶序 1（走真实 UI 控件）
+    await cdp.eval(`(() => {
+        const row = Array.from(document.querySelectorAll('#rom-list .emu-item')).find(r => (r.querySelector('.emu-item-name') || {}).textContent.indexOf(${JSON.stringify(nesName)}) === 0);
+        if (!row) return 'row-not-found';
+        row.querySelector('[data-cat]').value = 'invincible';
+        row.querySelector('[data-cat]').dispatchEvent(new Event('change'));
+        row.querySelector('[data-sort]').value = '1';
+        row.querySelector('[data-sort]').dispatchEvent(new Event('change'));
+        row.querySelector('[data-save]').click();
+    })()`);
+    await sleep(1000);
+    const invSaved = await new Promise((resolve, reject) => {
+        http.get(BASE + '/api/roms', { headers: { Authorization: 'Bearer ' + ad.token } }, res => {
+            let d = ''; res.on('data', c => d += c); res.on('end', () => {
+                const j = JSON.parse(d);
+                const t = (j.roms || []).find(r => r.name === nesName);
+                resolve({ cat: t && t.category, sort: t && t.sort });
+            });
+        }).on('error', reject);
+    });
+    assert(invSaved.cat === 'invincible' && invSaved.sort === 1, '管理端 UI 保存生效：category=' + invSaved.cat + ' · sort=' + invSaved.sort);
+    await cdp.shot(path.join(OUT, 'emu-admin-invsort.png'));
 
     // ⑤ 玩家端：设置面板 → 经典模拟器（独立入口 · 列表共享 · 无导入区）
     console.log('\n⑤ 玩家端：设置面板独立入口');
@@ -224,8 +268,92 @@ class CDP {
     })()`);
     assert(playerView.mask, '独立全屏容器（mini-mask）打开');
     assert(playerView.keys, '键位说明区显示');
-    assert(playerView.mine === 2 && playerView.names.some(n => n === nesName) && playerView.names.some(n => n === zipName), '玩家看到后台本轮上传的 2 个 ROM（总 ' + playerView.total + '）');
+    assert(playerView.mine === 2 && playerView.names.some(n => n.indexOf(nesName) === 0) && playerView.names.some(n => n.indexOf(zipName) === 0), '玩家看到后台本轮上传的 2 个 ROM（总 ' + playerView.total + '）');
     assert(!playerView.drop, '玩家端无导入区');
+
+    // ⑤.b2 玩家端：筛选工具栏 + 置顶排序 + 无敌版标签 + 搜索过滤
+    const filterOk = await cdp.eval(`(() => ({
+        toolbar: !!document.querySelector('.emu-toolbar'),
+        search: !!document.getElementById('emu-search'),
+        coreSel: !!document.getElementById('emu-f-core'),
+        catSel: !!document.getElementById('emu-f-cat'),
+        coreOpts: document.getElementById('emu-f-core') ? document.getElementById('emu-f-core').options.length : 0,
+        catOpts: document.getElementById('emu-f-cat') ? document.getElementById('emu-f-cat').options.length : 0,
+        first: (document.querySelector('.emu-item .emu-item-name') || {}).textContent || '',
+        firstInv: !!document.querySelector('.emu-item .emu-tag-inv'),
+        count: (document.getElementById('emu-count') || {}).textContent || '',
+    }))()`);
+    assert(filterOk.toolbar && filterOk.search && filterOk.coreSel && filterOk.catSel, '筛选工具栏：搜索框 + 平台下拉(' + filterOk.coreOpts + ') + 版本下拉(' + filterOk.catOpts + ')');
+    assert(filterOk.first.indexOf(nesName) === 0 && filterOk.firstInv, '无敌版置顶排第一（' + filterOk.first.slice(0, 28) + '… 带「无敌版」标签）');
+    assert(/\d+ \/ \d+ 款/.test(filterOk.count), '计数显示：' + filterOk.count);
+    await cdp.shot(path.join(OUT, 'emu-player-toolbar.png'));
+
+    // 搜索过滤：输入 nesName 前半段 → 只剩 1 行
+    await cdp.eval(`(() => {
+        const s = document.getElementById('emu-search');
+        s.value = ${JSON.stringify(nesName.slice(0, TAG.length + 6))};
+        s.dispatchEvent(new Event('input'));
+    })()`);
+    await sleep(500);
+    const searchOk = await cdp.eval(`(() => ({
+        rows: document.querySelectorAll('.emu-item').length,
+        first: (document.querySelector('.emu-item .emu-item-name') || {}).textContent || '',
+        count: (document.getElementById('emu-count') || {}).textContent || '',
+    }))()`);
+    assert(searchOk.rows === 1 && searchOk.first.indexOf(nesName) === 0, '搜索过滤：只剩 1 行匹配（' + searchOk.count + '）');
+
+    // 搜索无结果提示
+    await cdp.eval(`(() => {
+        const s = document.getElementById('emu-search');
+        s.value = 'zzz不存在xyz';
+        s.dispatchEvent(new Event('input'));
+    })()`);
+    await sleep(400);
+    const noneOk = await cdp.eval(`(() => ({ txt: (document.querySelector('.emu-empty') || {}).textContent || '', rows: document.querySelectorAll('.emu-item').length }))()`);
+    assert(noneOk.rows === 0 && /没有匹配/.test(noneOk.txt), '搜索无结果 → 提示「没有匹配的游戏」');
+
+    // 清空搜索 → 平台筛选 GBA → 只显示库存里的 GBA ROM（数量与 API 一致，且行 meta 都是 GBA）
+    await cdp.eval(`(() => {
+        const s = document.getElementById('emu-search');
+        s.value = ''; s.dispatchEvent(new Event('input'));
+        const c = document.getElementById('emu-f-core');
+        c.value = 'gba'; c.dispatchEvent(new Event('change'));
+    })()`);
+    await sleep(400);
+    const gbaList = await new Promise((resolve, reject) => {
+        http.get(BASE + '/api/roms', { headers: { Authorization: 'Bearer ' + playerToken } }, res => {
+            let d = ''; res.on('data', c => d += c); res.on('end', () => {
+                const j = JSON.parse(d);
+                resolve((j.roms || []).filter(r => r.core === 'gba').length);
+            });
+        }).on('error', reject);
+    });
+    const gbaOk = await cdp.eval(`(() => ({
+        rows: document.querySelectorAll('.emu-item').length,
+        metas: Array.from(document.querySelectorAll('.emu-item-meta')).map(m => m.textContent),
+        count: (document.getElementById('emu-count') || {}).textContent || '',
+    }))()`);
+    assert(gbaOk.rows === gbaList && gbaOk.metas.every(m => /GBA/.test(m)), '平台筛选 GBA → 恰好 ' + gbaOk.rows + ' 行（API 一致=' + gbaList + '），全部为 GBA · 计数「' + gbaOk.count + '」');
+
+    // 版本筛选：无敌版 → 只剩 nesName 1 行
+    await cdp.eval(`(() => {
+        const c = document.getElementById('emu-f-core');
+        c.value = 'all'; c.dispatchEvent(new Event('change'));
+        const k = document.getElementById('emu-f-cat');
+        k.value = 'invincible'; k.dispatchEvent(new Event('change'));
+    })()`);
+    await sleep(400);
+    const invOk = await cdp.eval(`(() => ({
+        rows: document.querySelectorAll('.emu-item').length,
+        names: Array.from(document.querySelectorAll('.emu-item-name')).map(n => n.textContent),
+    }))()`);
+    assert(invOk.rows === 1 && invOk.names[0].indexOf(nesName) === 0, '版本筛选「无敌版」→ 只剩 1 行（本轮设为无敌版的那款）');
+    // 还原筛选，给 ⑥ 播放用
+    await cdp.eval(`(() => {
+        const k = document.getElementById('emu-f-cat');
+        k.value = 'all'; k.dispatchEvent(new Event('change'));
+    })()`);
+    await sleep(400);
     assert(!playerView.del, '玩家端无删除按钮');
     assert(playerView.play === playerView.total, '每个 ROM 一个播放按钮（' + playerView.play + '）');
     await cdp.shot(path.join(OUT, 'emu-player-list.png'));
@@ -268,7 +396,7 @@ class CDP {
     // ⑥ 玩家播放 nesName
     console.log('\n⑥ 玩家播放（鉴权下载 → blob → EmulatorJS）');
     await cdp.eval(`(() => {
-        const row = Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(nesName)});
+        const row = Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent.indexOf(${JSON.stringify(nesName)}) === 0);
         row.querySelector('.emu-btn-play').click();
     })()`);
     await sleep(1500);
@@ -339,7 +467,7 @@ class CDP {
     let delCnt = 0;
     for (const nm of [nesName, zipName]) {
         const ok = await cdp.eval(`(() => {
-            const row = Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(nm)});
+            const row = Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent.indexOf(${JSON.stringify(nm)}) === 0);
             if (!row) return false;
             row.querySelector('[data-del]').click();
             return true;
@@ -349,7 +477,7 @@ class CDP {
             // 等到该行从 DOM 中消失（确认删除 + 刷新完成）
             for (let t = 0; t < 20; t++) {
                 await sleep(150);
-                const still = await cdp.eval(`!!Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent === ${JSON.stringify(nm)})`);
+                const still = await cdp.eval(`!!Array.from(document.querySelectorAll('.emu-item')).find(i => (i.querySelector('.emu-item-name') || {}).textContent.indexOf(${JSON.stringify(nm)}) === 0)`);
                 if (!still) break;
             }
         }

@@ -47,6 +47,7 @@ const AdminAPI = (() => {
         // ROM 库（列表/删除走通用 call；上传是原始二进制，单独实现）
         romList: () => call('GET', '/api/roms'),
         romDelete: (id) => call('POST', '/api/roms/delete', { id }),
+        romUpdate: (id, patch) => call('POST', '/api/roms/update', Object.assign({ id }, patch)),
         romUpload: async (file, core) => {
             const buf = await (file.arrayBuffer ? file.arrayBuffer() : new Promise((res, rej) => {
                 const fr = new FileReader();
@@ -1074,7 +1075,8 @@ const AdminApp = {
                 <h3>🕹️ 模拟器 ROM 库</h3>
                 <p style="font-size:13px;color:#b9b3d8">
                     上传的 ROM 会出现在玩家端「经典模拟器」里，<b>所有登录玩家</b>都可游玩（EmulatorJS 引擎）。
-                    文件保存在服务器 data/roms/，单文件上限 512MB。
+                    文件保存在服务器 data/roms/，单文件上限 512MB。<br>
+                    <b>自动去重</b>：内容完全相同的 ROM 会被拒绝；上传后可在下方给游戏<b>分类</b>（普通版 / 无敌版）和<b>排序</b>（数字越小越靠前，0=默认按上传时间）。
                 </p>
                 <div class="emu-drop" id="rom-drop">📥 点击选择 ROM 文件，或拖拽到此处<br>
                     <span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）</span>
@@ -1109,18 +1111,54 @@ const AdminApp = {
         const empty = body.querySelector('#rom-empty');
         const count = body.querySelector('#rom-count');
         if (!list) return;
-        const roms = (r.roms || []).slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+        // 与玩家端一致的排序：sort>0 的越小越靠前；0=未设置 → 按上传时间倒序排后面
+        const rank = r => (r.sort > 0 ? r.sort : 1e9);
+        const roms = (r.roms || []).slice().sort((a, b) => rank(a) - rank(b) || (b.addedAt || 0) - (a.addedAt || 0));
         count.textContent = roms.length;
         list.innerHTML = roms.map(rom => `
             <div class="emu-item">
                 <div class="emu-item-info">
-                    <div class="emu-item-name">${this.esc(rom.name)}</div>
-                    <div class="emu-item-meta">${this.esc(this.romCoreLabel(rom.core))} · ${this.romFmtSize(rom.size)}${rom.by ? ' · ' + this.esc(rom.by) + ' 上传' : ''} · ${new Date(rom.addedAt).toLocaleString('zh-CN')}</div>
+                    <div class="emu-item-name">${this.esc(rom.name)}${rom.category === 'invincible' ? ' <span class="emu-tag emu-tag-inv">无敌版</span>' : ''}</div>
+                    <div class="emu-item-meta">${this.esc(this.romCoreLabel(rom.core))} · ${this.romFmtSize(rom.size)}${rom.by ? ' · ' + this.esc(rom.by) + ' 上传' : ''} · ${new Date(rom.addedAt).toLocaleString('zh-CN')}${rom.sort ? ' · 置顶序 ' + rom.sort : ''}</div>
+                    <div class="emu-row-ctl">
+                        <label>分类 <select data-cat="${this.esc(rom.id)}">
+                            <option value="normal"${rom.category !== 'invincible' ? ' selected' : ''}>普通版</option>
+                            <option value="invincible"${rom.category === 'invincible' ? ' selected' : ''}>无敌版</option>
+                        </select></label>
+                        <label>排序 <input type="number" min="0" max="9999" value="${rom.sort || 0}" data-sort="${this.esc(rom.id)}" title="0=默认按上传时间，数字越小越靠前"></label>
+                        <button class="emu-btn emu-btn-save" data-save="${this.esc(rom.id)}">💾 保存</button>
+                        <button class="emu-btn emu-btn-del" data-del="${this.esc(rom.id)}">✕ 删除</button>
+                    </div>
                 </div>
-                <button class="emu-btn emu-btn-del" data-del="${this.esc(rom.id)}">✕ 删除</button>
             </div>
         `).join('');
         empty.style.display = roms.length ? 'none' : 'block';
+        // 保存分类/排序（只传改动过的字段）
+        const dirty = {};   // id -> {category?, sort?}
+        list.querySelectorAll('[data-cat]').forEach(sel => {
+            sel.onchange = () => {
+                (dirty[sel.dataset.cat] = dirty[sel.dataset.cat] || {}).category = sel.value;
+                sel.closest('.emu-item').classList.add('emu-item-dirty');
+            };
+        });
+        list.querySelectorAll('[data-sort]').forEach(inp => {
+            inp.onchange = () => {
+                (dirty[inp.dataset.sort] = dirty[inp.dataset.sort] || {}).sort = parseInt(inp.value || '0', 10);
+                inp.closest('.emu-item').classList.add('emu-item-dirty');
+            };
+        });
+        list.querySelectorAll('[data-save]').forEach(b => {
+            b.onclick = async () => {
+                const id = b.dataset.save;
+                const patch = dirty[id];
+                if (!patch) return U.toast('没有改动需要保存');
+                try {
+                    await AdminAPI.romUpdate(id, patch);
+                    U.toast('✅ 已保存，玩家端立即按新顺序/分类显示');
+                    this.romRefreshList(body);
+                } catch (e) { U.toast('❌ ' + e.message); }
+            };
+        });
         list.querySelectorAll('[data-del]').forEach(b => {
             b.onclick = async () => {
                 if (!U.confirm('删除该 ROM？所有玩家将无法再玩到它（磁盘文件一并清除）')) return;

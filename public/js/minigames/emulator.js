@@ -87,7 +87,27 @@
                 return d;
             };
 
-            // ---------- 列表页（玩家只读） ----------
+            // ---------- 列表页（玩家只读，支持搜索 / 分类筛选） ----------
+            // 筛选状态（工具栏重建时保留）
+            let allRoms = [];
+            const filters = { q: '', core: 'all', cat: 'all' };
+            const CORE_OPTS = [
+                ['all', '全部平台'], ['nes', 'FC 红白机'], ['snes', 'SFC'], ['gb', 'GB/GBC'],
+                ['gba', 'GBA'], ['segaMD', '世嘉 MD'], ['n64', 'N64'], ['psx', 'PS1'],
+                ['dosbox', 'DOS'], ['arcade', '街机'],
+            ];
+
+            function filteredRoms() {
+                const q = filters.q.trim().toLowerCase();
+                const rank = r => (r.sort > 0 ? r.sort : 1e9);   // sort>0 越小越靠前；0=未设置按上传时间排后面
+                return allRoms.filter(r => {
+                    if (filters.core !== 'all' && r.core !== filters.core) return false;
+                    if (filters.cat !== 'all' && (r.category || 'normal') !== filters.cat) return false;
+                    if (q && String(r.name || '').toLowerCase().indexOf(q) < 0) return false;
+                    return true;
+                }).sort((a, b) => rank(a) - rank(b) || (b.addedAt || 0) - (a.addedAt || 0));
+            }
+
             function renderList(roms, authError) {
                 if (!alive) return;
                 container.innerHTML = '';
@@ -119,25 +139,73 @@
                         try { (window.API && API.clearToken) ? API.clearToken() : localStorage.removeItem('game-token'); } catch (e) {}
                         location.reload();
                     };
-                } else if (!roms.length) {
-                    wrap.appendChild(el('emu-empty', '管理员还没有上传游戏，敬请期待。'));
-                } else {
-                    const list = el('emu-list');
-                    roms.slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0)).forEach(rom => {
-                        const item = el('emu-item');
-                        item.appendChild(el('emu-item-info',
-                            '<div class="emu-item-name">' + String(rom.name).replace(/[<>&]/g, '') + '</div>' +
-                            '<div class="emu-item-meta">' + coreLabel(rom.core) + ' · ' + fmtSize(rom.size) + '</div>'));
-                        const play = document.createElement('button');
-                        play.className = 'emu-btn emu-btn-play';
-                        play.textContent = '▶ 播放';
-                        play.onclick = ev => { ev.stopPropagation(); playRom(rom); };
-                        item.appendChild(play);
-                        list.appendChild(item);
-                    });
-                    wrap.appendChild(list);
+                    container.appendChild(wrap);
+                    return;
+                }
+
+                allRoms = roms.slice();
+                // 筛选工具栏（仅在有游戏时显示）
+                let bar = null;
+                if (allRoms.length) {
+                    bar = el('emu-toolbar');
+                    bar.innerHTML =
+                        '<input id="emu-search" placeholder="🔍 搜索游戏名" value="' + String(filters.q).replace(/[<>&"]/g, '') + '">' +
+                        '<select id="emu-f-core">' + CORE_OPTS.map(([v, l]) =>
+                            '<option value="' + v + '"' + (filters.core === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select>' +
+                        '<select id="emu-f-cat">' + [
+                            ['all', '全部版本'], ['normal', '普通版'], ['invincible', '无敌版'],
+                        ].map(([v, l]) => '<option value="' + v + '"' + (filters.cat === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select>' +
+                        '<span class="emu-toolbar-count" id="emu-count"></span>';
+                    wrap.appendChild(bar);
+                }
+                const listBox = el('emu-list');
+                wrap.appendChild(listBox);
+                renderRomRows(listBox, bar);
+
+                if (bar) {
+                    const search = bar.querySelector('#emu-search');
+                    const coreSel = bar.querySelector('#emu-f-core');
+                    const catSel = bar.querySelector('#emu-f-cat');
+                    search.oninput = () => { filters.q = search.value; renderRomRows(listBox, bar); };
+                    coreSel.onchange = () => { filters.core = coreSel.value; renderRomRows(listBox, bar); };
+                    catSel.onchange = () => { filters.cat = catSel.value; renderRomRows(listBox, bar); };
                 }
                 container.appendChild(wrap);
+            }
+
+            // 只重渲染 ROM 行（筛选条件变化时不用重建工具栏，保持输入焦点）
+            function renderRomRows(listBox, bar) {
+                if (!alive) return;
+                const roms = filteredRoms();
+                const count = bar ? bar.querySelector('#emu-count') : document.getElementById('emu-count');
+                if (count) count.textContent = roms.length + ' / ' + allRoms.length + ' 款';
+                if (!allRoms.length) {
+                    listBox.innerHTML = '';
+                    const empty = el('emu-empty', '管理员还没有上传游戏，敬请期待。');
+                    listBox.appendChild(empty);
+                    return;
+                }
+                if (!roms.length) {
+                    listBox.innerHTML = '';
+                    listBox.appendChild(el('emu-empty', '没有匹配的游戏 —— 换个关键词或分类试试。'));
+                    return;
+                }
+                listBox.innerHTML = '';
+                const frag = document.createDocumentFragment();
+                roms.forEach(rom => {
+                    const item = el('emu-item');
+                    item.appendChild(el('emu-item-info',
+                        '<div class="emu-item-name">' + String(rom.name).replace(/[<>&]/g, '') +
+                        (rom.category === 'invincible' ? ' <span class="emu-tag emu-tag-inv">无敌版</span>' : '') + '</div>' +
+                        '<div class="emu-item-meta">' + coreLabel(rom.core) + ' · ' + fmtSize(rom.size) + (rom.sort ? ' · 🔝' : '') + '</div>'));
+                    const play = document.createElement('button');
+                    play.className = 'emu-btn emu-btn-play';
+                    play.textContent = '▶ 播放';
+                    play.onclick = ev => { ev.stopPropagation(); playRom(rom); };
+                    item.appendChild(play);
+                    frag.appendChild(item);
+                });
+                listBox.appendChild(frag);
             }
 
             // ---------- 播放（鉴权下载 → blob → EmulatorJS） ----------
