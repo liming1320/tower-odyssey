@@ -23,7 +23,7 @@
         params: (i, t) => ({ draw: i < 10 ? 1 : 3 }),
         desc: (i, t, p) => '翻牌 ' + p.draw + ' 张',
         w: 392, h: 500,
-        hint: '点牌堆翻牌；点明牌会自动尝试移到基础区或叠到花色交替的降序牌上',
+        hint: '点牌堆翻牌；先点选一张明牌（或一叠），再点目标列 / 基础区放置；再点一次原牌可取消',
         init: P => {
             const d = deck();
             const tab = [[], [], [], [], [], [], []];
@@ -35,7 +35,7 @@
             const CW = 50, CH = 70;
             E.card(ctx, 12, 16, CW, CH, '#4a7fbf', '#22406f', 6);
             E.txt(ctx, S.stock.length ? '牌堆' + S.stock.length : '↻', 12 + CW / 2, 16 + CH / 2, 16, '#fff', true);
-            if (S.waste.length) paint(ctx, 70, 16, CW, CH, S.waste[S.waste.length - 1]);
+            if (S.waste.length) { paint(ctx, 70, 16, CW, CH, S.waste[S.waste.length - 1]); if (S.sel && S.sel.from === 'waste') hl(ctx, 70, 16, CW, CH); }
             else { ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 2; ctx.strokeRect(70, 16, CW, CH); }
             for (let k = 0; k < 4; k++) {
                 const x = 136 + k * 62;
@@ -44,39 +44,106 @@
             }
             for (let k = 0; k < 7; k++) {
                 const x = 12 + k * 54;
-                for (let n = 0; n < S.tab[k].length; n++) paint(ctx, x, 100 + n * 24, CW, CH, S.tab[k][n], !S.tab[k][n].up);
+                for (let n = 0; n < S.tab[k].length; n++) {
+                    paint(ctx, x, 100 + n * 24, CW, CH, S.tab[k][n], !S.tab[k][n].up);
+                    if (S.sel && S.sel.from === k && n >= S.sel.n) hl(ctx, x, 100 + n * 24, CW, n === S.tab[k].length - 1 ? CH : 24);
+                }
+                // 空列虚线框：有选中时提示可放置
+                if (!S.tab[k].length && S.sel) { ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = 'rgba(255,213,107,.7)'; ctx.lineWidth = 2; ctx.strokeRect(x, 100, CW, CH); ctx.restore(); }
             }
             E.txt(ctx, S.msg, W / 2, H - 16, 14, '#cfe8d8');
         },
         tap(S, x, y, P, api) {
             const CW = 50, CH = 70;
+            // 1) 牌堆：翻牌 / 回收，并清掉选中
             if (hitc(x, y, 12, 16, CW, CH)) {
                 if (S.stock.length) { for (let k = 0; k < (P.draw || 1) && S.stock.length; k++) { const c = S.stock.pop(); c.up = true; S.waste.push(c); } }
                 else { while (S.waste.length) { const c = S.waste.pop(); c.up = false; S.stock.push(c); } }
+                S.sel = null; S.msg = '点选一张明牌，再点目的地';
                 return;
             }
-            if (S.waste.length && hitc(x, y, 70, 16, CW, CH)) {
-                const c = S.waste[S.waste.length - 1];
-                if (tryFnd(S, c, 'waste')) return chkWin(S, api);
-                if (tryTab(S, c, 'waste')) return chkWin(S, api);
-                return;
+            // 2) 基础区（放牌目标）
+            for (let k = 0; k < 4; k++) {
+                const fx = 136 + k * 62;
+                if (hitc(x, y, fx, 16, CW, CH)) {
+                    if (!S.sel) { S.msg = '先点选一张牌'; return; }
+                    if (S.sel.from === 'waste') {
+                        const c = S.waste[S.waste.length - 1];
+                        if (c && tryFnd(S, c, 'waste')) { S.sel = null; S.msg = '✔ 归位！'; return chkWin(S, api); }
+                    } else {
+                        const col = S.tab[S.sel.from];
+                        if (col.length === S.sel.n + 1 && tryFnd(S, col[col.length - 1], S.sel.from)) { S.sel = null; S.msg = '✔ 归位！'; return chkWin(S, api); }
+                    }
+                    S.msg = '❌ 这张牌放不上基础区（需同花色 A→K 递增）';
+                    return;
+                }
             }
+            // 3) 七列牌区
             for (let k = 0; k < 7; k++) {
                 const col = S.tab[k], bx = 12 + k * 54;
+                const maxY = 100 + Math.max(col.length, 1) * 24 + 46;
+                if (x < bx || x > bx + CW || y < 100 || y > maxY) continue;
+                // 空列：只能放 K 开头的序列
+                if (!col.length) {
+                    if (!S.sel) { S.msg = '先点选一张牌'; return; }
+                    const seq = takeSeq(S);
+                    if (seq && seq[0].r === 13) { S.tab[k].push(...seq); cutSource(S); S.sel = null; S.msg = '✔ 移到空列'; return chkWin(S, api); }
+                    S.msg = '❌ 只有 K（或以 K 开头的一叠）能放空列';
+                    return;
+                }
+                // 点到列中的哪张牌
+                let hit = -1;
                 for (let n = 0; n < col.length; n++) {
                     const cy = 100 + n * 24;
-                    if (n === col.length - 1 ? hitc(x, y, bx, cy, CW, CH) : (x >= bx && x <= bx + CW && y >= cy && y <= cy + 24)) {
-                        if (!col[n].up) { if (n === col.length - 1) { col[n].up = true; } return; }
-                        const seq = col.slice(n);
-                        if (k === 0 && n === 0 && col.length === 1) {}
-                        if (n === col.length - 1 && tryFnd(S, col[n], k)) return chkWin(S, api);
-                        if (trySeq(S, seq, k)) return chkWin(S, api);
-                        return;
-                    }
+                    const inCell = (n === col.length - 1) ? hitc(x, y, bx, cy, CW, CH) : (y >= cy && y <= cy + 24);
+                    if (inCell) { hit = n; break; }
                 }
+                if (hit < 0) return;
+                // 无选中 → 选择
+                if (!S.sel) {
+                    if (!col[hit].up) { if (hit === col.length - 1) { col[hit].up = true; S.msg = '翻开一张'; } return; }
+                    S.sel = { from: k, n: hit };
+                    S.msg = hit === col.length - 1 ? '已选中，点目标列 / 基础区放置' : '已选中一叠，点目标列放置';
+                    return;
+                }
+                // 点同列 → 取消或改选
+                if (S.sel.from === k) {
+                    if (hit === S.sel.n) { S.sel = null; S.msg = '已取消'; return; }
+                    if (!col[hit].up) { if (hit === col.length - 1) { col[hit].up = true; } return; }
+                    S.sel = { from: k, n: hit }; S.msg = '改选'; return;
+                }
+                // 移动：颜色交替 + 点数递减才放
+                const seq = takeSeq(S);
+                const t = col[col.length - 1];
+                if (seq && t.up && t.r === seq[0].r + 1 && isRed(t.s) !== isRed(seq[0].s)) {
+                    col.push(...seq); cutSource(S); S.sel = null; S.msg = '✔'; return chkWin(S, api);
+                }
+                S.msg = '❌ 放不上去（需颜色交替、点数比目标小 1）';
+                return;
             }
         },
     });
+    // —— solitaire 两段式移动的辅助 ——
+    function takeSeq(S) {
+        if (!S.sel) return null;
+        if (S.sel.from === 'waste') { const c = S.waste[S.waste.length - 1]; return c ? [c] : null; }
+        const col = S.tab[S.sel.from];
+        if (S.sel.n == null || S.sel.n >= col.length) return null;
+        return col.slice(S.sel.n);
+    }
+    function cutSource(S) {
+        if (S.sel.from === 'waste') { S.waste.pop(); return; }
+        const col = S.tab[S.sel.from];
+        col.length = S.sel.n;
+        if (col.length && !col[col.length - 1].up) col[col.length - 1].up = true;
+    }
+    function hl(ctx, x, y, w, h) {
+        ctx.save();
+        ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 9;
+        ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3;
+        ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+        ctx.restore();
+    }
     function tryFnd(S, c, from) {
         if (S.fnd[c.s] !== c.r - 1) return false;
         S.fnd[c.s] = c.r;

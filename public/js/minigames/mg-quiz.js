@@ -128,14 +128,16 @@
         levels: E.nm(),
         params: (i, t) => ({ need: 8 + i, n: Math.min(9, 4 + Math.floor(i / 3)) }),
         hint: '下面有一只和其他不同，点它！',
-        init(P) { const S = { n: P.n }; qNew(S, P.need); return S; },
+        // 注意：S.cells 存格子数 —— 不能用 S.n！qNew() 会把 S.n 清零（S.n 是答题计数器），
+        // 曾经导致找不同第一关网格为空、点什么都没反应
+        init(P) { const S = {}; qNew(S, P.need); S.cells = P.n; return S; },
         render(S, P, api) {
             const base = pick(['🐶', '🐱', '🐭', '🐼', '🐸', '🍎', '⭐', '🌸', '🚗', '🎈']);
             const other = pick(['🐶', '🐱', '🐭', '🐼', '🐸', '🍎', '⭐', '🌸', '🚗', '🎈'].filter(x => x !== base));
-            const idx = ri(0, S.n - 1);
+            const idx = ri(0, S.cells - 1);
             S.ans = idx;
             let grid = '';
-            for (let k = 0; k < S.n; k++) grid += `<button class="mgq-g" data-i="${k}">${k === idx ? other : base}</button>`;
+            for (let k = 0; k < S.cells; k++) grid += `<button class="mgq-g" data-i="${k}">${k === idx ? other : base}</button>`;
             return `<div class="mgq"><div class="mgq-h">${S.prog}</div><div class="mgq-t">找出不一样的那个</div>
                 <div class="mgq-grid">${grid}</div><div class="mgq-i">${S.info || ''}</div></div>`;
         },
@@ -214,10 +216,11 @@
         levels: E.nm(),
         params: (i, t) => ({ need: 6 + Math.floor(i / 2), n: 6 + i * 2 }),
         hint: '数一数屏幕上有多少个图形',
-        init(P) { const S = { n: P.n }; qNew(S, P.need); return S; },
+        // 同 oddone：S.cells 存图形上限，qNew() 会把 S.n 清零（答题计数器）
+        init(P) { const S = {}; qNew(S, P.need); S.cells = P.n; return S; },
         render(S, P, api) {
             const ch = pick(['🔴', '⭐', '🍎', '🐟', '🌸', '💎']);
-            const cnt = ri(4, Math.min(40, S.n));
+            const cnt = ri(4, Math.min(40, S.cells));
             S.ans = cnt;
             let s = '';
             for (let k = 0; k < cnt; k++) s += `<span style="font-size:20px">${ch}</span>`;

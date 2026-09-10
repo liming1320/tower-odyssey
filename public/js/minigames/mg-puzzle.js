@@ -514,15 +514,79 @@
             const C = Math.min(46, (W - 30) / S.w), ox = (W - C * S.w) / 2, oy = 76;
             for (let i = 0; i < S.h; i++) for (let j = 0; j < S.w; j++) {
                 const x = ox + j * C, y = oy + i * C;
-                if (S.b[i][j]) { E.card(ctx, x, y, C, C, '#6a5a44', '#42382a', 4); }
-                else { ctx.fillStyle = '#241d14'; ctx.fillRect(x, y, C, C); }
-                if (S.goals.some(g => g[0] === i && g[1] === j)) U.emoji(ctx, '🎯', x + C / 2, y + C / 2, C * 0.4);
+                if (S.b[i][j]) { E.card(ctx, x, y, C, C, '#8a7458', '#42382a', 4); }
+                else { ctx.fillStyle = '#2c2418'; ctx.fillRect(x, y, C, C); }
+                // 目标点：发光的琥珀色菱形框（一眼可见），不用小尺寸 emoji
+                if (S.goals.some(g => g[0] === i && g[1] === j)) {
+                    const gx = x + C / 2, gy = y + C / 2, r = C * 0.3;
+                    ctx.save();
+                    ctx.shadowColor = '#ffb84d'; ctx.shadowBlur = 8;
+                    ctx.fillStyle = 'rgba(255,184,77,0.28)';
+                    ctx.strokeStyle = '#ffb84d'; ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(gx, gy - r); ctx.lineTo(gx + r, gy); ctx.lineTo(gx, gy + r); ctx.lineTo(gx - r, gy);
+                    ctx.closePath(); ctx.fill(); ctx.stroke();
+                    ctx.restore();
+                    ctx.fillStyle = '#ffcf7d';
+                    ctx.beginPath(); ctx.arc(gx, gy, 3, 0, Math.PI * 2); ctx.fill();
+                }
             }
+            // 箱子：立体木箱（木板 + 铆钉 + 高对比描边），推进目标变绿并打光
             S.boxes.forEach(([i, j]) => {
                 const on = S.goals.some(g => g[0] === i && g[1] === j);
-                U.emoji(ctx, on ? '✅' : '📦', ox + j * C + C / 2, oy + i * C + C / 2, C * 0.6);
+                const bx = ox + j * C + 3, by = oy + i * C + 3, bs = C - 6;
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 3;
+                const bg2 = ctx.createLinearGradient(bx, by, bx, by + bs);
+                if (on) { bg2.addColorStop(0, '#8fe0a0'); bg2.addColorStop(1, '#3a9a55'); }
+                else { bg2.addColorStop(0, '#d8a860'); bg2.addColorStop(1, '#9a6a30'); }
+                ctx.fillStyle = bg2;
+                ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, bs, bs, 5) : ctx.rect(bx, by, bs, bs); ctx.fill();
+                ctx.restore();
+                ctx.lineWidth = 2.5; ctx.strokeStyle = on ? '#2a7a42' : '#5a3a14'; ctx.stroke();
+                // 木板横缝 + 对角交叉加固条
+                ctx.strokeStyle = on ? 'rgba(20,80,40,0.55)' : 'rgba(70,42,10,0.55)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(bx + 2, by + bs / 3); ctx.lineTo(bx + bs - 2, by + bs / 3);
+                ctx.moveTo(bx + 2, by + bs * 2 / 3); ctx.lineTo(bx + bs - 2, by + bs * 2 / 3);
+                ctx.moveTo(bx + 3, by + 3); ctx.lineTo(bx + bs - 3, by + bs - 3);
+                ctx.moveTo(bx + bs - 3, by + 3); ctx.lineTo(bx + 3, by + bs - 3);
+                ctx.stroke();
+                // 四角铆钉
+                ctx.fillStyle = on ? '#eafff0' : '#f0d8a8';
+                [[4, 4], [bs - 4, 4], [4, bs - 4], [bs - 4, bs - 4]].forEach(([dx, dy]) => {
+                    ctx.beginPath(); ctx.arc(bx + dx, by + dy, 2, 0, Math.PI * 2); ctx.fill();
+                });
+                // 顶部高光
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillRect(bx + 3, by + 2, bs - 6, 3);
+                if (on) {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold ' + Math.round(bs * 0.5) + 'px sans-serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText('✓', bx + bs / 2, by + bs / 2 + 1);
+                }
             });
-            U.emoji(ctx, '🧑', ox + S.pl[1] * C + C / 2, oy + S.pl[0] * C + C / 2, C * 0.6);
+            // 玩家：Q 版小人（圆脸 + 身体 + 推的方向感），比单纯 emoji 头像醒目
+            {
+                const px = ox + S.pl[1] * C + C / 2, py = oy + S.pl[0] * C + C / 2, pr = C * 0.34;
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
+                ctx.fillStyle = '#4a90d9';
+                ctx.beginPath(); ctx.arc(px, py + pr * 0.5, pr * 0.85, 0, Math.PI); ctx.fill();  // 身体
+                const fg = ctx.createRadialGradient(px - pr * 0.3, py - pr * 0.4, 1, px, py, pr);
+                fg.addColorStop(0, '#ffe0b0'); fg.addColorStop(1, '#e8a860');
+                ctx.fillStyle = fg;
+                ctx.beginPath(); ctx.arc(px, py - pr * 0.25, pr, 0, Math.PI * 2); ctx.fill();   // 头
+                ctx.restore();
+                ctx.strokeStyle = '#7a5018'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.fillStyle = '#222';
+                ctx.beginPath(); ctx.arc(px - pr * 0.35, py - pr * 0.35, pr * 0.13, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(px + pr * 0.35, py - pr * 0.35, pr * 0.13, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#a05a28'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(px, py - pr * 0.05, pr * 0.35, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+            }
             E.txt(ctx, `步数 ${S.moves}`, W / 2, 40, 17, '#ffd56b', true);
             E.btnBox(ctx, 150, H - 148, 70, 50, '↑', '#5a4a32', '#3a2f22');
             E.btnBox(ctx, 60, H - 88, 70, 50, '←', '#5a4a32', '#3a2f22');

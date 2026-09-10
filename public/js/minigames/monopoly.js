@@ -341,16 +341,29 @@ window.MiniGames = window.MiniGames || {};
         save(); render();
     }
 
+    // 移动中的格子高亮（.mgy-hopping），玩家 320ms/格、AI 180ms/格 —— 原速 110/70 太快看不清走到哪
     async function walk(p, steps) {
-        const fast = !p.me ? 70 : 110;
+        const pace = p.me ? 320 : 180;
         for (let k = 0; k < steps; k++) {
             p.pos = (p.pos + 1) % N;
             if (p.pos === 0) { p.cash += SALARY; log(`🏁 ${p.name} 经过起点 +${SALARY}`, p.c); }
+            S.hop = p.id;
             render();
-            if (dead) return;
-            await sleep(fast);
+            markHop();
+            if (dead) { S.hop = -1; return; }
+            await sleep(pace);
         }
+        S.hop = -1;
         render();
+    }
+    function markHop() {
+        if (!el.board) return;
+        el.board.querySelectorAll('.mgy-hopping').forEach(x => x.classList.remove('mgy-hopping'));
+        const p = S.players.find(q => q.id === S.hop);
+        if (p) {
+            const cell = el.board.querySelectorAll('.mgy-cell')[p.pos];
+            if (cell) cell.classList.add('mgy-hopping');
+        }
     }
 
     async function animDice(d1, d2) {

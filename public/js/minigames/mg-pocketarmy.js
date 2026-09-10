@@ -20,7 +20,7 @@ window.MiniGames = window.MiniGames || {};
             initArmy: 6 + Math.floor(i / 4),                     // 初始兵力
             atk: 1 + Math.floor(i / 6),                          // 攻击力
             spawnGap: Math.max(0.55, 1.4 - 0.7 * t),             // 出怪间隔
-            enemyMul: 0.4 + 0.45 * t,                            // 敌人密度
+            enemyMul: 0.6 + 0.5 * t,                             // 敌人密度（0.4 太稀，开局看不到射击）
             gateMul: 0.55 + 0.35 * t,                            // 加减门密度
         }),
         endless: { name: '无尽·远征', desc: '不停向前，看你能走多远' },
@@ -58,6 +58,40 @@ window.MiniGames = window.MiniGames || {};
             ctx.lineTo(W * 0.18, H * 0.26); ctx.lineTo(W * 0.42, H * 0.32); ctx.lineTo(W * 0.7, H * 0.24);
             ctx.lineTo(W, H * 0.32); ctx.lineTo(W, H * 0.5); ctx.lineTo(0, H * 0.5);
             ctx.closePath(); ctx.fill();
+
+            // ---- 视差滚动层（用 S.dist 让世界向后跑，营造行军感）----
+            const roll = S.dist % 400;
+            // 云（最慢视差）
+            const cloudDrift = (S.animPhase * 12) % (W + 120);
+            ctx.fillStyle = 'rgba(255,255,255,0.75)';
+            [[cloudDrift, 60, 1], [((cloudDrift + W * 0.55) % (W + 120)) - 60, 96, 0.7]].forEach(([cxx, cyy, cs]) => {
+                ctx.beginPath();
+                ctx.arc(cxx, cyy, 16 * cs, 0, Math.PI * 2);
+                ctx.arc(cxx + 18 * cs, cyy - 6 * cs, 12 * cs, 0, Math.PI * 2);
+                ctx.arc(cxx + 34 * cs, cyy, 14 * cs, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            // 路旁树（快视差，左右两排）
+            const treeSpots = [[16, 0], [46, 200], [22, 380], [W - 20, 100], [W - 44, 300], [W - 14, 480]];
+            treeSpots.forEach(([tx, toff]) => {
+                const ty = ((toff + roll) % 560) - 40;
+                if (ty < -30 || ty > H - 60) return;
+                ctx.save();
+                ctx.translate(tx, ty);
+                ctx.fillStyle = '#6a4a26'; ctx.fillRect(-3, 8, 6, 16);
+                let tg = null; try { tg = ctx.createRadialGradient(-4, -6, 2, 0, 0, 18); tg.addColorStop(0, '#5cb85c'); tg.addColorStop(1, '#2e7a3a'); } catch (e) { }
+                ctx.fillStyle = tg || '#3a8a46';
+                ctx.beginPath(); ctx.arc(0, -2, 14, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            });
+            // 路面小草（最快视差）
+            ctx.strokeStyle = 'rgba(60,120,50,0.8)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+            for (let k = 0; k < 7; k++) {
+                const gy = ((k * 80 + roll * 1.2) % 560) - 20;
+                if (gy < 0 || gy > H - 70) continue;
+                const side = k % 2 ? 8 : W - 10;
+                ctx.beginPath(); ctx.moveTo(side, gy); ctx.lineTo(side - 3, gy - 7); ctx.moveTo(side, gy); ctx.lineTo(side + 3, gy - 6); ctx.stroke();
+            }
             // 桥面（底部横线，队伍站在上）
             ctx.fillStyle = '#7a5028'; ctx.fillRect(0, H - 60, W, 14);
             ctx.fillStyle = '#5a3818';
@@ -159,15 +193,17 @@ window.MiniGames = window.MiniGames || {};
             // ---- 子弹（亮黄圆头弹 + 拖尾 + 命中火花）----
             for (const b of S.bullets) {
                 ctx.save();
-                // 拖尾
-                ctx.strokeStyle = 'rgba(255,213,107,0.5)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-                ctx.beginPath(); ctx.moveTo(b.x, b.y + 14); ctx.lineTo(b.x, b.y + 14 + b.vy * -0.05); ctx.stroke();
+                // 拖尾：沿速度反方向（飞行动感）
+                const blen = 0.075;
+                const grad = (() => { try { const g2 = ctx.createLinearGradient(b.x, b.y, b.x - b.vx * blen, b.y - b.vy * blen); g2.addColorStop(0, 'rgba(255,224,138,0.95)'); g2.addColorStop(1, 'rgba(255,213,107,0)'); return g2; } catch (e) { return 'rgba(255,213,107,0.5)'; } })();
+                ctx.strokeStyle = grad; ctx.lineWidth = 5; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * blen, b.y - b.vy * blen); ctx.stroke();
                 // 弹体（发光圆）
-                ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 8;
+                ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 10;
                 ctx.fillStyle = '#ffe08a';
-                ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(b.x, b.y, 4.5, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = '#fff';
-                ctx.beginPath(); ctx.arc(b.x - 1, b.y - 1, 1.6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(b.x - 1, b.y - 1, 1.8, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
             }
             for (const sp of S.sparks) {

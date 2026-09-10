@@ -1159,6 +1159,9 @@ body.in-battle .avatar-btn { display: none; }
 .mgy-dice i { width: 24px; height: 24px; border-radius: 6px; background: linear-gradient(180deg, #fff, #dcd6c4);
     color: #23201a; font-style: normal; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center;
     box-shadow: 0 2px 4px rgba(0,0,0,.4); }
+.mgy-cell.hopping, .mgy-cell.mgy-hopping { outline: 3px solid #ffd56b; outline-offset: -2px;
+    box-shadow: 0 0 12px 3px rgba(255,213,107,.65); animation: mgy-hop-pulse .5s ease-in-out infinite alternate; z-index: 2; }
+@keyframes mgy-hop-pulse { from { box-shadow: 0 0 8px 2px rgba(255,213,107,.45); } to { box-shadow: 0 0 16px 5px rgba(255,213,107,.8); } }
 .mgy-cell { position: relative; border-radius: 5px; background: linear-gradient(180deg, #f4ecd8, #d8ccb0);
     border: 1px solid #8a7a5a; display: flex; flex-direction: column; align-items: center; justify-content: center;
     overflow: hidden; padding-top: 3px; }
