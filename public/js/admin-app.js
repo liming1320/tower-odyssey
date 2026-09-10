@@ -776,17 +776,26 @@ const AdminApp = {
 
     // ================= 小游戏排序（管理后台可调整顺序，玩家端同步）=================
     // 兜底：接口都取不到清单时，直接解析玩家端的小游戏清单文件拿全部 id
-    async _fallbackGameIds() {
+    // 直接从玩家端清单文件解析 [{id,name}] —— 服务端进程旧/没重启时用它补齐排序页
+    async _localGameList() {
         try {
-            const txt = await (await fetch('/js/views/minigames.js')).text();
+            const txt = await (await fetch('/js/views/minigames.js?t=' + Date.now())).text();
             const start = txt.indexOf('const GAMES');
             const seg = start < 0 ? txt : txt.slice(start);
-            // GAMES 项既可能是 sc('id',...) 工厂写法，也可能是 { id:'xxx' } 字面量
-            const re = /(?:sc|sc2|scard|g)\(\s*['"]([A-Za-z0-9_-]+)['"]|\bid\s*:\s*['"]([A-Za-z0-9_-]+)['"]/g;
-            const ids = []; let m;
-            while ((m = re.exec(seg))) { const id = m[1] || m[2]; if (id && ids.indexOf(id) < 0) ids.push(id); }
-            return ids;
+            const out = [];
+            // GAMES 项既可能是 sc('id','名称',...) 工厂写法，也可能是 { id:'xxx' } 字面量
+            const re = /(?:sc|sc2|scard|g)\(\s*['"]([A-Za-z0-9_-]+)['"](?:\s*,\s*['"]([^'"]+)['"])?|\bid\s*:\s*['"]([A-Za-z0-9_-]+)['"]\s*,\s*name\s*:\s*['"]([^'"]+)['"]/g;
+            let m;
+            while ((m = re.exec(seg))) {
+                const id = m[1] || m[3];
+                const name = m[2] || m[4] || id;
+                if (id && !out.some(o => o.id === id)) out.push({ id, name });
+            }
+            return out;
         } catch (e) { return []; }
+    },
+    async _fallbackGameIds() {
+        return (await this._localGameList()).map(o => o.id);
     },
 
     async renderOrder(body) {
@@ -796,14 +805,23 @@ const AdminApp = {
         if (!r) { try { r = await AdminAPI.api('/api/minigame/order', 'GET'); } catch (e) { r = null; } }
         // 优先 r.full（后端把「已保存顺序 + 未排序的新游戏」拼好的完整序列），
         // 避免 r.order 是局部子集时被截短。r.all / r.order 兜底。
-        let list = (r && (r.full || r.all || r.order)) || [];
-        if (!list.length) list = await this._fallbackGameIds();
+        let list = ((r && (r.full || r.all || r.order)) || []).slice();
+        // 关键：服务端进程可能是旧的（git pull 后没重启 → 清单停在 103 个），
+        // 这里用前端 minigames.js 解析结果补齐，保证新增游戏一定出现在排序页。
+        const localList = await this._localGameList();
+        const missing = [];
+        for (const o of localList) {
+            if (list.indexOf(o.id) < 0) { list.push(o.id); missing.push(o.id); }
+        }
+        if (!list.length) list = localList.map(o => o.id);
         if (!list.length) {
             body.innerHTML = `<div class="card" style="color:#ff7a8b">取不到小游戏清单：接口没有返回数据，且无法解析 /js/views/minigames.js。请确认服务已重启加载最新代码。</div>`;
             return;
         }
-        const all = (r && (r.all || r.full)) || list.slice();
-        const names = (r && r.names) || {};
+        let all = ((r && (r.all || r.full)) || list.slice()).slice();
+        for (const o of localList) if (all.indexOf(o.id) < 0) all.push(o.id);
+        const names = Object.assign({}, r && r.names);
+        for (const o of localList) if (!names[o.id]) names[o.id] = o.name;
         const nm = id => names[id] || id;
         // 内部用 {id, n} 列表：n 是「数字序号」，按 n 升序就是玩家端看到顺序
         // 保存时按 n 升序展开成 id[] 提交。
@@ -813,6 +831,7 @@ const AdminApp = {
             <div class="admin-note">
                 调整玩家端小游戏排序。<b>拖动</b>或输入<b>序号</b>（数字越小越靠前）→ 1=最前。点击「💾 保存」后立即生效。<br>
                 序号留空=未设（自动按当前位置）。未保存的更改显示「⚠ 未保存」。
+                ${missing.length ? `<div style="margin-top:6px;color:#ffd56b">⚠ 本机清单里有 ${missing.length} 个游戏服务端还没识别（${this.esc(missing.join('、'))}）—— 已临时补进列表。若保存后仍不生效，请重启一次游戏服务（服务端现在按文件时间自动刷新，一般重启一次即可）。</div>` : ''}
             </div>
             <div class="card">
                 <h3>当前排序（${items.length} 个）</h3>

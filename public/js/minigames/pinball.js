@@ -11,6 +11,13 @@ window.MiniGames = window.MiniGames || {};
     const SUB = 6;                                  // 物理子步（防穿透）
     const SPEED_CAP = 1700;                         // 球速封顶（防 SUB 间隧穿）
 
+    // ---- 发射巷 / 活塞（统一以巷中心对称，历史版本活塞头画偏了 9px）----
+    const LANE_L = 348, LANE_R = 412;               // 发射巷内壁
+    const LAUNCH_CX = (LANE_L + LANE_R) / 2;        // 380 —— 球与活塞共用这条中线
+    const PLUNGER_Y = 600;                          // 活塞头顶面（未蓄力）
+    const BALL_REST_Y = PLUNGER_Y - BALL_R;         // 球静止时圆心
+    const PLUNGER_PULL = 24;                        // 满蓄力活塞后退距离（向下=拉杆）
+
     const NAMES = [
         '新兵报到', '首次值勤', '巡航练习', '靶场训练', '引擎预热',
         '低轨巡航', '陨石带', '补给站', '信号中继', '例行巡逻',
@@ -57,6 +64,56 @@ window.MiniGames = window.MiniGames || {};
         RAMP_SEG.push(d); RAMP_LEN.push(d);
     }
     const RAMP_TOTAL = RAMP_SEG.reduce((a, b) => a + b, 0);
+
+    // 通用折线路径：按弧长参数化，供 RAMP 与「发射导轨」复用
+    function mkPath(pts) {
+        const seg = [];
+        for (let i = 1; i < pts.length; i++) seg.push(Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+        const T = seg.reduce((a, b) => a + b, 0) || 1;
+        function loc(u) {
+            let target = Math.max(0, Math.min(1, u)) * T, acc = 0;
+            for (let i = 0; i < seg.length; i++) {
+                if (acc + seg[i] >= target) {
+                    const f = seg[i] ? (target - acc) / seg[i] : 0;
+                    const a = pts[i], b = pts[i + 1];
+                    return { x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f, i, f };
+                }
+                acc += seg[i];
+            }
+            const l = pts[pts.length - 1];
+            return { x: l[0], y: l[1], i: pts.length - 2, f: 1 };
+        }
+        return {
+            pts, T,
+            at: u => loc(u),
+            dir: u => {
+                const p = loc(u), a = pts[p.i], b = pts[p.i + 1];
+                const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+                return { x: dx / L, y: dy / L };
+            },
+        };
+    }
+
+    // ---- 发射导轨（habitrail）：右巷直上 → 右弧 → 顶平 → 左弧 → 左上出球 ----
+    // 致敬 Space Cadet：球是被「管道」送上去再从左上落入台面的，
+    // 旧版靠物理反弹，会在圆顶里反复弹好几圈才蹭出来。
+    const RAIL_R = 140;                             // 导轨中心线半径（外壁 152，留 12 给管壁）
+    const LAUNCH_PATH = (() => {
+        const p = [[LAUNCH_CX, BALL_REST_Y], [LAUNCH_CX, 116]];
+        const a0 = Math.acos(Math.min(1, (LAUNCH_CX - R_ARCH_CX) / RAIL_R));   // 与直巷相接的角度
+        for (let i = 1; i <= 12; i++) {
+            const a = a0 + (Math.PI / 2 - a0) * i / 12;
+            p.push([R_ARCH_CX + RAIL_R * Math.cos(a), R_ARCH_CY - RAIL_R * Math.sin(a)]);
+        }
+        p.push([160, R_ARCH_CY - RAIL_R]);                                      // 顶平（左行）
+        const a1 = 130 * Math.PI / 180;                                         // 左弧出球角
+        for (let i = 1; i <= 8; i++) {
+            const a = Math.PI / 2 + (a1 - Math.PI / 2) * i / 8;
+            p.push([160 + RAIL_R * Math.cos(a), R_ARCH_CY - RAIL_R * Math.sin(a)]);
+        }
+        return mkPath(p);
+    })();
+
     function rampAt(u) {
         let target = Math.max(0, Math.min(1, u)) * RAMP_TOTAL, acc = 0;
         for (let i = 0; i < RAMP_SEG.length; i++) {
@@ -129,7 +186,8 @@ window.MiniGames = window.MiniGames || {};
 
             // ---- 台面状态 ----
             let score = 0, balls = endless ? Infinity : 3, launched = false;
-            let ball = { x: 380, y: 588, vx: 0, vy: 0 };
+            let ball = { x: LAUNCH_CX, y: BALL_REST_Y, vx: 0, vy: 0 };
+            let onRail = false, railU = 0, railPow = 0;   // 发射导轨（管道）
             let plunger = 0, plungerHold = false, chargeSfxDone = true;
             let L = { ang: 0.42 }, R = { ang: -0.42 };
             let LHold = false, RHold = false, LWas = false, RWas = false;
@@ -304,20 +362,41 @@ window.MiniGames = window.MiniGames || {};
 
                 // 发射
                 if (!launched) {
-                    ball.x = 380; ball.y = 588;
+                    ball.x = LAUNCH_CX; ball.y = BALL_REST_Y;
+                    ball.vx = ball.vy = 0;
                     laneTimer = 0;
                     const holding = plungerHold || keys.has('ArrowDown') || keys.has('Space');
                     if (holding) {
                         if (chargeSfxDone) { sfx('charge'); chargeSfxDone = false; }
                         plunger = Math.min(1, plunger + dt * 1.5);
                     } else if (plunger > 0.08) {
-                        // 旧版 420+560*plunger 最大 980，球到顶需要 ~1200 → 困在巷里。
-                        // 改成 1320+780*plunger，最小 1380 也足够越过 64y 的巷顶进入右弧。
-                        ball.vy = -(1320 + 780 * plunger);
-                        ball.vx = 0;
+                        // 走「管道」发射：球进入导轨模式，沿 LAUNCH_PATH 滑到左上角出球，
+                        // 不再靠物理反弹（旧版会在圆顶里弹好几圈才蹭出来，甚至困死）。
+                        railPow = plunger;
+                        onRail = true; railU = 0;
                         launched = true; plunger = 0; chargeSfxDone = true;
                         sfx('launch'); shake = Math.max(shake, 0.12); shakeMag = Math.max(shakeMag, 2.5);
                     } else { plunger = Math.max(0, plunger - dt * 2); chargeSfxDone = true; }
+                    return;
+                }
+
+                // 发射导轨（管道）：沿路径滑行，到顶端自动脱离落入台面
+                if (onRail) {
+                    // 速度曲线：起步快 → 接近顶点减速 → 出球前略加速（有惯性感）
+                    const v = Math.max(430, (1080 + 820 * railPow) * (1 - 0.35 * Math.sin(Math.PI * railU)));
+                    railU += v * dt / LAUNCH_PATH.T;
+                    if (railU >= 1) {
+                        const e = LAUNCH_PATH.at(1), d = LAUNCH_PATH.dir(1);
+                        onRail = false; railU = 0;
+                        ball.x = e.x; ball.y = e.y;
+                        const out = 300 + 160 * railPow;
+                        ball.vx = d.x * out; ball.vy = d.y * out;
+                        sfx('jet'); spawnParts(e.x, e.y, 10, 200, 0.8);
+                    } else {
+                        const p = LAUNCH_PATH.at(railU);
+                        ball.x = p.x; ball.y = p.y;
+                        ball.vx = ball.vy = 0;
+                    }
                     return;
                 }
 
@@ -487,11 +566,11 @@ window.MiniGames = window.MiniGames || {};
                         combo = 0; mult = 1; jackpot = 2500;
                         lights.targets = [false, false, false, false];
                         lights.lanes = [false, false, false, false, false];
-                        if (endless) { launched = false; ball = { x: 380, y: 588, vx: 0, vy: 0 }; }
+                        if (endless) { launched = false; ball = { x: LAUNCH_CX, y: BALL_REST_Y, vx: 0, vy: 0 }; onRail = false; railU = 0; }
                         else {
                             balls--;
                             if (balls <= 0) finish(false);
-                            else { launched = false; ball = { x: 380, y: 588, vx: 0, vy: 0 }; }
+                            else { launched = false; ball = { x: LAUNCH_CX, y: BALL_REST_Y, vx: 0, vy: 0 }; onRail = false; railU = 0; }
                         }
                         kickback.L = kickback.R = true; laneTimer = 0;
                         return;
@@ -517,6 +596,7 @@ window.MiniGames = window.MiniGames || {};
                 drawCabinet();
                 drawPlayfield();
                 drawRamp();
+                drawLaunchRail();
                 drawLanes();
                 drawBumpers();
                 drawSlings();
@@ -901,26 +981,49 @@ window.MiniGames = window.MiniGames || {};
             }
 
             function drawPlunger() {
-                // 发射巷底盒
+                // 发射巷底盒（与 LANE_L/R 对齐）
                 ctx.save();
-                ctx.fillStyle = '#1a2240'; ctx.fillRect(352, 200, 60, GH - 220);
+                ctx.fillStyle = '#1a2240'; ctx.fillRect(LANE_L + 4, 200, LANE_R - LANE_L - 8, GH - 220);
                 ctx.strokeStyle = '#5a6aa0'; ctx.lineWidth = 1.5;
-                ctx.strokeRect(352, 200, 60, GH - 220);
-                // 弹簧
+                ctx.strokeRect(LANE_L + 4, 200, LANE_R - LANE_L - 8, GH - 220);
+                // 蓄力时活塞「向后（下）」退 —— 旧版写成向上顶，方向是反的
+                const headY = PLUNGER_Y + plunger * PLUNGER_PULL;
+                // 弹簧（活塞头下方，蓄力时被压缩）
+                const yb = headY + 12, yEnd = 652, n = 5, step = (yEnd - yb) / n;
                 ctx.strokeStyle = '#bfa050'; ctx.lineWidth = 2;
-                for (let i = 0; i < 5; i++) {
-                    const yy = 600 - plunger * 20 - i * 8;
-                    ctx.beginPath();
-                    ctx.moveTo(372, yy);
-                    ctx.lineTo(376, yy - 4); ctx.lineTo(372, yy - 8); ctx.lineTo(376, yy - 12);
-                    ctx.stroke();
+                ctx.beginPath();
+                for (let i = 0; i < n; i++) {
+                    const y0 = yb + i * step;
+                    ctx.moveTo(LAUNCH_CX - 5, y0);
+                    ctx.lineTo(LAUNCH_CX + 5, y0 + step / 2);
+                    ctx.lineTo(LAUNCH_CX - 5, y0 + step);
                 }
-                // 活塞头
+                ctx.stroke();
+                // 活塞头（与球同一条中线 LAUNCH_CX）
                 ctx.fillStyle = '#e8b83a';
-                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(360, 590 - plunger * 22, 22, 12, 4); ctx.fill(); }
-                else { ctx.fillRect(360, 590 - plunger * 22, 22, 12); }
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(LAUNCH_CX - 12, headY, 24, 12, 4); ctx.fill(); }
+                else { ctx.fillRect(LAUNCH_CX - 12, headY, 24, 12); }
                 ctx.fillStyle = '#fff5d0';
-                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(362, 591 - plunger * 22, 18, 3, 2); ctx.fill(); }
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(LAUNCH_CX - 10, headY + 1, 20, 3, 2); ctx.fill(); }
+                ctx.restore();
+            }
+
+            // 发射导轨（管道）：让「球被送上去」看得见
+            function drawLaunchRail() {
+                const p = LAUNCH_PATH.pts;
+                ctx.save();
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(p[0][0], p[0][1]);
+                for (let i = 1; i < p.length; i++) ctx.lineTo(p[i][0], p[i][1]);
+                ctx.strokeStyle = 'rgba(6,10,24,0.85)'; ctx.lineWidth = 24; ctx.stroke();   // 管底
+                ctx.strokeStyle = 'rgba(120,170,255,0.14)'; ctx.lineWidth = 20; ctx.stroke(); // 管内
+                ctx.strokeStyle = 'rgba(150,205,255,0.55)'; ctx.lineWidth = 1.4; ctx.stroke(); // 高光边
+                // 出球口箭头
+                const e = LAUNCH_PATH.at(1), d = LAUNCH_PATH.dir(1);
+                ctx.translate(e.x, e.y); ctx.rotate(Math.atan2(d.y, d.x));
+                ctx.fillStyle = 'rgba(150,235,255,0.85)';
+                ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-6, -6); ctx.lineTo(-6, 6); ctx.closePath(); ctx.fill();
                 ctx.restore();
             }
 
@@ -969,10 +1072,11 @@ window.MiniGames = window.MiniGames || {};
 
             function drawPlungerBar() {
                 if (!launched && plunger > 0) {
-                    ctx.fillStyle = '#0a0e1a'; ctx.fillRect(344, 500, 8, 90);
+                    const bx = LANE_R - 13;                       // 贴在巷右内壁，不再压到左墙
+                    ctx.fillStyle = '#0a0e1a'; ctx.fillRect(bx, 500, 8, 90);
                     const ph = plunger * 86;
                     ctx.fillStyle = `hsl(${130 - plunger * 130},85%,55%)`;
-                    ctx.fillRect(345, 588 - ph, 6, ph);
+                    ctx.fillRect(bx + 1, 589 - ph, 6, ph);
                 }
             }
 

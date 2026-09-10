@@ -2479,12 +2479,15 @@ api['POST /api/mail/claim'] = (req, res, body) => {
 // 进度存档：u.state.minigames = { [gameId]: { [level]: { stars, clears } } }
 // 奖励规则（防刷）：首次通关送钻（关卡越高越多）+ 金币；已通关只升星补差价；重复通关不送
 // MINIGAME_IDS 同时作为排行榜白名单
-// 小游戏 id 白名单：硬编码存量 + 启动时解析玩家端清单自动补齐新游戏。
-// 历史教训：这里曾经漏掉 tank / contra1 / contra2 / pinball，导致它们
+// 小游戏 id 白名单：硬编码存量 + 解析玩家端清单自动补齐新游戏。
+// 历史教训①：这里曾经漏掉 tank / contra1 / contra2 / pinball，导致它们
 //   ① 管理后台「小游戏排序」页看不到  ② 成绩上报被拒（未知小游戏）→ 排行榜失效。
-// 现在自动同步注册清单，新增小游戏只需在 minigames.js 里 sc(...) 注册即可。
-const MINIGAME_IDS = (() => {
-    const base = [
+// 历史教训②：改成自动解析后又踩了一次 —— 只在**进程启动时**解析一次，
+//   云端 git pull 拉到新小游戏但服务没重启 → 后台依旧显示旧数量（103 个）。
+//   现在按 minigames.js 的 mtime 自动失效缓存：拉完代码下一次请求就生效，
+//   **不需要重启服务**。新增小游戏只需在 minigames.js 里 sc(...) 注册即可。
+const MINIGAMES_FILE = path.join(__dirname, 'public', 'js', 'views', 'minigames.js');
+const MINIGAME_BASE_IDS = [
     // 旧 20
     'gomoku','g2048','banqi','xiangqi','link','match3','snake','tetris','mole','mine','memory','slide15','bulls','sudoku6','hanoi','piano','reaction','breakout','jump','shooter',
     // 新 80
@@ -2499,32 +2502,36 @@ const MINIGAME_IDS = (() => {
     'towerdef','idleclick','life','virus','sandfall','ballance','rocketland','orbit','traffic','growfarm',
     // 动作类
     'knife','sheep','pocketarmy','tank','contra1','contra2','pinball',
-    ];
+];
+// 懒加载 + mtime 失效：minigames.js 一变（git pull / 新增游戏）下次请求即生效
+let _mgReg = null;
+function minigameRegistry() {
+    let mtime = 0;
+    try { mtime = fs.statSync(MINIGAMES_FILE).mtimeMs; } catch (e) { mtime = 0; }
+    if (_mgReg && _mgReg.mtime === mtime) return _mgReg;
+    const ids = MINIGAME_BASE_IDS.slice();
+    const names = {};
     try {
-        const txt = require('fs').readFileSync(require('path').join(__dirname, 'public', 'js', 'views', 'minigames.js'), 'utf8');
-        const re = /(?:sc|sc2|scard|g)\(\s*['"]([A-Za-z0-9_-]+)['"]/g;
-        let m;
-        while ((m = re.exec(txt))) if (base.indexOf(m[1]) < 0) base.push(m[1]);
-    } catch (e) { /* 读不到就用硬编码清单 */ }
-    return new Set(base);
-})();
-
-// 小游戏中文名：解析玩家端清单文件（sc('id','名称',...) / { id:'x', name:'y' } 两种写法都兼容）
-// 只在启动时读一次并缓存，供管理后台排序页显示中文名
-const MINIGAME_NAMES = (() => {
-    const map = {};
-    try {
-        const txt = require('fs').readFileSync(require('path').join(__dirname, 'public', 'js', 'views', 'minigames.js'), 'utf8');
+        const txt = fs.readFileSync(MINIGAMES_FILE, 'utf8');
         const start = txt.indexOf('const GAMES');
         const seg = start < 0 ? txt : txt.slice(start);
         let m;
+        const reId = /(?:sc|sc2|scard|g)\(\s*['"]([A-Za-z0-9_-]+)['"]/g;
+        while ((m = reId.exec(txt))) if (ids.indexOf(m[1]) < 0) ids.push(m[1]);
         const re1 = /(?:sc|sc2|scard|g)\(\s*['"]([A-Za-z0-9_-]+)['"]\s*,\s*['"]([^'"]+)['"]/g;
-        while ((m = re1.exec(seg))) map[m[1]] = m[2];
+        while ((m = re1.exec(seg))) names[m[1]] = m[2];
         const re2 = /\bid\s*:\s*['"]([A-Za-z0-9_-]+)['"]\s*,\s*name\s*:\s*['"]([^'"]+)['"]/g;
-        while ((m = re2.exec(seg))) if (!map[m[1]]) map[m[1]] = m[2];
-    } catch (e) { /* 读不到就用 id 兜底 */ }
-    return map;
-})();
+        while ((m = re2.exec(seg))) if (!names[m[1]]) names[m[1]] = m[2];
+    } catch (e) { /* 读不到就用硬编码清单 + id 兜底 */ }
+    _mgReg = { mtime, ids, set: new Set(ids), names };
+    return _mgReg;
+}
+const mgIds = () => minigameRegistry().ids;
+const mgSet = () => minigameRegistry().set;
+const mgNames = () => minigameRegistry().names;
+// 兼容旧引用名（历史代码里到处是 MINIGAME_IDS.has / MINIGAME_NAMES）
+const MINIGAME_IDS = { has: x => mgSet().has(x) };
+const MINIGAME_NAMES = new Proxy({}, { get: (_, k) => mgNames()[k], has: (_, k) => k in mgNames(), ownKeys: () => Object.keys(mgNames()), getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }) });
 api['POST /api/minigame/report'] = (req, res, body) => {
     const user = getUserByToken(req);
     if (!user) return sendJson(res, 401, { error: '未登录' });
@@ -2618,14 +2625,14 @@ api['POST /api/admin/login'] = (req, res, body) => {
 // DB.minigameOrder = string[]   （按用户后台设置的顺序存）
 api['GET /api/minigame/order'] = (req, res) => {
     // all / full：全部小游戏 id，供管理后台排序页兜底（即使没保存过任何顺序也能列出清单）
-    const all = [...MINIGAME_IDS];
+    const all = mgIds();
     const savedOrder = Array.isArray(DB.minigameOrder) ? DB.minigameOrder.filter(x => MINIGAME_IDS.has(x)) : [];
     const seen = new Set(savedOrder);
     sendJson(res, 200, {
         order: DB.minigameOrder || [],
         all,
         full: savedOrder.concat(all.filter(id => !seen.has(id))),
-        names: MINIGAME_NAMES,
+        names: mgNames(),
     });
 };
 api['POST /api/admin/minigame/order'] = (req, res, body) => {
@@ -2639,11 +2646,11 @@ api['POST /api/admin/minigame/order'] = (req, res, body) => {
 // 后台读取：把「已保存顺序」补齐未排序的新游戏，保证后台能看到全部小游戏
 api['GET /api/admin/minigame/order'] = (req, res) => {
     if (!isAdminToken(req)) return sendJson(res, 401, { error: '需要管理员' });
-    const all = [...MINIGAME_IDS];
+    const all = mgIds();
     const savedOrder = Array.isArray(DB.minigameOrder) ? DB.minigameOrder.filter(x => MINIGAME_IDS.has(x)) : [];
     const seen = new Set(savedOrder);
     const order = savedOrder.concat(all.filter(id => !seen.has(id)));
-    sendJson(res, 200, { order, all, names: MINIGAME_NAMES, saved: savedOrder.length > 0 });
+    sendJson(res, 200, { order, all, names: mgNames(), saved: savedOrder.length > 0, count: all.length });
 };
 
 // ---- 经典模拟器 ROM 库：管理员上传（存 data/roms/ 磁盘文件，元数据进 DB）· 全员游玩 ----
