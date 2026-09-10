@@ -476,6 +476,9 @@ const MG = {
         // 暴露给游戏在 viewport 变化后强制重排
         parent.__mgRefit = fit;
         window.addEventListener('resize', fit);
+        // 绑在 canvas 上：让 MG.bind / 自定义事件处理能从 c.__mgW 推出 deviceScale
+        // （不依赖 ctx.__mgScale，因为部分外部代码取不到 ctx）
+        c.__mgW = w; c.__mgH = h;
         return { c, ctx, w, h, fit, destroy() { window.removeEventListener('resize', fit); } };
     },
     // 简单按钮覆盖层
@@ -499,11 +502,17 @@ const MG = {
             const r = c.getBoundingClientRect();
             const sx = c.width / r.width, sy = c.height / r.height;
             const t = e.touches ? e.touches[0] : e;
-            return { x: (t.clientX - r.left) * sx, y: (t.clientY - r.top) * sy };
+            const px = (t.clientX - r.left) * sx, py = (t.clientY - r.top) * sy;
+            // HiDPI 还原：MG.canvas 用 devicePixelRatio 放大 backing store，
+            // 但 ctx.setTransform 把坐标系缩回逻辑像素；这里必须把 backing 像素再除一次 deviceScale，
+            // 否则 dpr≥2 时落子会跳格 / 越界（gomoku/link/match3/mine/memory/piano/reaction 全部受益）
+            const ds = (c.__mgScale != null) ? c.__mgScale : ((c.__mgW && c.__mgH) ? Math.max(c.width / c.__mgW, c.height / c.__mgH) : ((ctx => ctx && ctx.__mgScale || 1)(c.getContext && c.getContext('2d'))));
+            return { x: px / ds, y: py / ds, _backing: { x: px, y: py, sx, sy } };
         };
         c.addEventListener('mousedown', e => onTap(get(e)));
         c.addEventListener('mousemove', e => onMove && onMove(get(e)));
         c.addEventListener('touchstart', e => { e.preventDefault(); onTap(get(e)); }, { passive: false });
+        c.addEventListener('touchend', e => { e.preventDefault(); }, { passive: false });
         c.addEventListener('touchmove', e => { e.preventDefault(); onMove && onMove(get(e)); }, { passive: false });
     },
     // 随机整数
@@ -815,12 +824,13 @@ const MG = {
         }).then(r => r.ok ? r.json() : null).catch(() => null);
     },
     // 拉取后台设置的排序；玩家端按此顺序渲染 GAMES
+    // 关键：用 d.full = savedOrder + 未排序的兜底全集，避免「只存了部分游戏」时未保存的游戏退回原始顺序
     async fetchOrder() {
         try {
             const r = await fetch('/api/minigame/order');
             if (!r.ok) return [];
             const d = await r.json();
-            return d.order || [];
+            return d.full || d.all || d.order || [];
         } catch (e) { return []; }
     },
 

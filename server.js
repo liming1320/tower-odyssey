@@ -1115,7 +1115,7 @@ api['POST /api/register'] = async (req, res, body) => {
         password: hashPassword(password),
         isAdmin,
         createdAt: Date.now(),
-        nickname: genDefaultNickname(), // 自动昵称：勇者XXXX，之后可改
+        nickname: finalNickname,
         displayId: newDisplayId(),      // 展示 ID，全局唯一
         phone: bindPhone,
         state: defaultUserState(username),
@@ -2647,11 +2647,21 @@ api['GET /api/minigame/order'] = (req, res) => {
 };
 api['POST /api/admin/minigame/order'] = (req, res, body) => {
     if (!isAdminToken(req)) return sendJson(res, 401, { error: '需要管理员' });
-    const order = Array.isArray(body.order) ? body.order.filter(x => typeof x === 'string' && MINIGAME_IDS.has(x)) : null;
-    if (!order) return sendJson(res, 400, { error: 'order 不合法' });
-    DB.minigameOrder = order;
+    if (!Array.isArray(body.order)) return sendJson(res, 400, { error: 'order 不合法' });
+    // 仅保留合法的游戏 id；保留客户端提交的相对顺序
+    const seen = new Set();
+    const ordered = [];
+    for (const x of body.order) {
+        if (typeof x === 'string' && MINIGAME_IDS.has(x) && !seen.has(x)) { ordered.push(x); seen.add(x); }
+    }
+    // 兜底：客户端只拖了部分游戏（历史 bug：admin UI 误只提交 5 个）→ 把剩余的按 mgIds() 原序补到末尾
+    // 避免再次出现 db.json 只存 5 个、玩家端「前 5 个生效，后面的退回原始顺序」的悲剧
+    const all = mgIds();
+    for (const id of all) if (!seen.has(id)) { ordered.push(id); seen.add(id); }
+    if (ordered.length !== all.length) return sendJson(res, 400, { error: 'order 与清单不匹配' });
+    DB.minigameOrder = ordered;
     save();
-    sendJson(res, 200, { ok: true, order: DB.minigameOrder });
+    sendJson(res, 200, { ok: true, order: DB.minigameOrder, count: ordered.length });
 };
 // 后台读取：把「已保存顺序」补齐未排序的新游戏，保证后台能看到全部小游戏
 api['GET /api/admin/minigame/order'] = (req, res) => {

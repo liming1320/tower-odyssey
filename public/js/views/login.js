@@ -1,11 +1,39 @@
-// 登录视图：账号通道（账号+密码）
-// 手机号验证码通道暂停（2026-09-09）：真实短信需购买厂商套餐，前端入口已注释；
-// 恢复方法：还原 index.html 的手机号 tab/box，并去掉下方 SMS_ENABLED 判断。
+// 登录 / 注册合并视图（2026-09-10）：
+// - 默认显示「登录」面板；右上角「没有账号？点此注册」一键切到注册
+// - 注册时多显示一个昵称输入框（可选；不填则服务端随机生成「勇者XXXX」）
+// - 支持「记住我」30 天免登录（localStorage 存 token）
+// - 手机号验证码通道暂停（2026-09-09）：真实短信需购买厂商套餐，恢复方法见 index.html 注释
 const SMS_ENABLED = false;
 const LoginView = {
     smsCountdown: 0,
+    mode: 'login',     // 'login' | 'register'
     init() {
-        // 通道切换（手机号通道下线时 tab-phone 不存在，安全跳过）
+        // 模式切换：登录 ⇄ 注册
+        const switchLink = document.getElementById('login-switch');
+        const titleEl = document.getElementById('login-title');
+        const btnLogin = document.getElementById('btn-login');
+        const nicknameInput = document.getElementById('login-nickname');
+        const usernameInput = document.getElementById('login-username');
+        const passwordInput = document.getElementById('login-password');
+        const rememberEl = document.getElementById('login-remember');
+        const hintEl = document.getElementById('login-hint');
+        const setMode = m => {
+            this.mode = m;
+            const isReg = m === 'register';
+            titleEl.textContent = isReg ? '注 册' : '登 录';
+            btnLogin.textContent = isReg ? '注 册' : '登 录';
+            btnLogin.classList.toggle('btn-register', isReg);
+            nicknameInput.classList.toggle('hidden', !isReg);
+            switchLink.textContent = isReg ? '已有账号？点此登录' : '没有账号？点此注册';
+            hintEl.textContent = isReg
+                ? '账号 4-16 位字母/数字 · 密码至少 4 位 · 昵称 2-12 个字符（不填则随机生成）'
+                : '账号注册：4-16 位英文字母+数字，密码至少 4 位。';
+            // 切换后清空敏感字段；用户名保留（很多人切换时复用）
+            passwordInput.value = '';
+            rememberEl.checked = false;
+        };
+        switchLink.onclick = () => setMode(this.mode === 'login' ? 'register' : 'login');
+        // 顶部 tab 仍兼容旧逻辑（SMS 已下线，旧代码仅占位）
         const tabA = document.getElementById('tab-account');
         const tabP = document.getElementById('tab-phone');
         const boxA = document.getElementById('login-account-box');
@@ -19,12 +47,13 @@ const LoginView = {
         if (tabP && boxP) tabP.onclick = () => switchTo(true);
         if (tabA) tabA.onclick = () => switchTo(false);
 
-        // 账号通道
-        document.getElementById('btn-login').onclick = () => this.submit(false);
-        document.getElementById('btn-register').onclick = () => this.submit(true);
-        document.getElementById('login-password').addEventListener('keydown', e => {
-            if (e.key === 'Enter') this.submit(false);
-        });
+        // 提交：当前模式决定走 login 还是 register
+        const submit = () => this.submit(this.mode === 'register');
+        btnLogin.onclick = submit;
+        // Enter 键：密码框回车 = 当前模式；昵称框（注册时）回车跳账号
+        passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+        usernameInput.addEventListener('keydown', e => { if (e.key === 'Enter') passwordInput.focus(); });
+        nicknameInput.addEventListener('keydown', e => { if (e.key === 'Enter') usernameInput.focus(); });
 
         // 手机号通道（下线中：元素不存在时自动跳过）
         const btnSms = document.getElementById('btn-send-sms');
@@ -35,19 +64,47 @@ const LoginView = {
         if (smsInput) smsInput.addEventListener('keydown', e => {
             if (e.key === 'Enter') this.phoneLogin();
         });
+
+        // 记住我：localStorage 持久化 token，下次进入自动登录
+        const rememberKey = 'tower-odyssey-remember';
+        try {
+            const savedRemember = localStorage.getItem(rememberKey) === '1';
+            rememberEl.checked = savedRemember;
+            if (savedRemember) {
+                const t = API.getToken();
+                if (t) {
+                    API.me().then(u => { if (u) window.App.onLogin(u); }).catch(() => {});
+                }
+            }
+        } catch (e) { /* localStorage 不可用时静默 */ }
+        rememberEl.addEventListener('change', () => {
+            try {
+                if (rememberEl.checked) localStorage.setItem(rememberKey, '1');
+                else localStorage.removeItem(rememberKey);
+            } catch (e) {}
+        });
     },
     async submit(isRegister) {
         const u = document.getElementById('login-username').value.trim();
         const p = document.getElementById('login-password').value;
+        const n = isRegister ? document.getElementById('login-nickname').value.trim() : '';
         if (!u || !p) return U.toast('请输入账号密码');
         if (isRegister && !/^[A-Za-z0-9]{4,16}$/.test(u)) {
             return U.toast('账号只能是 4-16 位英文字母或数字（不能有中文和特殊符号）');
         }
         try {
-            const fn = isRegister ? API.register : API.login;
-            const r = await fn(u, p);
+            const fn = isRegister
+                ? (username, password, nickname) => API.register(username, password, { nickname })
+                : API.login;
+            const r = await fn(u, p, n);
             API.setToken(r.token);
             U.toast(isRegister ? '注册成功' : '登录成功');
+            // 记住我：勾选时把 token 留在 localStorage（默认就是）
+            const rememberEl = document.getElementById('login-remember');
+            try {
+                if (rememberEl && rememberEl.checked) localStorage.setItem('tower-odyssey-remember', '1');
+                else localStorage.removeItem('tower-odyssey-remember');
+            } catch (e) {}
             window.App.onLogin(r.user);
         } catch (e) {
             U.toast(e.message);

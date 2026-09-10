@@ -19,7 +19,7 @@ const API = (() => {
         token,
         setToken: t => localStorage.setItem('game-token', t),
         clearToken: () => localStorage.removeItem('game-token'),
-        register: (username, password) => call('POST', '/api/register', { username, password }),
+        register: (username, password, extra) => call('POST', '/api/register', Object.assign({ username, password }, extra || {})),
         login: (username, password) => call('POST', '/api/login', { username, password }),
         // 手机号通道
         smsSend: (phone) => call('POST', '/api/sms/send', { phone }),
