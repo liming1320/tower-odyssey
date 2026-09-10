@@ -28,7 +28,7 @@ window.MiniGames = window.MiniGames || {};
     const BALL_REST_Y = PLG_TOP - BALL_R;    // 639
     const PLG_PULL = 26;                     // 满蓄力后退距离
 
-    const DMD = { x: 20, y: 14, w: 380, h: 62 };
+    const DMD = { x: 20, y: 14, w: 380, h: 84 };   // 加高：第三行显示当前任务与进度
 
     // 缓冲器（3 只，倒三角）
     const BUMPERS = [
@@ -212,10 +212,27 @@ window.MiniGames = window.MiniGames || {};
             const bumps = [0, 0, 0];
             const flash = { ramp: 0, spin: 0, saucer: 0, target: 0 };
 
+            /* ── 任务 / 军衔（Space Cadet 风格：达成目标 → 晋升军衔 → 领取大奖）──
+               每个任务盯一类得分事件（kw），累计 need 次即完成并结算 jackpot；
+               带 mb 的任务完成后额外开启多球。全部走完停在最终任务继续刷分。 */
+            const MISSIONS = [
+                { n: '基础训练', hint: '撞击缓冲器', kw: 'bumper', need: 6, jack: 5000 },
+                { n: '轨道练习', hint: '冲上坡道', kw: 'ramp', need: 3, jack: 12000 },
+                { n: '目标练习', hint: '打落靶子', kw: 'target', need: 5, jack: 9000, mb: 2 },
+                { n: '旋转突击', hint: '转动旋门', kw: 'spin', need: 6, jack: 8000 },
+                { n: '航道点亮', hint: '点亮滚道灯', kw: 'lane', need: 4, jack: 10000 },
+                { n: '虫洞跳跃', hint: '打入计分洞', kw: 'saucer', need: 3, jack: 15000, mb: 2 },
+                { n: '连击大师', hint: '累计得分次数', kw: 'any', need: 40, jack: 30000 },
+                { n: '最终任务', hint: '累计得分次数', kw: 'any', need: 80, jack: 60000, mb: 3 },
+            ];
+            const RANKS = ['学员', '少尉', '中尉', '上尉', '少校', '中校', '上校', '准将', '舰队上将'];
+
             /* ── 状态 ── */
             let score = 0, balls = endless ? Infinity : 3, launched = false;
             let ball = { x: LNCX, y: BALL_REST_Y, vx: 0, vy: 0 };
+            const live = [ball];        // 台面上的球：live[0] 恒为主球（多球时长度 > 1）
             const trail = [];
+            let missionIdx = 0, missionProg = 0, missionFlash = 0, mbCount = 0;
             let onRail = false, railU = 0, railSpeed = 0, railIsRamp = false;
             let plunger = 0, plungerHold = false, chargeSfx = true;
             let combo = 0, comboT = 0, mult = 1;
@@ -230,7 +247,48 @@ window.MiniGames = window.MiniGames || {};
             const FR = { ...FLIP_R, ang: FLIP_R.rest, omega: 0, held: false };
 
             const show = (s, d) => { toast = s; toastT = d || 1.4; };
-            const addScore = n => { score += Math.round(n * mult); };
+            // ev：得分事件标签（bumper/ramp/target/spin/lane/saucer），用于推进当前任务
+            const addScore = (n, ev) => {
+                score += Math.round(n * mult);
+                if (ev) missionHit(ev, 1);
+            };
+
+            /* ── 任务推进 ── */
+            function missionHit(ev, k) {
+                if (over) return;
+                const m = MISSIONS[missionIdx];
+                if (!m) return;
+                if (m.kw !== 'any' && m.kw !== ev) return;
+                missionProg += k;
+                if (missionProg >= m.need) completeMission();
+            }
+            function completeMission() {
+                const m = MISSIONS[missionIdx];
+                missionProg = 0;
+                if (missionIdx < MISSIONS.length - 1) missionIdx++;
+                missionFlash = 1.6;
+                score += m.jack;            // 直接加分：避免 addScore→missionHit 递归
+                sfx('jackpot');
+                shake = Math.max(shake, 0.55); shakeMag = Math.max(shakeMag, 8);
+                spawn(GW / 2, 300, 34, 260, 1.4);
+                const rk = RANKS[Math.min(RANKS.length - 1, missionIdx)];
+                show(m.mb ? '★ ' + m.n + ' 达成 · 晋升' + rk : '✔ ' + m.n + ' 达成 · 晋升' + rk, 2.2);
+                if (m.mb) startMultiball(m.mb);
+            }
+            // 多球：额外球自计分洞喷出；主球漏掉时其余球顶上，不算失球
+            function startMultiball(n) {
+                for (let i = 0; i < n; i++) {
+                    live.push({
+                        x: SAUCER.x + (Math.random() - 0.5) * 26, y: SAUCER.y - 34,
+                        vx: (Math.random() - 0.5) * 300, vy: -560 - Math.random() * 180,
+                    });
+                }
+                mbCount = Math.max(mbCount, live.length);
+                sfx('jackpot');
+                shake = Math.max(shake, 0.6); shakeMag = Math.max(shakeMag, 9);
+                spawn(SAUCER.x, SAUCER.y, 26, 300, 1.2);
+                show('★ 多球风暴 ×' + live.length + ' ★', 2.2);
+            }
 
             /* ══════════ 背景预渲染 ══════════ */
             const BG = (() => {
@@ -475,7 +533,7 @@ window.MiniGames = window.MiniGames || {};
                 BUMPERS.forEach((bp, i) => {
                     if (hitCircle(ball, bp.x, bp.y, bp.r, 0.55, 520) > 0) {
                         bumps[i] = 1;
-                        addScore(120); combo++; comboT = 2.2;
+                        addScore(120, 'bumper'); combo++; comboT = 2.2;
                         sfx('bumper'); spawn(bp.x, bp.y, 12, bp.hue, 1.1);
                         shake = Math.max(shake, 0.09); shakeMag = Math.max(shakeMag, 2.2);
                     }
@@ -496,7 +554,7 @@ window.MiniGames = window.MiniGames || {};
                         x1: tg.x, y1: tg.y - tg.h / 2, x2: tg.x, y2: tg.y + tg.h / 2, r: 3,
                     }, 0.35, 60);
                     if (v > 90) {
-                        tg.down = true; addScore(600); combo++; comboT = 2.2;
+                        tg.down = true; addScore(600, 'target'); combo++; comboT = 2.2;
                         flash.target = 1; sfx('target');
                         spawn(tg.x + 4, tg.y, 12, 40, 1.1, 0);
                         shake = Math.max(shake, 0.08); shakeMag = Math.max(shakeMag, 2);
@@ -511,13 +569,13 @@ window.MiniGames = window.MiniGames || {};
                 if (Math.abs(ball.x - SPIN.x) < SPIN.w / 2 + BALL_R &&
                     Math.abs(ball.y - SPIN.y) < SPIN.h / 2 + BALL_R) {
                     spinnerVel = clamp(spinnerVel - ball.vx * 0.011, -26, 26);
-                    if (canTrigger('spin', 0.22)) { addScore(90); sfx('spinner'); flash.spin = 1; }
+                    if (canTrigger('spin', 0.22)) { addScore(90, 'spin'); sfx('spinner'); flash.spin = 1; }
                 }
                 // 滚道灯
                 LANES.forEach((ln, i) => {
                     if (Math.hypot(ball.x - ln.x, ball.y - ln.y) < 13 && canTrigger('lane' + i, 0.4)) {
                         if (!lanesOn[i]) {
-                            lanesOn[i] = true; addScore(350); sfx('rollover');
+                            lanesOn[i] = true; addScore(350, 'lane'); sfx('rollover');
                             spawn(ln.x, ln.y, 8, 55, 0.8);
                             if (lanesOn.every(Boolean)) {
                                 if (mult < 5) { mult++; show(`倍率提升 ×${mult}`, 1.6); sfx('levelup'); }
@@ -533,7 +591,7 @@ window.MiniGames = window.MiniGames || {};
                     Math.hypot(ball.x - RAMP_ENTRY[0], ball.y - RAMP_ENTRY[1]) < 20 &&
                     canTrigger('ramp', 0.8)) {
                     onRail = true; railU = 0; railIsRamp = true; railSpeed = 640;
-                    addScore(1800); combo++; comboT = 2.2; sfx('ramp'); flash.ramp = 1;
+                    addScore(1800, 'ramp'); combo++; comboT = 2.2; sfx('ramp'); flash.ramp = 1;
                     show('坡道达成 +1,800', 1.2);
                 }
                 // 计分洞
@@ -541,7 +599,7 @@ window.MiniGames = window.MiniGames || {};
                     Math.hypot(ball.vx, ball.vy) < 1500) {
                     saucerHold = 1.15; ball.vx = ball.vy = 0;
                     const win = 2500 + 1500 * (mult - 1);
-                    addScore(win); sfx('saucer'); flash.saucer = 1;
+                    addScore(win, 'saucer'); sfx('saucer'); flash.saucer = 1;
                     show('计分洞 +' + win.toLocaleString(), 1.4);
                     shake = Math.max(shake, 0.2); shakeMag = Math.max(shakeMag, 4);
                     spawn(SAUCER.x, SAUCER.y, 18, 45, 1.2);
@@ -564,6 +622,7 @@ window.MiniGames = window.MiniGames || {};
             function resetBall() {
                 launched = false; onRail = false; plunger = 0; plungerHold = false;
                 ball = { x: LNCX, y: BALL_REST_Y, vx: 0, vy: 0 };
+                live.length = 0; live.push(ball);   // 失球/换球后回到单球状态
                 trail.length = 0;
                 kickback.L = kickback.R = true;
             }
@@ -581,6 +640,8 @@ window.MiniGames = window.MiniGames || {};
                     lines: [
                         `得分 ${score.toLocaleString()}${endless ? '' : ' / 目标 ' + P.goal.toLocaleString()}`,
                         `最高连击 ×${combo} · 倍率 ×${mult}`,
+                        `军衔 ${RANKS[Math.min(RANKS.length - 1, missionIdx)]} · 任务推进 ${missionIdx}/${MISSIONS.length}`,
+                        mbCount > 1 ? `多球最高同时 ${mbCount} 颗` : '',
                         endless ? '重力强化 · 目标即挑战' : '',
                     ].filter(Boolean),
                 });
@@ -645,7 +706,8 @@ window.MiniGames = window.MiniGames || {};
                     return;
                 }
 
-                // 计分洞捕获
+                // 计分洞捕获（只冻主球；多球时额外球照常运动，不再被整帧 return 卡住）
+                let mainFrozen = false;
                 if (saucerHold > 0) {
                     saucerHold -= dt;
                     ball.x = SAUCER.x; ball.y = SAUCER.y; ball.vx = ball.vy = 0;
@@ -654,44 +716,74 @@ window.MiniGames = window.MiniGames || {};
                         ball.vy = -880; ball.vx = (Math.random() - 0.5) * 220;
                         sfx('kick'); spawn(SAUCER.x, SAUCER.y, 12, 45, 1);
                     }
-                    return;
+                    mainFrozen = true;
                 }
 
-                // 物理子步
+                // 物理子步：主球 + 多球统一推进
+                // 技巧：每颗球处理前把闭包变量 ball 指向它，collide()/hitFlipper() 无需改动即可复用
                 const hd = dt / SUB;
                 for (let i = 0; i < SUB; i++) {
-                    ball.vy += GRAV * GRAVX * hd;
-                    ball.x += ball.vx * hd; ball.y += ball.vy * hd;
-                    const sp2 = ball.vx * ball.vx + ball.vy * ball.vy;
-                    if (sp2 > SPEED_CAP * SPEED_CAP) {
-                        const k = SPEED_CAP / Math.sqrt(sp2);
-                        ball.vx *= k; ball.vy *= k;
+                    for (let bi = 0; bi < live.length; bi++) {
+                        const b = live[bi];
+                        if (bi === 0 && mainFrozen) continue;
+                        ball = b;
+                        b.vy += GRAV * GRAVX * hd;
+                        b.x += b.vx * hd; b.y += b.vy * hd;
+                        const sp2 = b.vx * b.vx + b.vy * b.vy;
+                        if (sp2 > SPEED_CAP * SPEED_CAP) {
+                            const k = SPEED_CAP / Math.sqrt(sp2);
+                            b.vx *= k; b.vy *= k;
+                        }
+                        collide();
                     }
-                    collide();
                 }
-                ball.vx *= (1 - 0.22 * dt); ball.vy *= (1 - 0.22 * dt);
+                const drag = 1 - 0.22 * dt;
+                for (let bi = 0; bi < live.length; bi++) { live[bi].vx *= drag; live[bi].vy *= drag; }
+                ball = live[0] || ball;              // 复原：ball 恒为主球引用
 
                 // 旋转门
                 spinnerAng += spinnerVel * dt;
                 spinnerVel *= (1 - 1.6 * dt);
                 spinnerAcc += Math.abs(spinnerVel) * dt;
-                if (spinnerAcc > Math.PI * 2) { spinnerAcc -= Math.PI * 2; addScore(250); }
+                if (spinnerAcc > Math.PI * 2) { spinnerAcc -= Math.PI * 2; addScore(250, 'spin'); }
 
                 if (comboT > 0) { comboT -= dt; if (comboT <= 0) combo = 0; }
 
-                // 外道救球
-                if (ball.y > 616) {
-                    if (ball.x < 66 && kickback.L) {
-                        kickback.L = false; ball.vy = -1000; ball.vx = 40;
+                // 外道救球（多球时逐个判定）
+                for (let bi = 0; bi < live.length; bi++) {
+                    const b = live[bi];
+                    if (b.y <= 616) continue;
+                    if (b.x < 66 && kickback.L) {
+                        kickback.L = false; b.vy = -1000; b.vx = 40;
                         addScore(500); sfx('kick'); show('KICKBACK 救球 +500', 1.3);
-                        spawn(ball.x, ball.y, 14, 190, 1.1, -Math.PI / 2);
-                    } else if (ball.x > 286 && kickback.R) {
-                        kickback.R = false; ball.vy = -1000; ball.vx = -40;
+                        spawn(b.x, b.y, 14, 190, 1.1, -Math.PI / 2);
+                    } else if (b.x > 286 && kickback.R) {
+                        kickback.R = false; b.vy = -1000; b.vx = -40;
                         addScore(500); sfx('kick'); show('KICKBACK 救球 +500', 1.3);
-                        spawn(ball.x, ball.y, 14, 190, 1.1, -Math.PI / 2);
+                        spawn(b.x, b.y, 14, 190, 1.1, -Math.PI / 2);
                     }
                 }
-                if (ball.y > PF.bot) loseBall();
+
+                // 漏球：额外球漏掉只是消失；只有最后一颗（主球）漏掉才真正失球
+                let mainDrained = false;
+                for (let bi = live.length - 1; bi >= 0; bi--) {
+                    if (live[bi].y <= PF.bot) continue;
+                    spawn(live[bi].x, GH - 24, 12, 200, 1);
+                    if (bi === 0) mainDrained = true;
+                    else { live.splice(bi, 1); sfx('drain'); }
+                }
+                if (mainDrained) {
+                    live.shift();
+                    if (live.length > 0) {
+                        ball = live[0];               // 多球继续：其余球顶上，不失球
+                        show('多球继续 ×' + live.length, 1.2);
+                        sfx('drain');
+                    } else {
+                        ball = { x: LNCX, y: BALL_REST_Y, vx: 0, vy: 0 };
+                        live.push(ball);
+                        loseBall();
+                    }
+                }
 
                 pushTrail();
             }
@@ -754,6 +846,21 @@ window.MiniGames = window.MiniGames || {};
                 dmdText('BALL ' + (endless ? '∞' : balls), DMD.x + 10, y2, 12, '#ffb85c', 'left');
                 dmdText('×' + mult, cx, y2, 14, '#ff6a3d', 'center');
                 dmdText(endless ? 'ENDLESS' : NAMES[Math.min(49, idx0)], DMD.x + DMD.w - 10, y2, 11, '#ffb85c', 'right');
+
+                // 第三行：军衔 + 当前任务 + 进度条 —— 台面上永远有个目标在追
+                const m = MISSIONS[missionIdx];
+                if (m) {
+                    const y3 = DMD.y + 70;
+                    const rk = RANKS[Math.min(RANKS.length - 1, missionIdx)];
+                    const col = missionFlash > 0 ? '#ffe9b0' : '#ff8a3d';
+                    dmdText(rk + ' · ' + m.n + '：' + m.hint, DMD.x + 10, y3, 11, col, 'left');
+                    dmdText(Math.min(missionProg, m.need) + '/' + m.need, DMD.x + DMD.w - 10, y3, 12, '#ffd56b', 'right');
+                    const bw = 78, bx = DMD.x + DMD.w - 58 - bw, by = y3 - 4;
+                    ctx.fillStyle = 'rgba(255,140,60,0.20)';
+                    ctx.fillRect(bx, by, bw, 5);
+                    ctx.fillStyle = col;
+                    ctx.fillRect(bx, by, bw * Math.min(1, missionProg / m.need), 5);
+                }
                 // 亮后轻打点阵（让数字也带颗粒感，但不破坏可读性）
                 dmdDots(4, 1.0, 0.30);
             }
@@ -1123,33 +1230,42 @@ window.MiniGames = window.MiniGames || {};
                 });
             }
 
-            function drawBall() {
-                if (saucerHold > 0) return;
+            // withTrail 只给主球开拖尾，避免多球时轨迹互相污染
+            function drawBall(b, withTrail) {
+                const isMain = (b === ball);
+                if (saucerHold > 0 && isMain) return;
                 // 管道滑行时加一个冷光，让球在 tube 内不丢辨识度
-                if (onRail) {
-                    const g0 = ctx.createRadialGradient(ball.x, ball.y, 2, ball.x, ball.y, 18);
+                if (onRail && isMain) {
+                    const g0 = ctx.createRadialGradient(b.x, b.y, 2, b.x, b.y, 18);
                     g0.addColorStop(0, 'rgba(160,220,255,0.55)');
                     g0.addColorStop(1, 'rgba(160,220,255,0)');
                     ctx.fillStyle = g0;
-                    ctx.beginPath(); ctx.arc(ball.x, ball.y, 18, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(b.x, b.y, 18, 0, Math.PI * 2); ctx.fill();
                 }
                 ctx.fillStyle = 'rgba(0,0,0,0.42)';
-                ctx.beginPath(); ctx.ellipse(ball.x + 3, ball.y + 11, BALL_R * 1.05, BALL_R * 0.42, 0, 0, Math.PI * 2); ctx.fill();
-                for (let i = 0; i < trail.length; i++) {
-                    const p = trail[i], a = i / trail.length;
-                    ctx.fillStyle = `rgba(190,220,255,${a * 0.22})`;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, BALL_R * (0.35 + a * 0.6), 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(b.x + 3, b.y + 11, BALL_R * 1.05, BALL_R * 0.42, 0, 0, Math.PI * 2); ctx.fill();
+                if (withTrail) {
+                    for (let i = 0; i < trail.length; i++) {
+                        const p = trail[i], a = i / trail.length;
+                        ctx.fillStyle = `rgba(190,220,255,${a * 0.22})`;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, BALL_R * (0.35 + a * 0.6), 0, Math.PI * 2); ctx.fill();
+                    }
                 }
-                const g = ctx.createRadialGradient(ball.x - 3.4, ball.y - 4, 0.6, ball.x, ball.y, BALL_R + 1);
+                const g = ctx.createRadialGradient(b.x - 3.4, b.y - 4, 0.6, b.x, b.y, BALL_R + 1);
                 g.addColorStop(0, '#ffffff'); g.addColorStop(0.22, '#dfe8f5');
                 g.addColorStop(0.55, '#9fadc4'); g.addColorStop(0.85, '#5a6579'); g.addColorStop(1, '#2b3340');
                 ctx.fillStyle = g;
-                ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = 'rgba(20,26,40,0.6)'; ctx.lineWidth = 0.8; ctx.stroke();
                 ctx.fillStyle = 'rgba(255,255,255,0.95)';
-                ctx.beginPath(); ctx.ellipse(ball.x - 3, ball.y - 3.6, 2.6, 1.7, -0.6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(b.x - 3, b.y - 3.6, 2.6, 1.7, -0.6, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = 'rgba(255,255,255,0.35)';
-                ctx.beginPath(); ctx.arc(ball.x + 3.4, ball.y + 3.4, 1.5, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(b.x + 3.4, b.y + 3.4, 1.5, 0, Math.PI * 2); ctx.fill();
+                // 多球：给额外球加一圈金色光环，一眼能认出「这不是主球」
+                if (!isMain) {
+                    ctx.strokeStyle = 'rgba(255,200,90,0.85)'; ctx.lineWidth = 1.6;
+                    ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R + 3.5, 0, Math.PI * 2); ctx.stroke();
+                }
             }
 
             function drawParts() {
@@ -1218,6 +1334,7 @@ window.MiniGames = window.MiniGames || {};
 
                 for (let i = 0; i < 3; i++) bumps[i] = Math.max(0, bumps[i] - dt * 3.2);
                 for (const k in flash) flash[k] = Math.max(0, flash[k] - dt * 2.4);
+                missionFlash = Math.max(0, missionFlash - dt * 1.2);
                 shake = Math.max(0, shake - dt * 3.4);
                 toastT = Math.max(0, toastT - dt);
                 for (let i = parts.length - 1; i >= 0; i--) {
@@ -1250,7 +1367,7 @@ window.MiniGames = window.MiniGames || {};
                 drawFlipper(FL);
                 drawFlipper(FR);
                 drawPlunger();
-                drawBall();
+                for (let bi = 0; bi < live.length; bi++) drawBall(live[bi], bi === 0);
                 drawParts();
                 ctx.restore();
 
@@ -1274,7 +1391,12 @@ window.MiniGames = window.MiniGames || {};
                     get combo() { return combo; },
                     get mult() { return mult; },
                     get score() { return score; },
-                    addScore, finish,
+                    get liveCount() { return live.length; },
+                    get mission() {
+                        const m = MISSIONS[missionIdx];
+                        return { i: missionIdx, prog: missionProg, name: m && m.n, need: m && m.need, rank: RANKS[Math.min(RANKS.length - 1, missionIdx)] };
+                    },
+                    addScore, finish, missionHit, startMultiball,
                     launch(v) {
                         plungerHold = false; plunger = v == null ? 0.9 : v;
                         onRail = true; railU = 0; railIsRamp = false;

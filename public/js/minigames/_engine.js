@@ -194,11 +194,21 @@ window.MG = window.MG || {};
         }
         return parts.join(' · ');
     }
+    // 难度曲线（2026-09-10 重调）：t 由「线性」改为「缓启动幂曲线」。
+    // 旧行为 t = i/(n-1) 线性 → 第 5~10 关就逼近中高难度，新手容易劝退。
+    // 现在 t = u^1.35：前 1/4 关卡难度几乎不涨（第 13 关才到 t≈0.25），
+    // 中段稳步爬升，最后 10 关拉开差距。
+    // 所有 E.def / E.defd 游戏（12 个 mg-*.js 文件、80+ 款）自动受益，无需改各游戏 params。
+    const DIFF_CURVE = 1.35;
+    function difficultyT(i, n) {
+        if (n <= 1) return 0;
+        return Math.pow(i / (n - 1), DIFF_CURVE);
+    }
     function buildLevels(cfg) {
         const raw = cfg.levels || [];
         const names = (MG.fillLevels ? MG.fillLevels(raw.map(n => ({ name: n })), LEVEL_COUNT) : raw.map(n => ({ name: n })));
         return names.map((lv, i) => {
-            const t = names.length > 1 ? i / (names.length - 1) : 0;
+            const t = difficultyT(i, names.length);
             const params = cfg.params ? cfg.params(i, t) : {};
             const desc = lv.desc || (cfg.desc ? cfg.desc(i, t, params) : '') || fmtParams(params);
             return Object.assign({ name: lv.name, desc }, params);

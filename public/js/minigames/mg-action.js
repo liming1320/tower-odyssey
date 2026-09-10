@@ -7,7 +7,7 @@
     // ============ 1. 飞扬的小鸟 ============
     E.def('flappy', {
         levels: E.nm(),
-        params: (i, t) => ({ gap: Math.round(190 - 90 * t), spd: 130 + 90 * t, target: 5 + i * 2 }),
+        params: (i, t) => ({ gap: Math.round(190 - 90 * t), spd: 105 + 115 * t, target: 5 + i * 2 }),
         endless: { gap: 96, spd: 240, target: 999999 },
         w: 360, h: 520,
         hint: '点击/空格让小鸟上升，穿过管道缝隙；撞到即结束',
@@ -45,7 +45,7 @@
     // ============ 2. 躲避方块 ============
     E.def('dodge', {
         levels: E.nm(),
-        params: (i, t) => ({ spd: 130 + 130 * t, rate: Math.max(0.22, 0.75 - 0.5 * t), time: 15 + i }),
+        params: (i, t) => ({ spd: 105 + 155 * t, rate: Math.max(0.22, 0.75 - 0.5 * t), time: 15 + i }),
         endless: { spd: 300, rate: 0.2, time: 0 },
         w: 360, h: 520,
         hint: '点击左右移动，躲开落下的方块，坚持到时间结束',
@@ -76,7 +76,7 @@
     // ============ 3. 接苹果 ============
     E.def('catcher', {
         levels: E.nm(),
-        params: (i, t) => ({ spd: 110 + 120 * t, rate: Math.max(0.4, 1.1 - 0.6 * t), target: 8 + i * 2, miss: 3 }),
+        params: (i, t) => ({ spd: 95 + 135 * t, rate: Math.max(0.4, 1.1 - 0.6 * t), target: 8 + i * 2, miss: 3 }),
         endless: { spd: 250, rate: 0.42, target: 999999, miss: 3 },
         w: 360, h: 520,
         hint: '点击左右移动篮子接苹果 🍎，别接 💣；漏接或炸到都会掉命',
@@ -329,7 +329,7 @@
     // ============ 9. 直升机 ============
     E.def('helicopter', {
         levels: E.nm(),
-        params: (i, t) => ({ spd: 150 + 110 * t, gap: Math.round(200 - 80 * t), target: 300 + i * 120 }),
+        params: (i, t) => ({ spd: 118 + 142 * t, gap: Math.round(200 - 80 * t), target: 300 + i * 120 }),
         endless: { spd: 290, gap: 110, target: 999999 },
         w: 360, h: 500,
         hint: '点击给直升机上推力，穿过上下障碍的缝隙',
@@ -364,7 +364,7 @@
     // ============ 10. 叠方块 ============
     E.def('stacker', {
         levels: E.nm(),
-        params: (i, t) => ({ spd: 90 + 130 * t, target: Math.min(20, 5 + Math.floor(i / 2)) }),
+        params: (i, t) => ({ spd: 78 + 142 * t, target: Math.min(20, 5 + Math.floor(i / 2)) }),
         endless: { spd: 240, target: 9999 },
         w: 360, h: 500,
         hint: '方块左右滑动，点击让它落下；对齐越高分，偏太多就掉',
