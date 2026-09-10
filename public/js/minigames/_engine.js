@@ -211,22 +211,19 @@ window.MG = window.MG || {};
 
     // ---------------- 常用绘图小工具 ----------------
     const U = MG.ui;
+    // 三个函数承载了 mg-*.js 系列 80+ 款小游戏的全部绘制，
+    // 2026-09-10 统一接到 MG.gfx 画质引擎上（渐变+柔光+微网格+暗角的质感背景 /
+    // 双层投影+顶部高光的立体卡片 / 带厚度与描边的立体字）。
+    // 签名保持原样 —— 所有调用方零改动即获得升级。
+    const G = MG.gfx;
     E.txt = (ctx, s, x, y, size, color, bold) => {
-        ctx.font = (bold ? 'bold ' : '') + Math.round(size) + 'px "Microsoft YaHei",sans-serif';
-        ctx.fillStyle = color || '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(s, x, y);
+        G.text(ctx, s, x, y, size, color || '#fff', { bold: bold !== false });
     };
     E.bg = (ctx, W, H, c1, c2) => {
-        let g = null;
-        try { g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) {}
-        ctx.fillStyle = g || c1; ctx.fillRect(0, 0, W, H);
+        G.scene(ctx, W, H, c1, c2);
     };
     E.card = (ctx, x, y, w, h, c1, c2, r) => {
-        U.rr(ctx, x, y, w, h, r == null ? 10 : r);
-        let g = null;
-        try { g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) {}
-        ctx.fillStyle = g || c1; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.stroke();
+        G.panel(ctx, x, y, w, h, c1, c2, r == null ? 10 : r);
     };
     E.btnBox = (ctx, x, y, w, h, label, c1, c2) => {
         E.card(ctx, x, y, w, h, c1, c2, 10);

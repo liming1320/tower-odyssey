@@ -44,6 +44,210 @@ const MG = {
             ctx.fillText(ch, cx, cy);
         },
     },
+    // ================= 画质引擎（2026-09-10 全局高清化）=================
+    // 目标：让全部 107 款小游戏具备与「三维弹球」一致的质感。三个关键手段：
+    //  ① 颜色算子 —— 由单一基色自动派生材质的「高光 / 暗部 / 描边」，
+    //     各游戏不必再传一堆颜色参数，接口零改动即可升级
+    //  ② 背景预渲染缓存 —— 每帧重建「渐变 + 微网格 + 暗角」很贵，
+    //     按 (色+尺寸+锐度) 缓存成离屏位图复用，每帧只 drawImage
+    //  ③ 分辨率感知 —— 离屏按 deviceScale 渲染，高分屏背景依然锐利
+    gfx: {
+        _cache: new Map(),
+        MAX_CACHE: 48,
+
+        // ---------- 颜色算子 ----------
+        // 支持 #rgb / #rrggbb / rgb(a) 三种写法，其余原样返回由 canvas 兜底
+        rgb(c) {
+            if (typeof c !== 'string') return [0, 0, 0];
+            c = c.trim();
+            try {
+                if (c[0] === '#') {
+                    let h = c.slice(1);
+                    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+                    const n = parseInt(h.slice(0, 6), 16);
+                    if (!isNaN(n)) return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+                }
+                const m = c.match(/rgba?\(([^)]+)\)/);
+                if (m) {
+                    const p = m[1].split(',').map(parseFloat);
+                    if (p.length >= 3 && p.every(v => !isNaN(v))) return [p[0], p[1], p[2]];
+                }
+            } catch (e) { }
+            return [90, 100, 130];
+        },
+        // amt>0 提亮，amt<0 压暗（0~1）
+        lighten(c, amt) {
+            const [r, g, b] = this.rgb(c);
+            const f = v => Math.max(0, Math.min(255, Math.round(amt > 0 ? v + (255 - v) * amt : v * (1 + amt))));
+            return `rgb(${f(r)},${f(g)},${f(b)})`;
+        },
+        darken(c, amt) { return this.lighten(c, -Math.abs(amt)); },
+        rgba(c, a) { const [r, g, b] = this.rgb(c); return `rgba(${r},${g},${b},${a})`; },
+
+        // ---------- 质感背景（带缓存）----------
+        // 内容：底色渐变 → 中心柔光 → 微网格 → 四角暗角 → 顶亮/底暗边
+        scene(ctx, W, H, c1, c2) {
+            const scale = ctx.__mgScale || 1;
+            const key = `s|${c1}|${c2}|${W}x${H}|${scale.toFixed(2)}`;
+            let img = this._cache.get(key);
+            if (!img) {
+                img = this._buildScene(W, H, c1, c2, scale);
+                if (this._cache.size >= this.MAX_CACHE) {
+                    // 简易 LRU：淘汰最早的一个
+                    this._cache.delete(this._cache.keys().next().value);
+                }
+                this._cache.set(key, img);
+            }
+            ctx.drawImage(img, 0, 0, W, H);
+        },
+        _buildScene(W, H, c1, c2, scale) {
+            const cv = document.createElement('canvas');
+            cv.width = Math.max(1, Math.round(W * scale));
+            cv.height = Math.max(1, Math.round(H * scale));
+            const x = cv.getContext('2d');
+            x.setTransform(scale, 0, 0, scale, 0, 0);
+            // 1) 底色：垂直渐变
+            let g = null;
+            try { g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) { }
+            x.fillStyle = g || c1; x.fillRect(0, 0, W, H);
+            // 2) 中心柔光（让画面有主光源，不再是一片死板的渐变）
+            try {
+                const rg = x.createRadialGradient(W * 0.5, H * 0.34, 0, W * 0.5, H * 0.34, Math.max(W, H) * 0.72);
+                rg.addColorStop(0, 'rgba(255,255,255,0.085)');
+                rg.addColorStop(0.55, 'rgba(255,255,255,0.025)');
+                rg.addColorStop(1, 'rgba(255,255,255,0)');
+                x.fillStyle = rg; x.fillRect(0, 0, W, H);
+            } catch (e) { }
+            // 3) 微网格（提供「分辨率/精度感」，是非常廉价的高级感来源）
+            const step = 26;
+            x.strokeStyle = 'rgba(255,255,255,0.030)';
+            x.lineWidth = 1;
+            x.beginPath();
+            for (let gx = step; gx < W; gx += step) { x.moveTo(gx + 0.5, 0); x.lineTo(gx + 0.5, H); }
+            for (let gy = step; gy < H; gy += step) { x.moveTo(0, gy + 0.5); x.lineTo(W, gy + 0.5); }
+            x.stroke();
+            // 4) 暗角 vignette（把注意力收到中心）
+            try {
+                const vg = x.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.max(W, H) * 0.78);
+                vg.addColorStop(0, 'rgba(0,0,0,0)');
+                vg.addColorStop(1, 'rgba(0,0,0,0.34)');
+                x.fillStyle = vg; x.fillRect(0, 0, W, H);
+            } catch (e) { }
+            // 5) 顶亮底暗：模拟面板的立体边框
+            let tg = null;
+            try { tg = x.createLinearGradient(0, 0, 0, 26); tg.addColorStop(0, 'rgba(255,255,255,0.20)'); tg.addColorStop(1, 'rgba(255,255,255,0)'); } catch (e) { }
+            if (tg) { x.fillStyle = tg; x.fillRect(0, 0, W, 26); }
+            let bg = null;
+            try { bg = x.createLinearGradient(0, H - 30, 0, H); bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, 'rgba(0,0,0,0.26)'); } catch (e) { }
+            if (bg) { x.fillStyle = bg; x.fillRect(0, H - 30, W, 30); }
+            return cv;
+        },
+
+        // ---------- 立体面板 / 卡片 ----------
+        // opt: { gloss:0.24 顶部高光强度, shadow:3 投影距离, edge:外描边色 }
+        panel(ctx, x, y, w, h, c1, c2, r, opt) {
+            opt = opt || {};
+            r = r == null ? 10 : r;
+            const rr = MG.ui.rr;
+            const sd = opt.shadow == null ? 3 : opt.shadow;
+            if (sd > 0) {
+                // 双层投影：贴近的深影 + 扩散的淡影（比 shadowBlur 便宜且更可控）
+                rr(ctx, x + 1, y + sd * 0.6, w - 2, h, r);
+                ctx.fillStyle = 'rgba(0,0,0,0.30)'; ctx.fill();
+                rr(ctx, x + 2, y + sd, w - 4, h, r);
+                ctx.fillStyle = 'rgba(0,0,0,0.16)'; ctx.fill();
+            }
+            // 主体
+            rr(ctx, x, y, w, h, r);
+            let g = null;
+            try { g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) { }
+            ctx.fillStyle = g || c1; ctx.fill();
+            // 顶部高光条（塑料/玻璃的反光）
+            ctx.save();
+            rr(ctx, x + 2, y + 2, w - 4, Math.max(4, h * 0.42), Math.max(2, r * 0.7));
+            ctx.clip();
+            let hg = null;
+            try {
+                hg = ctx.createLinearGradient(0, y, 0, y + h * 0.5);
+                hg.addColorStop(0, `rgba(255,255,255,${opt.gloss == null ? 0.26 : opt.gloss})`);
+                hg.addColorStop(1, 'rgba(255,255,255,0)');
+            } catch (e) { }
+            ctx.fillStyle = hg || 'transparent';
+            ctx.fillRect(x, y, w, h * 0.5);
+            ctx.restore();
+            // 底部内反光（环境光反射）
+            ctx.save();
+            rr(ctx, x + 2, y + h * 0.62, w - 4, h * 0.36, Math.max(2, r * 0.6));
+            ctx.clip();
+            let bgb = null;
+            try {
+                bgb = ctx.createLinearGradient(0, y + h * 0.62, 0, y + h);
+                bgb.addColorStop(0, 'rgba(255,255,255,0)');
+                bgb.addColorStop(1, 'rgba(255,255,255,0.09)');
+            } catch (e) { }
+            ctx.fillStyle = bgb || 'transparent';
+            ctx.fillRect(x, y + h * 0.62, w, h * 0.38);
+            ctx.restore();
+            // 外描边：下深上浅，做出厚度
+            rr(ctx, x, y, w, h, r);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = opt.edge || this.rgba(this.darken(c1, 0.42), 0.85);
+            ctx.stroke();
+            rr(ctx, x + 1, y + 1, w - 2, h - 2, Math.max(1, r - 1));
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+            ctx.stroke();
+        },
+
+        // ---------- 立体文字 ----------
+        // opt: { glow:0 发光半径, stroke:true 是否描边, align:'center', weight:'bold', emoji:true }
+        // emoji 会自动跳过描边/厚度（emoji 自带颜色，描边只会糊成一团）
+        EMOJI_RE: /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/u,
+        text(ctx, s, x, y, size, color, opt) {
+            opt = opt || {};
+            s = String(s == null ? '' : s);
+            if (!s) return;
+            const isEmoji = opt.emoji !== false && /\p{Extended_Pictographic}/u.test(s);
+            const w = opt.weight || (opt.bold === false ? '' : 'bold');
+            const font = opt.font || `"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif`;
+            const align = opt.align || 'center';
+            ctx.save();
+            ctx.font = `${w} ${Math.round(size)}px ${font}`;
+            ctx.textAlign = align;
+            ctx.textBaseline = opt.baseline || 'middle';
+            if (isEmoji) {
+                ctx.fillStyle = color || '#fff';
+                ctx.fillText(s, x, y);
+                ctx.restore();
+                return;
+            }
+            // 发光（先铺一层，再画主体）
+            if (opt.glow) {
+                ctx.shadowColor = opt.glowColor || color;
+                ctx.shadowBlur = opt.glow;
+            }
+            const th = Math.max(1, size * 0.055);   // 厚度偏移
+            // 1) 厚度：向下偏两层深色
+            ctx.fillStyle = this.rgba(this.darken(color, 0.62), 0.55);
+            ctx.fillText(s, x, y + th * 1.7);
+            // 2) 描边隔开主体与背景，任何底色上都清晰
+            if (opt.stroke !== false) {
+                ctx.lineWidth = Math.max(1.2, size * 0.13);
+                ctx.strokeStyle = this.rgba(this.darken(color, 0.68), 0.92);
+                ctx.lineJoin = 'round';
+                ctx.strokeText(s, x, y);
+            }
+            // 3) 主体
+            ctx.fillStyle = color || '#fff';
+            ctx.fillText(s, x, y);
+            ctx.shadowBlur = 0;
+            // 4) 顶部高光：主体色提亮后上移极小的量，形成弧面感
+            ctx.fillStyle = this.rgba(this.lighten(color, 0.55), 0.5);
+            ctx.fillText(s, x, y - Math.max(0.6, size * 0.045));
+            ctx.restore();
+        },
+    },
+
     // ================= 音频引擎（Web Audio 实时合成，零音频文件、零依赖）=================
     // 设计：所有音色由振荡器/噪声缓冲实时合成，避免加载任何外部素材。
     // 浏览器要求「用户手势后才能出声」，故第一次发声前须调用 unlock()。
@@ -264,6 +468,8 @@ const MG = {
                 c.height = Math.round(h * deviceScale);
                 applyTransform();
             }
+            // 暴露当前锐度倍率：MG.gfx 用它决定离屏缓存的分辨率，保证高分屏不糊
+            ctx.__mgScale = deviceScale;
         };
         // 初次也走一次真正的 backing 设置（让位图级 font/lineWidth 不糊）
         fit();
