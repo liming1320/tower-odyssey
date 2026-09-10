@@ -121,6 +121,25 @@ tar czf /www/backup/game-$(date +%F).tar.gz /www/wwwroot/tower-odyssey/data/db.j
 # coscli cp /www/backup/ cos://你的桶/game-backup/ -r
 ```
 
+### 服务起不来？先跑体检脚本
+
+`systemctl restart` 之后访问不了（Nginx 报 502 / 端口连不上）时，**不要瞎猜**，跑：
+
+```bash
+sudo bash deploy/linux/doctor.sh
+```
+
+它会依次打印：systemd 单元与 ExecStart、服务 active/enabled 状态、**最近 40 行日志**、端口被谁占、游离的 node 进程、node 路径对不对、mysql2 装没装、内存磁盘、**前台试跑 6 秒的真实报错**，最后给出最可能的修复命令。
+
+四个最常见原因（按概率排序）：
+
+| 现象 | 原因 | 修复 |
+|---|---|---|
+| 日志里 `EADDRINUSE :5180` | 有旧的手启进程占着端口 | `pkill -f "node server.js"; sleep 2; systemctl restart tower-odyssey` |
+| 日志里 `node: No such file` | 宝塔装的 node 不在 `/usr/bin/node` | `sudo bash deploy/linux/install.sh`（自动探测真实路径） |
+| 日志里 `✗ 未安装 mysql2` | `DB_DRIVER=mysql` 但没装驱动 | `cd /www/wwwroot/tower-odyssey && npm i mysql2`，或临时改回 `DB_DRIVER=json` |
+| 日志空、一直重启 | 未处理的 Promise 拒绝（Node 15+ 会直接杀进程） | 新版 `server.js` 已加 `unhandledRejection` 兜底，拉最新代码即可 |
+
 ---
 
 ## 六、自动化部署（CI/CD）：push 到 Gitee 就自动上线

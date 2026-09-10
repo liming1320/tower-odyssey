@@ -788,7 +788,13 @@ function flushAndExit(code) {
 process.on('SIGINT', flushAndExit);
 process.on('SIGTERM', flushAndExit);
 process.on('beforeExit', flush);
-process.on('uncaughtException', e => { console.error('[game] 未捕获异常：', e); flush(); });
+process.on('uncaughtException', e => { console.error('[game] 未捕获异常：', e && e.stack || e); flush(); });
+// Node 15+ 起「未处理的 Promise 拒绝」会直接杀进程。线上 MySQL 偶发抖动、
+// 某个请求里的 async 报错都可能触发 → 表现为 systemd Restart=always 不停
+// 拉起又崩（外部看就是「服务起不来」）。这里只记录不退出，避免整站挂掉。
+process.on('unhandledRejection', (reason) => {
+    console.error('[game] 未处理的 Promise 拒绝（已忽略，进程继续）：', reason && reason.stack || reason);
+});
 
 // ---------------- 营地：建筑产出 ----------------
 // rate = 每级「每分钟」产出量；研究院不直接产出，而是给全部建筑提供加成
