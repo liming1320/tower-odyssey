@@ -2638,6 +2638,7 @@ api['GET /api/admin/minigame/order'] = (req, res) => {
 const ROMS_DIR = path.join(DATA_DIR, 'roms');
 const ROM_MAX_BYTES = 512 * 1024 * 1024;   // 单文件上限 512MB（PS1 级别也够）
 const ROM_CORES = new Set(['nes', 'snes', 'gb', 'gba', 'segaMD', 'n64', 'psx', 'dosbox', 'arcade']);
+const ROM_CORE_LABELS = { nes: 'FC 红白机', snes: 'SFC', gb: 'GB/GBC', gba: 'GBA', segaMD: '世嘉 MD', n64: 'N64', psx: 'PS1', dosbox: 'DOS', arcade: '街机' };
 
 function romAdminOk(req) {
     // 双通道：后台独立管理员令牌（admin/workbuddy）或玩家端 isAdmin 账号（第一个注册的玩家）
@@ -2645,7 +2646,32 @@ function romAdminOk(req) {
     const u = getUserByToken(req);
     return !!(u && (u.isAdmin || u.id === 'admin'));
 }
-const romMeta = r => ({ id: r.id, name: r.name, core: r.core, size: r.size, addedAt: r.addedAt, by: r.by || '' });
+const romMeta = r => ({ id: r.id, name: r.name, core: r.core, size: r.size, addedAt: r.addedAt, by: r.by || '', category: r.category || 'normal', sort: r.sort || 0 });
+
+// ---------- ROM 内容 hash：上传去重 + 存量补算 ----------
+function romFileHash(file) {
+    return new Promise((resolve, reject) => {
+        const h = crypto.createHash('sha256');
+        const s = fs.createReadStream(file);
+        s.on('data', c => h.update(c));
+        s.on('end', () => resolve(h.digest('hex')));
+        s.on('error', reject);
+    });
+}
+// 启动时给历史 ROM 懒补 hash（首次升级到「去重版」后跑一次，之后秒退）
+async function romsBackfillHash() {
+    DB.roms = DB.roms || [];
+    const need = DB.roms.filter(r => !r.hash);
+    if (!need.length) return;
+    let n = 0;
+    for (const r of need) {
+        try {
+            r.hash = await romFileHash(path.join(ROMS_DIR, r.id + '.bin'));
+            n++;
+        } catch (e) { /* 文件缺失：留着，删除接口自会清理 */ }
+    }
+    if (n) { save(); console.log(`[game] 已为 ${n} 个存量 ROM 补算内容指纹（去重用）`); }
+}
 
 // 玩家：拉取 ROM 列表（含当前账号是否管理员，前端据此决定是否显示导入区）
 api['GET /api/roms'] = (req, res) => {
@@ -2705,15 +2731,55 @@ api['POST /api/roms/upload'] = (req, res) => {
         if (over) return;
         if (done) { cleanup(); return; }
         if (received === 0) { cleanup(); return finish(400, { error: '空文件' }); }
-        out.end(() => {
-            const u = getUserByToken(req);
-            DB.roms = DB.roms || [];
-            DB.roms.push({ id, name, core, size: received, addedAt: Date.now(), by: (u && u.username) || 'admin' });
-            save();
-            finish(200, { ok: true, id, size: received });
+        out.end(async () => {
+            // 内容指纹去重：与库内任一 ROM 内容一致 → 拒收并提示已存在的名字
+            try {
+                const hash = await romFileHash(file);
+                const dup = (DB.roms || []).find(r => r.hash && r.hash === hash);
+                if (dup) {
+                    cleanup();
+                    return finish(409, { error: `重复上传：与「${dup.name}」（${ROM_CORE_LABELS[dup.core] || dup.core}）内容完全相同，已跳过` });
+                }
+                const u = getUserByToken(req);
+                DB.roms = DB.roms || [];
+                DB.roms.push({ id, name, core, size: received, addedAt: Date.now(), by: (u && u.username) || 'admin', hash, category: 'normal', sort: 0 });
+                save();
+                finish(200, { ok: true, id, size: received });
+            } catch (e) {
+                cleanup();
+                finish(500, { error: '保存失败：' + e.message });
+            }
         });
     });
     req.on('error', () => { out.destroy(); cleanup(); finish(500, { error: '上传中断' }); });
+};
+// 管理员：修改 ROM 元数据（分类 / 排序 / 改名）
+api['POST /api/roms/update'] = (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员可修改 ROM' });
+    const id = String((body || {}).id || '');
+    if (!/^[A-Za-z0-9_-]+$/.test(id)) return sendJson(res, 400, { error: 'id 不合法' });
+    DB.roms = DB.roms || [];
+    const rom = DB.roms.find(r => r.id === id);
+    if (!rom) return sendJson(res, 404, { error: 'ROM 不存在' });
+    let changed = false;
+    if (body.category != null) {
+        const c = String(body.category);
+        if (!['normal', 'invincible'].includes(c)) return sendJson(res, 400, { error: 'category 只能是 normal / invincible' });
+        rom.category = c; changed = true;
+    }
+    if (body.sort != null) {
+        const s = parseInt(body.sort, 10);
+        if (isNaN(s) || s < 0 || s > 9999) return sendJson(res, 400, { error: 'sort 需为 0-9999 的数字（越小越靠前）' });
+        rom.sort = s; changed = true;
+    }
+    if (body.name != null) {
+        const nm = String(body.name).slice(0, 120).replace(/[<>&"'/\\]/g, '').trim();
+        if (!nm) return sendJson(res, 400, { error: '名称不能为空' });
+        rom.name = nm; changed = true;
+    }
+    if (!changed) return sendJson(res, 400, { error: '没有要修改的字段' });
+    save();
+    sendJson(res, 200, { ok: true, rom: romMeta(rom) });
 };
 // 管理员：删除 ROM（元数据 + 磁盘文件一起清）
 api['POST /api/roms/delete'] = (req, res, body) => {
@@ -3196,7 +3262,7 @@ const server = http.createServer(async (req, res) => {
         }
     }
     migrateNicknames();
-    server.listen(PORT, '0.0.0.0', () => {
+    server.listen(PORT, '0.0.0.0', async () => {
         console.log(`[game] listening on http://localhost:${PORT}`);
         if (Store.isMySQL()) {
             console.log(`[game] 存储：MySQL（${process.env.DB_NAME || 'tower_odyssey'}）— 玩家数据与代码隔离，回滚不影响存档`);
@@ -3204,5 +3270,7 @@ const server = http.createServer(async (req, res) => {
             console.log(`[game] 存档文件：${DB_PATH}（账号 / 聊天 / 邮件 / 进度全部持久化在此）`);
         }
         console.log(`[game] admin: admin / workbuddy`);
+        // 后台补算存量 ROM 内容指纹（去重用），不阻塞端口监听
+        romsBackfillHash().catch(e => console.error('[game] ROM 指纹补算失败：' + e.message));
     });
 })();
