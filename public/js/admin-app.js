@@ -1076,7 +1076,8 @@ const AdminApp = {
                 <p style="font-size:13px;color:#b9b3d8">
                     上传的 ROM 会出现在玩家端「经典模拟器」里，<b>所有登录玩家</b>都可游玩（EmulatorJS 引擎）。
                     文件保存在服务器 data/roms/，单文件上限 512MB。<br>
-                    <b>自动去重</b>：内容完全相同的 ROM 会被拒绝；上传后可在下方给游戏<b>分类</b>（普通版 / 无敌版）和<b>排序</b>（数字越小越靠前，0=默认按上传时间）。
+                    <b>自动去重</b>：内容完全相同的 ROM 会被拒绝；上传后可在下方给游戏设<b>版本标签</b>（普通版 / 无敌版）和<b>排序</b>（数字越小越靠前，0=默认按上传时间）。
+                    <br><b>平台</b>按文件扩展名<b>自动识别</b>（.nes=FC、.smc/.sfc=SFC、.gba=GBA 等），<b>不要</b>在这里选平台。
                 </p>
                 <div class="emu-drop" id="rom-drop">📥 点击选择 ROM 文件，或拖拽到此处<br>
                     <span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）</span>
@@ -1121,7 +1122,7 @@ const AdminApp = {
                     <div class="emu-item-name">${this.esc(rom.name)}${rom.category === 'invincible' ? ' <span class="emu-tag emu-tag-inv">无敌版</span>' : ''}</div>
                     <div class="emu-item-meta">${this.esc(this.romCoreLabel(rom.core))} · ${this.romFmtSize(rom.size)}${rom.by ? ' · ' + this.esc(rom.by) + ' 上传' : ''} · ${new Date(rom.addedAt).toLocaleString('zh-CN')}${rom.sort ? ' · 置顶序 ' + rom.sort : ''}</div>
                     <div class="emu-row-ctl">
-                        <label>分类 <select data-cat="${this.esc(rom.id)}">
+                        <label>版本 <select data-cat="${this.esc(rom.id)}" title="平台按扩展名已自动识别，这里只选「普通版 / 无敌版」">
                             <option value="normal"${rom.category !== 'invincible' ? ' selected' : ''}>普通版</option>
                             <option value="invincible"${rom.category === 'invincible' ? ' selected' : ''}>无敌版</option>
                         </select></label>

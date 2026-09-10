@@ -187,7 +187,7 @@
                 }
                 if (!roms.length) {
                     listBox.innerHTML = '';
-                    listBox.appendChild(el('emu-empty', '没有匹配的游戏 —— 换个关键词或分类试试。'));
+                    listBox.appendChild(el('emu-empty', '没有匹配的游戏 —— 换个关键词、平台或版本试试。'));
                     return;
                 }
                 listBox.innerHTML = '';
