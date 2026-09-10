@@ -187,17 +187,17 @@ MiniGames.gomoku = {
         };
 
         const draw = () => {
-            let bg = null;
-            try { bg = ctx.createLinearGradient(0, 0, w, h); bg.addColorStop(0, '#e8c890'); bg.addColorStop(1, '#c8a060'); } catch (e) {}
-            ctx.fillStyle = bg || '#d4a76a'; ctx.fillRect(0, 0, w, h);
-            ctx.lineWidth = 4; ctx.strokeStyle = '#8a5a28';
+            // 木纹棋盘（与象棋统一视觉）+ 外框
+            MG.gfx.wood(ctx, 0, 0, w, h, '#e8c890', '#c8a060', 7);
+            ctx.lineWidth = 4; ctx.strokeStyle = '#5a3a1c';
             ctx.strokeRect(2, 2, w - 4, h - 4);
-            ctx.lineWidth = 1; ctx.strokeStyle = '#7a5228';
+            ctx.lineWidth = 1; ctx.strokeStyle = '#3a2410';
             for (let i = 0; i < N; i++) {
                 ctx.beginPath(); ctx.moveTo(OFF + i * S, OFF); ctx.lineTo(OFF + i * S, OFF + (N - 1) * S); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(OFF, OFF + i * S); ctx.lineTo(OFF + (N - 1) * S, OFF + i * S); ctx.stroke();
             }
-            ctx.fillStyle = '#6a4218';
+            // 5 个星位（深色实心圆点）
+            ctx.fillStyle = '#3a2410';
             [[3, 3], [3, 11], [11, 3], [11, 11], [7, 7]].forEach(([x, y]) => {
                 ctx.beginPath(); ctx.arc(OFF + x * S, OFF + y * S, 3.5, 0, Math.PI * 2); ctx.fill();
             });
@@ -205,16 +205,32 @@ MiniGames.gomoku = {
                 if (!board[i][j]) continue;
                 const cx = OFF + j * S, cy = OFF + i * S;
                 ctx.save();
-                ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
-                const grad = ctx.createRadialGradient(cx - 3, cy - 3, 2, cx, cy, 12);
-                if (board[i][j] === 1) { grad.addColorStop(0, '#686878'); grad.addColorStop(1, '#0a0a12'); }
-                else { grad.addColorStop(0, '#fff'); grad.addColorStop(1, '#c8c8d0'); }
+                // 双层投影 + 立体径向渐变
+                ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
+                const grad = ctx.createRadialGradient(cx - 4, cy - 5, 2, cx, cy, 13);
+                if (board[i][j] === 1) {
+                    // 黑子：钢蓝/深灰，配玻璃高光
+                    grad.addColorStop(0, '#8a8a9a');
+                    grad.addColorStop(0.5, '#3a3a48');
+                    grad.addColorStop(1, '#0a0a14');
+                } else {
+                    // 白子：象牙白 + 冷色调阴影
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(0.55, '#f0f0f5');
+                    grad.addColorStop(1, '#b8b8c0');
+                }
                 ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx, cy, 11, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
+                // 描边
+                ctx.strokeStyle = board[i][j] === 1 ? '#000' : '#888';
+                ctx.lineWidth = 0.8; ctx.stroke();
+                // 玻璃高光点（小白点）
+                ctx.fillStyle = 'rgba(255,255,255,0.55)';
+                ctx.beginPath(); ctx.arc(cx - 3, cy - 4, 2.5, 0, Math.PI * 2); ctx.fill();
             }
             if (winLine) {
                 ctx.save();
-                ctx.shadowColor = '#ff5252'; ctx.shadowBlur = 8;
+                ctx.shadowColor = '#ff5252'; ctx.shadowBlur = 10;
                 ctx.strokeStyle = '#ff5252'; ctx.lineWidth = 4; ctx.lineCap = 'round';
                 ctx.beginPath();
                 ctx.moveTo(OFF + winLine[0][1] * S, OFF + winLine[0][0] * S);

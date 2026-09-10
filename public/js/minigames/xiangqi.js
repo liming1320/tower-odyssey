@@ -193,13 +193,13 @@ MiniGames.xiangqi = {
             });
         };
         const draw = () => {
-            // 木色渐变棋盘 + 外框
-            let bg = null;
-            try { bg = ctx.createLinearGradient(0, 0, w, h); bg.addColorStop(0, '#e8c088'); bg.addColorStop(1, '#c09458'); } catch (e) {}
-            ctx.fillStyle = bg || '#d4a76a'; ctx.fillRect(0, 0, w, h);
-            ctx.lineWidth = 4; ctx.strokeStyle = '#8a5a28';
+            // 木纹棋盘：MG.gfx.wood 一次性画完底色+年轮纹+节疤+边框高光
+            MG.gfx.wood(ctx, 0, 0, w, h, '#e8c088', '#b88458', 42);
+            // 整体加深一圈描边，让棋盘看起来是"嵌"在外框里
+            ctx.lineWidth = 4; ctx.strokeStyle = '#5a3a1c';
             ctx.strokeRect(2, 2, w - 4, h - 4);
-            ctx.strokeStyle = '#5a3a1c'; ctx.lineWidth = 1;
+            // 网格线
+            ctx.strokeStyle = '#3a2410'; ctx.lineWidth = 1;
             for (let i = 0; i < R; i++) {
                 ctx.beginPath(); ctx.moveTo(10, 10 + i * S); ctx.lineTo(10 + (C - 1) * S, 10 + i * S); ctx.stroke();
             }
@@ -208,8 +208,10 @@ MiniGames.xiangqi = {
                     ctx.beginPath(); ctx.moveTo(10 + j * S, 10); ctx.lineTo(10 + j * S, 10 + (R - 1) * S); ctx.stroke();
                 }
             }
-            ctx.fillStyle = '#5a3a1c'; ctx.font = '14px serif'; ctx.textAlign = 'center';
-            ctx.fillText('楚 河          汉 界', 10 + 4 * S, 10 + 4.5 * S);
+            // 楚河汉界：用立体文字
+            MG.gfx.text(ctx, '楚 河          汉 界', 10 + 4 * S, 10 + 4.5 * S, 14, '#3a2410', { stroke: false, weight: 'bold' });
+            // 九宫格对角线（将/帅区）
+            ctx.strokeStyle = '#3a2410'; ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(10 + 3 * S, 10); ctx.lineTo(10 + 5 * S, 10 + 2 * S); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(10 + 5 * S, 10); ctx.lineTo(10 + 3 * S, 10 + 2 * S); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(10 + 3 * S, 10 + 7 * S); ctx.lineTo(10 + 5 * S, 10 + 9 * S); ctx.stroke();
@@ -218,25 +220,27 @@ MiniGames.xiangqi = {
                 const p = board[i][j];
                 if (!p) continue;
                 const x = 10 + j * S, y = 10 + i * S;
-                // 棋子：木质渐变 + 投影 + 双圈
+                // 棋子：木纹 + 投影 + 双圈 + 中央字
                 ctx.save();
-                ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+                // 1) 投影
+                ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
+                // 2) 棋子主体：木质底色（与棋盘同色系但更亮、更饱和）
                 let pg = null;
-                try { pg = ctx.createRadialGradient(x - 4, y - 5, 3, x, y, 17); pg.addColorStop(0, '#fbe8bc'); pg.addColorStop(1, '#d8b070'); } catch (e) {}
+                try { pg = ctx.createRadialGradient(x - 4, y - 5, 3, x, y, 17); pg.addColorStop(0, '#fbe8bc'); pg.addColorStop(0.7, '#e8c890'); pg.addColorStop(1, '#b88458'); } catch (e) {}
                 ctx.fillStyle = pg || '#f0d8a0'; ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
-                ctx.strokeStyle = '#6a4220'; ctx.lineWidth = 1.5; ctx.stroke();
+                // 3) 双圈描边（外圈粗木色，内圈按阵营染色）
+                ctx.strokeStyle = '#6a4220'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.stroke();
                 ctx.beginPath(); ctx.arc(x, y, 12.5, 0, Math.PI * 2);
-                ctx.strokeStyle = p.color === RED ? 'rgba(160,40,40,0.5)' : 'rgba(30,30,40,0.5)';
+                ctx.strokeStyle = p.color === RED ? 'rgba(160,40,40,0.6)' : 'rgba(30,30,40,0.6)';
                 ctx.lineWidth = 1; ctx.stroke();
-                ctx.fillStyle = p.color === RED ? '#a02828' : '#1a1a1a';
-                ctx.font = 'bold 17px KaiTi,STKaiti,serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(p.ch, x, y + 1);
+                // 4) 棋子上的字：立体文字
+                MG.gfx.text(ctx, p.ch, x, y, 18, p.color === RED ? '#a02828' : '#1a1a1a', { stroke: false, weight: 'bold' });
                 if (sel && sel[0] === i && sel[1] === j) {
                     ctx.save();
-                    ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#ffd56b'; ctx.shadowBlur = 12;
                     ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3;
-                    ctx.beginPath(); ctx.arc(x, y, 18, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(x, y, 19, 0, Math.PI * 2); ctx.stroke();
                     ctx.restore();
                 }
             }

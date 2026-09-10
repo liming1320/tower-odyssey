@@ -246,6 +246,90 @@ const MG = {
             ctx.fillText(s, x, y - Math.max(0.6, size * 0.045));
             ctx.restore();
         },
+
+        // ---------- 木纹棋盘纹理（带缓存）----------
+        // 内容：木色渐变 → 横向/纵向年轮纹路 → 节疤暗斑 → 顶亮底暗边 → 中心柔光
+        // 用法：MG.gfx.wood(ctx, x, y, w, h, c1='#e8c088', c2='#c09458', seed=42)
+        //   - seed 决定节疤位置（不同棋盘换 seed 看起来不会重复）
+        //   - 象棋 / 五子棋 / 围棋 / 跳棋 等一切"木质棋盘"游戏都直接调用
+        wood(ctx, x, y, W, H, c1, c2, seed) {
+            c1 = c1 || '#e8c088'; c2 = c2 || '#c09458';
+            seed = seed || 42;
+            const scale = ctx.__mgScale || 1;
+            const key = `w|${c1}|${c2}|${Math.round(W)}x${Math.round(H)}|${seed}|${scale.toFixed(2)}`;
+            let img = this._cache.get(key);
+            if (!img) {
+                img = this._buildWood(x, y, W, H, c1, c2, seed, scale);
+                if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
+                this._cache.set(key, img);
+            }
+            ctx.drawImage(img, x, y, W, H);
+        },
+        _buildWood(x, y, W, H, c1, c2, seed, scale) {
+            const cv = document.createElement('canvas');
+            cv.width = Math.max(1, Math.round(W * scale));
+            cv.height = Math.max(1, Math.round(H * scale));
+            const t = cv.getContext('2d');
+            t.setTransform(scale, 0, 0, scale, 0, 0);
+            // 1) 底色：对角渐变（让光从左上斜照下来）
+            let g = null;
+            try { g = t.createLinearGradient(x, y, x + W, y + H); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) {}
+            t.fillStyle = g || c1; t.fillRect(x, y, W, H);
+            // 2) 中心柔光（提亮中央，让细节看得清）
+            try {
+                const rg = t.createRadialGradient(x + W * 0.5, y + H * 0.4, 0, x + W * 0.5, y + H * 0.4, Math.max(W, H) * 0.65);
+                rg.addColorStop(0, 'rgba(255,240,200,0.18)');
+                rg.addColorStop(0.6, 'rgba(255,240,200,0.05)');
+                rg.addColorStop(1, 'rgba(255,240,200,0)');
+                t.fillStyle = rg; t.fillRect(x, y, W, H);
+            } catch (e) {}
+            // 3) 横向年轮纹路（细密深色横线 + 偶发粗纹）
+            const rng = this._seedRng(seed);
+            const lineCount = Math.max(8, Math.round(H / 9));
+            for (let i = 0; i < lineCount; i++) {
+                const yy = y + (i + 0.5) * (H / lineCount) + (rng() - 0.5) * 2;
+                const dark = 0.04 + rng() * 0.10;
+                const wavy = Math.sin((i * 0.7) + rng() * 6) * 1.5;
+                t.strokeStyle = `rgba(90,55,20,${dark.toFixed(3)})`;
+                t.lineWidth = 0.6 + rng() * 1.0;
+                t.beginPath();
+                for (let xx = x; xx <= x + W; xx += 6) {
+                    const yo = yy + Math.sin(xx * 0.025 + i) * 1.4 + wavy;
+                    if (xx === x) t.moveTo(xx, yo); else t.lineTo(xx, yo);
+                }
+                t.stroke();
+            }
+            // 4) 节疤暗斑（少量随机深色椭圆，模拟木结）
+            const knotCount = 2 + Math.floor(rng() * 3);
+            for (let k = 0; k < knotCount; k++) {
+                const kx = x + W * (0.15 + rng() * 0.7);
+                const ky = y + H * (0.15 + rng() * 0.7);
+                const r = 4 + rng() * 9;
+                const kg = t.createRadialGradient(kx, ky, 0, kx, ky, r);
+                kg.addColorStop(0, 'rgba(70,40,15,0.32)');
+                kg.addColorStop(0.7, 'rgba(70,40,15,0.08)');
+                kg.addColorStop(1, 'rgba(70,40,15,0)');
+                t.fillStyle = kg; t.beginPath(); t.ellipse(kx, ky, r * 1.2, r * 0.7, rng() * Math.PI, 0, Math.PI * 2); t.fill();
+            }
+            // 5) 顶部亮边（受光面）+ 底部暗边（背光面）= 立体边框
+            let tg = null;
+            try { tg = t.createLinearGradient(x, y, x, y + 14); tg.addColorStop(0, 'rgba(255,255,255,0.28)'); tg.addColorStop(1, 'rgba(255,255,255,0)'); } catch (e) {}
+            if (tg) { t.fillStyle = tg; t.fillRect(x, y, W, 14); }
+            let bg = null;
+            try { bg = t.createLinearGradient(x, y + H - 18, x, y + H); bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, 'rgba(0,0,0,0.30)'); } catch (e) {}
+            if (bg) { t.fillStyle = bg; t.fillRect(x, y + H - 18, W, 18); }
+            return cv;
+        },
+        // 简易确定性 RNG（mulberry32），木纹节疤位置复现用
+        _seedRng(seed) {
+            let s = seed | 0;
+            return function () {
+                s = (s + 0x6D2B79F5) | 0;
+                let t = Math.imul(s ^ (s >>> 15), 1 | s);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        },
     },
 
     // ================= 音频引擎（Web Audio 实时合成，零音频文件、零依赖）=================

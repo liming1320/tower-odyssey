@@ -76,22 +76,88 @@ MiniGames.snake = {
             ctx.shadowColor = '#ff5252'; ctx.shadowBlur = 10;
             MG.ui.emoji(ctx, '🍎', 2 + food.x * S + S / 2 - 1, 2 + food.y * S + S / 2, S * 0.85);
             ctx.restore();
-            // 蛇身：渐变圆角（尾部渐暗），头部带眼睛
+            // 蛇身：3D 立体（身/尾/头三段差异化），头部画眼睛+嘴，身体带鳞片高光
+            const len = snake.length;
             snake.forEach((s, i) => {
-                const t = i / Math.max(1, snake.length);
-                MG.ui.tile(ctx, 2 + s.x * S, 2 + s.y * S, S, i === 0 ? '#b8ffb8' : '#8ae88a', i === 0 ? '#3a9a3a' : `rgb(${Math.round(70 + t * 25)},${Math.round(190 - t * 60)},${Math.round(80 - t * 20)})`, '#2e6e2e', 6);
+                const x = 2 + s.x * S, y = 2 + s.y * S;
+                const isHead = i === 0;
+                const isTail = i === len - 1;
+                // 身体渐变：头最亮（嫩绿），向尾渐暗（深绿）；尾部更窄表示收尖
+                const t = i / Math.max(1, len);
+                const bodyTop = isHead ? '#c8ffc8' : MG.gfx.lighten('#5ad45a', 0.18 - t * 0.22);
+                const bodyBot = isHead ? '#3a9a3a' : MG.gfx.darken('#3a9a3a', t * 0.35);
+                const inset = isTail ? 4 : 1.5;
+                const rad = isTail ? Math.max(3, S * 0.32) : 7;
+                // 1) 投影
+                ctx.save();
+                MG.ui.rr(ctx, x + 2, y + 4, S - 4, S - 4, rad);
+                ctx.fillStyle = 'rgba(0,0,0,0.32)'; ctx.fill();
+                ctx.restore();
+                // 2) 主体渐变（沿对角线，模拟圆柱体光照）
+                ctx.save();
+                MG.ui.rr(ctx, x + inset, y + inset, S - inset * 2, S - inset * 2, rad);
+                let g = null;
+                try { g = ctx.createLinearGradient(x, y, x + S, y + S); g.addColorStop(0, bodyTop); g.addColorStop(0.55, isHead ? '#7ae87a' : '#5ad45a'); g.addColorStop(1, bodyBot); } catch (e) {}
+                ctx.fillStyle = g || bodyTop; ctx.fill();
+                ctx.lineWidth = isHead ? 2 : 1.4;
+                ctx.strokeStyle = isHead ? '#2a7a2a' : MG.gfx.darken('#3a9a3a', 0.45);
+                ctx.stroke();
+                ctx.restore();
+                // 3) 鳞片高光：身段画两排小光斑（圆点 + 弧线），头/尾跳过
+                if (!isHead && !isTail) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(255,255,255,0.32)';
+                    // 上排小鳞
+                    ctx.beginPath(); ctx.arc(x + S * 0.32, y + S * 0.34, S * 0.07, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x + S * 0.68, y + S * 0.34, S * 0.07, 0, Math.PI * 2); ctx.fill();
+                    // 下排小鳞
+                    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+                    ctx.beginPath(); ctx.arc(x + S * 0.5, y + S * 0.66, S * 0.06, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                }
+                // 4) 顶部高光条（玻璃反光）
+                if (!isTail) {
+                    ctx.save();
+                    MG.ui.rr(ctx, x + 4, y + 3, S - 8, S * 0.20, Math.min(rad, 5));
+                    ctx.fillStyle = 'rgba(255,255,255,0.42)'; ctx.fill();
+                    ctx.restore();
+                }
             });
-            // 蛇头眼睛
+            // 蛇头眼睛 + 嘴 + 信子：按方向贴在前侧
             const hd = snake[0];
             if (hd) {
                 const hx = 2 + hd.x * S, hy = 2 + hd.y * S;
-                const ex = dir.x * S * 0.16, ey = dir.y * S * 0.16;
+                const ex = dir.x, ey = dir.y;
+                // 眼睛位置：根据方向错开（横向时左右眼竖排，纵向时上下眼横排）
+                const perpX = -ey, perpY = ex;
+                const eyeDist = S * 0.22;
+                const eyeR = S * 0.13;
+                const eyeCx1 = hx + S / 2 + perpX * eyeDist + ex * S * 0.06;
+                const eyeCy1 = hy + S / 2 + perpY * eyeDist + ey * S * 0.06;
+                const eyeCx2 = hx + S / 2 - perpX * eyeDist + ex * S * 0.06;
+                const eyeCy2 = hy + S / 2 - perpY * eyeDist + ey * S * 0.06;
+                // 眼白
                 ctx.fillStyle = '#fff';
-                ctx.beginPath(); ctx.arc(hx + S * 0.32 + ex, hy + S * 0.34 + ey, S * 0.13, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(hx + S * 0.68 + ex, hy + S * 0.34 + ey, S * 0.13, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#1a1a28';
-                ctx.beginPath(); ctx.arc(hx + S * 0.34 + ex * 1.4, hy + S * 0.36 + ey * 1.4, S * 0.06, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(hx + S * 0.66 + ex * 1.4, hy + S * 0.36 + ey * 1.4, S * 0.06, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(eyeCx1, eyeCy1, eyeR, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(eyeCx2, eyeCy2, eyeR, 0, Math.PI * 2); ctx.fill();
+                // 瞳孔（朝运动方向偏移）
+                ctx.fillStyle = '#111';
+                const pupilR = eyeR * 0.55;
+                const lookX = ex * eyeR * 0.25, lookY = ey * eyeR * 0.25;
+                ctx.beginPath(); ctx.arc(eyeCx1 + lookX, eyeCy1 + lookY, pupilR, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(eyeCx2 + lookX, eyeCy2 + lookY, pupilR, 0, Math.PI * 2); ctx.fill();
+                // 瞳孔高光小点
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(eyeCx1 + lookX + pupilR * 0.35, eyeCy1 + lookY - pupilR * 0.35, pupilR * 0.32, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(eyeCx2 + lookX + pupilR * 0.35, eyeCy2 + lookY - pupilR * 0.35, pupilR * 0.32, 0, Math.PI * 2); ctx.fill();
+                // 嘴：一条短弧线（朝运动方向）
+                if (ex !== 0 || ey !== 0) {
+                    const mx = hx + S / 2 + ex * S * 0.22, my = hy + S / 2 + ey * S * 0.22;
+                    ctx.strokeStyle = '#1a4a1a'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.arc(mx, my, S * 0.10, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
             }
             opts.onScore && opts.onScore('长度：' + snake.length + ' / 目标 ' + target);
         };
