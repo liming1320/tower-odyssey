@@ -57,7 +57,13 @@ global.localStorage = { getItem: () => null, setItem() {} };
 // 加载顺序与 index.html 一致：引擎模块（engine/）→ 其余游戏
 const { engineDir, ENGINE_FILES } = require('./mg-engine-files');
 const engPaths = ENGINE_FILES.map(f => path.join(engineDir, f));
-const all = fs.readdirSync(dir).filter(f => f.endsWith('.js') && !ENGINE_FILES.includes(f));
+// 这两个不是「小游戏」，是独立全屏入口（设置页 tile 直接 open 的那种）。
+// 它们为了让清单/审计口径一致注册了 50 个占位 LEVELS，混进来只会污染计数、
+// 而且 start() 里会打真实网络请求（Node VM 里 fetch 不存在），纯属噪音。
+// 它们的可用性由 tools/smoke-integration.js 端到端验证，这里排除。
+const NOT_A_GAME = new Set(['emulator.js', 'arcade.js']);
+const all = fs.readdirSync(dir).filter(f => f.endsWith('.js')
+    && !ENGINE_FILES.includes(f) && !NOT_A_GAME.has(f));
 const filesOrdered = engPaths.concat(all.sort().map(f => path.join(dir, f)));
 let pass = 0, fail = 0;
 const fails = [];

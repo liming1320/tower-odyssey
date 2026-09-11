@@ -9,6 +9,10 @@
 //   ② 街机 ROM 有「母 ROM / 克隆基板」的关系（parentId），只有这里用得着。
 //   ③ 街机 ROM 大多是 zip 且几十 MB，玩家期望的筛选维度是厂商/年代/基板，和掌机完全不同。
 (function () {
+    // 同上：自保初始化，不依赖 index.html 的加载顺序
+    window.MiniGames = window.MiniGames || {};
+    var MiniGames = window.MiniGames;
+
     const PLATFORMS = {
         neogeo: 'NeoGeo', cps1: 'CPS1', cps2: 'CPS2', cps3: 'CPS3', igs: 'IGS', other: '其他街机',
     };

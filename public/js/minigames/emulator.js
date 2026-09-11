@@ -1,6 +1,10 @@
 // 经典游戏模拟器：内嵌开源 EmulatorJS 引擎（与 yikm / dos.lol / 80joy 同款技术路线）
 // ROM 由管理员在后台（/admin → 模拟器ROM）上传到服务器，玩家端只读列表 + 播放
 (function () {
+    // 每个资源条例都要自保：不能假设别的脚本已经初始化过这个全局，
+    // 否则 index.html 里调整加载顺序就会静默 ReferenceError、整个模块不生效
+    window.MiniGames = window.MiniGames || {};
+
     const CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
     function coreLabel(id) {

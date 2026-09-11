@@ -3022,8 +3022,13 @@ const safeId = s => String(s || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
 
 function saveFilePath(userId, romId, kind) {
     if (!/^(state|sram)$/.test(kind)) return null;
+    const raw = String(romId || '');
     const u = safeId(userId), r = safeId(romId);
     if (!u || !r) return null;
+    // 关键：光把 ../ 剥掉是不够的 —— '../../server.js' 会被洗成 'serverjs'，
+    // 既没穿出去、又变成一句含义不清的 404。这里直接判定为非法参数（400），
+    // 让调用方一眼看出是 id 不合法，而不是误以为「存档不存在」。
+    if (r !== raw) return null;
     const dir = path.join(EMU_SAVES_DIR, u);
     const rel = path.join(u, r + '.' + kind);
     const full = path.join(EMU_SAVES_DIR, rel);
