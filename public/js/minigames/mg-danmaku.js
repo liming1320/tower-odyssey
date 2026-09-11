@@ -62,7 +62,7 @@
 
     return {
       w: 360, h: 560,
-      hint: '拖动 / 方向键 移动 · 自动射击 · 点右下炸弹(Z)清屏 · 只有中心红点碰到弹幕才掉命',
+      hint: '拖动手指 1:1 跟手移动 · 自动射击 · 右下炸弹(Z)清屏 · 左下精准键显判定点 · 只有中心红点碰到弹幕才掉命',
       init(S) {
         S.px = 180; S.py = 470;
         S.moveSpd = 240;
@@ -80,10 +80,11 @@
         S.toast = 'STAGE ' + (li + 1); S.toastT = 1.0;
         S.over = false; S.done = null; S.bombFx = 0;
         S.pal = pal; S.stage = li;
-        S.touch = null; S.keyVec = null; S.keyT = 0;
+        S.touch = null; S.keyVec = null; S.keyT = 0; S.uiTouch = false;
         S.pFire = 0;
         S.diff = lvl(li);
         S.bombBtn = { x: 322, y: 522, r: 28 };
+        S.focusBtn = { x: 38, y: 522, r: 24 };
         S.W = 360; S.H = 560;
         S.stars = [];
         for (let i = 0; i < 60; i++) S.stars.push({ x: Math.random() * 360, y: Math.random() * 560, s: 0.4 + Math.random() * 1.4, v: 8 + Math.random() * 26 });
@@ -98,18 +99,28 @@
         if (S.inv > 0) S.inv -= dt;
         S.diff = lvl(S.stage);
 
-        // ---- 自机移动（拖动/点按指哪走哪，键盘方向）----
-        let mvx = 0, mvy = 0, mSpd = S.moveSpd * (S.focus ? 0.42 : 1);
+        // ---- 自机移动（手指 1:1 跟手 · 键盘方向 · 专注键减速精瞄）----
+        let mvx = 0, mvy = 0, direct = false;
         if (S.touch) {
-          const dx = S.touch.x - S.px, dy = S.touch.y - S.py, d = Math.hypot(dx, dy);
-          if (d > 1) { mvx = dx; mvy = dy; mSpd = Math.min(mSpd, d * 14); S.focus = true; }
-          else S.focus = false;
-        } else S.focus = false;
-        if (!S.touch && S.keyVec && (performance.now() - S.keyT) < 220) { mvx = S.keyVec.x; mvy = S.keyVec.y; }
+          const dx = S.touch.x - S.px, dy = S.touch.y - S.py;
+          if (Math.hypot(dx, dy) > 0.5) { mvx = dx; mvy = dy; direct = true; }
+        } else if (S.keyVec && (performance.now() - S.keyT) < 220) {
+          mvx = S.keyVec.x; mvy = S.keyVec.y;
+        }
         const ml = Math.hypot(mvx, mvy);
         if (ml > 0.01) {
-          S.px = clamp(S.px + mvx / ml * mSpd * dt, 12, W - 12);
-          S.py = clamp(S.py + mvy / ml * mSpd * dt, 46, H - 26);
+          if (direct) {
+            // 直接跟随手指：高速逼近（约 40 倍距离/秒），手感跟手、可精确穿缝
+            const k = Math.min(1, 40 * dt);
+            S.px += (S.touch.x - S.px) * k;
+            S.py += (S.touch.y - S.py) * k;
+          } else {
+            const mSpd = S.moveSpd * (S.focus ? 0.42 : 1);
+            S.px += mvx / ml * mSpd * dt;
+            S.py += mvy / ml * mSpd * dt;
+          }
+          S.px = clamp(S.px, 12, W - 12);
+          S.py = clamp(S.py, 46, H - 26);
         }
         if (S.touch && Math.hypot(S.touch.x - S.px, S.touch.y - S.py) <= 1) S.touch = null;
 
@@ -260,11 +271,13 @@
       score(S) { return Math.floor(S.score); },
 
       tap(S, x, y, P, api) {
-        if (Math.hypot(x - S.bombBtn.x, y - S.bombBtn.y) < S.bombBtn.r) { doBomb(S, api.W || 360, api.H || 560); return; }
+        if (Math.hypot(x - S.bombBtn.x, y - S.bombBtn.y) < S.bombBtn.r) { doBomb(S, api.W || 360, api.H || 560); S.uiTouch = true; return; }
+        if (S.focusBtn && Math.hypot(x - S.focusBtn.x, y - S.focusBtn.y) < S.focusBtn.r) { S.focus = !S.focus; S.uiTouch = true; return; }
+        S.uiTouch = false;
         S.touch = { x, y };
       },
-      drag(S, x, y) { S.touch = { x, y }; },
-      dragend(S) { /* 保留 touch，自机会缓动到手指最后位置 */ },
+      drag(S, x, y) { if (S.uiTouch) return; S.touch = { x, y }; },
+      dragend(S) { S.uiTouch = false; },
       key(S, k) {
         const m = { w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[k];
         if (m) { S.keyVec = { x: m[0], y: m[1] }; S.keyT = performance.now(); }
@@ -353,6 +366,13 @@
         ctx.fillStyle = 'rgba(93,180,255,.85)'; ctx.beginPath(); ctx.arc(bb.x, bb.y, bb.r, 0, TAU); ctx.fill();
         ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center';
         ctx.fillText('炸弹', bb.x, bb.y - 3); ctx.fillText('BOMB', bb.x, bb.y + 10);
+
+        // 精准按钮（手动切换专注：显判定点 + 缩小判定半径，不影响移动跟手）
+        const fb = S.focusBtn;
+        ctx.fillStyle = S.focus ? 'rgba(255,210,90,.92)' : 'rgba(150,150,170,.55)';
+        ctx.beginPath(); ctx.arc(fb.x, fb.y, fb.r, 0, TAU); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center';
+        ctx.fillText('精准', fb.x, fb.y - 3); ctx.fillText(S.focus ? 'ON' : 'OFF', fb.x, fb.y + 10);
 
         // 提示
         if (S.toastT > 0) {
