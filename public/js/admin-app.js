@@ -1162,6 +1162,10 @@ const AdminApp = {
                     <b>自动去重</b>：内容完全相同的 ROM 会被拒绝；上传后可在下方给游戏设<b>版本标签</b>（普通版 / 无敌版）和<b>排序</b>（数字越小越靠前，0=默认按上传时间）。
                     <br><b>平台</b>按文件扩展名<b>自动识别</b>（.nes=FC、.smc/.sfc=SFC、.gba=GBA 等），<b>不要</b>在这里选平台。
                 </p>
+                <p style="margin:12px 0 0">
+                    <button class="btn ghost small" id="rom-goto-catalog" type="button">📖 批量导入街机 ROM（跳转到 ROM 图鉴 ↓）</button>
+                    <span style="font-size:12px;color:#8f89ad;margin-left:8px">整个 roms 目录一次性扫描 · 自动填中文名 / 平台</span>
+                </p>
                 <div class="emu-drop" id="rom-drop">📥 点击选择 ROM 文件，或拖拽到此处<br>
                     <span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）</span>
                     <input type="file" id="rom-file" accept=".nes,.smc,.sfc,.swc,.gb,.gbc,.gba,.md,.gen,.bin,.zip,.7z" multiple style="display:none">
@@ -1186,6 +1190,11 @@ const AdminApp = {
             e.preventDefault();
             drop.style.borderColor = '';
             if (e.dataTransfer.files.length) this.romHandleFiles(body, [...e.dataTransfer.files]);
+        };
+        const gotoCatalog = body.querySelector('#rom-goto-catalog');
+        if (gotoCatalog) gotoCatalog.onclick = () => {
+            const b = body.querySelector('#rom-catalog-box');
+            if (b && b.scrollIntoView) b.scrollIntoView({ behavior: 'smooth', block: 'start' });
         };
         await this.romRefreshList(body);
         await this.renderRomCatalog(body);
