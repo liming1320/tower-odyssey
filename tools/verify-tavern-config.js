@@ -110,7 +110,36 @@ async function call(p, { method, body, token } = {}) {
         const big = await call('/api/admin/tavern/scan', { method: 'POST', token, body: { from: 1, to: 9999 } });
         check('扫描范围过大被拒 400', big.status === 400, 'got ' + big.status);
 
-        console.log('\n[8] 还原为未配置状态');
+        console.log('\n[8] 列出 ST 已有账号（句柄诊断）');
+        // 造一个假的 SillyTavern 目录：多用户模式下每个账号是 data/ 下的一个目录
+        const fakeST = path.join(__dirname, '..', 'data', '.tv-fake-st');
+        try { fs.rmSync(fakeST, { recursive: true, force: true }); } catch (e) { }
+        for (const h of ['default-user', 'admin', 'alice']) {
+            fs.mkdirSync(path.join(fakeST, 'data', h), { recursive: true });
+            fs.writeFileSync(path.join(fakeST, 'data', h, 'settings.json'), '{}');
+        }
+        fs.mkdirSync(path.join(fakeST, 'data', 'backups'), { recursive: true });   // 非账号目录
+        const hs = await call('/api/admin/tavern/handles', { method: 'POST', token, body: { dir: fakeST } });
+        check('handles 返回 200', hs.status === 200, 'got ' + hs.status + ' ' + JSON.stringify(hs.body));
+        const names = ((hs.body && hs.body.handles) || []).map(x => x.handle).sort();
+        check('列出 3 个账号', names.length === 3, names.join(','));
+        check('识别出 admin', names.includes('admin'), names.join(','));
+        check('功能目录 backups 不算账号', !names.includes('backups'), names.join(','));
+        check('账号目录标记 looksUser', ((hs.body && hs.body.handles) || []).every(x => x.looksUser));
+        check('回显当前配置句柄', !!(hs.body && hs.body.current));
+        check('当前句柄存在性判定正确', hs.body && hs.body.currentExists === (names.includes(String(hs.body.current).toLowerCase())));
+        const hsNoAuth = await call('/api/admin/tavern/handles', { method: 'POST', body: { dir: fakeST } });
+        check('越权被拒 403', hsNoAuth.status === 403, 'got ' + hsNoAuth.status);
+        const hsBad = await call('/api/admin/tavern/handles', { method: 'POST', token, body: { dir: path.join(fakeST, 'nope', 'deep') } });
+        check('目录不存在返回 400', hsBad.status === 400, 'got ' + hsBad.status);
+        const hsEmpty = await call('/api/admin/tavern/handles', { method: 'POST', token, body: { dir: '' } });
+        check('空目录参数返回 400', hsEmpty.status === 400, 'got ' + hsEmpty.status);
+        // 也允许直接填 .../data 这一层
+        const hsData = await call('/api/admin/tavern/handles', { method: 'POST', token, body: { dir: path.join(fakeST, 'data') } });
+        check('填 data 目录也能识别', hsData.status === 200 && ((hsData.body && hsData.body.handles) || []).length === 3);
+        try { fs.rmSync(fakeST, { recursive: true, force: true }); } catch (e) { }
+
+        console.log('\n[9] 还原为未配置状态');
         const s2 = await call('/api/admin/tavern/config', {
             method: 'POST', token, body: { url: 'http://127.0.0.1:8000', handle: 'admin', password: '', enabled: true },
         });

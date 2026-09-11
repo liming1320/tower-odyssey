@@ -3637,6 +3637,13 @@ api['POST /api/admin/tavern/test'] = async (req, res, body) => {
     }
 };
 
+// 列出 SillyTavern 里已有的账号（句柄）——管理员常常不知道 ST 里的管理员叫什么
+api['POST /api/admin/tavern/handles'] = (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '无权限' });
+    const r = Tavern.listHandles((body || {}).dir);
+    if (!r.ok) return sendJson(res, 400, { error: r.error });
+    sendJson(res, 200, { ok: true, ...r });
+};
 // 扫描本机常见端口，帮管理员找到 SillyTavern 实际跑在哪个端口
 api['POST /api/admin/tavern/scan'] = async (req, res, body) => {
     if (!romAdminOk(req)) return sendJson(res, 403, { error: '无权限' });

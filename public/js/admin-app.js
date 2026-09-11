@@ -1635,11 +1635,47 @@ const AdminApp = {
                     5. 把句柄和密码填到上面，点「保存并生效」
                 </div>
             </div>
+            <div class="card">
+                <h3>🔎 查看 SillyTavern 里已有哪些账号</h3>
+                <div class="admin-note" style="margin-bottom:10px">
+                    不确定句柄叫什么（比如 ST 里根本没有 <code>admin</code>）？填安装目录直接列出来。
+                    多用户模式下 ST 给每个账号在 <code>data/</code> 下建一个同名目录，<b>目录名就是句柄</b>。
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <input id="tv-dir" placeholder="SillyTavern 安装目录，例如 /www/wwwroot/SillyTavern" style="flex:1;min-width:260px">
+                    <button class="btn small" id="tv-handles">列出账号</button>
+                </div>
+                <div id="tv-handles-out" style="margin-top:10px;font-size:12.5px;color:#b9b3d8"></div>
+            </div>
         `;
 
         const el = id => body.querySelector('#' + id);
         const result = el('tv-result');
         let cfg = { url: 'http://127.0.0.1:8000', enabled: true, handle: 'admin', password: '' };
+
+        el('tv-handles').onclick = async () => {
+            const out = el('tv-handles-out');
+            const dir = (el('tv-dir').value || '').trim();
+            if (!dir) return U.toast('请填写 SillyTavern 的安装目录');
+            out.textContent = '读取中…';
+            try {
+                const r = await AdminAPI.api('/api/admin/tavern/handles', 'POST', { dir });
+                const hs = r.handles || [];
+                if (!hs.length) return out.innerHTML = '⚠ 没找到任何账号目录（ST 可能还没开多用户，或目录填错了）';
+                out.innerHTML = `<div style="margin-bottom:6px">数据目录：<code>${this.esc(r.dataRoot)}</code>　`
+                    + `当前配置的句柄：<code>${this.esc(r.current)}</code> ${r.currentExists ? '✅ 存在' : '❌ <b style="color:#ff9aa6">ST 里没有这个账号</b>'}</div>`
+                    + hs.map(h => `<div style="display:flex;gap:8px;align-items:center;padding:3px 0">
+                        <code style="min-width:120px">${this.esc(h.handle)}</code>
+                        ${h.looksUser ? '<span style="color:#5ad48a">账号目录</span>' : '<span style="color:#8f89ad">（疑似非账号）</span>'}
+                        <button class="btn small ghost" data-h="${this.esc(h.handle)}">用它</button>
+                    </div>`).join('');
+                out.querySelectorAll('button[data-h]').forEach(b => {
+                    b.onclick = () => { el('tv-handle').value = b.dataset.h; U.toast('已填入句柄：' + b.dataset.h + '，记得再填密码并保存'); };
+                });
+            } catch (e) {
+                out.innerHTML = `<span style="color:#ff9aa6">${this.esc(e.message || '读取失败')}</span>`;
+            }
+        };
 
         const renderStatus = async () => {
             const box = el('tv-status');

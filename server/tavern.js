@@ -155,6 +155,73 @@ function cookiesToString(arr) {
     return (arr || []).map(c => String(c).split(';')[0]).join('; ');
 }
 
+// 把 ST 登录失败的 HTTP 状态码翻成「下一步该干什么」。
+// 只报「登录失败（401）」等于没说：管理员不知道是账号不存在、密码错、还是 ST 没开用户系统。
+function tavernLoginErrorMsg(status, handle) {
+    const h = handle || 'admin';
+    if (status === 404) {
+        return 'ST 没有 /api/users/login（' + status + '）——多半是 SillyTavern 没开用户账号系统。'
+            + '在 ST 的 config.yaml 里设 enableUserAccounts: true 并重启 ST。';
+    }
+    if (status === 403) {
+        return 'ST 拒绝了登录请求（' + status + '）——通常是 CSRF 或 IP 白名单。'
+            + 'config.yaml 里确认 whitelistMode / sso.trustedProxies 已放行本机（127.0.0.1）。';
+    }
+    if (status === 401 || status === 400) {
+        return 'ST 账号「' + h + '」登录失败（' + status + '）：ST 里没有这个账号，或密码与后台填的不一致。'
+            + '处理：① 打开 SillyTavern 原页面用 ' + h + ' 注册/登录一次（首个注册者自动成为管理员）；'
+            + '② 若 ST 里管理员是别的名字，把后台「管理员句柄」改成那个名字；'
+            + '③ 密码两边必须一致 —— 后台的密码存在 data/tavern-env.json 的 TAVERN_ADMIN_PASSWORD。';
+    }
+    return 'ST 管理员登录失败（' + status + '）';
+}
+
+// 列出 SillyTavern 里已经存在的账号。
+// multi-user 模式下 ST 给每个账号在 data/ 下建一个同名目录，目录名就是登录用的 handle。
+// 之所以需要这个：管理员常不知道 ST 里的管理员叫什么（默认 admin 未必存在），
+// 只能靠猜，于是登录一直 401。把目录列出来，句柄是什么一眼可见。
+function listHandles(dir) {
+    const root = String(dir || '').trim();
+    if (!root) return { ok: false, error: '请填写 SillyTavern 的安装目录' };
+    if (!path.isAbsolute(root) && !/^[a-zA-Z]:[\\/]/.test(root)) {
+        return { ok: false, error: '请填写绝对路径' };
+    }
+    // 允许填「安装目录」或「安装目录/data」
+    let dataRoot = null;
+    for (const c of [path.join(root, 'data'), root]) {
+        try { if (fs.existsSync(c) && fs.statSync(c).isDirectory()) { dataRoot = c; break; } } catch (e) { }
+    }
+    if (!dataRoot) return { ok: false, error: '目录不存在：' + root };
+    let names = [];
+    try { names = fs.readdirSync(dataRoot); } catch (e) {
+        return { ok: false, error: '无法读取 ' + dataRoot + '：' + e.message };
+    }
+    // 这些是 ST 的功能目录，不是账号（账号目录里一定有 settings.json）
+    const NON_USER = new Set(['backups', 'assets', 'extensions', 'logs', 'node_modules', 'src', 'public', 'default-content', '_headers']);
+    const handles = [];
+    for (const n of names) {
+        if (NON_USER.has(String(n).toLowerCase())) continue;
+        const p = path.join(dataRoot, n);
+        let isDir = false;
+        try { isDir = fs.statSync(p).isDirectory(); } catch (e) { }
+        if (!isDir) continue;
+        // 判定「像不像账号」：ST 会在账号目录里放 settings.json（用户设置）
+        let looksUser = false, mtime = 0;
+        try {
+            looksUser = fs.existsSync(path.join(p, 'settings.json')) || fs.existsSync(path.join(p, 'user.json'));
+            const st = fs.statSync(p); mtime = st.mtimeMs || 0;
+        } catch (e) { }
+        handles.push({ handle: n, looksUser, mtime });
+    }
+    handles.sort((a, b) => (b.looksUser - a.looksUser) || String(a.handle).localeCompare(String(b.handle)));
+    return {
+        ok: true, dataRoot, handles,
+        // 直接告诉管理员：当前配的句柄在不在 ST 里
+        current: adminHandle(),
+        currentExists: handles.some(h => String(h.handle).toLowerCase() === String(adminHandle()).toLowerCase()),
+    };
+}
+
 // ------------------------------------------------------------------ 管理员会话（自动开通账号用）
 let _admin = { cookie: '', at: 0, ok: false, msg: '' };
 let _adminBusy = null;
@@ -194,7 +261,10 @@ async function adminSession(force) {
             if (login.setCookie.length) cookie = cookie + '; ' + cookiesToString(login.setCookie);
             if (login.status !== 200) {
                 _admin.ok = false;
-                _admin.msg = 'ST 管理员登录失败（' + login.status + '）';
+                // 401 有两种完全不同的原因，必须分开讲，否则管理员只能瞎猜：
+                //   1) ST 里压根没有这个 handle 的账号（最常见：还没在 ST 注册过）
+                //   2) 账号在，但密码和后台配的不一致
+                _admin.msg = tavernLoginErrorMsg(login.status, adminHandle());
                 return _admin;
             }
             const me = await rawRequest('GET', base + '/api/users/me', { headers: { Cookie: cookie } });
@@ -202,7 +272,9 @@ async function adminSession(force) {
             try { isAdmin = !!JSON.parse(me.buffer.toString('utf8')).admin; } catch (e) { }
             if (!isAdmin) {
                 _admin.ok = false;
-                _admin.msg = 'ST 账号 ' + adminHandle() + ' 不是管理员，无法通过官方接口建号';
+                _admin.msg = 'ST 账号 ' + adminHandle() + ' 不是管理员，无法通过官方接口建号。'
+                    + '请在 SillyTavern 里改用**第一个注册的账号**（ST 把首个注册者设为管理员），'
+                    + '或把后台「管理员句柄」改成那个账号名。';
                 return _admin;
             }
             _admin = { cookie, at: Date.now(), ok: true, msg: '' };
@@ -514,5 +586,5 @@ module.exports = {
     proxyRequest, attachUpgrade, status, ensureUser, adminSession,
     signTicket, verifyTicket, slugifyHandle,
     // 配置热更新（管理后台用）
-    getConfig: publicConfig, configure, reload, testConnection, scanPorts,
+    getConfig: publicConfig, configure, reload, testConnection, scanPorts, listHandles,
 };
