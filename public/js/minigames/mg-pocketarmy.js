@@ -6,6 +6,20 @@
 window.MiniGames = window.MiniGames || {};
 (function () {
     const E = (window.MG && window.MG.eng) || {};
+    // 统一角色系统：主角=骑士（蓝甲金饰），士兵=多原型混编（真人/猫娘/机器人/Q版）
+    // 直接复用引擎 MG.char，告别"圆头圆身子"
+    const heroCfg = { arch: 'knight', skin: '#f5cda0', hair: { style: 1, color: '#2b2b3a' }, cloth: { c1: '#3a8fd0', c2: '#1f5a98' }, accent: '#ffd56b', eye: '#26324a', expr: 'focus', acc: 'none', face: 1 };
+    const scache = {};
+    const soldierCfg = (i) => {
+        if (!scache[i]) {
+            const c = MG.char.gen(500 + i * 13);
+            c.arch = ['human', 'chibi', 'robot', 'cat'][i % 4];
+            c.cloth = { c1: '#9ab0e8', c2: '#5a6fae' };
+            c.face = 1; c.expr = 'focus';
+            scache[i] = c;
+        }
+        return scache[i];
+    };
     E.def && E.def('pocketarmy', {
         levels: [
             '草地', '乡间', '山路', '竹林', '石径', '雪原', '吊桥', '深渊', '云海', '星河',
@@ -145,48 +159,15 @@ window.MiniGames = window.MiniGames || {};
                     }
                     ctx.restore();
                 } else if (o.type === 'enemy' && o.alive) {
-                    // 敌人：圆润 Q 版小怪（圆头 + 触角 + 表情 + 血条）
+                    // 敌人：用统一角色系统绘制（红色机器人，凶狠表情 + 引擎血条）
                     const wob = Math.sin(S.animPhase * 6 + o.x) * 2;   // 左右摇摆
-                    ctx.save();
-                    ctx.translate(sx + wob, sy);
-                    // 触角
-                    ctx.strokeStyle = '#5a1818'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-                    ctx.beginPath(); ctx.moveTo(-8, -16); ctx.quadraticCurveTo(-14, -24, -12, -27); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(8, -16); ctx.quadraticCurveTo(14, -24, 12, -27); ctx.stroke();
-                    ctx.fillStyle = '#ff7a7a';
-                    ctx.beginPath(); ctx.arc(-12, -27, 3, 0, Math.PI * 2); ctx.fill();
-                    ctx.beginPath(); ctx.arc(12, -27, 3, 0, Math.PI * 2); ctx.fill();
-                    // 身体（圆润胶囊：投影 + 渐变）
-                    ctx.save();
-                    ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
-                    let eg = null; try { eg = ctx.createRadialGradient(-5, -6, 3, 0, 0, 20); eg.addColorStop(0, '#e07a7a'); eg.addColorStop(1, '#a03838'); } catch (e) { }
-                    ctx.fillStyle = eg || '#b04848';
-                    ctx.beginPath();
-                    ctx.moveTo(-16, 6);
-                    ctx.quadraticCurveTo(-18, -14, 0, -16);
-                    ctx.quadraticCurveTo(18, -14, 16, 6);
-                    ctx.quadraticCurveTo(0, 14, -16, 6);
-                    ctx.closePath(); ctx.fill();
-                    ctx.restore();
-                    // 表情（凶巴巴的眼睛 + 嘴）
-                    ctx.fillStyle = '#fff';
-                    ctx.beginPath(); ctx.arc(-6, -5, 4.5, 0, Math.PI * 2); ctx.fill();
-                    ctx.beginPath(); ctx.arc(6, -5, 4.5, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#1a1a28';
-                    ctx.beginPath(); ctx.arc(-5, -4.5, 2.2, 0, Math.PI * 2); ctx.fill();
-                    ctx.beginPath(); ctx.arc(7, -4.5, 2.2, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = '#5a1010'; ctx.lineWidth = 2; ctx.lineCap = 'round';
-                    ctx.beginPath(); ctx.moveTo(-4, -12); ctx.lineTo(-9, -9); ctx.moveTo(4, -12); ctx.lineTo(9, -9); ctx.stroke();  // 怒眉
-                    ctx.beginPath(); ctx.arc(0, 4, 4, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();                        // 嘴
-                    ctx.restore();
-                    // 血条
+                    const cfg = { arch: 'robot', skin: '#cfd6e6', hair: { style: 0, color: '#7a1020' }, cloth: { c1: '#e0586a', c2: '#a01f33' }, accent: '#ffd56b', eye: '#1a0a0a', expr: 'angry', acc: 'none', face: -1 };
+                    MG.char.draw(ctx, sx + wob, sy + 18, 0.42, cfg, { t: S.animPhase, pose: 'idle', face: -1 });
+                    // 血条（引擎统一血条）
                     const hp = o.hp, max = o.maxHp;
-                    ctx.fillStyle = '#1a1f2e'; ctx.fillRect(sx - 18, sy - 36, 36, 5);
-                    ctx.fillStyle = hp > max * 0.3 ? '#7ad86a' : '#ff7a8b';
-                    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(sx - 17, sy - 35, 34 * (hp / max), 3, 2) : ctx.fillRect(sx - 17, sy - 35, 34 * (hp / max), 3); ctx.fill();
-                    // 数字
+                    MG.gfx.bar(ctx, sx - 18, sy - 30, 36, 5, hp / max, { color: hp > max * 0.3 ? '#7ad86a' : '#ff7a8b' });
                     ctx.font = 'bold 11px Arial'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-                    ctx.fillText(hp, sx, sy - 41);
+                    ctx.fillText(hp, sx, sy - 36);
                 }
             }
 
@@ -215,69 +196,31 @@ window.MiniGames = window.MiniGames || {};
                 ctx.restore();
             }
 
-            // 玩家方阵：底部 V 字形摆开（圆润 Q 版小人）
+            // 玩家方阵：底部 V 字形摆开（统一角色系统绘制）
             const baseX = W / 2 + S.ox;
             const baseY = H - 90;
             const N = S.army;
             const ph = S.animPhase;
-            // 画一个圆润小兵：圆头 + 圆角身体 + 眼睛 + 摆动小手
-            const guy = (x, y, sz, c1, c2, isHero) => {
-                const swing = Math.sin(ph * 8 + x * 0.7) * 2;   // 走路摆动
-                ctx.save();
-                ctx.translate(x, y + (isHero ? 0 : swing * 0.4));
-                // 身体（圆角胶囊 + 投影）
-                ctx.save();
-                ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
-                let g = null; try { g = ctx.createLinearGradient(0, -sz, 0, sz * 0.6); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) { }
-                ctx.fillStyle = g || c1;
-                ctx.beginPath();
-                if (ctx.roundRect) ctx.roundRect(-sz * 0.55, -sz * 0.5, sz * 1.1, sz * 1.1, sz * 0.45);
-                else ctx.rect(-sz * 0.55, -sz * 0.5, sz * 1.1, sz * 1.1);
-                ctx.fill();
-                ctx.restore();
-                // 头（大圆，肤色）
-                const hg = (() => { try { const h = ctx.createRadialGradient(-sz * 0.15, -sz * 1.1, sz * 0.1, 0, -sz * 0.85, sz * 0.5); h.addColorStop(0, '#fff0dd'); h.addColorStop(1, '#f5cfa3'); return h; } catch (e) { return '#ffe3c8'; } })();
-                ctx.fillStyle = hg;
-                ctx.beginPath(); ctx.arc(0, -sz * 0.85, sz * 0.48, 0, Math.PI * 2); ctx.fill();
-                // 眼睛
-                ctx.fillStyle = '#1a1a28';
-                ctx.beginPath(); ctx.arc(-sz * 0.16, -sz * 0.9, sz * 0.07, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(sz * 0.16, -sz * 0.9, sz * 0.07, 0, Math.PI * 2); ctx.fill();
-                // 帽子（主角蓝盔 / 士兵头带）
-                if (isHero) {
-                    ctx.fillStyle = '#3a8fd0';
-                    ctx.beginPath(); ctx.arc(0, -sz * 1.05, sz * 0.5, Math.PI, 0); ctx.fill();
-                    ctx.fillStyle = '#ffd56b'; ctx.fillRect(-sz * 0.5, -sz * 1.08, sz, sz * 0.09);
-                } else {
-                    ctx.strokeStyle = c2; ctx.lineWidth = sz * 0.12;
-                    ctx.beginPath(); ctx.arc(0, -sz * 0.85, sz * 0.48, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
-                }
-                // 小手（握枪姿势，随行走摆动）
-                ctx.strokeStyle = '#f5cfa3'; ctx.lineWidth = sz * 0.16; ctx.lineCap = 'round';
-                ctx.beginPath(); ctx.moveTo(-sz * 0.4, -sz * 0.1); ctx.lineTo(-sz * 0.52, -sz * 0.35 + swing); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(sz * 0.4, -sz * 0.1); ctx.lineTo(sz * 0.52, -sz * 0.35 - swing); ctx.stroke();
-                // 枪（主角拿枪，朝上）
-                if (isHero) {
-                    ctx.strokeStyle = '#3a3a48'; ctx.lineWidth = sz * 0.12;
-                    ctx.beginPath(); ctx.moveTo(sz * 0.45, -sz * 0.2); ctx.lineTo(sz * 0.45, -sz * 1.1); ctx.stroke();
-                }
-                ctx.restore();
+            const drawChar = (cfg, x, y, sz) => {
+                MG.char.draw(ctx, x, y + sz * 0.5, sz / 30, cfg, { t: ph, pose: 'walk', face: 1 });
             };
-            // 主角（蓝衣，稍大）
-            guy(baseX, baseY - 14, 20, '#7ad0ff', '#2a6ab0', true);
+            // 主角（骑士，蓝甲金饰，持枪）
+            drawChar(heroCfg, baseX, baseY - 14, 20);
+            ctx.strokeStyle = '#3a3a48'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(baseX + 12, baseY - 14 - 2); ctx.lineTo(baseX + 12, baseY - 14 - 16); ctx.stroke();
             // 队伍（每排 4 个，V 字向下散开；总宽根据 N 自动伸缩）
             const cols = 4;
             const rowH = 17;
+            let si = 0;
             for (let i = 1; i < N; i++) {
                 const row = Math.floor((i - 1) / cols);
                 const col = (i - 1) % cols;
                 const inRow = Math.min(cols, N - 1 - row * cols);
-                const widthBase = Math.max(2, inRow);
-                const dx = (col - (widthBase - 1) / 2) * 19;
+                const dx = (col - (inRow - 1) / 2) * 19;
                 const dy = row * rowH + 5;
                 const ox = baseX + dx, oy = baseY - dy;
                 if (oy < H * 0.55) break;
-                guy(ox, oy - 8, 14, '#9ab0e8', '#5a6fae', false);
+                drawChar(soldierCfg(si++), ox, oy - 8, 14);
             }
             // 队伍数字徽章
             ctx.fillStyle = 'rgba(255,213,107,0.95)';

@@ -34,12 +34,20 @@ window.MG = window.MG || {};
             },
             get over() { return done; },
             P, S, W, H, ctx, draw: () => paint(),
-            // ---- 表现力 API（粒子 / 相机 / 补间），游戏可直接调用 ----
+            // ---- 表现力 API（粒子 / 相机 / 补间 / 角色 / 音效 / 触感），游戏可直接调用 ----
             fx, cam, tw: MG.tw,
             boom: (x, y, o) => fx && fx.burst(x, y, o),
             pop: (x, y, s, o) => fx && fx.text(x, y, s, o),
             ring: (x, y, o) => fx && fx.ring(x, y, o),
             shake: (a, d) => cam && cam.shake(a, d),
+            char: MG.char,
+            sfx: MG.audio,
+            haptics: MG.haptics,
+            flash: (c, a, d, o) => fx && fx.flash(c, a, d, o),
+            hitstop: (ms) => fx && fx.hitstop(ms),
+            trail: (x, y, o) => fx && fx.trail(x, y, o),
+            glow: (x, y, r, c, o) => MG.gfx.glow(ctx, x, y, r, c, o),
+            bar: (x, y, w, h, rt, o) => MG.gfx.bar(ctx, x, y, w, h, rt, o),
         };
         const paint = () => {
             ctx.clearRect(0, 0, W, H);
@@ -47,7 +55,7 @@ window.MG = window.MG || {};
             // 相机变换（震屏/平移/缩放）→ 游戏绘制 → 粒子层（同受相机影响）
             if (cam) cam.apply(ctx, W, H);
             try { cfg.draw && cfg.draw(ctx, S, P, W, H, api); } catch (e) { if (window.__MG_TEST) throw e; }
-            if (fx) fx.draw(ctx);
+            if (fx) fx.draw(ctx, W, H);
             ctx.restore();
         };
         const pos = e => {
@@ -99,13 +107,18 @@ window.MG = window.MG || {};
             const dt = Math.min(0.05, (now - last) / 1000);
             last = now; S.t += dt;
             try {
-                // 补间 / 粒子 / 相机统一在 tick 之前推进，保证当帧即可见
-                if (MG.tw) MG.tw.update(dt);
-                if (fx) fx.update(dt);
-                if (cam) cam.update(dt);
-                if (cfg.tick) cfg.tick(S, dt, P, api);
-                if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
-                if (cfg.check && !done) { const r = cfg.check(S, P); if (r) { api.finish(r); return; } }
+                if (fx && fx._hs > 0) {
+                    // 顿帧：冻结 tick 与物理，营造打击感
+                    fx._hs -= dt; if (fx._hs < 0) fx._hs = 0;
+                } else {
+                    // 补间 / 粒子 / 相机统一在 tick 之前推进，保证当帧即可见
+                    if (MG.tw) MG.tw.update(dt);
+                    if (fx) fx.update(dt);
+                    if (cam) cam.update(dt);
+                    if (cfg.tick) cfg.tick(S, dt, P, api);
+                    if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
+                    if (cfg.check && !done) { const r = cfg.check(S, P); if (r) { api.finish(r); return; } }
+                }
             } catch (err) { if (window.__MG_TEST) throw err; }
             paint();
             raf = (typeof requestAnimationFrame === 'function') ? requestAnimationFrame(loop) : null;

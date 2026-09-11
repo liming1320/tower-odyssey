@@ -330,6 +330,67 @@ const MG = {
                 return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
             };
         },
+
+        // ---------- 发光精灵（离屏缓存，弹幕/火花/特效通用）----------
+        // 用法：MG.gfx.glow(ctx, x, y, r, '#ffd56b', { a:.8 })
+        // 按 (色+r+锐度) 缓存成离屏位图，每帧只 drawImage，支持同屏数百发光体不卡。
+        glow(ctx, x, y, r, color, opt) {
+            opt = opt || {};
+            const scale = (ctx && ctx.__mgScale) || 1;
+            const rr = Math.max(2, Math.round(r));
+            const key = 'g|' + color + '|' + rr + '|' + scale.toFixed(2);
+            let img = this._cache.get(key);
+            if (!img) {
+                const cv = document.createElement('canvas');
+                cv.width = cv.height = Math.max(1, Math.round(rr * 2 * scale));
+                const xc = cv.getContext('2d');
+                const cx = rr * scale;
+                const g = xc.createRadialGradient(cx, cx, 0, cx, cx, cx);
+                g.addColorStop(0, this.rgba(color, 0.95));
+                g.addColorStop(0.35, this.rgba(color, 0.4));
+                g.addColorStop(1, this.rgba(color, 0));
+                xc.fillStyle = g; xc.fillRect(0, 0, cv.width, cv.height);
+                img = cv;
+                this._cache.set(key, img);
+                if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
+            }
+            ctx.drawImage(img, x - rr, y - rr, rr * 2, rr * 2);
+        },
+
+        // ---------- 血条 / 进度条（圆角 + 渐变填充 + 描边 + 可选数值）----------
+        // 用法：MG.gfx.bar(ctx, x, y, w, h, ratio, { color:'#7ad86a', back:true, text:'12/20', lw:1.5 })
+        // color 可传函数(ratio)->色，或自动按 ratio 三档（绿/黄/红）。
+        bar(ctx, x, y, w, h, ratio, opt) {
+            opt = opt || {};
+            ratio = Math.max(0, Math.min(1, ratio == null ? 0 : ratio));
+            const r = opt.r != null ? opt.r : Math.min(h / 2, 5);
+            if (opt.back !== false) {
+                MG.ui.rr(ctx, x, y, w, h, r);
+                ctx.fillStyle = opt.backColor || 'rgba(0,0,0,0.45)'; ctx.fill();
+            }
+            const fw = Math.max(0, w * ratio);
+            if (fw > 0.5) {
+                ctx.save();
+                MG.ui.rr(ctx, x, y, w, h, r); ctx.clip();
+                let col = opt.color;
+                if (typeof col === 'function') col = col(ratio);
+                if (!col) col = ratio > 0.5 ? '#7ad86a' : (ratio > 0.25 ? '#ffd56b' : '#ff7a8b');
+                let g = null;
+                try { g = ctx.createLinearGradient(x, y, x, y + h); g.addColorStop(0, this.lighten(col, 0.28)); g.addColorStop(1, this.darken(col, 0.18)); } catch (e) { }
+                ctx.fillStyle = g || col; ctx.fillRect(x, y, fw, h);
+                // 顶部高光
+                ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x, y, fw, Math.max(1, h * 0.32));
+                ctx.restore();
+            }
+            MG.ui.rr(ctx, x, y, w, h, r);
+            ctx.lineWidth = opt.lw || 1.2; ctx.strokeStyle = opt.border || 'rgba(255,255,255,0.4)'; ctx.stroke();
+            if (opt.text) {
+                ctx.fillStyle = opt.textColor || '#fff';
+                ctx.font = 'bold ' + Math.round(h * 0.92) + 'px "Microsoft YaHei",sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(opt.text, x + w / 2, y + h / 2 + 0.5);
+            }
+        },
     },
 
     // ================= 粒子系统（零依赖，纯 Canvas 2D 对象池）=================
@@ -345,8 +406,27 @@ const MG = {
         const TAU = Math.PI * 2;
         const api = {
             list: ps,
+            _flash: null,    // 全屏闪屏叠加 { color, amt, t, dur }
+            _hs: 0,          // 顿帧剩余秒数（命中/爆炸时冻结画面）
             get count() { return ps.length; },
-            clear() { ps.length = 0; return this; },
+            clear() { ps.length = 0; this._flash = null; this._hs = 0; return this; },
+            // 全屏闪屏：color 闪光色，amt 0~1 强度，dur 秒
+            flash(color, amt, dur, opt) {
+                this._flash = { color: color || '#fff', amt: amt == null ? 0.55 : amt, t: 0, dur: dur || 0.26 };
+                return this;
+            },
+            // 顿帧（打击感）：ms 毫秒内冻结 tick（粒子/相机仍推进，闪屏仍播）
+            hitstop(ms) { this._hs = Math.max(this._hs, (ms || 0) / 1000); return this; },
+            // 运动拖尾：在 (x,y) 留一颗会淡出的小光点，连成尾迹
+            trail(x, y, o) {
+                o = o || {};
+                this.burst(x, y, {
+                    n: 1, r: o.r || 3, colors: [o.color || '#fff'],
+                    speed: o.speed != null ? o.speed : 0, life: o.life || 0.3, g: 0, drag: 1,
+                    shape: 'dot', glow: o.glow !== false,
+                });
+                return this;
+            },
             burst(x, y, o) {
                 o = o || {};
                 const n = Math.min(o.n != null ? o.n : 14, CAP - ps.length);
@@ -397,6 +477,10 @@ const MG = {
                 return this;
             },
             update(dt) {
+                if (this._flash) {
+                    this._flash.t += dt;
+                    if (this._flash.t >= this._flash.dur) this._flash = null;
+                }
                 for (let i = ps.length - 1; i >= 0; i--) {
                     const p = ps[i];
                     p.t += dt;
@@ -409,10 +493,18 @@ const MG = {
                 }
                 return this;
             },
-            draw(ctx) {
-                if (!ps.length) return this;
+            draw(ctx, W, H) {
+                if (!ps.length && !this._flash) return this;
                 ctx.save();
                 ctx.lineCap = 'round';
+                // 全屏闪屏（叠加在粒子之上，命中/爆炸反馈）
+                if (this._flash && W) {
+                    const k = 1 - this._flash.t / this._flash.dur;
+                    ctx.globalAlpha = Math.max(0, this._flash.amt * k * k);
+                    ctx.fillStyle = this._flash.color;
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.globalAlpha = 1;
+                }
                 for (let i = 0; i < ps.length; i++) {
                     const p = ps[i];
                     const k = p.t / p.life;
@@ -1276,8 +1368,242 @@ const MG = {
         showLevels();
         return { stop() { clearCurrent(); } };
     },
-    // 无尽模式最高分（localStorage）
-    bestKey(id) { return 'mg-best-' + id; },
+    // ================= 角色系统（程序化人物，告别"圆头圆身子"）=================
+    // 8 种原型 + 发型/肤色/服装/表情/配饰/动画，全部由 seed 确定性生成。
+    // 用法：
+    //   const c = MG.char.gen(123);                 // 确定性角色
+    //   MG.char.draw(ctx, x, y, scale, c, { t:0, pose:'walk', expr:'happy' });
+    //   api.char.gallery(ctx, 20, 60, 44, 0.6);     // 一行陈列
+    // 各游戏零成本升级：小兵/敌人/玩家/NPC 直接换上，画风统一且可批量变化。
+    char: {
+        ARCH: ['chibi', 'human', 'robot', 'slime', 'cat', 'mecha', 'ghost', 'knight'],
+        SKIN: ['#ffe0bd', '#f5cda0', '#e8b98a', '#c98e63', '#8a5a3b', '#caa0c0'],
+        HAIR: ['#2b2b3a', '#5a3a22', '#caa14a', '#b33b5e', '#3a7d6e', '#7a5cff', '#e8e8f0', '#d8643a'],
+        CLOTH: [['#5cc7ff', '#2a7fd0'], ['#ff8aa0', '#d8486a'], ['#7ee0a0', '#2f9e6a'], ['#ffd56b', '#d99a2b'], ['#b89cff', '#7a5cff'], ['#ff9d5c', '#e0642a'], ['#9fb3d0', '#5a7099'], ['#9ad8e0', '#3a9eb0']],
+        EXPR: ['normal', 'smile', 'angry', 'surprise', 'focus', 'happy'],
+        ACC: ['none', 'glasses', 'headband', 'crown', 'horn', 'hat'],
+        _rng(seed) { let s = (seed | 0) || 1; return () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; },
+        gen(seed) {
+            const r = this._rng(seed == null ? (Math.random() * 1e9 | 0) : seed);
+            const ri = (a, b) => a + Math.floor(r() * (b - a + 1));
+            const cloth = this.CLOTH[ri(0, this.CLOTH.length - 1)];
+            return {
+                arch: this.ARCH[ri(0, this.ARCH.length - 1)],
+                skin: this.SKIN[ri(0, this.SKIN.length - 1)],
+                hair: { style: ri(0, 4), color: this.HAIR[ri(0, this.HAIR.length - 1)] },
+                cloth: { c1: cloth[0], c2: cloth[1] },
+                accent: this.HAIR[ri(0, this.HAIR.length - 1)],
+                eye: '#26324a', expr: this.EXPR[ri(0, 2)],
+                acc: r() < 0.4 ? this.ACC[ri(1, this.ACC.length - 1)] : 'none',
+                face: r() < 0.5 ? 1 : -1,
+            };
+        },
+        // ---------- 基础绘制部件 ----------
+        _hair(ctx, cx, cy, R, style, color) {
+            ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineCap = 'round';
+            const top = cy - R * 1.25;
+            if (style === 0) {
+                ctx.beginPath(); ctx.arc(cx, cy, R * 1.02, Math.PI * 1.02, Math.PI * 1.98); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(cx, top + R * 0.3, R * 1.05, R * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+            } else if (style === 1) {
+                ctx.beginPath(); ctx.arc(cx, cy, R * 1.0, Math.PI * 1.05, Math.PI * 1.95); ctx.fill();
+                for (let i = -2; i <= 2; i++) { ctx.lineWidth = R * 0.32; ctx.beginPath(); ctx.moveTo(cx + i * R * 0.34, top + R * 0.25); ctx.lineTo(cx + i * R * 0.34, top - R * 0.5); ctx.stroke(); }
+            } else if (style === 2) {
+                ctx.beginPath(); ctx.arc(cx, cy, R * 1.02, Math.PI, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(cx - R * 1.02, cy); ctx.quadraticCurveTo(cx - R * 1.4, cy + R * 1.9, cx - R * 0.7, cy + R * 2.3); ctx.quadraticCurveTo(cx, cy + R * 1.6, cx + R * 0.7, cy + R * 2.3); ctx.quadraticCurveTo(cx + R * 1.4, cy + R * 1.9, cx + R * 1.02, cy); ctx.fill();
+            } else if (style === 3) {
+                ctx.beginPath(); ctx.arc(cx, cy, R * 1.02, Math.PI * 1.05, Math.PI * 1.95); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(cx + R * 1.15, cy + R * 0.4, R * 0.42, R * 1.15, 0.3, 0, Math.PI * 2); ctx.fill();
+            } else {
+                ctx.beginPath(); ctx.arc(cx, cy, R * 1.02, Math.PI * 1.05, Math.PI * 1.95); ctx.fill();
+                ctx.lineWidth = R * 0.24; ctx.beginPath(); ctx.moveTo(cx, top); ctx.quadraticCurveTo(cx + R * 0.3, top - R * 0.9, cx - R * 0.1, top - R * 1.4); ctx.stroke();
+            }
+        },
+        _eye(ctx, ex, ey, R, ec, expr, blink) {
+            if (blink) { ctx.strokeStyle = '#222'; ctx.lineWidth = R * 0.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(ex - R * 0.8, ey); ctx.quadraticCurveTo(ex, ey + R * 0.25, ex + R * 0.8, ey); ctx.stroke(); return; }
+            const happy = (expr === 'happy' || expr === 'smile' || expr === 'focus');
+            if (expr === 'surprise') {
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(ex, ey, R * 1.1, R * 1.2, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = ec; ctx.beginPath(); ctx.arc(ex, ey, R * 0.7, 0, Math.PI * 2); ctx.fill();
+            } else if (expr === 'angry') {
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(ex, ey, R * 0.9, R * 0.8, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = ec; ctx.beginPath(); ctx.arc(ex + R * 0.15, ey + R * 0.1, R * 0.5, 0, Math.PI * 2); ctx.fill();
+            } else if (happy) {
+                ctx.strokeStyle = '#222'; ctx.lineWidth = R * 0.5; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.arc(ex, ey + R * 0.4, R * 0.95, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+                return;
+            } else {
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(ex, ey, R, R * 1.15, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = ec; ctx.beginPath(); ctx.arc(ex, ey + R * 0.15, R * 0.62, 0, Math.PI * 2); ctx.fill();
+            }
+            if (expr !== 'happy') { ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(ex - R * 0.25, ey - R * 0.25, R * 0.22, 0, Math.PI * 2); ctx.fill(); }
+        },
+        _mouth(ctx, my, w, expr) {
+            ctx.strokeStyle = '#7a3a3a'; ctx.fillStyle = '#7a3a3a'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+            if (expr === 'surprise') { ctx.beginPath(); ctx.ellipse(0, my, w * 0.5, w * 0.6, 0, 0, Math.PI * 2); ctx.fill(); }
+            else if (expr === 'happy') { ctx.fillStyle = '#7a3a3a'; ctx.beginPath(); ctx.arc(0, my - w * 0.2, w * 0.6, Math.PI * 0.1, Math.PI * 0.9); ctx.fill(); }
+            else if (expr === 'smile') { ctx.beginPath(); ctx.arc(0, my - 1, w * 0.6, Math.PI * 0.15, Math.PI * 0.85); ctx.stroke(); }
+            else if (expr === 'angry') { ctx.beginPath(); ctx.arc(0, my + w * 0.5, w * 0.6, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
+            else if (expr === 'focus') { ctx.beginPath(); ctx.moveTo(-w * 0.5, my); ctx.lineTo(w * 0.5, my); ctx.stroke(); }
+            else { ctx.beginPath(); ctx.moveTo(-w * 0.35, my); ctx.quadraticCurveTo(0, my + w * 0.25, w * 0.35, my); ctx.stroke(); }
+        },
+        _acc(ctx, hx, hy, R, acc, color) {
+            if (!acc || acc === 'none') return;
+            if (acc === 'glasses') { ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(hx - R * 0.42, hy + R * 0.12, R * 0.34, 0, Math.PI * 2); ctx.arc(hx + R * 0.42, hy + R * 0.12, R * 0.34, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(hx - R * 0.08, hy + R * 0.12); ctx.lineTo(hx + R * 0.08, hy + R * 0.12); ctx.stroke(); }
+            else if (acc === 'headband') { ctx.fillStyle = color; ctx.fillRect(hx - R, hy + R * 0.45, R * 2, R * 0.28); }
+            else if (acc === 'crown') { ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(hx - R * 0.9, hy - R * 0.9); ctx.lineTo(hx - R * 0.5, hy - R * 1.35); ctx.lineTo(hx, hy - R * 0.95); ctx.lineTo(hx + R * 0.5, hy - R * 1.35); ctx.lineTo(hx + R * 0.9, hy - R * 0.9); ctx.closePath(); ctx.fill(); }
+            else if (acc === 'horn') { ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(hx - R * 0.5, hy - R * 0.8); ctx.lineTo(hx - R * 0.7, hy - R * 1.4); ctx.lineTo(hx - R * 0.2, hy - R * 0.95); ctx.fill(); ctx.beginPath(); ctx.moveTo(hx + R * 0.5, hy - R * 0.8); ctx.lineTo(hx + R * 0.7, hy - R * 1.4); ctx.lineTo(hx + R * 0.2, hy - R * 0.95); ctx.fill(); }
+            else if (acc === 'hat') { ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(hx, hy - R * 0.7, R * 1.2, R * 0.25, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(hx - R * 0.7, hy - R * 0.7); ctx.lineTo(hx - R * 0.1, hy - R * 1.7); ctx.lineTo(hx + R * 0.7, hy - R * 0.7); ctx.fill(); }
+        },
+        _head(ctx, c, hx, hy, R, opt, t) {
+            const blink = !!(opt.blink || Math.sin(t * 2.7) > 0.97);
+            let g = null; try { g = ctx.createRadialGradient(hx - R * 0.3, hy - R * 0.3, R * 0.2, hx, hy, R); g.addColorStop(0, MG.gfx.lighten(c.skin, 0.18)); g.addColorStop(1, MG.gfx.darken(c.skin, 0.08)); } catch (e) { }
+            ctx.fillStyle = g || c.skin; ctx.beginPath(); ctx.arc(hx, hy, R, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = c.skin; ctx.beginPath(); ctx.arc(hx - R * 0.95, hy + R * 0.1, R * 0.22, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(hx + R * 0.95, hy + R * 0.1, R * 0.22, 0, Math.PI * 2); ctx.fill();
+            this._hair(ctx, hx, hy, R, c.hair ? c.hair.style : 0, c.hair ? c.hair.color : '#2b2b3a');
+            const ey = hy + R * 0.12, ex = R * 0.42, eR = R * 0.26, exx = opt.expr || c.expr || 'normal';
+            this._eye(ctx, hx - ex, ey, eR, c.eye || '#26324a', exx, blink);
+            this._eye(ctx, hx + ex, ey, eR, c.eye || '#26324a', exx, blink);
+            ctx.fillStyle = 'rgba(255,120,140,0.35)'; ctx.beginPath(); ctx.ellipse(hx - ex * 1.15, hy + R * 0.45, R * 0.18, R * 0.12, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(hx + ex * 1.15, hy + R * 0.45, R * 0.18, R * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+            this._mouth(ctx, hy + R * 0.6, R * 0.5, exx);
+            this._acc(ctx, hx, hy, R, c.acc, c.accent);
+        },
+        // ---------- 各原型 ----------
+        _chibi(ctx, c, s, opt, t) {
+            const R = 18 * s, bodyTop = -R * 1.8, bodyH = R * 1.4;
+            let g = null; try { g = ctx.createLinearGradient(0, bodyTop, 0, bodyTop + bodyH); g.addColorStop(0, c.cloth.c1); g.addColorStop(1, c.cloth.c2); } catch (e) { }
+            ctx.fillStyle = g || c.cloth.c1; MG.ui.rr(ctx, -11 * s, bodyTop, 22 * s, bodyH, 8 * s); ctx.fill();
+            ctx.fillStyle = c.cloth.c2; ctx.beginPath(); ctx.ellipse(-12 * s, bodyTop + bodyH * 0.4, 4 * s, 7 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(12 * s, bodyTop + bodyH * 0.4, 4 * s, 7 * s, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#333'; ctx.beginPath(); ctx.ellipse(-6 * s, 0, 5 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(6 * s, 0, 5 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();
+            this._head(ctx, c, 0, bodyTop - R, R, opt, t);
+        },
+        _human(ctx, c, s, opt, t) {
+            const sw = opt.pose === 'walk' ? Math.sin(t * 8) * 3 * s : 0;
+            ctx.fillStyle = MG.gfx.darken(c.cloth.c2, 0.1); MG.ui.rr(ctx, -7 * s + sw, -20 * s, 6 * s, 20 * s, 3 * s); ctx.fill(); MG.ui.rr(ctx, 1 * s - sw, -20 * s, 6 * s, 20 * s, 3 * s); ctx.fill();
+            ctx.fillStyle = '#222'; ctx.beginPath(); ctx.ellipse(-4 * s + sw, 0, 6 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(4 * s - sw, 0, 6 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();
+            let g = null; try { g = ctx.createLinearGradient(0, -44 * s, 0, -20 * s); g.addColorStop(0, c.cloth.c1); g.addColorStop(1, c.cloth.c2); } catch (e) { }
+            ctx.fillStyle = g || c.cloth.c1; MG.ui.rr(ctx, -12 * s, -44 * s, 24 * s, 26 * s, 8 * s); ctx.fill();
+            ctx.fillStyle = c.cloth.c2; ctx.save(); ctx.translate(-12 * s, -40 * s); ctx.rotate(sw * 0.02); MG.ui.rr(ctx, -4 * s, -2 * s, 7 * s, 20 * s, 3 * s); ctx.fill(); ctx.restore();
+            ctx.save(); ctx.translate(12 * s, -40 * s); ctx.rotate(-sw * 0.02); MG.ui.rr(ctx, -3 * s, -2 * s, 7 * s, 20 * s, 3 * s); ctx.fill(); ctx.restore();
+            ctx.fillStyle = c.skin; ctx.beginPath(); ctx.arc(-13 * s + sw, -22 * s, 3.5 * s, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(13 * s - sw, -22 * s, 3.5 * s, 0, Math.PI * 2); ctx.fill();
+            this._head(ctx, c, 0, -56 * s, 13 * s, opt, t);
+        },
+        _robot(ctx, c, s, opt, t) {
+            ctx.fillStyle = MG.gfx.darken(c.cloth.c2, 0.2); ctx.fillRect(-8 * s, -16 * s, 6 * s, 16 * s); ctx.fillRect(2 * s, -16 * s, 6 * s, 16 * s);
+            ctx.fillStyle = '#444'; ctx.fillRect(-10 * s, -2 * s, 10 * s, 3 * s); ctx.fillRect(0, -2 * s, 10 * s, 3 * s);
+            let g = null; try { g = ctx.createLinearGradient(0, -46 * s, 0, -16 * s); g.addColorStop(0, MG.gfx.lighten(c.cloth.c1, 0.2)); g.addColorStop(1, c.cloth.c2); } catch (e) { }
+            ctx.fillStyle = g || c.cloth.c1; MG.ui.rr(ctx, -15 * s, -46 * s, 30 * s, 32 * s, 6 * s); ctx.fill();
+            ctx.strokeStyle = MG.gfx.darken(c.cloth.c2, 0.3); ctx.lineWidth = 2 * s; ctx.stroke();
+            ctx.fillStyle = c.accent; ctx.beginPath(); ctx.arc(0, -34 * s, 3.5 * s, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = c.cloth.c2; ctx.fillRect(-21 * s, -44 * s, 6 * s, 22 * s); ctx.fillRect(15 * s, -44 * s, 6 * s, 22 * s);
+            ctx.fillStyle = MG.gfx.lighten(c.skin, 0.1); MG.ui.rr(ctx, -13 * s, -66 * s, 26 * s, 20 * s, 5 * s); ctx.fill();
+            ctx.fillStyle = c.accent; MG.ui.rr(ctx, -11 * s, -60 * s, 22 * s, 8 * s, 3 * s); ctx.fill();
+            ctx.fillStyle = '#1a2238'; ctx.beginPath(); ctx.arc(-5 * s, -56 * s, 2.6 * s, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(5 * s, -56 * s, 2.6 * s, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = c.accent; ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.moveTo(0, -66 * s); ctx.lineTo(0, -74 * s); ctx.stroke(); ctx.fillStyle = c.accent; ctx.beginPath(); ctx.arc(0, -75 * s, 2.4 * s, 0, Math.PI * 2); ctx.fill();
+        },
+        _slime(ctx, c, s, opt, t) {
+            const wob = Math.sin(t * 3) * 2 * s;
+            ctx.save(); ctx.translate(0, -18 * s);
+            let g = null; try { g = ctx.createRadialGradient(0, -10 * s, 2 * s, 0, 0, 22 * s); g.addColorStop(0, MG.gfx.lighten(c.cloth.c1, 0.3)); g.addColorStop(1, c.cloth.c2); } catch (e) { }
+            ctx.fillStyle = g || c.cloth.c1; ctx.globalAlpha = 0.92;
+            ctx.beginPath(); ctx.moveTo(-20 * s, -2 * s + wob); ctx.quadraticCurveTo(-22 * s, -34 * s, 0, -36 * s); ctx.quadraticCurveTo(22 * s, -34 * s, 20 * s, -2 * s - wob); ctx.quadraticCurveTo(14 * s, 6 * s, 0, 6 * s); ctx.quadraticCurveTo(-14 * s, 6 * s, -20 * s, -2 * s + wob); ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.ellipse(-7 * s, -20 * s, 5 * s, 8 * s, -0.3, 0, Math.PI * 2); ctx.fill();
+            this._eye(ctx, -7 * s, -14 * s, 4 * s, c.eye, 'normal', false);
+            this._eye(ctx, 7 * s, -14 * s, 4 * s, c.eye, 'normal', false);
+            this._mouth(ctx, -6 * s, 4 * s, 'normal');
+            ctx.restore();
+        },
+        _cat(ctx, c, s, opt, t) {
+            const sw = opt.pose === 'walk' ? Math.sin(t * 8) * 3 * s : 0;
+            ctx.strokeStyle = c.cloth.c2; ctx.lineWidth = 5 * s; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(10 * s, -14 * s); ctx.quadraticCurveTo(22 * s, -18 * s, 18 * s, -30 * s); ctx.stroke();
+            ctx.fillStyle = c.cloth.c2; ctx.beginPath(); ctx.ellipse(-5 * s + sw, 0, 5 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(5 * s - sw, 0, 5 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();
+            let g = null; try { g = ctx.createLinearGradient(0, -30 * s, 0, -8 * s); g.addColorStop(0, c.cloth.c1); g.addColorStop(1, c.cloth.c2); } catch (e) { }
+            ctx.fillStyle = g || c.cloth.c1; MG.ui.rr(ctx, -11 * s, -30 * s, 22 * s, 24 * s, 9 * s); ctx.fill();
+            ctx.fillStyle = c.skin; ctx.beginPath(); ctx.arc(-11 * s, -16 * s, 3 * s, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(11 * s, -16 * s, 3 * s, 0, Math.PI * 2); ctx.fill();
+            const hy = -44 * s, hx = 0, R = 15 * s;
+            ctx.fillStyle = c.cloth.c1; ctx.beginPath(); ctx.moveTo(hx - R * 0.8, hy - R * 0.4); ctx.lineTo(hx - R * 1.1, hy - R * 1.5); ctx.lineTo(hx - R * 0.2, hy - R * 0.9); ctx.fill(); ctx.beginPath(); ctx.moveTo(hx + R * 0.8, hy - R * 0.4); ctx.lineTo(hx + R * 1.1, hy - R * 1.5); ctx.lineTo(hx + R * 0.2, hy - R * 0.9); ctx.fill();
+            ctx.fillStyle = '#ffb6c1'; ctx.beginPath(); ctx.moveTo(hx - R * 0.7, hy - R * 0.5); ctx.lineTo(hx - R * 0.95, hy - R * 1.2); ctx.lineTo(hx - R * 0.3, hy - R * 0.8); ctx.fill(); ctx.beginPath(); ctx.moveTo(hx + R * 0.7, hy - R * 0.5); ctx.lineTo(hx + R * 0.95, hy - R * 1.2); ctx.lineTo(hx + R * 0.3, hy - R * 0.8); ctx.fill();
+            this._head(ctx, Object.assign({}, c, { hair: { style: 1, color: c.skin } }), hx, hy, R, opt, t);
+            ctx.strokeStyle = 'rgba(60,40,40,0.7)'; ctx.lineWidth = 1 * s; ctx.beginPath();
+            ctx.moveTo(hx - 6 * s, hy + 2 * s); ctx.lineTo(hx - 14 * s, hy); ctx.moveTo(hx - 6 * s, hy + 4 * s); ctx.lineTo(hx - 14 * s, hy + 5 * s);
+            ctx.moveTo(hx + 6 * s, hy + 2 * s); ctx.lineTo(hx + 14 * s, hy); ctx.moveTo(hx + 6 * s, hy + 4 * s); ctx.lineTo(hx + 14 * s, hy + 5 * s); ctx.stroke();
+        },
+        _mecha(ctx, c, s, opt, t) {
+            const sw = opt.pose === 'walk' ? Math.sin(t * 8) * 2 * s : 0;
+            ctx.fillStyle = MG.gfx.darken(c.cloth.c2, 0.25); MG.ui.rr(ctx, -9 * s + sw, -18 * s, 8 * s, 18 * s, 3 * s); ctx.fill(); MG.ui.rr(ctx, 1 * s - sw, -18 * s, 8 * s, 18 * s, 3 * s); ctx.fill();
+            ctx.fillStyle = c.accent; ctx.beginPath(); ctx.ellipse(-5 * s + sw, 0, 6 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(5 * s - sw, 0, 6 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();
+            let g = null; try { g = ctx.createLinearGradient(0, -48 * s, 0, -18 * s); g.addColorStop(0, MG.gfx.lighten(c.cloth.c1, 0.25)); g.addColorStop(1, c.cloth.c2); } catch (e) { }
+            ctx.fillStyle = g || c.cloth.c1; MG.ui.rr(ctx, -16 * s, -48 * s, 32 * s, 32 * s, 7 * s); ctx.fill();
+            ctx.fillStyle = MG.gfx.darken(c.cloth.c2, 0.15); ctx.beginPath(); ctx.ellipse(-16 * s, -44 * s, 8 * s, 7 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(16 * s, -44 * s, 8 * s, 7 * s, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = c.accent; ctx.beginPath(); ctx.arc(0, -32 * s, 4 * s, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = c.cloth.c1; ctx.fillRect(-23 * s, -46 * s, 7 * s, 24 * s); ctx.fillRect(16 * s, -46 * s, 7 * s, 24 * s);
+            ctx.fillStyle = MG.gfx.lighten(c.cloth.c1, 0.1); MG.ui.rr(ctx, -13 * s, -68 * s, 26 * s, 22 * s, 6 * s); ctx.fill();
+            ctx.fillStyle = c.accent; ctx.fillRect(-12 * s, -64 * s, 24 * s, 5 * s); ctx.fillStyle = '#0b1020'; ctx.fillRect(-2 * s, -64 * s, 4 * s, 12 * s);
+            ctx.fillStyle = c.accent; ctx.beginPath(); ctx.arc(0, -50 * s, 3 * s, 0, Math.PI * 2); ctx.fill();
+        },
+        _ghost(ctx, c, s, opt, t) {
+            const fl = Math.sin(t * 3) * 2 * s;
+            ctx.save(); ctx.globalAlpha = 0.85;
+            let g = null; try { g = ctx.createRadialGradient(0, -18 * s, 2 * s, 0, 0, 24 * s); g.addColorStop(0, MG.gfx.lighten(c.cloth.c1, 0.25)); g.addColorStop(1, c.cloth.c2); } catch (e) { }
+            ctx.fillStyle = g || c.cloth.c1;
+            ctx.beginPath(); ctx.moveTo(-18 * s, -18 * s); ctx.quadraticCurveTo(-20 * s, -40 * s, 0, -42 * s); ctx.quadraticCurveTo(20 * s, -40 * s, 18 * s, -18 * s);
+            for (let i = 0; i < 4; i++) { const x = 18 * s - (i * 2 + 1) * (36 * s / 4); ctx.quadraticCurveTo(x + 9 * s, -10 * s + fl, x, -2 * s); }
+            ctx.quadraticCurveTo(0, 6 * s, -18 * s, -18 * s); ctx.fill();
+            ctx.globalAlpha = 1;
+            this._eye(ctx, -7 * s, -26 * s, 4.5 * s, c.eye, 'normal', false);
+            this._eye(ctx, 7 * s, -26 * s, 4.5 * s, c.eye, 'normal', false);
+            this._mouth(ctx, -8 * s, 4 * s, 'surprise');
+            ctx.restore();
+        },
+        _knight(ctx, c, s, opt, t) {
+            const sw = opt.pose === 'walk' ? Math.sin(t * 8) * 2 * s : 0;
+            ctx.fillStyle = MG.gfx.darken(c.cloth.c2, 0.2); ctx.fillRect(-8 * s + sw, -16 * s, 7 * s, 16 * s); ctx.fillRect(1 * s - sw, -16 * s, 7 * s, 16 * s);
+            ctx.fillStyle = '#2a2a33'; ctx.beginPath(); ctx.ellipse(-4 * s + sw, 0, 6 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(5 * s - sw, 0, 6 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = MG.gfx.darken(c.accent, 0.1); ctx.beginPath(); ctx.moveTo(-12 * s, -44 * s); ctx.quadraticCurveTo(-22 * s, -10 * s, -14 * s, 2 * s); ctx.lineTo(14 * s, 2 * s); ctx.quadraticCurveTo(22 * s, -10 * s, 12 * s, -44 * s); ctx.fill();
+            let g = null; try { g = ctx.createLinearGradient(0, -46 * s, 0, -16 * s); g.addColorStop(0, MG.gfx.lighten(c.cloth.c1, 0.3)); g.addColorStop(1, c.cloth.c2); } catch (e) { }
+            ctx.fillStyle = g || c.cloth.c1; MG.ui.rr(ctx, -14 * s, -46 * s, 28 * s, 30 * s, 8 * s); ctx.fill();
+            ctx.strokeStyle = MG.gfx.darken(c.cloth.c2, 0.3); ctx.lineWidth = 2 * s; ctx.stroke();
+            ctx.fillStyle = MG.gfx.lighten(c.cloth.c1, 0.15); ctx.beginPath(); ctx.ellipse(-15 * s, -43 * s, 7 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(15 * s, -43 * s, 7 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = c.cloth.c2; ctx.fillRect(13 * s, -44 * s, 6 * s, 22 * s);
+            ctx.strokeStyle = '#cfd6e6'; ctx.lineWidth = 3 * s; ctx.beginPath(); ctx.moveTo(20 * s, -40 * s); ctx.lineTo(26 * s, -66 * s); ctx.stroke();
+            ctx.fillStyle = c.accent; ctx.beginPath(); ctx.moveTo(26 * s, -70 * s); ctx.lineTo(22 * s, -64 * s); ctx.lineTo(30 * s, -64 * s); ctx.fill();
+            ctx.fillStyle = MG.gfx.lighten(c.cloth.c1, 0.1); MG.ui.rr(ctx, -13 * s, -66 * s, 26 * s, 22 * s, 7 * s); ctx.fill();
+            ctx.strokeStyle = MG.gfx.darken(c.cloth.c2, 0.35); ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.moveTo(0, -66 * s); ctx.lineTo(0, -46 * s); ctx.stroke();
+            ctx.fillStyle = '#10141f'; ctx.fillRect(-9 * s, -60 * s, 18 * s, 5 * s);
+            ctx.fillStyle = c.accent; ctx.beginPath(); ctx.moveTo(0, -66 * s); ctx.quadraticCurveTo(6 * s, -78 * s, 0, -86 * s); ctx.quadraticCurveTo(-3 * s, -76 * s, 0, -66 * s); ctx.fill();
+        },
+        // ---------- 主绘制入口 ----------
+        draw(ctx, x, y, scale, cfg, opt) {
+            cfg = cfg || {}; opt = opt || {};
+            const F = (opt.face != null ? opt.face : (cfg.face || 1));
+            const t = opt.t || 0;
+            scale = scale || 1;
+            ctx.save();
+            ctx.globalAlpha = opt.alpha != null ? opt.alpha : 1;
+            if (opt.shadow !== false) {
+                ctx.save(); ctx.globalAlpha = (opt.alpha != null ? opt.alpha : 1) * 0.26; ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.ellipse(x, y + 2, 16 * scale, 5 * scale, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            }
+            ctx.translate(x, y); ctx.scale(F, 1);
+            const bob = opt.pose === 'walk' ? Math.abs(Math.sin(t * 8)) * 2 * scale : Math.sin(t * 2.2) * 0.6 * scale;
+            ctx.translate(0, -bob);
+            const fn = this['_' + (cfg.arch || 'chibi')] || this._chibi;
+            try { fn.call(this, ctx, cfg, scale, opt, t); } catch (e) { if (window.__MG_TEST) throw e; }
+            ctx.restore();
+        },
+        // 一行陈列：从 x 起，每个间隔 spacing，统一 scale
+        gallery(ctx, x, y, spacing, scale, list) {
+            list = list || this.ARCH;
+            list.forEach((a, i) => { const c = this.gen(700 + i * 131); c.arch = a; c.expr = 'smile'; c.face = 1; this.draw(ctx, x + i * spacing, y, scale, c, { t: 0.6, pose: 'idle' }); });
+        },
+    },
+
+    // ================= 触感反馈（移动端震感，桌面端空操作）=================
+    // 用法：MG.haptics('hit') / MG.haptics.tap() / MG.haptics.bomb()
+    haptics(pattern) {
+        try { if (navigator.vibrate) { const p = typeof pattern === 'string' ? (MG.haptics.P[pattern] || [10]) : pattern; navigator.vibrate(p); } } catch (e) { }
+    },
     getBest(id) { try { return +(localStorage.getItem(this.bestKey(id)) || 0); } catch (e) { return 0; } },
     setBest(id, v) {
         if (v > this.getBest(id)) { try { localStorage.setItem(this.bestKey(id), String(v)); } catch (e) {} }
@@ -1285,3 +1611,10 @@ const MG = {
     },
 };
 window.MG = MG;
+// 触感反馈预设（对象字面量外挂载，避免循环引用）
+MG.haptics.P = { tap: [8], hit: [18], bomb: [40, 20, 40], win: [20, 30, 20, 30, 40], lose: [60, 40, 60] };
+MG.haptics.tap = () => MG.haptics('tap');
+MG.haptics.hit = () => MG.haptics('hit');
+MG.haptics.bomb = () => MG.haptics('bomb');
+MG.haptics.win = () => MG.haptics('win');
+MG.haptics.lose = () => MG.haptics('lose');
