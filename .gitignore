@@ -15,6 +15,8 @@ data/backups/
 
 # 模拟器 ROM 文件（管理员上传的二进制，仅存本机/服务器，不进仓库）
 data/roms/
+# 模拟器云存档同样是二进制且按用户分目录，只存运行态，不入库
+data/emu-saves/
 
 # 临时截图/测试产物（可选保留，默认不同步）
 game/tools/shots/
@@ -33,6 +35,12 @@ data-export-*.json
 
 # 已下线的旧立绘（来源为网络素材，存在版权风险，不再使用）
 tools/_retired-hero-png/
+
+# 数据库连接配置（含密码）
+data/db-env.json
+
+# AI 酒馆网关配置（含 SillyTavern 管理员口令）
+data/tavern-env.json
 
 # 部署日志
 deploy/logs/

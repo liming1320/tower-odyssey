@@ -250,7 +250,9 @@ async function status(db, force) {
         out.note = out.online ? '' : 'SillyTavern 返回 ' + r.status;
     } catch (e) {
         out.online = false;
-        out.note = '连不上 SillyTavern（' + e.message + '）—— 请先启动它：node server.js --listen false';
+        // ⚠️ 别提示 --listen：它是布尔开关，一旦带上就是「监听所有网卡」，
+        // 等于把酒馆暴露到公网（面板能改 API Key）。config.yaml 默认 listen:false 就是只听本地，最安全。
+        out.note = '连不上 SillyTavern（' + e.message + '）—— 请在它的目录直接执行 node server.js（不要加 --listen）';
     }
     if (out.online && ADMIN_PASSWORD) {
         const s = await adminSession();
@@ -278,7 +280,7 @@ async function proxyRequest(req, res, deps) {
         return res.end('<meta charset="utf-8"><div style="font:14px/1.9 system-ui;padding:30px;color:#c9d4e3;background:#141a24">' +
             '<h3 style="color:#ffd56b;margin:0 0 12px">🍺 AI 酒馆暂未启动</h3>' +
             '<div>' + st.note + '</div>' +
-            '<div style="margin-top:12px;color:#7f8da3">在 SillyTavern 目录执行 <code style="background:#0d1218;padding:2px 6px;border-radius:4px">node server.js --listen false</code> 后刷新本页。</div>' +
+            '<div style="margin-top:12px;color:#7f8da3">在 SillyTavern 目录执行 <code style="background:#0d1218;padding:2px 6px;border-radius:4px">node server.js</code>（<b>不要</b>加 --listen，加了会监听公网）后刷新本页。</div>' +
             '</div>');
     }
 

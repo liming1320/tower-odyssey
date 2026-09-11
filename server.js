@@ -20,6 +20,20 @@ try {
     }
 } catch (e) { /* 配置文件不存在 → 默认 json 模式 */ }
 
+// AI 酒馆（SillyTavern）网关配置，同样支持文件兜底：
+//   优先级：环境变量 > data/tavern-env.json > 内置默认
+//   为什么不只用环境变量：宝塔 / PM2 / systemd 的面板里配环境变量很折腾，
+//   而且不同进程管理器写法不一样，很容易配了却没生效。写成文件最省心。
+//   注意：必须在 require('./server/tavern') 之前执行 —— 它在模块加载时就读了 process.env。
+try {
+    const tavCfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'tavern-env.json'), 'utf8'));
+    for (const k of Object.keys(tavCfg)) {
+        if (process.env[k] === undefined) process.env[k] = String(tavCfg[k]);
+    }
+    console.log('[boot] 已从 data/tavern-env.json 读入 AI 酒馆配置（管理员句柄='
+        + (process.env.TAVERN_ADMIN_HANDLE || 'admin') + '）');
+} catch (e) { /* 文件不存在 → 用环境变量或内置默认 */ }
+
 // 存储抽象层：DB_DRIVER=json（默认，data/db.json）或 mysql（生产，多人并发/多端同步）
 const Store = require('./server/store');
 // SillyTavern 网关：同域反向代理 + SSO 账号打通（详见 server/tavern.js 顶部说明）
