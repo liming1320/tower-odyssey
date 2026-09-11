@@ -224,6 +224,11 @@ const GAMES = [
     // 本轮新增（1 款）
     sc('cookingfever', '烹饪发烧友', '50 关 + 无尽 · 读单做菜 · 托盘凑齐自动上菜', '#e8a04a', '#7a3a12', ['\ud83c\udf74', '\ud83c\udf7f', '\ud83e\udd80', '\ud83c\udf66']),
     sc('danmaku', '弹幕樱华祭', '20 关 + 无尽 · 东方风弹幕 · 躲弹幕击破 BOSS 符卡', '#1a0a2e', '#3a1040', ['\ud83c\udf86', '\u2728', '\ud83e\udd8c']),
+
+    // 魔塔系列（本轮新增 3 款）
+    sc('tower50', '魔塔 50 层', '50 层经典魔塔 · 撞怪战斗 · 捡钥匙开门 · 登顶击败魔王', '#26304e', '#34406a', ['\ud83d\uddfc', '\u2694', '\ud83d\udd11']),
+    sc('tower24', '魔塔 24 层', '24 层轻松魔塔 · 入门友好 · 节奏明快', '#1f3a28', '#2c5440', ['\ud83d\uddfc', '\ud83d\udef1', '\ud83d\udc8e']),
+    sc('newtower56', '新新魔塔 56 层', '56 层高难魔塔 · 守层卫士 + 魔王', '#2a1f3e', '#3e2a56', ['\ud83d\uddfc', '\ud83d\udc51', '\ud83d\udd25']),
 ];
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合
@@ -379,12 +384,36 @@ function g2048Thumb() {
         </svg>`;
     }
 
-    // 2048 / 暗棋 / 烹饪 / 弹幕 使用专属手绘缩略图
+    function towerThumb(c1, c2) {
+        const id = 'tw' + ((towerThumb._n = (towerThumb._n || 0) + 1));
+        return `<svg viewBox="0 0 88 60" width="100%" height="100%">
+            <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>
+            <rect width="88" height="60" rx="10" fill="url(#${id})"/>
+            <g transform="translate(44,54)">
+                <rect x="-10" y="-32" width="20" height="32" fill="#ece4d2" opacity="0.94"/>
+                <rect x="-7" y="-42" width="14" height="12" fill="#d8c8a8"/>
+                <rect x="-4" y="-50" width="8" height="10" fill="#c8b890"/>
+                <polygon points="0,-56 4,-50 -4,-50" fill="#ffd56b"/>
+                <rect x="-13" y="-20" width="4" height="20" fill="#2a2740"/>
+                <rect x="9" y="-20" width="4" height="20" fill="#2a2740"/>
+                <circle cx="-5" cy="-18" r="2.2" fill="#ffd56b"/>
+                <circle cx="5" cy="-18" r="2.2" fill="#ffd56b"/>
+            </g>
+            <text x="18" y="18" text-anchor="middle" font-size="13">\ud83d\udd11</text>
+            <text x="70" y="18" text-anchor="middle" font-size="13">\u2694</text>
+            <rect x="2.5" y="2.5" width="83" height="55" rx="8" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>
+        </svg>`;
+    }
+
+    // 2048 / 暗棋 / 烹饪 / 弹幕 / 魔塔 使用专属手绘缩略图
     (function () {
         const g2 = GAMES.find(g => g.id === 'g2048'); if (g2) g2.thumb = g2048Thumb();
         const g3 = GAMES.find(g => g.id === 'banqi'); if (g3) g3.thumb = banqiThumb();
         const g4 = GAMES.find(g => g.id === 'cookingfever'); if (g4) g4.thumb = cookingThumb();
         const g5 = GAMES.find(g => g.id === 'danmaku'); if (g5) g5.thumb = danmakuThumb();
+        const g6 = GAMES.find(g => g.id === 'tower50'); if (g6) g6.thumb = towerThumb('#26304e', '#34406a');
+        const g7 = GAMES.find(g => g.id === 'tower24'); if (g7) g7.thumb = towerThumb('#1f3a28', '#2c5440');
+        const g8 = GAMES.find(g => g.id === 'newtower56'); if (g8) g8.thumb = towerThumb('#2a1f3e', '#3e2a56');
     })();
 
 window.MinigamesView = MinigamesView;
