@@ -1110,6 +1110,19 @@ api['POST /api/register'] = async (req, res, body) => {
         bindPhone = phone;
     }
 
+    // 可选昵称：传了就用（需通过校验且不重复），没传自动分配「勇者XXXX」
+    let finalNickname = null;
+    if (body.nickname != null && String(body.nickname).trim() !== '') {
+        const v = validNickname(body.nickname);
+        if (v) return sendJson(res, 400, { error: v });
+        const nick = String(body.nickname).trim();
+        if (Object.values(DB.users).some(u => (u.nickname || u.username) === nick))
+            return sendJson(res, 400, { error: '该昵称已被占用' });
+        finalNickname = nick;
+    } else {
+        finalNickname = genDefaultNickname();
+    }
+
     const id = newId();
     const isAdmin = Object.keys(DB.users).length === 0; // 第一个注册用户为管理员
     DB.users[id] = {
@@ -3555,7 +3568,7 @@ const server = http.createServer(async (req, res) => {
                 '/api/roms/upload', '/api/roms/bios/upload', '/api/emu/save',
             ]);
             const body = (req.method === 'GET' || req.method === 'DELETE' || RAW_BODY_API.has(pathname)) ? {} : await readBody(req);
-            if (handler) return handler(req, res, body);
+            if (handler) { await handler(req, res, body); return; }
             return sendJson(res, 404, { error: 'API 不存在' });
         }
         // AI 酒馆：/tavern 与 /tavern/* 反向代理到 SillyTavern（登录鉴权 + SSO 头注入都在网关层）
@@ -3565,7 +3578,12 @@ const server = http.createServer(async (req, res) => {
         }
         serveStatic(req, res, pathname);
     } catch (e) {
-        sendJson(res, 500, { error: e.message });
+        // sendJson 本身也可能抛（响应已发出 / 连接已断），这里必须兜住，
+        // 否则异常逃逸会让 Node 把整个进程拖挂、所有玩家集体掉线。
+        try {
+            if (!res.headersSent) sendJson(res, 500, { error: (e && e.message) || '服务器内部错误' });
+            else res.end();
+        } catch (_) { try { res.destroy(); } catch (__) {} }
     }
 });
 // WebSocket 透传：ST 的 socket.io 靠长连接收发消息，缺了它页面能开但聊天卡死
