@@ -19,6 +19,7 @@ window.MG = window.MG || {};
         const c = cv.c, ctx = cv.ctx;
         const S = (cfg.init ? cfg.init(P) : {}) || {};
         S.t = 0;
+        if (window.__MG_TEST) window.__mgS = S;   // 测试模式暴露状态，便于 headless 断言
         let raf = null, last = Date.now(), stopped = false, done = false;
         // 每个游戏实例独立的粒子池与相机（stop() 自动清理，不会串到下一款游戏）
         const fx = MG.fxPool ? MG.fxPool() : null;

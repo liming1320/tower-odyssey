@@ -223,6 +223,7 @@ const GAMES = [
 
     // 本轮新增（1 款）
     sc('cookingfever', '烹饪发烧友', '50 关 + 无尽 · 读单做菜 · 托盘凑齐自动上菜', '#e8a04a', '#7a3a12', ['\ud83c\udf74', '\ud83c\udf7f', '\ud83e\udd80', '\ud83c\udf66']),
+    sc('danmaku', '弹幕樱华祭', '20 关 + 无尽 · 东方风弹幕 · 躲弹幕击破 BOSS 符卡', '#1a0a2e', '#3a1040', ['\ud83c\udf86', '\u2728', '\ud83e\udd8c']),
 ];
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合
@@ -355,11 +356,35 @@ function g2048Thumb() {
         </svg>`;
     }
 
-    // 2048 / 暗棋 / 烹饪 使用专属手绘缩略图
+    function danmakuThumb() {
+        // 巫女剪影 + 放射状弹幕
+        let bullets = '';
+        for (let i = 0; i < 16; i++) {
+            const a = i / 16 * Math.PI * 2, r1 = 16, r2 = 26 + (i % 3) * 5;
+            bullets += `<circle cx="${(44 + Math.cos(a) * r2).toFixed(1)}" cy="${(30 + Math.sin(a) * r2).toFixed(1)}" r="2.2" fill="#ff6fae"/>`;
+            bullets += `<line x1="${(44 + Math.cos(a) * r1).toFixed(1)}" y1="${(30 + Math.sin(a) * r1).toFixed(1)}" x2="${(44 + Math.cos(a) * r2).toFixed(1)}" y2="${(30 + Math.sin(a) * r2).toFixed(1)}" stroke="rgba(255,111,174,.5)" stroke-width="1"/>`;
+        }
+        return `<svg viewBox="0 0 88 60" width="100%" height="100%">
+            <defs><linearGradient id="dk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a0a2e"/><stop offset="1" stop-color="#3a1040"/></linearGradient></defs>
+            <rect width="88" height="60" rx="10" fill="url(#dk)"/>
+            <circle cx="44" cy="30" r="22" fill="#ff6fae" opacity="0.10"/>
+            ${bullets}
+            <g transform="translate(44,30)">
+                <path d="M-7,10 L7,10 L4,-1 L-4,-1 Z" fill="#f4f0ff"/>
+                <circle cx="0" cy="-7" r="5" fill="#ffe0c4"/>
+                <path d="M-5,-8 A5,5 0 0 1 5,-8 Z" fill="#3a2b4a"/>
+                <circle cx="-6" cy="-9" r="1.6" fill="#e23b5a"/><circle cx="6" cy="-9" r="1.6" fill="#fff"/>
+            </g>
+            <rect x="2.5" y="2.5" width="83" height="55" rx="8" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/>
+        </svg>`;
+    }
+
+    // 2048 / 暗棋 / 烹饪 / 弹幕 使用专属手绘缩略图
     (function () {
         const g2 = GAMES.find(g => g.id === 'g2048'); if (g2) g2.thumb = g2048Thumb();
         const g3 = GAMES.find(g => g.id === 'banqi'); if (g3) g3.thumb = banqiThumb();
         const g4 = GAMES.find(g => g.id === 'cookingfever'); if (g4) g4.thumb = cookingThumb();
+        const g5 = GAMES.find(g => g.id === 'danmaku'); if (g5) g5.thumb = danmakuThumb();
     })();
 
 window.MinigamesView = MinigamesView;

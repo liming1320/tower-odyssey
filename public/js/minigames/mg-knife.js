@@ -62,6 +62,8 @@ window.MiniGames = window.MiniGames || {};
                 S.px = Math.max(20, Math.min(340, S.px));
                 S.py = Math.max(70, Math.min(490, S.py));
             }
+            // 到达目标点（误差很小）即清除，避免金环一直挂在身上
+            if (S.touch && Math.hypot(S.touch.x - S.px, S.touch.y - S.py) <= 3) S.touch = null;
 
             // ---- 飞刀旋转 ----
             S.kAngle += S.kSpeed * dt;
@@ -161,11 +163,14 @@ window.MiniGames = window.MiniGames || {};
             }
         },
 
-        // ---- 指哪走哪：按住期间持续更新目标点 ----
+        // ---- 指哪走哪：拖动或点按都直接把目标点设为手指/鼠标位置 ----
+        // 关键点：x,y 是引擎算好的画布逻辑坐标（已除 deviceScale），与 S.px/S.py 同一坐标系，
+        // 所以「手指在哪、角色就精确去哪」，不会因为方向向量而乱飘。
         drag(S, x, y) {
             S.touch = { x, y };
         },
-        dragend(S) { S.touch = null; },
+        // 松手不清除目标点 —— 角色会缓动到该点并自动停下（见 update 里的 S.touch 清除逻辑）
+        dragend(S) { /* 保留 S.touch，让角色平滑抵达手指最后位置 */ },
         key(S, k, P, api) {
             const m = {
                 w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0],
@@ -187,8 +192,10 @@ window.MiniGames = window.MiniGames || {};
                         return;
                     }
                 }
+                return;
             }
-            // 移动不再靠点按 —— 按住屏幕拖动即"指哪走哪"
+            // 点哪走哪：点按屏幕任意位置 → 鸠摩智朝该点移动（与拖动同逻辑）
+            S.touch = { x, y };
         },
 
         draw(ctx, S, P, W, H, api) {

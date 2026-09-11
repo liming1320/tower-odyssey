@@ -2670,7 +2670,10 @@ api['GET /api/admin/minigame/order'] = (req, res) => {
     const savedOrder = Array.isArray(DB.minigameOrder) ? DB.minigameOrder.filter(x => MINIGAME_IDS.has(x)) : [];
     const seen = new Set(savedOrder);
     const order = savedOrder.concat(all.filter(id => !seen.has(id)));
-    sendJson(res, 200, { order, all, names: mgNames(), saved: savedOrder.length > 0, count: all.length });
+    // 关键：补 full 字段（与玩家端 GET 一致），否则后台排序页会走 r.all（默认顺序）而忽略已保存顺序，
+    // 造成「保存后玩家端生效、但后台刷新后仍是默认顺序」的假象。
+    const full = savedOrder.concat(all.filter(id => !seen.has(id)));
+    sendJson(res, 200, { order, all, full, names: mgNames(), saved: savedOrder.length > 0, count: all.length });
 };
 
 // ---- 经典模拟器 ROM 库：管理员上传（存 data/roms/ 磁盘文件，元数据进 DB）· 全员游玩 ----

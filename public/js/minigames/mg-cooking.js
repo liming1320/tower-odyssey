@@ -58,7 +58,7 @@
         S.queue.push({
             slot, order: randOrder(S.maxItems),
             pat: S.pat, patMax: S.pat, state: 'wait', anim: 0,
-            hue: ri(0, 360), bob: Math.random() * 6.28,
+            hue: ri(0, 360), style: ri(0, 4), bob: Math.random() * 6.28,
         });
     }
 
@@ -107,31 +107,95 @@
     // ---------------- 绘制 ----------------
     function drawCust(ctx, S, c) {
         const cx = XS[c.slot];
-        const by = 160 + Math.sin(c.bob * 2.2) * 2;
-        const col = `hsl(${c.hue},55%,52%)`;
-        const dark = `hsl(${c.hue},55%,36%)`;
+        const by = 158 + Math.sin(c.bob * 2.2) * 2;
+        const hairHue = c.hue;
+        const clothHue = (c.hue + 150) % 360;
+        const hair = `hsl(${hairHue},48%,46%)`;
+        const hairD = `hsl(${hairHue},50%,34%)`;
+        const cloth = `hsl(${clothHue},55%,58%)`;
+        const clothD = `hsl(${clothHue},55%,42%)`;
+        const skin = '#ffe0c4';
         ctx.save();
-        if (c.state === 'angry') ctx.globalAlpha = 0.45 + 0.55 * Math.max(0, c.anim / 0.5);
+        if (c.state === 'angry') ctx.globalAlpha = 0.5 + 0.5 * Math.max(0, c.anim / 0.5);
+
         // 影子
-        ctx.fillStyle = 'rgba(0,0,0,.25)';
-        ctx.beginPath(); ctx.ellipse(cx, 198, 26, 8, 0, 0, 6.283); ctx.fill();
-        // 身体
-        ctx.fillStyle = dark; rr(ctx, cx - 22, by, 44, 40, 12); ctx.fill();
-        // 头
-        ctx.fillStyle = '#ffe0bd';
-        ctx.beginPath(); ctx.arc(cx, by - 8, 18, 0, 6.283); ctx.fill();
-        // 表情
-        ctx.fillStyle = '#2a2030';
-        if (c.state === 'happy') {
-            ctx.lineWidth = 2; ctx.strokeStyle = '#2a2030';
-            ctx.beginPath(); ctx.arc(cx, by - 4, 6, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
-        } else if (c.state === 'angry') {
-            ctx.fillRect(cx - 8, by - 11, 3, 3); ctx.fillRect(cx + 5, by - 11, 3, 3);
-        } else {
-            ctx.beginPath(); ctx.arc(cx - 6, by - 9, 2.4, 0, 6.283); ctx.arc(cx + 6, by - 9, 2.4, 0, 6.283); ctx.fill();
+        ctx.fillStyle = 'rgba(0,0,0,.22)';
+        ctx.beginPath(); ctx.ellipse(cx, 196, 24, 7, 0, 0, 6.283); ctx.fill();
+
+        // 身体（圆润 Q 版，带领口）
+        ctx.fillStyle = clothD; rr(ctx, cx - 20, by + 6, 40, 34, 14); ctx.fill();
+        ctx.fillStyle = cloth; rr(ctx, cx - 16, by + 8, 32, 28, 12); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.85)';           // 小领子
+        ctx.beginPath(); ctx.moveTo(cx - 7, by + 8); ctx.lineTo(cx, by + 16); ctx.lineTo(cx + 7, by + 8); ctx.closePath(); ctx.fill();
+
+        // 后发（根据发型）
+        const hx = cx, hy = by - 14;
+        ctx.fillStyle = hair;
+        if (c.style === 1) {                                // 双马尾
+            ctx.beginPath(); ctx.ellipse(hx - 22, hy + 4, 8, 16, 0.3, 0, 6.283); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(hx + 22, hy + 4, 8, 16, -0.3, 0, 6.283); ctx.fill();
+        } else if (c.style === 2) {                         // 长直发
+            ctx.beginPath(); ctx.ellipse(hx, hy + 14, 21, 26, 0, 0, 6.283); ctx.fill();
+        } else if (c.style === 3) {                         // 波波头
+            ctx.beginPath(); ctx.ellipse(hx, hy + 6, 21, 20, 0, 0, 6.283); ctx.fill();
+        } else {                                            // 短发
+            ctx.beginPath(); ctx.ellipse(hx, hy + 2, 19, 18, 0, 0, 6.283); ctx.fill();
         }
+
+        // 头
+        ctx.fillStyle = skin;
+        ctx.beginPath(); ctx.arc(hx, hy, 15, 0, 6.283); ctx.fill();
+
+        // 脸颊腮红
+        ctx.fillStyle = 'rgba(255,150,150,.45)';
+        ctx.beginPath(); ctx.ellipse(hx - 9, hy + 4, 3.2, 2, 0, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(hx + 9, hy + 4, 3.2, 2, 0, 0, 6.283); ctx.fill();
+
+        // 眼睛（日漫大眼：眼白 + 虹膜 + 高光）
+        const drawEye = (ex) => {
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.ellipse(ex, hy + 1, 3.4, 4.6, 0, 0, 6.283); ctx.fill();
+            ctx.fillStyle = hairD;
+            ctx.beginPath(); ctx.ellipse(ex, hy + 1.5, 2.5, 3.6, 0, 0, 6.283); ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(ex - 0.8, hy - 0.4, 1.1, 0, 6.283); ctx.fill();   // 高光
+            ctx.fillStyle = 'rgba(0,0,0,.55)';
+            ctx.beginPath(); ctx.arc(ex, hy + 1, 0.7, 0, 6.283); ctx.fill();           // 瞳孔底
+        };
+        drawEye(hx - 6);
+        drawEye(hx + 6);
+
+        // 嘴
+        ctx.strokeStyle = '#a85a4a'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+        if (c.state === 'happy') {
+            ctx.beginPath(); ctx.arc(hx, hy + 7, 3, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
+        } else if (c.state === 'angry') {
+            ctx.beginPath(); ctx.arc(hx, hy + 10, 2.6, 1.15 * Math.PI, 1.85 * Math.PI); ctx.stroke();
+        } else {
+            ctx.beginPath(); ctx.moveTo(hx - 1.6, hy + 8); ctx.lineTo(hx + 1.6, hy + 8); ctx.stroke();
+        }
+
+        // 前发 / 刘海（盖住额头）
+        ctx.fillStyle = hair;
+        if (c.style === 0) {                                // 短发斜刘海
+            ctx.beginPath();
+            ctx.moveTo(hx - 16, hy - 4); ctx.quadraticCurveTo(hx - 4, hy - 14, hx + 16, hy - 6);
+            ctx.quadraticCurveTo(hx + 6, hy - 2, hx - 2, hy + 2); ctx.quadraticCurveTo(hx - 10, hy - 2, hx - 16, hy - 4);
+            ctx.fill();
+        } else if (c.style === 1) {                         // 双马尾 + 中分刘海
+            ctx.beginPath(); ctx.arc(hx, hy - 2, 15, Math.PI, 0); ctx.fill();
+            ctx.fillRect(hx - 15, hy - 14, 5, 12); ctx.fillRect(hx + 10, hy - 14, 5, 12);
+        } else if (c.style === 2) {                         // 长发齐刘海
+            ctx.beginPath(); ctx.moveTo(hx - 15, hy - 8); ctx.quadraticCurveTo(hx, hy - 18, hx + 15, hy - 8);
+            ctx.quadraticCurveTo(hx + 6, hy - 2, hx - 2, hy + 1); ctx.quadraticCurveTo(hx - 8, hy - 2, hx - 15, hy - 8); ctx.fill();
+        } else {                                            // 波波头 + 呆毛
+            ctx.beginPath(); ctx.arc(hx, hy - 2, 15, Math.PI, 0); ctx.fill();
+            ctx.strokeStyle = hair; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(hx, hy - 15); ctx.quadraticCurveTo(hx + 4, hy - 24, hx + 1, hy - 26); ctx.stroke();
+        }
+
         // 订单气泡
-        const o = c.order, bw = 24 * o.length + 18, bx = cx - bw / 2, byy = by - 52;
+        const o = c.order, bw = 24 * o.length + 18, bx = cx - bw / 2, byy = by - 56;
         const matched = c.state === 'wait' && S.tray.length && sameMul(S.tray, o);
         ctx.fillStyle = c.state === 'happy' ? '#bfe8b0' : c.state === 'angry' ? '#e8b0b0' : '#fff';
         rr(ctx, bx, byy, bw, 30, 8); ctx.fill();
@@ -140,6 +204,7 @@
         if (matched) { ctx.shadowColor = '#4ade4a'; ctx.shadowBlur = 10; }
         rr(ctx, bx, byy, bw, 30, 8); ctx.stroke(); ctx.shadowBlur = 0;
         // 气泡小尾巴
+        ctx.fillStyle = ctx.fillStyle;
         ctx.beginPath(); ctx.moveTo(cx - 6, byy + 30); ctx.lineTo(cx + 6, byy + 30); ctx.lineTo(cx, byy + 38); ctx.fill();
         if (c.state === 'happy') U.emoji(ctx, '😊', cx, byy + 15, 20);
         else if (c.state === 'angry') U.emoji(ctx, '😠', cx, byy + 15, 20);
@@ -147,9 +212,9 @@
         // 耐心条
         if (c.state === 'wait') {
             const fr = Math.max(0, c.pat / c.patMax);
-            ctx.fillStyle = 'rgba(0,0,0,.3)'; rr(ctx, cx - 22, 196, 44, 6, 3); ctx.fill();
+            ctx.fillStyle = 'rgba(0,0,0,.3)'; rr(ctx, cx - 22, 192, 44, 6, 3); ctx.fill();
             ctx.fillStyle = fr > 0.5 ? '#5cd65c' : fr > 0.25 ? '#ffd24a' : '#ff5a5a';
-            rr(ctx, cx - 22, 196, 44 * fr, 6, 3); ctx.fill();
+            rr(ctx, cx - 22, 192, 44 * fr, 6, 3); ctx.fill();
         }
         ctx.restore();
     }
