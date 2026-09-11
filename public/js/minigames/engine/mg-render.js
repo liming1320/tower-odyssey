@@ -471,5 +471,19 @@ MG.makeLayered = function (W, H, scale) {
         blitHud(ctx) { try { ctx.drawImage(this.hudCv, 0, 0, W, H); } catch (e) { } },
         markBgDirty() { this.bgDirty = true; },
         markHudDirty() { this.hudDirty = true; },
+        // 跟随 deviceScale 重建离屏层（见 issue #4）：旋转屏幕 / 窗口缩放 / 高 DPI 变化后，
+        // MG.canvas.fit() 会改变 backing 倍率，离屏层若不同步就会变糊或尺寸策略不一致。
+        resize(s) {
+            if (!s || s <= 0 || Math.abs(s - this.scale) < 0.05) return;
+            this.scale = s;
+            const rebuild = (o) => {
+                o.c.width = Math.max(1, Math.round(W * s));
+                o.c.height = Math.max(1, Math.round(H * s));
+                o.x.setTransform(s, 0, 0, s, 0, 0);
+                o.x.__mgScale = s;
+            };
+            rebuild(bg); rebuild(hud);
+            this.bgDirty = true; this.hudDirty = true;
+        },
     };
 };

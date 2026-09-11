@@ -21,16 +21,100 @@ window.MG = window.MG || {};
     }
     function now() { return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now(); }
 
+    // ---------------- 实例运行域（issue #10 / #11 / #13）----------------
+    // 背景：过去很多小游戏直接 setTimeout / setInterval / window.addEventListener，
+    // 切关或返回后旧回调仍会执行 → 改旧状态、重复 finish()、点了没反应。
+    // 这里给每个游戏实例一个独立的「运行域」，所有异步与监听都登记进来，stop() 一次性回收。
+    // 约定：新写的小游戏一律用 api.later / api.every / api.listen，不要碰全局定时器与全局监听。
+    function makeRuntime(hooks) {
+        const cleanups = [];
+        let state = 'running';   // running → paused → finished / stopped / error
+        const rt = {
+            get state() { return state; },
+            get stopped() { return state === 'stopped' || state === 'error'; },
+            isRunning: () => state === 'running',
+            acceptInput: () => state === 'running',
+            setState(s) { state = s; },
+            // 只置状态、不跑清理（错误中止 / 自然结束时用，真正的资源回收交给 stop()）
+            mark(s) { state = s || 'stopped'; },
+            // 登记一个清理函数（返回它本身，方便调用方再手动解绑）
+            cleanup(fn) { if (typeof fn === 'function') cleanups.push(fn); return fn; },
+            later(fn, ms) {
+                const id = setTimeout(() => {
+                    if (rt.stopped) return;
+                    try { fn(); } catch (e) { hooks.onError(e, 'later'); }
+                }, ms);
+                cleanups.push(() => clearTimeout(id));
+                return id;
+            },
+            every(fn, ms) {
+                const id = setInterval(() => {
+                    if (rt.stopped) return;
+                    try { fn(); } catch (e) { hooks.onError(e, 'every'); }
+                }, ms);
+                cleanups.push(() => clearInterval(id));
+                return id;
+            },
+            listen(target, type, fn, options) {
+                if (!target || !target.addEventListener) return null;
+                target.addEventListener(type, fn, options);
+                cleanups.push(() => { try { target.removeEventListener(type, fn, options); } catch (e) { } });
+                return fn;
+            },
+            // 幂等：重复调用不会重复清理、不会抛
+            stop() {
+                if (state === 'stopped') return;
+                state = 'stopped';
+                for (let i = cleanups.length - 1; i >= 0; i--) {
+                    try { cleanups[i](); } catch (e) { }
+                }
+                cleanups.length = 0;
+                if (hooks.onStop) { try { hooks.onStop(); } catch (e) { } }
+            },
+        };
+        return rt;
+    }
+
+    // 确定性随机（mulberry32）：同一 seed 必然同一结果，便于复现线上 bug 与自动测试
+    function makeRng(seed) {
+        let s = (Number(seed) || 0) >>> 0;
+        if (!s) s = 0x9e3779b9;
+        const r = () => {
+            s = (s + 0x6D2B79F5) >>> 0;
+            let t = s;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+        r.int = (a, b) => a + Math.floor(r() * (b - a + 1));
+        r.range = (a, b) => a + r() * (b - a);
+        r.pick = arr => arr[Math.floor(r() * arr.length)];
+        r.chance = p => r() < p;
+        r.shuffle = arr => {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(r() * (i + 1));
+                const t = a[i]; a[i] = a[j]; a[j] = t;
+            }
+            return a;
+        };
+        return r;
+    }
+
     E.game = function (container, opts, cfg) {
         const P = Object.assign({ endless: !!opts.endless }, opts.level || {});
         P.endless = !!opts.endless;
         const W = cfg.w || 400, H = cfg.h || 520;
         const cv = MG.canvas(container, W, H);
         const c = cv.c, ctx = cv.ctx;
-        const S = (cfg.init ? cfg.init(P) : {}) || {};
+        let rafId = null, last = now(), done = false, paused = false;
+        // 实例运行域：定时器 / 事件 / 补间全部登记在这里，stop() 一次性回收（见 makeRuntime 说明）
+        const rt = makeRuntime({ onError: (e, ph) => onError(e, ph) });
+        let S = {};
+        try { S = (cfg.init ? cfg.init(P) : {}) || {}; }
+        catch (e) { onError(e, 'init'); }        // init 也纳入错误边界（见 issue #P1）
         S.t = 0;
         if (window.__MG_TEST) window.__mgS = S;   // 测试模式暴露状态，便于 headless 断言
-        let rafId = null, last = now(), stopped = false, done = false, paused = false;
         const SCH = scheduler();
         // 每个游戏实例独立的粒子池 / 相机 / 补间池（stop() 自动清理，互不干扰，见 issue #4）
         const fx = MG.fxPool ? MG.fxPool() : null;
@@ -50,8 +134,8 @@ window.MG = window.MG || {};
         };
         const onError = (e, phase) => {
             try { MG.onError && MG.onError(e, { phase, gameId: cfg.id, opts: opts && opts.level && opts.level._id }); } catch (_) {}
+            rt.mark('error');
             if (window.__MG_TEST) throw e;
-            stopped = true;
             try { MG.showGameError && MG.showGameError(c.parentElement || container); } catch (_) {}
         };
 
@@ -63,9 +147,18 @@ window.MG = window.MG || {};
                 opts.onComplete && opts.onComplete(Object.assign({ win: false, stars: 0, score: 0, lines: [] }, r, { stars: r.stars, win: r.win }));
             },
             get over() { return done; },
-            pause() { paused = true; },
-            resume() { if (paused) { paused = false; last = now(); } },   // 恢复时重置时间基准，避免 dt 跳变
+            pause() { paused = true; rt.setState('paused'); },
+            resume() { if (paused) { paused = false; rt.setState('running'); last = now(); } },   // 恢复时重置时间基准，避免 dt 跳变
             get isPaused() { return paused; },
+            // ---- 实例运行域（新写游戏请一律用这些，不要用全局 setTimeout / addEventListener）----
+            // 定时器：stop() 自动清理，且停止后回调不会再执行（杜绝「切关后旧回调改新状态」）
+            later: (fn, ms) => rt.later(fn, ms),
+            every: (fn, ms) => rt.every(fn, ms),
+            listen: (target, type, fn, options) => rt.listen(target, type, fn, options),
+            cleanup: (fn) => rt.cleanup(fn),
+            // 确定性随机：传同一个 seed 必得同一结果，用于复现 bug / 关卡回放 / 自动测试
+            rng: (seed) => makeRng(seed != null ? seed : ((P.seed || 0) + ((opts.levelIdx || 0) + 1) * 7919)),
+            get state() { return rt.state; },
             P, S, W, H, ctx, draw: () => paint(),
             fx, cam, tw,
             boom: (x, y, o) => fx && fx.burst(x, y, o),
@@ -85,6 +178,10 @@ window.MG = window.MG || {};
             markHudDirty: () => layered && layered.markHudDirty(),
         };
         const paint = () => {
+            // 离屏层跟随 deviceScale：旋转 / 缩放后 MG.canvas.fit() 会改倍率，这里同步重建（issue #4）
+            if (layered && ctx.__mgScale && Math.abs(ctx.__mgScale - layered.scale) > 0.05) {
+                try { layered.resize(ctx.__mgScale); } catch (e) { }
+            }
             if (layered) {
                 // 背景层：仅 markBgDirty() 后才重绘，之后每帧只 blit（棋盘/地图/场景等静态内容）
                 if (layered.bgDirty) {
@@ -120,48 +217,51 @@ window.MG = window.MG || {};
             const sx = W / (r.width || W), sy = H / (r.height || H);
             return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
         };
+        // 统一错误边界：cfg 的任何回调抛异常都上报 MG.onError。
+        // 之前 dragend 的异常是被静默吞掉的，线上出了问题完全没痕迹（见 issue #P1）。
+        const safe = (phase, fn) => { try { fn(); } catch (e) { onError(e, phase); } };
         // ---- Pointer Events 统一鼠标 + 触摸（替代分散的 mouse*/touch* 监听，清理更可靠，见 issue #2/#15）----
         const onDown = e => {
-            if (done || stopped || paused) return;
+            if (done || rt.stopped || paused) return;
             try { c.setPointerCapture && c.setPointerCapture(e.pointerId); } catch (_) {}
             const p = pos(e);
-            if (cfg.tap) { cfg.tap(S, p.x, p.y, P, api); paint(); }
+            if (cfg.tap) safe('tap', () => { cfg.tap(S, p.x, p.y, P, api); paint(); });
             if (cfg.drag) api._dragStart = { x: p.x, y: p.y, ox: (S.ox != null ? S.ox : 0), oy: (S.oy != null ? S.oy : 0) };
         };
         const onMove = e => {
-            if (done || stopped || paused || !api._dragStart || !cfg.drag) return;
+            if (done || rt.stopped || paused || !api._dragStart || !cfg.drag) return;
             e.preventDefault();
             const p = pos(e);
             const dx = p.x - api._dragStart.x, dy = p.y - api._dragStart.y;
-            cfg.drag(S, p.x, p.y, P, api, dx, dy); paint();
+            safe('drag', () => { cfg.drag(S, p.x, p.y, P, api, dx, dy); paint(); });
         };
         const onUp = e => {
             if (api._dragStart && cfg.dragend) {
                 let p = null;
                 try { const q = pos(e); p = { x: q.x, y: q.y }; } catch (_) {}
-                try { cfg.dragend(S, p ? p.x : null, p ? p.y : null, P, api); } catch (err) { if (window.__MG_TEST) throw err; }
-                paint();
+                const pp = p;
+                safe('dragend', () => { cfg.dragend(S, pp ? pp.x : null, pp ? pp.y : null, P, api); paint(); });
             }
             api._dragStart = null;
         };
         const onKey = e => {
-            if (done || stopped || paused || !cfg.key) return;
+            if (done || rt.stopped || paused || !cfg.key) return;
             // 由游戏声明需要拦截的按键（如方向键/空格），只对这些键 preventDefault，避免误拦（见 issue #16）
             if (cfg.preventKeys && cfg.preventKeys.indexOf(e.key) >= 0) { try { e.preventDefault(); } catch (_) {} }
-            cfg.key(S, e.key, P, api); paint();
+            safe('key', () => { cfg.key(S, e.key, P, api); paint(); });
         };
-        c.addEventListener('pointerdown', onDown);
-        c.addEventListener('pointermove', onMove);
-        c.addEventListener('pointerup', onUp);
-        c.addEventListener('pointercancel', onUp);
-        if (cfg.key) window.addEventListener('keydown', onKey);
+        // 全部经 rt.listen 登记 → stop() 自动解绑，不留悬挂监听
+        rt.listen(c, 'pointerdown', onDown);
+        rt.listen(c, 'pointermove', onMove);
+        rt.listen(c, 'pointerup', onUp);
+        rt.listen(c, 'pointercancel', onUp);
+        if (cfg.key) rt.listen(window, 'keydown', onKey);
         // 切后台自动暂停：避免敌人继续移动 / 计时继续 / 音频持续（见 issue #17）
-        const onVis = () => { if (document.hidden) api.pause(); else api.resume(); };
-        document.addEventListener('visibilitychange', onVis);
+        rt.listen(document, 'visibilitychange', () => { if (document.hidden) api.pause(); else api.resume(); });
 
         const loop = () => {
-            if (stopped || done) return;
-            if (!c.isConnected) { stopped = true; return; }   // 兜底：画布已从 DOM 移除时停机（见 issue #3）
+            if (rt.stopped || done) return;
+            if (!c.isConnected) { rt.mark('stopped'); return; }   // 兜底：画布已从 DOM 移除时停机（见 issue #3）
             rafId = SCH.schedule(loop);
             if (paused) { paint(); return; }                    // 暂停时只重绘，不推进模拟
             const t = now();
@@ -188,22 +288,18 @@ window.MG = window.MG || {};
         if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
         rafId = SCH.schedule(loop);
         return {
+            // 幂等：重复调用只清理一次（防止「结算后又点返回」重复解绑/报错，见 issue #11）
             stop() {
-                stopped = true;
-                if (rafId) SCH.cancel(rafId);
-                c.removeEventListener('pointerdown', onDown);
-                c.removeEventListener('pointermove', onMove);
-                c.removeEventListener('pointerup', onUp);
-                c.removeEventListener('pointercancel', onUp);
-                if (cfg.key) window.removeEventListener('keydown', onKey);
-                document.removeEventListener('visibilitychange', onVis);
-                if (tw) tw.clear();
-                if (cam && cam.reset) cam.reset();
-                cv.destroy();
+                if (rafId) { SCH.cancel(rafId); rafId = null; }
+                if (tw) { try { tw.clear(); } catch (e) { } }
+                if (cam && cam.reset) { try { cam.reset(); } catch (e) { } }
+                rt.stop();          // 里面统一解绑全部监听 + 清理定时器 + 跑游戏登记的 cleanup
+                try { cv.destroy(); } catch (e) { }   // 幂等，重复调用无害
             },
             pause: () => api.pause(),
             resume: () => api.resume(),
             get isPaused() { return paused; },
+            get state() { return rt.state; },
         };
     };
 
@@ -212,21 +308,45 @@ window.MG = window.MG || {};
     E.dgame = function (container, opts, cfg) {
         const P = Object.assign({}, opts.level || {});
         P.endless = !!opts.endless;
-        const S = (cfg.init ? cfg.init(P) : {}) || {};
+        let done = false;
+        const rt = makeRuntime({ onError: (e, ph) => onError(e, ph) });
+        const onError = (e, phase) => {
+            try { MG.onError && MG.onError(e, { phase, gameId: cfg.id }); } catch (_) {}
+            rt.mark('error');
+            if (window.__MG_TEST) throw e;
+            try { MG.showGameError && MG.showGameError(container); } catch (_) {}
+        };
+        const safe = (phase, fn) => { try { fn(); } catch (e) { onError(e, phase); } };
         const root = document.createElement('div');
         root.className = 'mg-dom';
         container.appendChild(root);
-        let done = false, stopped = false;
+        let S = {};
+        try { S = (cfg.init ? cfg.init(P) : {}) || {}; } catch (e) { onError(e, 'init'); }
+
+        // bind() 可以返回一个清理函数（或函数数组）：重绘前先跑上一轮的，stop() 时再跑一次。
+        // 这样 DOM 游戏绑的全局事件 / 定时器也能随实例回收（见 issue #3）。
+        let disposers = [];
+        const runDisposers = () => {
+            for (const d of disposers) { try { if (typeof d === 'function') d(); } catch (e) { } }
+            disposers = [];
+        };
         const paint = () => {
-            root.innerHTML = (cfg.render ? cfg.render(S, P, api) : '') || '';
-            cfg.bind && cfg.bind(root, S, P, api);
+            if (rt.stopped) return;
+            runDisposers();
+            safe('render', () => { root.innerHTML = (cfg.render ? cfg.render(S, P, api) : '') || ''; });
+            safe('bind', () => {
+                const d = cfg.bind && cfg.bind(root, S, P, api);
+                if (typeof d === 'function') disposers.push(d);
+                else if (Array.isArray(d)) disposers.push.apply(disposers, d.filter(x => typeof x === 'function'));
+            });
             if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
         };
         const api = {
-            update: () => { if (!stopped && !done) paint(); },
+            update: () => { if (!rt.stopped && !done) paint(); },
             finish(res) {
                 if (done) return;
                 done = true;
+                rt.mark('finished');
                 res = res || {};
                 let stars = res.stars != null ? res.stars : (res.win ? 3 : 0);
                 stars = Math.max(0, Math.min(3, Math.floor(Number(stars)) || 0));
@@ -237,10 +357,24 @@ window.MG = window.MG || {};
             },
             get over() { return done; },
             P, S, root,
+            later: (fn, ms) => rt.later(fn, ms),
+            every: (fn, ms) => rt.every(fn, ms),
+            listen: (t, ty, fn, o) => rt.listen(t, ty, fn, o),
+            cleanup: (fn) => rt.cleanup(fn),
+            rng: (seed) => makeRng(seed != null ? seed : ((P.seed || 0) + ((opts.levelIdx || 0) + 1) * 7919)),
+            get state() { return rt.state; },
         };
         if (cfg.hint) MG.hint(container, cfg.hint);
         paint();
-        return { stop() { stopped = true; } };
+        return {
+            stop() {
+                runDisposers();
+                rt.stop();
+                // 真正移除 root：以前只置 stopped，DOM 节点留着，全局事件/定时器就泄漏了
+                try { if (root.remove) root.remove(); else if (root.parentNode) root.parentNode.removeChild(root); } catch (e) { }
+            },
+            get state() { return rt.state; },
+        };
     };
 
     // ---------------- 游戏定义助手 ----------------

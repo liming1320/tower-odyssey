@@ -62,9 +62,16 @@ const engPaths = ENGINE_FILES.map(f => path.join(engineDir, f));
 // 而且 start() 里会打真实网络请求（Node VM 里 fetch 不存在），纯属噪音。
 // 它们的可用性由 tools/smoke-integration.js 端到端验证，这里排除。
 const NOT_A_GAME = new Set(['emulator.js', 'arcade.js']);
-const all = fs.readdirSync(dir).filter(f => f.endsWith('.js')
-    && !ENGINE_FILES.includes(f) && !NOT_A_GAME.has(f));
-const filesOrdered = engPaths.concat(all.sort().map(f => path.join(dir, f)));
+// mg-tower-core.js 在文件末尾才定义 MG.tower，而 mg-newtower56.js 顶部有
+// `if (!MG.tower) return;` —— 若按字母序排，newtower56 会跑在 core 之前被静默跳过，
+// 56 层魔塔就永远没被测试覆盖（index.html 里 core 在前，浏览器是好的）。
+// 这里显式把 core 提到最前，与浏览器加载顺序保持一致。
+const FIRST_LOAD = ['mg-tower-core.js'];
+const rest = fs.readdirSync(dir).filter(f => f.endsWith('.js')
+    && !ENGINE_FILES.includes(f) && !NOT_A_GAME.has(f) && !FIRST_LOAD.includes(f));
+const filesOrdered = engPaths
+    .concat(FIRST_LOAD.map(f => path.join(dir, f)))
+    .concat(rest.sort().map(f => path.join(dir, f)));
 let pass = 0, fail = 0;
 const fails = [];
 for (const f of filesOrdered) {
