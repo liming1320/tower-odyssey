@@ -3077,6 +3077,12 @@ api['POST /api/admin/roms/import'] = async (req, res, body) => {
         if (!src || !src.toLowerCase().endsWith('.zip') || !fs.existsSync(src)) { skipped.push({ file: src, reason: '文件不存在或非 ZIP' }); continue; }
         if (!path.isAbsolute(src)) { skipped.push({ file: src, reason: '路径必须是绝对路径' }); continue; }
         const shortName = String(it.shortName || path.basename(src).replace(/\.zip$/i, '')).toLowerCase();
+        // 基板 BIOS（neogeo.zip 等）跟游戏 ROM 在同一个目录里，但它是「零件」不是游戏：
+        // 当成游戏导入会在玩家列表里多点一个永远打不开的条目。请走「BIOS 管家」上传。
+        if (romCatalog.isBiosShortName(shortName)) {
+            skipped.push({ file: src, reason: '这是基板 BIOS，不是游戏（请在「BIOS 管家」里上传）' });
+            continue;
+        }
         if ((DB.roms || []).some(r => r.shortName === shortName)) { skipped.push({ file: src, reason: '已导入过同短名 ROM' }); continue; }
         // 允许管理员在预览表里改中文名 / 平台 / 年份
         let info;

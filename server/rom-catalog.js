@@ -188,6 +188,11 @@ function parseDat(text) {
 // ---------------------------------------------------------------- 平台 / BIOS / 核心
 const PLATFORMS = ['neogeo', 'cps1', 'cps2', 'cps3', 'igs', 'other'];
 const BIOS_HINT = { neogeo: 'neogeo.zip', igs: 'pgm.zip', cps3: 'cps3.zip' };
+// 常见基板 BIOS 的短名。它们跟游戏 ROM 放在同一个目录里，扫描时会被一起捞出来，
+// 但**不是游戏**：当游戏导入会变成玩家列表里一个点开就报错的条目。
+// 正确做法是走后台「BIOS 管家」上传，而不是混进游戏库。
+const BIOS_SHORTNAMES = new Set(['neogeo', 'neogeo.zip', 'uni-bios', 'unibios', 'cps3', 'pgm', 'pgmbios', 'neocdz']);
+const isBiosShortName = s => BIOS_SHORTNAMES.has(String(s || '').toLowerCase().replace(/\.zip$/i, ''));
 function guessPlatform(entry, zh) {
     if (zh && zh.platform) return zh.platform;
     if (entry) {
@@ -202,6 +207,18 @@ function guessPlatform(entry, zh) {
         if ((entry.roms || []).some(r => /-m1\.bin$/i.test(r.name))) return 'neogeo';
     }
     return 'other';
+}
+// 目录名兜底：ROM 包普遍按基板分目录（roms/neogeo、roms/cps1、roms/cps2/cps2），
+// 没有 DAT 时这是最可靠的平台来源 —— 目录结构本身就是上传者给的分类。
+function guessPlatformByDir(dirHint) {
+    const d = String(dirHint || '').toLowerCase();
+    if (!d) return '';
+    if (/neogeo|mvs|neo-?geo/.test(d)) return 'neogeo';
+    if (/cps[-_]?3/.test(d)) return 'cps3';
+    if (/cps[-_]?2/.test(d)) return 'cps2';
+    if (/cps[-_]?1|cps/.test(d)) return 'cps1';
+    if (/pgm|igs/.test(d)) return 'igs';
+    return '';
 }
 const coreForPlatform = p => (p === 'cps1' ? 'fbalpha2012_cps1'
     : p === 'cps2' ? 'fbalpha2012_cps2'
@@ -253,6 +270,41 @@ module.exports = function createCatalog(opt) {
         return { ok: true };
     }
     // 首次运行：用内置种子（server/rom-zh-seed.json）生成可编辑的中文表
+    // 种子表（仓库里维护的通用词典）与本地表（后台在线编辑的）是**叠加**关系，不是二选一：
+    // 只要 data/rom-zh.json 一存在就只用本地表的话，以后往种子里加的新译名将永远加载不到
+    // （老用户尤其如此 —— 他们早在第一次启动时就生成了本地表）。
+    // 规则：本地已改的优先；本地没有、或本地留了空标题的，用种子补齐。
+    function mergeSeed(ZH) {
+        if (!opt.seedFile || !fs.existsSync(opt.seedFile)) return ZH;
+        let seed = {};
+        try { seed = JSON.parse(fs.readFileSync(opt.seedFile, 'utf8')) || {}; } catch (e) { return ZH; }
+        let added = 0;
+        for (const k of Object.keys(seed)) {
+            if (k.charAt(0) === '_') continue;             // _note 之类的说明键不是数据
+            const s = seed[k];
+            if (!s || typeof s !== 'object') continue;
+            if (!s.titleZh) continue;
+            const cur = ZH[k];
+            if (cur && typeof cur === 'object' && String(cur.titleZh || '').trim()) continue;  // 本地已改，尊重本地
+            // 别名做并集：种子里的英文名 + 本地已有的别名都保留，两种叫法都能搜到
+            const al = [];
+            const push = a => { a = String(a || '').trim(); if (a && !al.includes(a)) al.push(a); };
+            if (cur && Array.isArray(cur.aliases)) cur.aliases.forEach(push);
+            (Array.isArray(s.aliases) ? s.aliases : []).forEach(push);
+            ZH[k] = {
+                titleZh: String(s.titleZh),
+                aliases: al.slice(0, 8),
+                platform: (cur && cur.platform) || s.platform || '',
+                fromSeed: true,
+            };
+            added++;
+        }
+        if (added) {
+            try { fs.mkdirSync(path.dirname(zhFile), { recursive: true }); fs.writeFileSync(zhFile, JSON.stringify(ZH, null, 2)); } catch (e) { }
+        }
+        return ZH;
+    }
+
     function loadZh() {
         try {
             if (fs.existsSync(zhFile)) ZH = JSON.parse(fs.readFileSync(zhFile, 'utf8')) || {};
@@ -264,7 +316,7 @@ module.exports = function createCatalog(opt) {
                 } catch (e) { }
             } else ZH = {};
         } catch (e) { ZH = {}; }
-        return ZH;
+        return mergeSeed(ZH);
     }
     function saveZh(obj) {
         const out = {};
@@ -313,7 +365,13 @@ module.exports = function createCatalog(opt) {
             crcStatus = 'nodat';
         }
 
-        const platform = guessPlatform(dat, zh);
+        // 平台判定：中文表 > DAT 的 sourcefile/romof > 所在目录名（roms/neogeo/、roms/cps2/…）
+        // 注意 guessPlatform 判不出来时返回 'other'（truthy），会短路掉后面的 `||`，
+        // 所以必须显式判断，不能写成 a() || b() || 'other'。
+        const byMeta = guessPlatform(dat, zh);
+        const platform = (byMeta && byMeta !== 'other')
+            ? byMeta
+            : (guessPlatformByDir(info.dirHint) || 'other');
         const titleEn = dat ? (dat.desc || '') : '';
         const res = {
             shortName,
@@ -336,31 +394,60 @@ module.exports = function createCatalog(opt) {
     }
 
     // 扫描目录里的 ZIP（只解析每个文件的中央目录，不解压）
+    // 递归：ROM 常按基板分目录，甚至套两层（roms/cps2/cps2/xxx.zip）。
+    // 不递归的话管理员填 roms 会一个都扫不到，还以为路径填错了。
     function scanDir(dir, opt2) {
         opt2 = opt2 || {};
         const limit = Math.max(1, Math.min(2000, parseInt(opt2.limit, 10) || 500));
-        let names = [];
-        try { names = fs.readdirSync(dir); } catch (e) { return { ok: false, error: '无法读取目录：' + e.message, items: [] }; }
+        const depth = Math.max(0, Math.min(6, parseInt(opt2.depth, 10) || 4));
         const items = [];
-        for (const n of names) {
-            if (!/\.zip$/i.test(n)) continue;
-            const full = path.join(dir, n);
-            let st = null;
-            try { st = fs.statSync(full); } catch (e) { continue; }
-            if (!st.isFile()) continue;
-            const shortName = n.replace(/\.zip$/i, '').toLowerCase();
-            const z = readZipEntries(full);
-            const info = resolve({ shortName, entries: z.ok ? z.entries : [] });
-            items.push({
-                file: n, path: full, size: st.size, shortName,
-                entries: z.ok ? z.entries.length : 0,
-                zipError: z.ok ? '' : z.error,
-                ...info,
-            });
-            if (items.length >= limit) break;
+        let truncated = false;
+        // 根目录单独校验：递归里 readdirSync 失败是「某个子目录没权限」，
+        // 不能因此让整次扫描静默返回空 —— 管理员会以为目录里没有 ROM。
+        try {
+            if (!fs.statSync(dir).isDirectory()) return { ok: false, error: '不是目录：' + dir, items: [] };
+        } catch (e) {
+            return { ok: false, error: '目录不存在：' + dir, items: [] };
         }
+        let readErr = '';
+
+        function walk(cur, d) {
+            if (items.length >= limit || truncated) return;
+            let names = [];
+            try { names = fs.readdirSync(cur); } catch (e) { if (!readErr) readErr = cur; return; }
+            // 目录先走：同一层里 ZIP 的结果顺序更稳定
+            for (const n of names) {
+                if (items.length >= limit) { truncated = true; return; }
+                if (n.startsWith('.')) continue;
+                const full = path.join(cur, n);
+                let st = null;
+                try { st = fs.statSync(full); } catch (e) { continue; }
+                if (st.isDirectory()) {
+                    if (d < depth) walk(full, d + 1);
+                    continue;
+                }
+                if (!/\.zip$/i.test(n)) continue;
+                const shortName = n.replace(/\.zip$/i, '').toLowerCase();
+                const z = readZipEntries(full);
+                const dirHint = path.basename(path.dirname(full)).toLowerCase();
+                const info = resolve({ shortName, entries: z.ok ? z.entries : [], dirHint });
+                items.push({
+                    file: n, path: full, size: st.size, shortName,
+                    // 相对路径 + 所在子目录名：预览里能看出是哪个基板的，
+                    // 也便于按目录名兜底判定平台（见 resolve 的 dirHint）
+                    isBios: isBiosShortName(shortName),
+                    rel: path.relative(dir, full).replace(/\\/g, '/'),
+                    dirHint,
+                    entries: z.ok ? z.entries.length : 0,
+                    zipError: z.ok ? '' : z.error,
+                    ...info,
+                });
+            }
+        }
+        walk(dir, 0);
+        if (!items.length) return { ok: true, dir, items: [], catalog: status(), truncated: false, readError: readErr };
         items.sort((a, b) => String(a.shortName).localeCompare(String(b.shortName)));
-        return { ok: true, dir, items, catalog: status() };
+        return { ok: true, dir, items, catalog: status(), truncated, readError: readErr };
     }
 
     function status() {
@@ -383,7 +470,7 @@ module.exports = function createCatalog(opt) {
         get dat() { return DAT; },
         status,
         reload() { loadDat(); loadZh(); return status(); },
-        PLATFORMS, BIOS_HINT,
+        PLATFORMS, BIOS_HINT, BIOS_SHORTNAMES, isBiosShortName,
     };
 };
 module.exports.readZipEntries = readZipEntries;

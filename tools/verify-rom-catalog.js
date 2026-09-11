@@ -120,6 +120,35 @@ const cat = Catalog({ catalogDir: catDir, zhFile, seedFile: seed });
     check('预览含大小与文件数（供人工判断）', item && item.size > 0 && item.entries === 3);
     check('目录不存在时优雅报错', cat.scanDir(path.join(tmp, 'nope')).ok === false);
 
+    // ---------- 6b) 递归扫描 + BIOS 识别 + 目录名兜底平台 ----------
+    // 真实 ROM 包几乎都按基板分目录，甚至套两层（roms/cps2/cps2/xxx.zip）。
+    // 不递归的话管理员填 roms 会一个都扫不到，还以为路径填错了。
+    console.log('\n【6b】递归扫描 / BIOS 识别 / 目录名兜底平台');
+    const nest = path.join(tmp, 'nested');
+    fs.mkdirSync(path.join(nest, 'neogeo'), { recursive: true });
+    fs.mkdirSync(path.join(nest, 'cps2', 'cps2'), { recursive: true });   // 故意套两层
+    fs.writeFileSync(path.join(nest, 'neogeo', 'mslug.zip'), makeZip([{ name: '201-p1.bin', data: 'MSLUG' }]));
+    fs.writeFileSync(path.join(nest, 'neogeo', 'neogeo.zip'), makeZip([{ name: 'sp-s2.sp1', data: 'BIOS' }]));
+    fs.writeFileSync(path.join(nest, 'cps2', 'cps2', 'sfa2.zip'), makeZip([{ name: 'sz2u27.bin', data: 'SFA2' }]));
+    fs.writeFileSync(path.join(nest, 'readme.txt'), 'x');
+
+    const ns = cat.scanDir(nest);
+    const names = ns.items.map(i => i.shortName).sort().join(',');
+    check('递归扫到子目录（含两层嵌套）', ns.items.length === 3 && names === 'mslug,neogeo,sfa2', names);
+    const mslug = ns.items.find(i => i.shortName === 'mslug');
+    const bios = ns.items.find(i => i.shortName === 'neogeo');
+    const sfa2 = ns.items.find(i => i.shortName === 'sfa2');
+    check('基板 BIOS（neogeo.zip）被识别为 BIOS 而非游戏',
+        !!bios && bios.isBios === true && (!mslug || !mslug.isBios),
+        JSON.stringify({ bios: bios && bios.isBios, mslug: mslug && mslug.isBios }));
+    // 没 DAT、中文表也没标平台时，目录名就是唯一可靠来源
+    check('无 DAT 时按目录名判定平台（neogeo / cps2）',
+        mslug && mslug.platform === 'neogeo' && sfa2 && sfa2.platform === 'cps2',
+        JSON.stringify({ mslug: mslug && mslug.platform, sfa2: sfa2 && sfa2.platform }));
+    check('扫描结果带相对路径（预览里能看出是哪个基板）',
+        sfa2 && sfa2.rel === 'cps2/cps2/sfa2.zip', sfa2 && sfa2.rel);
+    check('BIOS 短名判定函数可用', cat.isBiosShortName('neogeo') === true && cat.isBiosShortName('mslug') === false);
+
     try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (e) { }
     console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
     process.exit(fail ? 1 : 0);

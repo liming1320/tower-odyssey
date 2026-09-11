@@ -1,91 +1,1686 @@
 {
   "_note": "街机 ROM 中文名覆盖表（key = ROM 短名，即 zip 文件名去后缀）。platform 留空表示由图鉴自动判定。后台「ROM 图鉴」可在线编辑，改完存到 data/rom-zh.json。",
-  "fatfury": { "titleZh": "饿狼传说", "aliases": ["Fatal Fury"], "platform": "neogeo" },
-  "fatfury2": { "titleZh": "饿狼传说2", "aliases": ["Fatal Fury 2"], "platform": "neogeo" },
-  "fatfury3": { "titleZh": "饿狼传说3·远古征战", "aliases": ["Fatal Fury 3"], "platform": "neogeo" },
-  "rbff1": { "titleZh": "真饿狼传说", "aliases": ["Real Bout Fatal Fury"], "platform": "neogeo" },
-  "rbff2": { "titleZh": "真饿狼传说2·新的来者", "aliases": ["Real Bout Fatal Fury 2"], "platform": "neogeo" },
-  "rbffspec": { "titleZh": "真饿狼传说特别版", "aliases": ["RB 饿狼传说特别版", "REAL BOUT 饿狼传说 SPECIAL", "饿狼传说 RB 特别版"], "platform": "neogeo" },
-  "garou": { "titleZh": "饿狼传说·狼之印记", "aliases": ["Garou: Mark of the Wolves", "狼之印记"], "platform": "neogeo" },
-  "samsho": { "titleZh": "侍魂", "aliases": ["Samurai Shodown"], "platform": "neogeo" },
-  "samsho2": { "titleZh": "真侍魂·霸王丸地狱变", "aliases": ["Samurai Shodown 2", "真侍魂"], "platform": "neogeo" },
-  "samsho3": { "titleZh": "侍魂·斩红郎无双剑", "aliases": ["Samurai Shodown 3"], "platform": "neogeo" },
-  "samsho4": { "titleZh": "侍魂·天草降临", "aliases": ["Samurai Shodown 4"], "platform": "neogeo" },
-  "samsho5": { "titleZh": "侍魂零", "aliases": ["Samurai Shodown 5"], "platform": "neogeo" },
-  "samsho5sp": { "titleZh": "侍魂零·特别版", "aliases": ["Samurai Shodown 5 Special"], "platform": "neogeo" },
-  "lastblad": { "titleZh": "幕末浪漫·月华之剑士", "aliases": ["The Last Blade", "月华剑士"], "platform": "neogeo" },
-  "lastbld2": { "titleZh": "月华之剑士2·月花之章", "aliases": ["The Last Blade 2"], "platform": "neogeo" },
-  "kof94": { "titleZh": "拳皇94", "aliases": ["The King of Fighters 94"], "platform": "neogeo" },
-  "kof95": { "titleZh": "拳皇95", "aliases": ["The King of Fighters 95"], "platform": "neogeo" },
-  "kof96": { "titleZh": "拳皇96", "aliases": ["The King of Fighters 96"], "platform": "neogeo" },
-  "kof97": { "titleZh": "拳皇97", "aliases": ["The King of Fighters 97"], "platform": "neogeo" },
-  "kof98": { "titleZh": "拳皇98·梦战斗未结束", "aliases": ["The King of Fighters 98", "拳皇98"], "platform": "neogeo" },
-  "kof99": { "titleZh": "拳皇99·千年之战", "aliases": ["The King of Fighters 99"], "platform": "neogeo" },
-  "kof2000": { "titleZh": "拳皇2000", "aliases": ["The King of Fighters 2000"], "platform": "neogeo" },
-  "kof2001": { "titleZh": "拳皇2001", "aliases": ["The King of Fighters 2001"], "platform": "neogeo" },
-  "kof2002": { "titleZh": "拳皇2002·挑战最强", "aliases": ["The King of Fighters 2002"], "platform": "neogeo" },
-  "kof2003": { "titleZh": "拳皇2003", "aliases": ["The King of Fighters 2003"], "platform": "neogeo" },
-  "mslug": { "titleZh": "合金弹头", "aliases": ["Metal Slug", "钢虫"], "platform": "neogeo" },
-  "mslug2": { "titleZh": "合金弹头2", "aliases": ["Metal Slug 2"], "platform": "neogeo" },
-  "mslugx": { "titleZh": "合金弹头X", "aliases": ["Metal Slug X"], "platform": "neogeo" },
-  "mslug3": { "titleZh": "合金弹头3", "aliases": ["Metal Slug 3"], "platform": "neogeo" },
-  "mslug4": { "titleZh": "合金弹头4", "aliases": ["Metal Slug 4"], "platform": "neogeo" },
-  "mslug5": { "titleZh": "合金弹头5", "aliases": ["Metal Slug 5"], "platform": "neogeo" },
-  "aof": { "titleZh": "龙虎之拳", "aliases": ["Art of Fighting"], "platform": "neogeo" },
-  "aof2": { "titleZh": "龙虎之拳2", "aliases": ["Art of Fighting 2"], "platform": "neogeo" },
-  "aof3": { "titleZh": "龙虎之拳3·战士之道", "aliases": ["Art of Fighting 3"], "platform": "neogeo" },
-  "viewpoint": { "titleZh": "视点·立体空战", "aliases": ["Viewpoint"], "platform": "neogeo" },
-  "pulstar": { "titleZh": "星岚战机", "aliases": ["Pulstar"], "platform": "neogeo" },
-  "blazstar": { "titleZh": "烈火之星", "aliases": ["Blazing Star"], "platform": "neogeo" },
-  "windjammers": { "titleZh": "旋风飞盘", "aliases": ["Windjammers", "飞盘高手"], "platform": "neogeo" },
-  "sengoku": { "titleZh": "战国传承", "aliases": ["Sengoku"], "platform": "neogeo" },
-  "sengoku2": { "titleZh": "战国传承2", "aliases": ["Sengoku 2"], "platform": "neogeo" },
-  "sengoku3": { "titleZh": "战国传承3", "aliases": ["Sengoku 3"], "platform": "neogeo" },
-  "karnovr": { "titleZh": "卡诺夫复仇", "aliases": ["Fighter's History Dynamite", "Karnov's Revenge"], "platform": "neogeo" },
-  "cyberlip": { "titleZh": "电子唇印", "aliases": ["Cyber-Lip"], "platform": "neogeo" },
-  "nam1975": { "titleZh": "NAM-1975", "aliases": ["NAM 1975"], "platform": "neogeo" },
-  "burningf": { "titleZh": "燃烧格斗", "aliases": ["Burning Fight"], "platform": "neogeo" },
-  "maglord": { "titleZh": "魔法领主", "aliases": ["Magician Lord"], "platform": "neogeo" },
-  "roboarmy": { "titleZh": "机械军队", "aliases": ["Robo Army"], "platform": "neogeo" },
-  "lresort": { "titleZh": "最后的度假村", "aliases": ["Last Resort"], "platform": "neogeo" },
-  "wakuwaku7": { "titleZh": "得意兽人7", "aliases": ["Waku Waku 7"], "platform": "neogeo" },
-  "galaxyfg": { "titleZh": "银河格斗", "aliases": ["Galaxy Fight"], "platform": "neogeo" },
-  "3countb": { "titleZh": "三回合摔角", "aliases": ["3 Count Bout"], "platform": "neogeo" },
-  "neobombe": { "titleZh": "新炸弹人", "aliases": ["Neo Bomberman"], "platform": "neogeo" },
-  "sf2": { "titleZh": "街头霸王2·天下斗士", "aliases": ["Street Fighter 2", "街霸2"], "platform": "cps1" },
-  "sf2ce": { "titleZh": "街头霸王2·冠军版", "aliases": ["Street Fighter 2 CE", "街霸2 冠军版"], "platform": "cps1" },
-  "sf2hf": { "titleZh": "街头霸王2·加速版", "aliases": ["Street Fighter 2 HF"], "platform": "cps1" },
-  "ffight": { "titleZh": "快打旋风", "aliases": ["Final Fight"], "platform": "cps1" },
-  "captcomm": { "titleZh": "名将", "aliases": ["Captain Commando"], "platform": "cps1" },
-  "knights": { "titleZh": "圆桌骑士", "aliases": ["Knights of the Round"], "platform": "cps1" },
-  "wof": { "titleZh": "吞食天地·赤壁之战", "aliases": ["Warriors of Fate", "三国志·赤壁之战"], "platform": "cps1" },
-  "dino": { "titleZh": "恐龙快打", "aliases": ["Cadillacs and Dinosaurs", "凯迪拉克与恐龙"], "platform": "cps1" },
-  "punisher": { "titleZh": "惩罚者", "aliases": ["The Punisher"], "platform": "cps1" },
-  "ghouls": { "titleZh": "大魔界村", "aliases": ["Ghouls'n Ghosts"], "platform": "cps1" },
-  "strider": { "titleZh": "打击者·飞龙之拳", "aliases": ["Strider"], "platform": "cps1" },
-  "1941": { "titleZh": "1941·反击作战", "aliases": ["1941 Counter Attack"], "platform": "cps1" },
-  "mercs": { "titleZh": "突击战士", "aliases": ["Mercs"], "platform": "cps1" },
-  "msword": { "titleZh": "魔法剑·英雄幻想", "aliases": ["Magic Sword"], "platform": "cps1" },
-  "cawing": { "titleZh": "雄鹰战机", "aliases": ["Carrier Air Wing", "美国海军"], "platform": "cps1" },
-  "forgottn": { "titleZh": "遗忘的世界", "aliases": ["Forgotten Worlds"], "platform": "cps1" },
-  "willow": { "titleZh": "威洛", "aliases": ["Willow"], "platform": "cps1" },
-  "ssf2": { "titleZh": "超级街头霸王2", "aliases": ["Super Street Fighter 2"], "platform": "cps2" },
-  "ssf2t": { "titleZh": "超级街头霸王2·挑战者", "aliases": ["Super Street Fighter 2 Turbo", "超级街霸2X"], "platform": "cps2" },
-  "sfa": { "titleZh": "少年街霸", "aliases": ["Street Fighter Alpha"], "platform": "cps2" },
-  "sfa2": { "titleZh": "少年街霸2", "aliases": ["Street Fighter Alpha 2"], "platform": "cps2" },
-  "sfa3": { "titleZh": "少年街霸3", "aliases": ["Street Fighter Alpha 3"], "platform": "cps2" },
-  "xmcota": { "titleZh": "X战警·原子之子", "aliases": ["X-Men Children of the Atom"], "platform": "cps2" },
-  "msh": { "titleZh": "漫威超级英雄", "aliases": ["Marvel Super Heroes"], "platform": "cps2" },
-  "mshvsf": { "titleZh": "漫威英雄VS街头霸王", "aliases": ["Marvel Super Heroes vs Street Fighter"], "platform": "cps2" },
-  "mvc": { "titleZh": "漫威VS卡普空", "aliases": ["Marvel vs Capcom"], "platform": "cps2" },
-  "vsav": { "titleZh": "恶魔战士·救世主", "aliases": ["Vampire Savior", "Darkstalkers 3"], "platform": "cps2" },
-  "vhunt": { "titleZh": "恶魔猎人·吸血鬼猎手", "aliases": ["Vampire Hunter", "Darkstalkers 2"], "platform": "cps2" },
-  "ddtod": { "titleZh": "龙与地下城·毁灭之塔", "aliases": ["Dungeons and Dragons Tower of Doom"], "platform": "cps2" },
-  "dd2": { "titleZh": "龙与地下城2·秘影危机", "aliases": ["Dungeons and Dragons Shadow over Mystara"], "platform": "cps2" },
-  "avsp": { "titleZh": "异形VS铁血战士", "aliases": ["Alien vs Predator"], "platform": "cps2" },
-  "cyberbots": { "titleZh": "机器人格斗·全金属疯狂", "aliases": ["Cyberbots"], "platform": "cps2" },
-  "19xx": { "titleZh": "19XX·命运战争", "aliases": ["19XX"], "platform": "cps2" },
-  "progear": { "titleZh": "战斗齿轮·推进之岚", "aliases": ["Progear"], "platform": "cps2" },
-  "kov": { "titleZh": "三国战纪", "aliases": ["Knights of Valour", "Knights of Valor"], "platform": "igs" },
-  "kov2": { "titleZh": "三国战纪2", "aliases": ["Knights of Valour 2"], "platform": "igs" }
+  "fatfury": {
+    "titleZh": "饿狼传说",
+    "aliases": [
+      "Fatal Fury"
+    ],
+    "platform": "neogeo"
+  },
+  "fatfury2": {
+    "titleZh": "饿狼传说2",
+    "aliases": [
+      "Fatal Fury 2"
+    ],
+    "platform": "neogeo"
+  },
+  "fatfury3": {
+    "titleZh": "饿狼传说3·远古征战",
+    "aliases": [
+      "Fatal Fury 3"
+    ],
+    "platform": "neogeo"
+  },
+  "rbff1": {
+    "titleZh": "真饿狼传说",
+    "aliases": [
+      "Real Bout Fatal Fury"
+    ],
+    "platform": "neogeo"
+  },
+  "rbff2": {
+    "titleZh": "真饿狼传说2·新的来者",
+    "aliases": [
+      "Real Bout Fatal Fury 2"
+    ],
+    "platform": "neogeo"
+  },
+  "rbffspec": {
+    "titleZh": "真饿狼传说特别版",
+    "aliases": [
+      "RB 饿狼传说特别版",
+      "REAL BOUT 饿狼传说 SPECIAL",
+      "饿狼传说 RB 特别版"
+    ],
+    "platform": "neogeo"
+  },
+  "garou": {
+    "titleZh": "饿狼传说·狼之印记",
+    "aliases": [
+      "Garou: Mark of the Wolves",
+      "狼之印记"
+    ],
+    "platform": "neogeo"
+  },
+  "samsho": {
+    "titleZh": "侍魂",
+    "aliases": [
+      "Samurai Shodown"
+    ],
+    "platform": "neogeo"
+  },
+  "samsho2": {
+    "titleZh": "真侍魂·霸王丸地狱变",
+    "aliases": [
+      "Samurai Shodown 2",
+      "真侍魂"
+    ],
+    "platform": "neogeo"
+  },
+  "samsho3": {
+    "titleZh": "侍魂·斩红郎无双剑",
+    "aliases": [
+      "Samurai Shodown 3"
+    ],
+    "platform": "neogeo"
+  },
+  "samsho4": {
+    "titleZh": "侍魂·天草降临",
+    "aliases": [
+      "Samurai Shodown 4"
+    ],
+    "platform": "neogeo"
+  },
+  "samsho5": {
+    "titleZh": "侍魂零",
+    "aliases": [
+      "Samurai Shodown 5"
+    ],
+    "platform": "neogeo"
+  },
+  "samsho5sp": {
+    "titleZh": "侍魂零·特别版",
+    "aliases": [
+      "Samurai Shodown 5 Special"
+    ],
+    "platform": "neogeo"
+  },
+  "lastblad": {
+    "titleZh": "幕末浪漫·月华之剑士",
+    "aliases": [
+      "The Last Blade",
+      "月华剑士"
+    ],
+    "platform": "neogeo"
+  },
+  "lastbld2": {
+    "titleZh": "月华之剑士2·月花之章",
+    "aliases": [
+      "The Last Blade 2"
+    ],
+    "platform": "neogeo"
+  },
+  "kof94": {
+    "titleZh": "拳皇94",
+    "aliases": [
+      "The King of Fighters 94"
+    ],
+    "platform": "neogeo"
+  },
+  "kof95": {
+    "titleZh": "拳皇95",
+    "aliases": [
+      "The King of Fighters 95"
+    ],
+    "platform": "neogeo"
+  },
+  "kof96": {
+    "titleZh": "拳皇96",
+    "aliases": [
+      "The King of Fighters 96"
+    ],
+    "platform": "neogeo"
+  },
+  "kof97": {
+    "titleZh": "拳皇97",
+    "aliases": [
+      "The King of Fighters 97"
+    ],
+    "platform": "neogeo"
+  },
+  "kof98": {
+    "titleZh": "拳皇98·梦战斗未结束",
+    "aliases": [
+      "The King of Fighters 98",
+      "拳皇98"
+    ],
+    "platform": "neogeo"
+  },
+  "kof99": {
+    "titleZh": "拳皇99·千年之战",
+    "aliases": [
+      "The King of Fighters 99"
+    ],
+    "platform": "neogeo"
+  },
+  "kof2000": {
+    "titleZh": "拳皇2000",
+    "aliases": [
+      "The King of Fighters 2000"
+    ],
+    "platform": "neogeo"
+  },
+  "kof2001": {
+    "titleZh": "拳皇2001",
+    "aliases": [
+      "The King of Fighters 2001"
+    ],
+    "platform": "neogeo"
+  },
+  "kof2002": {
+    "titleZh": "拳皇2002·挑战最强",
+    "aliases": [
+      "The King of Fighters 2002"
+    ],
+    "platform": "neogeo"
+  },
+  "kof2003": {
+    "titleZh": "拳皇2003",
+    "aliases": [
+      "The King of Fighters 2003"
+    ],
+    "platform": "neogeo"
+  },
+  "mslug": {
+    "titleZh": "合金弹头",
+    "aliases": [
+      "Metal Slug",
+      "钢虫"
+    ],
+    "platform": "neogeo"
+  },
+  "mslug2": {
+    "titleZh": "合金弹头2",
+    "aliases": [
+      "Metal Slug 2"
+    ],
+    "platform": "neogeo"
+  },
+  "mslugx": {
+    "titleZh": "合金弹头X",
+    "aliases": [
+      "Metal Slug X"
+    ],
+    "platform": "neogeo"
+  },
+  "mslug3": {
+    "titleZh": "合金弹头3",
+    "aliases": [
+      "Metal Slug 3"
+    ],
+    "platform": "neogeo"
+  },
+  "mslug4": {
+    "titleZh": "合金弹头4",
+    "aliases": [
+      "Metal Slug 4"
+    ],
+    "platform": "neogeo"
+  },
+  "mslug5": {
+    "titleZh": "合金弹头5",
+    "aliases": [
+      "Metal Slug 5"
+    ],
+    "platform": "neogeo"
+  },
+  "aof": {
+    "titleZh": "龙虎之拳",
+    "aliases": [
+      "Art of Fighting"
+    ],
+    "platform": "neogeo"
+  },
+  "aof2": {
+    "titleZh": "龙虎之拳2",
+    "aliases": [
+      "Art of Fighting 2"
+    ],
+    "platform": "neogeo"
+  },
+  "aof3": {
+    "titleZh": "龙虎之拳3·战士之道",
+    "aliases": [
+      "Art of Fighting 3"
+    ],
+    "platform": "neogeo"
+  },
+  "viewpoint": {
+    "titleZh": "视点·立体空战",
+    "aliases": [
+      "Viewpoint"
+    ],
+    "platform": "neogeo"
+  },
+  "pulstar": {
+    "titleZh": "星岚战机",
+    "aliases": [
+      "Pulstar"
+    ],
+    "platform": "neogeo"
+  },
+  "blazstar": {
+    "titleZh": "烈火之星",
+    "aliases": [
+      "Blazing Star"
+    ],
+    "platform": "neogeo"
+  },
+  "windjammers": {
+    "titleZh": "旋风飞盘",
+    "aliases": [
+      "Windjammers",
+      "飞盘高手"
+    ],
+    "platform": "neogeo"
+  },
+  "sengoku": {
+    "titleZh": "战国传承",
+    "aliases": [
+      "Sengoku"
+    ],
+    "platform": "neogeo"
+  },
+  "sengoku2": {
+    "titleZh": "战国传承2",
+    "aliases": [
+      "Sengoku 2"
+    ],
+    "platform": "neogeo"
+  },
+  "sengoku3": {
+    "titleZh": "战国传承3",
+    "aliases": [
+      "Sengoku 3"
+    ],
+    "platform": "neogeo"
+  },
+  "karnovr": {
+    "titleZh": "卡诺夫复仇",
+    "aliases": [
+      "Fighter's History Dynamite",
+      "Karnov's Revenge"
+    ],
+    "platform": "neogeo"
+  },
+  "cyberlip": {
+    "titleZh": "电子唇印",
+    "aliases": [
+      "Cyber-Lip"
+    ],
+    "platform": "neogeo"
+  },
+  "nam1975": {
+    "titleZh": "NAM-1975",
+    "aliases": [
+      "NAM 1975"
+    ],
+    "platform": "neogeo"
+  },
+  "burningf": {
+    "titleZh": "燃烧格斗",
+    "aliases": [
+      "Burning Fight"
+    ],
+    "platform": "neogeo"
+  },
+  "maglord": {
+    "titleZh": "魔法领主",
+    "aliases": [
+      "Magician Lord"
+    ],
+    "platform": "neogeo"
+  },
+  "roboarmy": {
+    "titleZh": "机械军队",
+    "aliases": [
+      "Robo Army"
+    ],
+    "platform": "neogeo"
+  },
+  "lresort": {
+    "titleZh": "最后的度假村",
+    "aliases": [
+      "Last Resort"
+    ],
+    "platform": "neogeo"
+  },
+  "wakuwaku7": {
+    "titleZh": "得意兽人7",
+    "aliases": [
+      "Waku Waku 7"
+    ],
+    "platform": "neogeo"
+  },
+  "galaxyfg": {
+    "titleZh": "银河格斗",
+    "aliases": [
+      "Galaxy Fight"
+    ],
+    "platform": "neogeo"
+  },
+  "3countb": {
+    "titleZh": "三回合摔角",
+    "aliases": [
+      "3 Count Bout"
+    ],
+    "platform": "neogeo"
+  },
+  "neobombe": {
+    "titleZh": "新炸弹人",
+    "aliases": [
+      "Neo Bomberman"
+    ],
+    "platform": "neogeo"
+  },
+  "sf2": {
+    "titleZh": "街头霸王II·世界勇士",
+    "aliases": [
+      "Street Fighter II: The World Warrior",
+      "街头霸王2·天下斗士",
+      "Street Fighter 2",
+      "街霸2"
+    ],
+    "platform": "cps1"
+  },
+  "sf2ce": {
+    "titleZh": "街头霸王II'·冠军版",
+    "aliases": [
+      "Street Fighter II': Champion Edition",
+      "街头霸王2·冠军版",
+      "Street Fighter 2 CE",
+      "街霸2 冠军版"
+    ],
+    "platform": "cps1"
+  },
+  "sf2hf": {
+    "titleZh": "街头霸王2·加速版",
+    "aliases": [
+      "Street Fighter 2 HF"
+    ],
+    "platform": "cps1"
+  },
+  "ffight": {
+    "titleZh": "快打旋风",
+    "aliases": [
+      "Final Fight"
+    ],
+    "platform": "cps1"
+  },
+  "captcomm": {
+    "titleZh": "名将",
+    "aliases": [
+      "Captain Commando"
+    ],
+    "platform": "cps1"
+  },
+  "knights": {
+    "titleZh": "圆桌骑士",
+    "aliases": [
+      "Knights of the Round"
+    ],
+    "platform": "cps1"
+  },
+  "wof": {
+    "titleZh": "吞食天地II·赤壁之战",
+    "aliases": [
+      "Warriors of Fate / Tenchi wo Kurau II",
+      "吞食天地·赤壁之战",
+      "Warriors of Fate",
+      "三国志·赤壁之战"
+    ],
+    "platform": "cps1"
+  },
+  "dino": {
+    "titleZh": "恐龙新世纪",
+    "aliases": [
+      "Cadillacs and Dinosaurs",
+      "恐龙快打",
+      "凯迪拉克与恐龙"
+    ],
+    "platform": "cps1"
+  },
+  "punisher": {
+    "titleZh": "惩罚者",
+    "aliases": [
+      "The Punisher"
+    ],
+    "platform": "cps1"
+  },
+  "ghouls": {
+    "titleZh": "大魔界村",
+    "aliases": [
+      "Ghouls'n Ghosts"
+    ],
+    "platform": "cps1"
+  },
+  "strider": {
+    "titleZh": "飞龙之拳",
+    "aliases": [
+      "Strider",
+      "打击者·飞龙之拳"
+    ],
+    "platform": "cps1"
+  },
+  "1941": {
+    "titleZh": "1941·反击作战",
+    "aliases": [
+      "1941: Counter Attack",
+      "1941 Counter Attack"
+    ],
+    "platform": "cps1"
+  },
+  "mercs": {
+    "titleZh": "佣兵·战场之狼II",
+    "aliases": [
+      "Mercs / Senjou no Ookami II",
+      "突击战士",
+      "Mercs"
+    ],
+    "platform": "cps1"
+  },
+  "msword": {
+    "titleZh": "魔法剑·英雄的幻想",
+    "aliases": [
+      "Magic Sword: Heroic Fantasy",
+      "魔法剑·英雄幻想",
+      "Magic Sword"
+    ],
+    "platform": "cps1"
+  },
+  "cawing": {
+    "titleZh": "雌虎战机·美国海军",
+    "aliases": [
+      "Carrier Air Wing / U.S. Navy",
+      "雄鹰战机",
+      "Carrier Air Wing",
+      "美国海军"
+    ],
+    "platform": "cps1"
+  },
+  "forgottn": {
+    "titleZh": "失落的世界",
+    "aliases": [
+      "Forgotten Worlds",
+      "遗忘的世界"
+    ],
+    "platform": "cps1"
+  },
+  "willow": {
+    "titleZh": "梦幻士",
+    "aliases": [
+      "Willow",
+      "威洛"
+    ],
+    "platform": "cps1"
+  },
+  "ssf2": {
+    "titleZh": "超级街头霸王2",
+    "aliases": [
+      "Super Street Fighter 2"
+    ],
+    "platform": "cps2"
+  },
+  "ssf2t": {
+    "titleZh": "超级街头霸王2·挑战者",
+    "aliases": [
+      "Super Street Fighter 2 Turbo",
+      "超级街霸2X"
+    ],
+    "platform": "cps2"
+  },
+  "sfa": {
+    "titleZh": "少年街霸",
+    "aliases": [
+      "Street Fighter Alpha"
+    ],
+    "platform": "cps2"
+  },
+  "sfa2": {
+    "titleZh": "少年街霸2",
+    "aliases": [
+      "Street Fighter Alpha 2"
+    ],
+    "platform": "cps2"
+  },
+  "sfa3": {
+    "titleZh": "少年街霸3",
+    "aliases": [
+      "Street Fighter Alpha 3"
+    ],
+    "platform": "cps2"
+  },
+  "xmcota": {
+    "titleZh": "X战警·原子之子",
+    "aliases": [
+      "X-Men Children of the Atom"
+    ],
+    "platform": "cps2"
+  },
+  "msh": {
+    "titleZh": "漫威超级英雄",
+    "aliases": [
+      "Marvel Super Heroes"
+    ],
+    "platform": "cps2"
+  },
+  "mshvsf": {
+    "titleZh": "漫威英雄VS街头霸王",
+    "aliases": [
+      "Marvel Super Heroes vs Street Fighter"
+    ],
+    "platform": "cps2"
+  },
+  "mvc": {
+    "titleZh": "漫威VS卡普空",
+    "aliases": [
+      "Marvel vs Capcom"
+    ],
+    "platform": "cps2"
+  },
+  "vsav": {
+    "titleZh": "恶魔战士·救世主",
+    "aliases": [
+      "Vampire Savior",
+      "Darkstalkers 3"
+    ],
+    "platform": "cps2"
+  },
+  "vhunt": {
+    "titleZh": "恶魔猎人·吸血鬼猎手",
+    "aliases": [
+      "Vampire Hunter",
+      "Darkstalkers 2"
+    ],
+    "platform": "cps2"
+  },
+  "ddtod": {
+    "titleZh": "龙与地下城·毁灭之塔",
+    "aliases": [
+      "Dungeons and Dragons Tower of Doom"
+    ],
+    "platform": "cps2"
+  },
+  "dd2": {
+    "titleZh": "龙与地下城2·秘影危机",
+    "aliases": [
+      "Dungeons and Dragons Shadow over Mystara"
+    ],
+    "platform": "cps2"
+  },
+  "avsp": {
+    "titleZh": "异形VS铁血战士",
+    "aliases": [
+      "Alien vs Predator"
+    ],
+    "platform": "cps2"
+  },
+  "cyberbots": {
+    "titleZh": "机器人格斗·全金属疯狂",
+    "aliases": [
+      "Cyberbots"
+    ],
+    "platform": "cps2"
+  },
+  "19xx": {
+    "titleZh": "19XX·命运战争",
+    "aliases": [
+      "19XX"
+    ],
+    "platform": "cps2"
+  },
+  "progear": {
+    "titleZh": "战斗齿轮·推进之岚",
+    "aliases": [
+      "Progear"
+    ],
+    "platform": "cps2"
+  },
+  "kov": {
+    "titleZh": "三国战纪",
+    "aliases": [
+      "Knights of Valour",
+      "Knights of Valor"
+    ],
+    "platform": "igs"
+  },
+  "kov2": {
+    "titleZh": "三国战纪2",
+    "aliases": [
+      "Knights of Valour 2"
+    ],
+    "platform": "igs"
+  },
+  "2020bb": {
+    "titleZh": "2020 超级棒球",
+    "aliases": [
+      "2020 Super Baseball",
+      "2020超级棒球",
+      "Baseball Stars 2020"
+    ],
+    "platform": "neogeo"
+  },
+  "alpham2": {
+    "titleZh": "阿尔法任务 II",
+    "aliases": [
+      "Alpha Mission II / ASO II - Last Guardian",
+      "阿尔法任务2",
+      "Alpha Mission II",
+      "ASO II"
+    ],
+    "platform": "neogeo"
+  },
+  "androdun": {
+    "titleZh": "勇者之击",
+    "aliases": [
+      "Andro Dunos",
+      "铁翼飞鹰",
+      "安德罗杜诺斯"
+    ],
+    "platform": "neogeo"
+  },
+  "aodk": {
+    "titleZh": "痛快 GANGAN 进行曲",
+    "aliases": [
+      "Aggressors of Dark Kombat",
+      "暗黑格斗",
+      "Agressors of Dark Kombat",
+      "黑暗格斗"
+    ],
+    "platform": "neogeo"
+  },
+  "bakatono": {
+    "titleZh": "傻瓜殿下 麻将漫游记",
+    "aliases": [
+      "Bakatonosama Mahjong Manyuuki",
+      "笨蛋殿下麻将",
+      "Bakatonosama Mahjong Manyuki"
+    ],
+    "platform": "neogeo"
+  },
+  "bangbead": {
+    "titleZh": "碰碰球",
+    "aliases": [
+      "Bang Bead",
+      "弹珠方块"
+    ],
+    "platform": "neogeo"
+  },
+  "bjourney": {
+    "titleZh": "蓝色之旅",
+    "aliases": [
+      "Blue's Journey / Raguy",
+      "Blue's Journey",
+      "布鲁斯之旅"
+    ],
+    "platform": "neogeo"
+  },
+  "breakers": {
+    "titleZh": "爆烈人·末日英雄",
+    "aliases": [
+      "Breakers",
+      "破坏者"
+    ],
+    "platform": "neogeo"
+  },
+  "bstars": {
+    "titleZh": "棒球之星专业版",
+    "aliases": [
+      "Baseball Stars Professional",
+      "棒球明星",
+      "Baseball Stars"
+    ],
+    "platform": "neogeo"
+  },
+  "bstars2": {
+    "titleZh": "棒球之星 2",
+    "aliases": [
+      "Baseball Stars 2",
+      "棒球明星2"
+    ],
+    "platform": "neogeo"
+  },
+  "crsword": {
+    "titleZh": "圣十字剑",
+    "aliases": [
+      "Crossed Swords",
+      "十字剑"
+    ],
+    "platform": "neogeo"
+  },
+  "ctomaday": {
+    "titleZh": "蕃茄超人",
+    "aliases": [
+      "Captain Tomaday",
+      "番茄船长"
+    ],
+    "platform": "neogeo"
+  },
+  "doubledr": {
+    "titleZh": "双截龙格斗",
+    "aliases": [
+      "Double Dragon",
+      "双截龙"
+    ],
+    "platform": "neogeo"
+  },
+  "eightman": {
+    "titleZh": "超人8号",
+    "aliases": [
+      "Eight Man",
+      "八号超人"
+    ],
+    "platform": "neogeo"
+  },
+  "fatfursp": {
+    "titleZh": "饿狼传说特别版",
+    "aliases": [
+      "Fatal Fury Special"
+    ],
+    "platform": "neogeo"
+  },
+  "fbfrenzy": {
+    "titleZh": "疯狂橄榄球",
+    "aliases": [
+      "Football Frenzy"
+    ],
+    "platform": "neogeo"
+  },
+  "fightfev": {
+    "titleZh": "狂热格斗",
+    "aliases": [
+      "Fight Fever",
+      "格斗热战"
+    ],
+    "platform": "neogeo"
+  },
+  "flipshot": {
+    "titleZh": "盾牌大战",
+    "aliases": [
+      "Battle Flip Shot",
+      "翻转弹球",
+      "Flip Shot"
+    ],
+    "platform": "neogeo"
+  },
+  "ganryu": {
+    "titleZh": "武藏严流记",
+    "aliases": [
+      "Ganryu / Musashi Ganryuki",
+      "剑豪巌流",
+      "Ganryu",
+      "巌流"
+    ],
+    "platform": "neogeo"
+  },
+  "ghostlop": {
+    "titleZh": "鬼精灵投球手",
+    "aliases": [
+      "Ghostlop",
+      "幽灵弹珠",
+      "Ghost Lop"
+    ],
+    "platform": "neogeo"
+  },
+  "goalx3": {
+    "titleZh": "射门！射门！射门！",
+    "aliases": [
+      "Goal! Goal! Goal!",
+      "三倍进球",
+      "Goal x3"
+    ],
+    "platform": "neogeo"
+  },
+  "gowcaizr": {
+    "titleZh": "超人学园钢帝王",
+    "aliases": [
+      "Voltage Fighter Gowcaizer",
+      "电压斗士"
+    ],
+    "platform": "neogeo"
+  },
+  "gpilots": {
+    "titleZh": "魔鬼飞行员·幽灵战区",
+    "aliases": [
+      "Ghost Pilots",
+      "幽灵飞行员"
+    ],
+    "platform": "neogeo"
+  },
+  "irrmaze": {
+    "titleZh": "刺激迷宫",
+    "aliases": [
+      "The Irritating Maze / Ultra Denryu Iraira Bou",
+      "恼人迷宫",
+      "Irritating Maze"
+    ],
+    "platform": "neogeo"
+  },
+  "janshin": {
+    "titleZh": "雀神传说·寻找麻将大师",
+    "aliases": [
+      "Janshin Densetsu - Quest of Jongmaster",
+      "雀神麻将",
+      "Janshin"
+    ],
+    "platform": "neogeo"
+  },
+  "jockeygp": {
+    "titleZh": "赛马大奖赛",
+    "aliases": [
+      "Jockey Grand Prix",
+      "骑师大奖赛"
+    ],
+    "platform": "neogeo"
+  },
+  "joyjoy": {
+    "titleZh": "阳光方块",
+    "aliases": [
+      "Puzzled / Joy Joy Kid",
+      "快乐小子",
+      "Joy Joy Kid"
+    ],
+    "platform": "neogeo"
+  },
+  "kizuna": {
+    "titleZh": "风云默示录 2",
+    "aliases": [
+      "Kizuna Encounter - Super Tag Battle",
+      "羁绊对决",
+      "Kizuna Encounter",
+      "绊之对决"
+    ],
+    "platform": "neogeo"
+  },
+  "kotm": {
+    "titleZh": "怪兽之王",
+    "aliases": [
+      "King of the Monsters"
+    ],
+    "platform": "neogeo"
+  },
+  "kotm2": {
+    "titleZh": "怪兽之王 2",
+    "aliases": [
+      "King of the Monsters 2",
+      "怪兽之王2"
+    ],
+    "platform": "neogeo"
+  },
+  "lbowling": {
+    "titleZh": "联盟保龄球",
+    "aliases": [
+      "League Bowling"
+    ],
+    "platform": "neogeo"
+  },
+  "legendos": {
+    "titleZh": "明日之丈传说",
+    "aliases": [
+      "Legend of Success Joe / Ashita no Joe Densetsu",
+      "铁拳浪子",
+      "Legend of Success Joe"
+    ],
+    "platform": "neogeo"
+  },
+  "magdrop2": {
+    "titleZh": "魔法堆球 II",
+    "aliases": [
+      "Magical Drop II",
+      "魔法气泡2",
+      "Magical Drop 2"
+    ],
+    "platform": "neogeo"
+  },
+  "magdrop3": {
+    "titleZh": "魔法堆球 III",
+    "aliases": [
+      "Magical Drop III",
+      "魔法气泡3",
+      "Magical Drop 3"
+    ],
+    "platform": "neogeo"
+  },
+  "mahretsu": {
+    "titleZh": "麻将狂列传",
+    "aliases": [
+      "Mahjong Kyo Retsuden",
+      "麻将列传",
+      "Mahjong Retsuden"
+    ],
+    "platform": "neogeo"
+  },
+  "miexchng": {
+    "titleZh": "金钱益智对决",
+    "aliases": [
+      "Money Puzzle Exchanger / Money Idol Exchanger",
+      "金币兑换",
+      "Money Puzzle Exchanger",
+      "金钱拼图"
+    ],
+    "platform": "neogeo"
+  },
+  "mutnat": {
+    "titleZh": "外星游龙·变异种族",
+    "aliases": [
+      "Mutation Nation",
+      "变异国度"
+    ],
+    "platform": "neogeo"
+  },
+  "ncombat": {
+    "titleZh": "忍者大战",
+    "aliases": [
+      "Ninja Combat",
+      "忍者格斗"
+    ],
+    "platform": "neogeo"
+  },
+  "ncommand": {
+    "titleZh": "忍者指令",
+    "aliases": [
+      "Ninja Commando",
+      "忍者突击队"
+    ],
+    "platform": "neogeo"
+  },
+  "neocup98": {
+    "titleZh": "Neo-Geo 杯98",
+    "aliases": [
+      "Neo-Geo Cup 98 - The Road to the Victory",
+      "98足球杯",
+      "Neo Geo Cup 98"
+    ],
+    "platform": "neogeo"
+  },
+  "neodrift": {
+    "titleZh": "Neo 越野漂移",
+    "aliases": [
+      "Neo Drift Out - New Technology",
+      "新漂移竞速",
+      "Neo Drift Out"
+    ],
+    "platform": "neogeo"
+  },
+  "neomrdo": {
+    "titleZh": "Neo 小丑先生",
+    "aliases": [
+      "Neo Mr. Do!",
+      "新挖金先生"
+    ],
+    "platform": "neogeo"
+  },
+  "neopong": {
+    "titleZh": "新乒乓",
+    "aliases": [
+      "Neo Pong"
+    ],
+    "platform": "neogeo"
+  },
+  "ninjamas": {
+    "titleZh": "霸王忍法帖",
+    "aliases": [
+      "Ninja Master's - Haoh-ninpo-cho",
+      "忍者大师",
+      "Ninja Master's"
+    ],
+    "platform": "neogeo"
+  },
+  "nitd": {
+    "titleZh": "午夜噩梦",
+    "aliases": [
+      "Nightmare in the Dark",
+      "黑暗噩梦"
+    ],
+    "platform": "neogeo"
+  },
+  "overtop": {
+    "titleZh": "跨越巅峰",
+    "aliases": [
+      "Over Top",
+      "越野赛车"
+    ],
+    "platform": "neogeo"
+  },
+  "panicbom": {
+    "titleZh": "炸弹人方块",
+    "aliases": [
+      "Panic Bomber",
+      "慌张炸弹"
+    ],
+    "platform": "neogeo"
+  },
+  "pbobblen": {
+    "titleZh": "泡泡龙",
+    "aliases": [
+      "Puzzle Bobble / Bust-A-Move",
+      "Puzzle Bobble",
+      "Bust-A-Move"
+    ],
+    "platform": "neogeo"
+  },
+  "pbobbl2n": {
+    "titleZh": "泡泡龙 2",
+    "aliases": [
+      "Puzzle Bobble 2 / Bust-A-Move Again",
+      "泡泡龙2",
+      "Puzzle Bobble 2",
+      "Bust-A-Move 2"
+    ],
+    "platform": "neogeo"
+  },
+  "popbounc": {
+    "titleZh": "暴击跳跳球",
+    "aliases": [
+      "Pop 'n Bounce / Gapporin",
+      "弹跳波普",
+      "Pop'n Bounce"
+    ],
+    "platform": "neogeo"
+  },
+  "preisle2": {
+    "titleZh": "原始岛 2",
+    "aliases": [
+      "Prehistoric Isle 2",
+      "史前岛2",
+      "原始岛2"
+    ],
+    "platform": "neogeo"
+  },
+  "pspikes2": {
+    "titleZh": "力量排球 II",
+    "aliases": [
+      "Power Spikes II",
+      "强力扣杀2"
+    ],
+    "platform": "neogeo"
+  },
+  "puzzledp": {
+    "titleZh": "益智气泡",
+    "aliases": [
+      "Puzzle De Pon!",
+      "魔力泡泡",
+      "Puzzle De Pon"
+    ],
+    "platform": "neogeo"
+  },
+  "ragnagrd": {
+    "titleZh": "神凰拳",
+    "aliases": [
+      "Ragnagard / Shin-Oh-Ken",
+      "诸神黄昏",
+      "Ragnagard"
+    ],
+    "platform": "neogeo"
+  },
+  "ridhero": {
+    "titleZh": "铁骑英雄",
+    "aliases": [
+      "Riding Hero",
+      "机车英雄"
+    ],
+    "platform": "neogeo"
+  },
+  "s1945p": {
+    "titleZh": "打击者 1945 加强版",
+    "aliases": [
+      "Strikers 1945 Plus",
+      "打击者1945加强版"
+    ],
+    "platform": "neogeo"
+  },
+  "savagere": {
+    "titleZh": "风云默示录·格斗创世",
+    "aliases": [
+      "Savage Reign / Fu'un Mokushiroku",
+      "狂野格斗",
+      "Savage Reign"
+    ],
+    "platform": "neogeo"
+  },
+  "sdodgeb": {
+    "titleZh": "超级躲避球",
+    "aliases": [
+      "Super Dodge Ball / Kunio no Nekketsu Toukyuu Densetsu",
+      "热血躲避球",
+      "Super Dodge Ball"
+    ],
+    "platform": "neogeo"
+  },
+  "shocktro": {
+    "titleZh": "突击骑兵",
+    "aliases": [
+      "Shock Troopers",
+      "突击队员"
+    ],
+    "platform": "neogeo"
+  },
+  "shocktr2": {
+    "titleZh": "突击骑兵·第二分队",
+    "aliases": [
+      "Shock Troopers - 2nd Squad",
+      "突击队员2",
+      "Shock Troopers 2"
+    ],
+    "platform": "neogeo"
+  },
+  "socbrawl": {
+    "titleZh": "机器人足球",
+    "aliases": [
+      "Soccer Brawl",
+      "足球格斗"
+    ],
+    "platform": "neogeo"
+  },
+  "sonicwi2": {
+    "titleZh": "音速战机 2",
+    "aliases": [
+      "Aero Fighters 2 / Sonic Wings 2",
+      "音速战机2",
+      "Aero Fighters 2"
+    ],
+    "platform": "neogeo"
+  },
+  "sonicwi3": {
+    "titleZh": "音速战机 3",
+    "aliases": [
+      "Aero Fighters 3 / Sonic Wings 3",
+      "音速战机3",
+      "Aero Fighters 3"
+    ],
+    "platform": "neogeo"
+  },
+  "spinmast": {
+    "titleZh": "回旋球大师",
+    "aliases": [
+      "Spin Master / Miracle Adventure",
+      "旋转大师",
+      "Spin Master"
+    ],
+    "platform": "neogeo"
+  },
+  "ssideki": {
+    "titleZh": "得点王·超级伙伴",
+    "aliases": [
+      "Super Sidekicks / Tokuten Ou",
+      "超级足球",
+      "Super Sidekicks"
+    ],
+    "platform": "neogeo"
+  },
+  "ssideki2": {
+    "titleZh": "得点王 2·世界锦标赛",
+    "aliases": [
+      "Super Sidekicks 2 / Tokuten Ou 2",
+      "超级足球2",
+      "Super Sidekicks 2"
+    ],
+    "platform": "neogeo"
+  },
+  "ssideki3": {
+    "titleZh": "得点王 3·荣耀之战",
+    "aliases": [
+      "Super Sidekicks 3 / Tokuten Ou 3",
+      "超级足球3",
+      "Super Sidekicks 3"
+    ],
+    "platform": "neogeo"
+  },
+  "ssideki4": {
+    "titleZh": "终极十一人·炎之自由人",
+    "aliases": [
+      "The Ultimate 11 / Tokuten Ou - Honoo no Libero",
+      "超级足球4",
+      "Super Sidekicks 4"
+    ],
+    "platform": "neogeo"
+  },
+  "stakwin": {
+    "titleZh": "赛马冠军",
+    "aliases": [
+      "Stakes Winner",
+      "赌马王"
+    ],
+    "platform": "neogeo"
+  },
+  "stakwin2": {
+    "titleZh": "赛马冠军 2",
+    "aliases": [
+      "Stakes Winner 2",
+      "赌马王2"
+    ],
+    "platform": "neogeo"
+  },
+  "strhoop": {
+    "titleZh": "街头篮球",
+    "aliases": [
+      "Street Hoop / Street Slam / Dunk Dream",
+      "Street Hoop"
+    ],
+    "platform": "neogeo"
+  },
+  "superspy": {
+    "titleZh": "谍报飞龙",
+    "aliases": [
+      "The Super Spy",
+      "超级间谍"
+    ],
+    "platform": "neogeo"
+  },
+  "tophuntr": {
+    "titleZh": "顶尖猎人·罗迪和凯茜",
+    "aliases": [
+      "Top Hunter - Roddy & Cathy",
+      "顶级猎人",
+      "Top Hunter"
+    ],
+    "platform": "neogeo"
+  },
+  "tpgolf": {
+    "titleZh": "顶尖高尔夫",
+    "aliases": [
+      "Top Player's Golf",
+      "顶级高尔夫"
+    ],
+    "platform": "neogeo"
+  },
+  "trally": {
+    "titleZh": "极速英豪·拉力赛车",
+    "aliases": [
+      "Thrash Rally",
+      "狂暴拉力"
+    ],
+    "platform": "neogeo"
+  },
+  "turfmast": {
+    "titleZh": "新草坪大师赛",
+    "aliases": [
+      "Neo Turf Masters / Big Tournament Golf",
+      "绿茵高尔夫",
+      "Turf Masters"
+    ],
+    "platform": "neogeo"
+  },
+  "twinspri": {
+    "titleZh": "梦幻小妖精",
+    "aliases": [
+      "Twinkle Star Sprites",
+      "闪烁星精灵"
+    ],
+    "platform": "neogeo"
+  },
+  "tws96": {
+    "titleZh": "世界杯足球 96",
+    "aliases": [
+      "Tecmo World Soccer 96",
+      "世界足球96"
+    ],
+    "platform": "neogeo"
+  },
+  "viewpoin": {
+    "titleZh": "魔眼战机",
+    "aliases": [
+      "Viewpoint",
+      "视点战机"
+    ],
+    "platform": "neogeo"
+  },
+  "wakuwak7": {
+    "titleZh": "火热火热 7",
+    "aliases": [
+      "Waku Waku 7",
+      "兴奋7"
+    ],
+    "platform": "neogeo"
+  },
+  "wh1": {
+    "titleZh": "世界英雄",
+    "aliases": [
+      "World Heroes"
+    ],
+    "platform": "neogeo"
+  },
+  "wh2": {
+    "titleZh": "世界英雄 2",
+    "aliases": [
+      "World Heroes 2",
+      "世界英雄2"
+    ],
+    "platform": "neogeo"
+  },
+  "wh2j": {
+    "titleZh": "世界英雄 2 喷射版",
+    "aliases": [
+      "World Heroes 2 Jet",
+      "世界英雄2 JET"
+    ],
+    "platform": "neogeo"
+  },
+  "whp": {
+    "titleZh": "世界英雄 完美版",
+    "aliases": [
+      "World Heroes Perfect",
+      "世界英雄完美版"
+    ],
+    "platform": "neogeo"
+  },
+  "wjammers": {
+    "titleZh": "超级飞碟球",
+    "aliases": [
+      "Windjammers / Flying Power Disc",
+      "飞盘大师",
+      "Windjammers"
+    ],
+    "platform": "neogeo"
+  },
+  "zedblade": {
+    "titleZh": "刀锋战机",
+    "aliases": [
+      "Zed Blade / Operation Ragnarok",
+      "星际刀锋",
+      "Zed Blade"
+    ],
+    "platform": "neogeo"
+  },
+  "zintrckb": {
+    "titleZh": "挤压史莱姆",
+    "aliases": [
+      "Zintrick / Oshidashi Zentrix",
+      "翻转棋",
+      "Zintrick",
+      "奥赛罗"
+    ],
+    "platform": "neogeo"
+  },
+  "zupapa": {
+    "titleZh": "星星大战",
+    "aliases": [
+      "Zupapa!",
+      "祖帕帕",
+      "Zupapa"
+    ],
+    "platform": "neogeo"
+  },
+  "3wonders": {
+    "titleZh": "三个奇迹",
+    "aliases": [
+      "Three Wonders"
+    ],
+    "platform": "cps1"
+  },
+  "batcir": {
+    "titleZh": "战斗回路",
+    "aliases": [
+      "Battle Circuit"
+    ],
+    "platform": "cps1"
+  },
+  "batcirj": {
+    "titleZh": "战斗回路（日版）",
+    "aliases": [
+      "Battle Circuit (Japan)",
+      "战斗回路 日版",
+      "Battle Circuit Japan"
+    ],
+    "platform": "cps1"
+  },
+  "dynwar": {
+    "titleZh": "吞食天地·王朝战争",
+    "aliases": [
+      "Dynasty Wars / Tenchi wo Kurau",
+      "吞食天地",
+      "Dynasty Wars",
+      "王朝战争"
+    ],
+    "platform": "cps1"
+  },
+  "kod": {
+    "titleZh": "龙王战士",
+    "aliases": [
+      "The King of Dragons",
+      "龙王",
+      "King of Dragons",
+      "龙之王"
+    ],
+    "platform": "cps1"
+  },
+  "megaman": {
+    "titleZh": "洛克人·力量之战",
+    "aliases": [
+      "Mega Man: The Power Battle",
+      "洛克人 力量对决"
+    ],
+    "platform": "cps1"
+  },
+  "mtwins": {
+    "titleZh": "双麒儿",
+    "aliases": [
+      "Mega Twins",
+      "梦幻双星"
+    ],
+    "platform": "cps1"
+  },
+  "nemo": {
+    "titleZh": "梦幻冒险",
+    "aliases": [
+      "Nemo",
+      "尼莫船长"
+    ],
+    "platform": "cps1"
+  },
+  "pang3": {
+    "titleZh": "魔鬼气泡 3",
+    "aliases": [
+      "Pang! 3",
+      "气球大战3",
+      "Pang 3"
+    ],
+    "platform": "cps1"
+  },
+  "pnickj": {
+    "titleZh": "魔法方块",
+    "aliases": [
+      "Pnickies",
+      "匹克尼斯"
+    ],
+    "platform": "cps1"
+  },
+  "slammast": {
+    "titleZh": "摔角霸王",
+    "aliases": [
+      "Saturday Night Slam Masters",
+      "摔跤霸王",
+      "Slam Masters",
+      "Muscle Bomber"
+    ],
+    "platform": "cps1"
+  },
+  "unsquad": {
+    "titleZh": "战区88",
+    "aliases": [
+      "U.N. Squadron / Area 88",
+      "外星战将",
+      "U.N. Squadron",
+      "Area 88"
+    ],
+    "platform": "cps1"
+  },
+  "varth": {
+    "titleZh": "威虎战机",
+    "aliases": [
+      "Varth: Operation Thunderstorm",
+      "雷霆风暴"
+    ],
+    "platform": "cps1"
+  },
+  "armwar": {
+    "titleZh": "装甲战士",
+    "aliases": [
+      "Armored Warriors",
+      "钢铁战士"
+    ],
+    "platform": "cps2"
+  },
+  "cybots": {
+    "titleZh": "机甲格斗",
+    "aliases": [
+      "Cyberbots"
+    ],
+    "platform": "cps2"
+  },
+  "ddsom": {
+    "titleZh": "龙与地下城 秘影",
+    "aliases": [
+      "Dungeons & Dragons: Shadow over Mystara"
+    ],
+    "platform": "cps2"
+  },
+  "dstlk": {
+    "titleZh": "恶魔战士",
+    "aliases": [
+      "Darkstalkers",
+      "吸血鬼"
+    ],
+    "platform": "cps2"
+  },
+  "ecofghtr": {
+    "titleZh": "生态战士",
+    "aliases": [
+      "Eco Fighters"
+    ],
+    "platform": "cps2"
+  },
+  "megaman2": {
+    "titleZh": "洛克人2 力量对决",
+    "aliases": [
+      "Mega Man 2: The Power Fighters"
+    ],
+    "platform": "cps2"
+  },
+  "mvsc": {
+    "titleZh": "惊奇 VS 卡普空",
+    "aliases": [
+      "Marvel vs. Capcom"
+    ],
+    "platform": "cps2"
+  },
+  "nwarr": {
+    "titleZh": "恶魔战士 复仇",
+    "aliases": [
+      "Night Warriors"
+    ],
+    "platform": "cps2"
+  },
+  "qndream": {
+    "titleZh": "七彩问答",
+    "aliases": [
+      "Quiz Nanairo Dreams"
+    ],
+    "platform": "cps2"
+  },
+  "ringdest": {
+    "titleZh": "摔跤霸王2",
+    "aliases": [
+      "Ring of Destruction"
+    ],
+    "platform": "cps2"
+  },
+  "sgemf": {
+    "titleZh": "口袋战士",
+    "aliases": [
+      "Super Gem Fighter Mini Mix"
+    ],
+    "platform": "cps2"
+  },
+  "spf2t": {
+    "titleZh": "超级拼图战士2",
+    "aliases": [
+      "Super Puzzle Fighter II Turbo"
+    ],
+    "platform": "cps2"
+  },
+  "vhunt2": {
+    "titleZh": "恶魔猎人2",
+    "aliases": [
+      "Vampire Hunter 2"
+    ],
+    "platform": "cps2"
+  },
+  "vsav2": {
+    "titleZh": "恶魔救世主2",
+    "aliases": [
+      "Vampire Savior 2"
+    ],
+    "platform": "cps2"
+  },
+  "xmvsf": {
+    "titleZh": "X战警 VS 街头霸王",
+    "aliases": [
+      "X-Men vs. Street Fighter"
+    ],
+    "platform": "cps2"
+  },
+  "diggerma": {
+    "titleZh": "钻地先生",
+    "aliases": [
+      "Digger Man"
+    ],
+    "platform": "neogeo"
+  },
+  "minasan": {
+    "titleZh": "皆大欢喜！骰子大会",
+    "aliases": [
+      "Minasan no Okagesamadesu! Dai Sugoroku Taikai"
+    ],
+    "platform": "neogeo"
+  },
+  "mosyougi": {
+    "titleZh": "将棋达人",
+    "aliases": [
+      "Shougi No Tatsujin - Master of Shougi"
+    ],
+    "platform": "neogeo"
+  },
+  "moshougi": {
+    "titleZh": "将棋达人",
+    "aliases": [
+      "Shougi No Tatsujin - Master of Shougi"
+    ],
+    "platform": "neogeo"
+  },
+  "pgoal": {
+    "titleZh": "快乐射门·五人足球",
+    "aliases": [
+      "Pleasure Goal / Futsal - 5 on 5 Mini Soccer"
+    ],
+    "platform": "neogeo"
+  },
+  "pnyaa": {
+    "titleZh": "宠物方块",
+    "aliases": [
+      "Pochi and Nyaa"
+    ],
+    "platform": "neogeo"
+  },
+  "vliner": {
+    "titleZh": "水果机",
+    "aliases": [
+      "V-Liner"
+    ],
+    "platform": "neogeo"
+  },
+  "sfzch": {
+    "titleZh": "少年街霸（CPS1 转换版）",
+    "aliases": [
+      "Street Fighter Zero / Street Fighter Alpha"
+    ],
+    "platform": "cps1"
+  },
+  "neonopon": {
+    "titleZh": "新帕内彭",
+    "aliases": [
+      "Neo No Panepon"
+    ],
+    "platform": "neogeo"
+  }
 }

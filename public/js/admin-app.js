@@ -1290,7 +1290,10 @@ const AdminApp = {
         const items = r.items || [];
         if (!items.length) { res.textContent = '该目录下没有找到 .zip 文件。'; list.innerHTML = ''; return; }
         const bad = items.filter(i => i.crcStatus === 'mismatch' || i.crcStatus === 'partial').length;
-        res.innerHTML = `扫描到 <b>${items.length}</b> 个 ZIP${bad ? `，其中 <b style="color:#ffd56b">${bad} 个 CRC 异常</b>（残缺或错版，谨慎导入）` : ''}。勾选后导入，中文名可直接改。`;
+        const nb = items.filter(i => i.isBios).length;
+        res.innerHTML = `扫描到 <b>${items.length}</b> 个 ZIP${bad ? `，其中 <b style="color:#ffd56b">${bad} 个 CRC 异常</b>（残缺或错版，谨慎导入）` : ''}。`
+            + `${nb ? `<br><span style="color:#7fd1ff">检测到 ${nb} 个基板 BIOS（默认不勾选）—— 请在「BIOS 管家」里上传，不要当游戏导入。</span>` : ''}`
+            + `勾选后导入，中文名可直接改。`;
         list.innerHTML = `
             <div style="overflow:auto;max-height:420px;border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-top:8px">
             <table class="admin-table" style="width:100%">
@@ -1300,9 +1303,9 @@ const AdminApp = {
                 </tr></thead>
                 <tbody>
                 ${items.map((it, i) => `
-                    <tr${it.imported ? ' style="opacity:.5"' : ''}>
-                        <td><input type="checkbox" data-i="${i}"${it.imported ? '' : ' checked'}></td>
-                        <td><code>${this.esc(it.shortName)}</code>${it.imported ? '<br><span style="font-size:11px;color:#ffd56b">已导入</span>' : ''}</td>
+                    <tr${it.imported || it.isBios ? ' style="opacity:.5"' : ''}>
+                        <td><input type="checkbox" data-i="${i}"${it.imported || it.isBios ? '' : ' checked'}></td>
+                        <td><code>${this.esc(it.shortName)}</code>${it.imported ? '<br><span style="font-size:11px;color:#ffd56b">已导入</span>' : ''}${it.isBios ? '<br><span style="font-size:11px;color:#7fd1ff">基板 BIOS</span>' : ''}</td>
                         <td><input data-zh="${i}" value="${this.esc(it.titleZh || '')}" style="width:160px"></td>
                         <td style="font-size:12px;color:#9c96b8">${this.esc(it.titleEn || '—')}</td>
                         <td><select data-plat="${i}">
