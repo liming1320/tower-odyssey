@@ -27,6 +27,10 @@ const META_KEYS = [
     // 模拟器 ROM 元数据（bin 文件在磁盘 data/roms/，元数据必须持久化，
     // 否则 MySQL 模式下重启即丢——线上 80+ ROM 列表清空事故的根因）
     'roms',
+    // 街机 BIOS 元数据（bin/zip 在磁盘 data/roms/bios/）。
+    // 漏掉它的后果同 roms：MySQL 模式下重启后 BIOS 列表清空，
+    // 前端以为没传 BIOS → Neo Geo 游戏全部黑屏，但 ROM 列表看着正常，很难排查。
+    'romBios',
 ];
 // 这些 key 在库里还没有记录时要初始化成对象（{}），其余初始化成数组（[]）
 const META_OBJ_KEYS = new Set(['tokens', 'world', 'clans', 'minigameScores']);

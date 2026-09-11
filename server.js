@@ -22,6 +22,8 @@ try {
 
 // 存储抽象层：DB_DRIVER=json（默认，data/db.json）或 mysql（生产，多人并发/多端同步）
 const Store = require('./server/store');
+// SillyTavern 网关：同域反向代理 + SSO 账号打通（详见 server/tavern.js 顶部说明）
+const Tavern = require('./server/tavern');
 
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
@@ -2680,16 +2682,44 @@ api['GET /api/admin/minigame/order'] = (req, res) => {
 // ROM 是二进制大文件，不适合塞进 db.json / MySQL 表；业界通行做法（yikm/dos.lol 同理）都是磁盘文件 + 元数据入库
 const ROMS_DIR = path.join(DATA_DIR, 'roms');
 const ROM_MAX_BYTES = 512 * 1024 * 1024;   // 单文件上限 512MB（PS1 级别也够）
-const ROM_CORES = new Set(['nes', 'snes', 'gb', 'gba', 'segaMD', 'n64', 'psx', 'dosbox', 'arcade']);
-const ROM_CORE_LABELS = { nes: 'FC 红白机', snes: 'SFC', gb: 'GB/GBC', gba: 'GBA', segaMD: '世嘉 MD', n64: 'N64', psx: 'PS1', dosbox: 'DOS', arcade: '街机' };
-
+// arcade 是历史遗留的泛化值（只吃 FBA v0.2.97.42 ROM 集，容易踩坑），保留用于兼容旧数据。
+// 街机新上传统一用 fbneo —— 一个核心同时覆盖 Neo Geo / CPS1 / CPS2，是 EmulatorJS 官方默认 arcade 核心。
+const ROM_CORES = new Set([
+    'nes', 'snes', 'gb', 'gba', 'segaMD', 'n64', 'psx', 'dosbox', 'arcade',
+    'fbneo',
+    'fbalpha2012_cps1', 'fbalpha2012_cps2', 'fbalpha2012_neogeo',
+    'mame2003', 'mame2003_plus',
+]);
+const ROM_CORE_LABELS = {
+    nes: 'FC 红白机', snes: 'SFC', gb: 'GB/GBC', gba: 'GBA', segaMD: '世嘉 MD',
+    n64: 'N64', psx: 'PS1', dosbox: 'DOS', arcade: '街机（旧）',
+    fbneo: '街机 NeoGeo/CPS', fbalpha2012_cps1: 'CPS1', fbalpha2012_cps2: 'CPS2',
+    fbalpha2012_neogeo: 'NeoGeo', mame2003: 'MAME 2003', mame2003_plus: 'MAME 2003+',
+};
+// 街机族：用于「街机模拟器」入口的筛选，以及判断该 ROM 是否需要 BIOS
+const ARCADE_CORES = new Set(['arcade', 'fbneo', 'fbalpha2012_cps1', 'fbalpha2012_cps2', 'fbalpha2012_neogeo', 'mame2003', 'mame2003_plus']);
+const isArcadeCore = c => ARCADE_CORES.has(c);
+// 平台标签（给前端做筛选/展示，fbneo 按 core 猜不出来，只能由管理员在 platform 里指定）
+const ROM_PLATFORMS = {
+    neogeo: 'NeoGeo', cps1: 'CPS1', cps2: 'CPS2', cps3: 'CPS3', igs: 'IGS', other: '其他街机',
+};
+// BIOS：NeoGeo 必须 neogeo.zip、IGS(PGM) 必须 pgm.zip，缺了就是黑屏（无任何报错提示）
+const ROM_BIOS_HINT = {
+    neogeo: 'neogeo.zip', fbalpha2012_neogeo: 'neogeo.zip', igs: 'pgm.zip', cps3: 'cps3.zip',
+};
 function romAdminOk(req) {
     // 双通道：后台独立管理员令牌（admin/workbuddy）或玩家端 isAdmin 账号（第一个注册的玩家）
     if (isAdminToken(req)) return true;
     const u = getUserByToken(req);
     return !!(u && (u.isAdmin || u.id === 'admin'));
 }
-const romMeta = r => ({ id: r.id, name: r.name, core: r.core, size: r.size, addedAt: r.addedAt, by: r.by || '', category: r.category || 'normal', sort: r.sort || 0 });
+const romMeta = r => ({
+    id: r.id, name: r.name, core: r.core, size: r.size, addedAt: r.addedAt,
+    by: r.by || '', category: r.category || 'normal', sort: r.sort || 0,
+    platform: r.platform || '', year: r.year || '', maker: r.maker || '',
+    genre: r.genre || '', cover: r.cover || '',
+    biosId: r.biosId || '', parentId: r.parentId || '',
+});
 
 // ---------- ROM 内容 hash：上传去重 + 存量补算 ----------
 function romFileHash(file) {
@@ -2745,6 +2775,14 @@ api['POST /api/roms/upload'] = (req, res) => {
     const name = String(q.name || '').slice(0, 120).replace(/[<>&"'/\\]/g, '');
     const core = String(q.core || '');
     if (!name || !ROM_CORES.has(core)) return sendJson(res, 400, { error: '参数不完整（name/core）' });
+    // 扩展元数据（可选）：platform/year/maker/genre/cover/biosId/parentId
+    const platform = ROM_PLATFORMS[q.platform] ? String(q.platform) : '';
+    const biosId = /^[A-Za-z0-9_-]+$/.test(String(q.biosId || '')) ? String(q.biosId) : '';
+    const parentId = /^[A-Za-z0-9_-]+$/.test(String(q.parentId || '')) ? String(q.parentId) : '';
+    const year = /^\d{4}$/.test(String(q.year || '')) ? String(q.year) : '';
+    const maker = String(q.maker || '').slice(0, 40).replace(/[<>&"'/\\]/g, '');
+    const genre = String(q.genre || '').slice(0, 20).replace(/[<>&"'/\\]/g, '');
+    const cover = String(q.cover || '').slice(0, 8);
     const declared = parseInt(req.headers['content-length'] || '0', 10);
     if (declared > ROM_MAX_BYTES) return sendJson(res, 413, { error: '文件过大（上限 512MB）' });
     fs.mkdirSync(ROMS_DIR, { recursive: true });
@@ -2785,7 +2823,11 @@ api['POST /api/roms/upload'] = (req, res) => {
                 }
                 const u = getUserByToken(req);
                 DB.roms = DB.roms || [];
-                DB.roms.push({ id, name, core, size: received, addedAt: Date.now(), by: (u && u.username) || 'admin', hash, category: 'normal', sort: 0 });
+                DB.roms.push({
+                    id, name, core, size: received, addedAt: Date.now(),
+                    by: (u && u.username) || 'admin', hash, category: 'normal', sort: 0,
+                    platform, year, maker, genre, cover, biosId, parentId,
+                });
                 save();
                 finish(200, { ok: true, id, size: received });
             } catch (e) {
@@ -2820,6 +2862,39 @@ api['POST /api/roms/update'] = (req, res, body) => {
         if (!nm) return sendJson(res, 400, { error: '名称不能为空' });
         rom.name = nm; changed = true;
     }
+    // 街机扩展元数据
+    if (body.platform != null) {
+        const p = String(body.platform);
+        if (p && !ROM_PLATFORMS[p]) return sendJson(res, 400, { error: 'platform 只能是 ' + Object.keys(ROM_PLATFORMS).join('/') + ' 或空' });
+        rom.platform = p; changed = true;
+    }
+    if (body.year != null) {
+        const y = String(body.year);
+        if (y && !/^\d{4}$/.test(y)) return sendJson(res, 400, { error: 'year 需为 4 位年份或空' });
+        rom.year = y; changed = true;
+    }
+    if (body.maker != null) {
+        rom.maker = String(body.maker).slice(0, 40).replace(/[<>&"'/\\]/g, ''); changed = true;
+    }
+    if (body.genre != null) {
+        rom.genre = String(body.genre).slice(0, 20).replace(/[<>&"'/\\]/g, ''); changed = true;
+    }
+    if (body.cover != null) {
+        rom.cover = String(body.cover).slice(0, 8); changed = true;
+    }
+    if (body.biosId != null) {
+        const b = String(body.biosId);
+        if (b && !/^[A-Za-z0-9_-]+$/.test(b)) return sendJson(res, 400, { error: 'biosId 不合法' });
+        if (b && !(DB.romBios || []).some(x => x.id === b)) return sendJson(res, 404, { error: 'BIOS 不存在，请先在「BIOS 管理」上传' });
+        rom.biosId = b; changed = true;
+    }
+    if (body.parentId != null) {
+        const pid = String(body.parentId);
+        if (pid && !/^[A-Za-z0-9_-]+$/.test(pid)) return sendJson(res, 400, { error: 'parentId 不合法' });
+        // 基板 ROM（clone）：必须同时加载父 ROM 才能跑，前端据此传 EJS_gameParentUrl
+        if (pid && !(DB.roms || []).some(x => x.id === pid)) return sendJson(res, 404, { error: '父 ROM 不存在' });
+        rom.parentId = pid; changed = true;
+    }
     if (!changed) return sendJson(res, 400, { error: '没有要修改的字段' });
     save();
     sendJson(res, 200, { ok: true, rom: romMeta(rom) });
@@ -2835,6 +2910,184 @@ api['POST /api/roms/delete'] = (req, res, body) => {
     DB.roms.splice(i, 1);
     try { fs.unlinkSync(path.join(ROMS_DIR, id + '.bin')); } catch (e) {}
     save();
+    sendJson(res, 200, { ok: true });
+};
+
+// ---------------- BIOS 管家（街机刚需） ----------------
+// NeoGeo 必须 neogeo.zip、IGS(PGM) 必须 pgm.zip，缺了就是纯黑屏且无任何报错。
+// 管理员只需各上传一次，之后所有街机 ROM 共用；EJS_biosUrl 支持 zip，自动解压。
+const BIOS_DIR = path.join(ROMS_DIR, 'bios');
+const BIOS_MAX_BYTES = 128 * 1024 * 1024;
+const biosMeta = b => ({ id: b.id, name: b.name, size: b.size, addedAt: b.addedAt, hint: b.hint || '' });
+
+api['GET /api/roms/bios'] = (req, res) => {
+    if (!getUserByToken(req)) return sendJson(res, 401, { error: '未登录' });
+    // 同时回传"每种街机平台缺哪个 BIOS"，前端据此在列表上标红警告
+    const have = (DB.romBios || []).map(b => (b.name || '').toLowerCase());
+    const missing = [];
+    for (const [plat, file] of Object.entries(ROM_BIOS_HINT)) {
+        const key = file.replace(/\.zip$/i, '').toLowerCase();
+        if (!have.some(n => n === key || n === file.toLowerCase())) missing.push({ platform: plat, file });
+    }
+    sendJson(res, 200, { bios: (DB.romBios || []).map(biosMeta), missing, admin: romAdminOk(req) });
+};
+api['GET /api/roms/bios/download'] = (req, res) => {
+    if (!getUserByToken(req)) return sendJson(res, 401, { error: '未登录' });
+    const id = String(url.parse(req.url, true).query.id || '');
+    if (!/^[A-Za-z0-9_-]+$/.test(id)) return sendJson(res, 404, { error: 'BIOS 不存在' });
+    const b = (DB.romBios || []).find(x => x.id === id);
+    if (!b) return sendJson(res, 404, { error: 'BIOS 不存在' });
+    const file = path.join(BIOS_DIR, b.id + '.bin');
+    if (!fs.existsSync(file)) return sendJson(res, 404, { error: 'BIOS 文件缺失' });
+    res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': fs.statSync(file).size,
+        'Cache-Control': 'private, max-age=86400',
+    });
+    fs.createReadStream(file).pipe(res);
+};
+api['POST /api/roms/bios/upload'] = (req, res) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员可上传 BIOS' });
+    const q = url.parse(req.url, true).query;
+    const name = String(q.name || '').slice(0, 60).replace(/[^A-Za-z0-9._-]/g, '');
+    if (!name) return sendJson(res, 400, { error: '请填 BIOS 名称，如 neogeo / pgm' });
+    const declared = parseInt(req.headers['content-length'] || '0', 10);
+    if (declared > BIOS_MAX_BYTES) return sendJson(res, 413, { error: '文件过大（上限 128MB）' });
+    // 同名覆盖：BIOS 就那几个，重复上传多半是补文件，直接替换更省事
+    const exist = (DB.romBios || []).find(x => x.name.toLowerCase() === name.toLowerCase());
+    const id = exist ? exist.id : 'bios_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    fs.mkdirSync(BIOS_DIR, { recursive: true });
+    const file = path.join(BIOS_DIR, id + '.bin');
+    let received = 0, over = false, done = false;
+    const finish = (code, data) => { if (done) return; done = true; sendJson(res, code, data); };
+    const out = fs.createWriteStream(file);
+    out.on('error', e => { try { fs.unlinkSync(file); } catch (_) {} finish(500, { error: '写入失败：' + e.message }); });
+    req.on('data', c => {
+        if (over) return;
+        received += c.length;
+        if (received > BIOS_MAX_BYTES) {
+            over = true; out.destroy();
+            try { fs.unlinkSync(file); } catch (_) {}
+            return finish(413, { error: '文件过大（上限 128MB）' });
+        }
+        if (!out.write(c)) { req.pause(); out.once('drain', () => req.resume()); }
+    });
+    req.on('end', () => {
+        if (over || done) return;
+        if (!received) { try { fs.unlinkSync(file); } catch (_) {} return finish(400, { error: '空文件' }); }
+        out.end(() => {
+            DB.romBios = DB.romBios || [];
+            if (exist) { exist.size = received; exist.addedAt = Date.now(); }
+            else DB.romBios.push({ id, name, size: received, addedAt: Date.now() });
+            save();
+            finish(200, { ok: true, id, size: received, replaced: !!exist });
+        });
+    });
+    req.on('error', () => { out.destroy(); try { fs.unlinkSync(file); } catch (_) {} finish(500, { error: '上传中断' }); });
+};
+api['POST /api/roms/bios/delete'] = (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员可删除 BIOS' });
+    const id = String((body || {}).id || '');
+    DB.romBios = DB.romBios || [];
+    const i = DB.romBios.findIndex(x => x.id === id);
+    if (i < 0) return sendJson(res, 404, { error: 'BIOS 不存在' });
+    DB.romBios.splice(i, 1);
+    try { fs.unlinkSync(path.join(BIOS_DIR, id + '.bin')); } catch (e) {}
+    // 解绑引用，避免前端拿着失效 id 去拼 URL
+    (DB.roms || []).forEach(r => { if (r.biosId === id) r.biosId = ''; });
+    save();
+    sendJson(res, 200, { ok: true });
+};
+
+// ---------------- 云存档（模拟器进度不丢的关键） ----------------
+// 存档是二进制且单份可达数十 MB，和 ROM 一样走「磁盘文件 + 登录鉴权」，
+// 绝不写进 db.json / MySQL（会把存档文件拖垮、还会把玩家的ROM搞串行）。
+// 目录：data/emu-saves/<userId>/<romId>.state（即时存档）/ .sram（游戏内存档）
+const EMU_SAVES_DIR = path.join(DATA_DIR, 'emu-saves');
+const SAVE_MAX = { state: 64 * 1024 * 1024, sram: 16 * 1024 * 1024 };
+const safeId = s => String(s || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
+
+function saveFilePath(userId, romId, kind) {
+    if (!/^(state|sram)$/.test(kind)) return null;
+    const u = safeId(userId), r = safeId(romId);
+    if (!u || !r) return null;
+    const dir = path.join(EMU_SAVES_DIR, u);
+    const rel = path.join(u, r + '.' + kind);
+    const full = path.join(EMU_SAVES_DIR, rel);
+    // 防目录穿越：拼好的绝对路径必须还在 EMU_SAVES_DIR 内
+    if (!full.startsWith(EMU_SAVES_DIR + path.sep)) return null;
+    return { full, dir, rel };
+}
+
+api['GET /api/emu/save/meta'] = (req, res) => {
+    const u = getUserByToken(req);
+    if (!u) return sendJson(res, 401, { error: '未登录' });
+    const romId = String(url.parse(req.url, true).query.romId || '');
+    const out = {};
+    for (const kind of ['state', 'sram']) {
+        const p = saveFilePath(u.id, romId, kind);
+        if (!p) { out[kind] = null; continue; }
+        try {
+            const st = fs.statSync(p.full);
+            out[kind] = { size: st.size, at: Math.floor(st.mtimeMs) };
+        } catch (e) { out[kind] = null; }
+    }
+    sendJson(res, 200, { romId, saves: out });
+};
+api['GET /api/emu/save'] = (req, res) => {
+    const u = getUserByToken(req);
+    if (!u) return sendJson(res, 401, { error: '未登录' });
+    const q = url.parse(req.url, true).query;
+    const p = saveFilePath(u.id, q.romId, q.kind);
+    if (!p) return sendJson(res, 400, { error: '参数不合法（romId/kind）' });
+    if (!fs.existsSync(p.full)) return sendJson(res, 404, { error: '尚无云存档' });
+    const st = fs.statSync(p.full);
+    res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': st.size,
+        'Cache-Control': 'no-store',
+    });
+    fs.createReadStream(p.full).pipe(res);
+};
+api['POST /api/emu/save'] = (req, res) => {
+    const u = getUserByToken(req);
+    if (!u) return sendJson(res, 401, { error: '未登录' });
+    const q = url.parse(req.url, true).query;
+    const kind = String(q.kind || '');
+    const p = saveFilePath(u.id, q.romId, kind);
+    if (!p) return sendJson(res, 400, { error: '参数不合法（romId/kind）' });
+    const limit = SAVE_MAX[kind] || SAVE_MAX.sram;
+    const declared = parseInt(req.headers['content-length'] || '0', 10);
+    if (declared > limit) return sendJson(res, 413, { error: '存档过大（上限 ' + Math.round(limit / 1048576) + 'MB）' });
+    fs.mkdirSync(p.dir, { recursive: true });
+    let received = 0, over = false, done = false;
+    const finish = (code, data) => { if (done) return; done = true; sendJson(res, code, data); };
+    const out = fs.createWriteStream(p.full);
+    out.on('error', e => finish(500, { error: '写入失败：' + e.message }));
+    req.on('data', c => {
+        if (over) return;
+        received += c.length;
+        if (received > limit) {
+            over = true; out.destroy();
+            try { fs.unlinkSync(p.full); } catch (_) {}
+            return finish(413, { error: '存档过大（上限 ' + Math.round(limit / 1048576) + 'MB）' });
+        }
+        if (!out.write(c)) { req.pause(); out.once('drain', () => req.resume()); }
+    });
+    req.on('end', () => {
+        if (over || done) return;
+        if (!received) return finish(400, { error: '空存档，忽略' });
+        out.end(() => finish(200, { ok: true, size: received, at: Date.now() }));
+    });
+    req.on('error', () => { out.destroy(); try { fs.unlinkSync(p.full); } catch (_) {} finish(500, { error: '上传中断' }); });
+};
+api['DELETE /api/emu/save'] = (req, res) => {
+    const u = getUserByToken(req);
+    if (!u) return sendJson(res, 401, { error: '未登录' });
+    const q = url.parse(req.url, true).query;
+    const p = saveFilePath(u.id, q.romId, q.kind);
+    if (!p) return sendJson(res, 400, { error: '参数不合法（romId/kind）' });
+    try { fs.unlinkSync(p.full); } catch (e) {}
     sendJson(res, 200, { ok: true });
 };
 
@@ -3267,6 +3520,24 @@ api['POST /api/free'] = (req, res) => {
     sendJson(res, 200, { ok: true, rewards: r, state: u });
 };
 
+// ---- AI 酒馆（SillyTavern）网关状态：给设置页做降级提示 ----
+api['GET /api/tavern/status'] = async (req, res) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const st = await Tavern.status(DB, true);
+    sendJson(res, 200, {
+        ok: true,
+        enabled: st.enabled,
+        online: st.online,
+        note: st.note,
+        upstream: st.upstream,
+        handle: user.username,
+        stHandle: Tavern.slugifyHandle(user.username),
+        // 管理员凭据没配 → 网关无法用官方接口自动建号，SSO 会失效，需要明确告知
+        admin: st.admin || { ok: false, msg: '未配置 TAVERN_ADMIN_PASSWORD' },
+    });
+};
+
 // ---- 主分发 ----
 const server = http.createServer(async (req, res) => {
     const parsed = url.parse(req.url, true);
@@ -3275,16 +3546,30 @@ const server = http.createServer(async (req, res) => {
         if (pathname.startsWith('/api/')) {
             const key = req.method + ' ' + pathname;
             const handler = api[key];
-            // ROM 上传是原始二进制流（handler 自己流式落盘），不能过 readBody 的 JSON 字符串解析
-            const body = (req.method === 'GET' || req.method === 'DELETE' || pathname === '/api/roms/upload') ? {} : await readBody(req);
+            // 原始二进制流式接口（handler 自己落盘，不能过 readBody 的 JSON 解析）：
+            //   ROM 上传 / BIOS 上传 / 云存档上传
+            // ⚠️ 新增这类接口必须同步加进下面的 RAW_BODY_API 集合，
+            //    否则 readBody 会把 req 的数据流吃掉，handler 收到空 body，
+            //    表现是「上传成功但 0 字节」（当年排查花了很久）。
+            const RAW_BODY_API = new Set([
+                '/api/roms/upload', '/api/roms/bios/upload', '/api/emu/save',
+            ]);
+            const body = (req.method === 'GET' || req.method === 'DELETE' || RAW_BODY_API.has(pathname)) ? {} : await readBody(req);
             if (handler) return handler(req, res, body);
             return sendJson(res, 404, { error: 'API 不存在' });
+        }
+        // AI 酒馆：/tavern 与 /tavern/* 反向代理到 SillyTavern（登录鉴权 + SSO 头注入都在网关层）
+        // 必须排在 serveStatic 之前，否则会被静态文件处理器判成 404
+        if (pathname === Tavern.PREFIX || pathname.startsWith(Tavern.PREFIX + '/')) {
+            return Tavern.proxyRequest(req, res, { getUserByToken, DB });
         }
         serveStatic(req, res, pathname);
     } catch (e) {
         sendJson(res, 500, { error: e.message });
     }
 });
+// WebSocket 透传：ST 的 socket.io 靠长连接收发消息，缺了它页面能开但聊天卡死
+Tavern.attachUpgrade(server, { getUserByToken, DB });
 
 // MySQL 模式：先连库载入真实数据（玩家 + 英雄），再开始监听，避免请求打到空数据
 //

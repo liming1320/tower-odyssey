@@ -33,6 +33,14 @@ const SettingsView = {
                     <div class="set-tile-ico">🕹️</div>
                     <div>经典模拟器</div>
                 </div>
+                <div class="set-tile" data-act="arcade">
+                    <div class="set-tile-ico">🎰</div>
+                    <div>街机模拟器</div>
+                </div>
+                <div class="set-tile" data-act="tavern">
+                    <div class="set-tile-ico">🍺</div>
+                    <div>AI 酒馆</div>
+                </div>
                 <div class="set-tile" data-act="privacy">
                     <div class="set-tile-ico">📜</div>
                     <div>隐私政策</div>
@@ -77,6 +85,10 @@ const SettingsView = {
             MinigamesView.open(app);
         } else if (act === 'emu') {
             this.openEmulator(app);
+        } else if (act === 'arcade') {
+            this.openArcade(app);
+        } else if (act === 'tavern') {
+            this.openTavern(app);
         } else if (act === 'privacy') {
             this.showDoc('隐私政策', PRIVACY_DOC);
         } else if (act === 'agreement') {
@@ -119,6 +131,88 @@ const SettingsView = {
         } catch (e) {
             stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
         }
+    },
+
+    // 街机模拟器：独立全屏入口（只列 fbneo 等街机核心，突出 BIOS 缺失警告）
+    openArcade(app) {
+        U.closeModal();
+        const mask = U.el(`<div class="mini-mask" id="arc-mask">
+            <div class="mini-topbar">
+                <button class="btn-back" id="arc-back">‹ 返回</button>
+                <div class="mini-title">🎰 街机模拟器</div>
+                <div class="mini-score" id="arc-score"></div>
+            </div>
+            <div class="mini-stage" id="arc-stage"></div>
+        </div>`);
+        document.body.appendChild(mask);
+        const stage = document.getElementById('arc-stage');
+        const scoreEl = document.getElementById('arc-score');
+        const close = () => mask.remove();
+        document.getElementById('arc-back').onclick = close;
+        try {
+            const game = window.MiniGames && window.MiniGames.arcade;
+            if (!game) throw new Error('未加载到街机模拟器模块');
+            const inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; } });
+            inst && (inst._close = close);
+        } catch (e) {
+            stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
+        }
+    },
+
+    // AI 酒馆（SillyTavern）：同域反向代理 iframe，网关层已做登录鉴权 + SSO 自动登录
+    openTavern(app) {
+        U.closeModal();
+        const mask = U.el(`<div class="mini-mask" id="tav-mask">
+            <div class="mini-topbar">
+                <button class="btn-back" id="tav-back">‹ 返回</button>
+                <div class="mini-title">🍺 AI 酒馆</div>
+                <div class="mini-score" id="tav-score"></div>
+            </div>
+            <div class="mini-stage" id="tav-stage" style="padding:0"></div>
+        </div>`);
+        document.body.appendChild(mask);
+        const stage = document.getElementById('tav-stage');
+        const scoreEl = document.getElementById('tav-score');
+        const close = () => mask.remove();
+        document.getElementById('tav-back').onclick = close;
+
+        stage.innerHTML = '<div class="emu-empty">正在检查 SillyTavern 服务…</div>';
+        const tk = (typeof localStorage !== 'undefined' && localStorage.getItem('game-token')) || '';
+        fetch('/api/tavern/status', { headers: { Authorization: 'Bearer ' + tk } })
+            .then(r => (r.ok ? r.json() : Promise.reject(new Error('状态查询失败'))))
+            .then(st => {
+                if (!document.body.contains(mask)) return;
+                if (!st.online) {
+                    stage.innerHTML =
+                        `<div style="padding:26px;font-size:13px;line-height:2;color:#c9d4e3">
+                            <h3 style="color:#ffd56b;margin:0 0 12px">🍺 AI 酒馆未启动</h3>
+                            <div style="color:#ffb37a;margin-bottom:10px">${esc(st.note || '连不上 SillyTavern')}</div>
+                            <div style="color:#7f8da3;font-size:12px">
+                                1. 克隆：<code style="background:#0d1218;padding:2px 6px;border-radius:4px">git clone https://github.com/SillyTavern/SillyTavern -b release</code><br>
+                                2. 安装：<code style="background:#0d1218;padding:2px 6px;border-radius:4px">cd SillyTavern &amp;&amp; npm install</code><br>
+                                3. 启动：<code style="background:#0d1218;padding:2px 6px;border-radius:4px">node server.js --listen false</code>（保持 <b>listen:false</b>，只经本游戏网关访问，勿暴露公网）<br>
+                                启动后刷新本页。
+                            </div>
+                        </div>`;
+                    return;
+                }
+                if (st.admin && !st.admin.ok) {
+                    scoreEl.textContent = '⚠ 账号未打通';
+                } else {
+                    scoreEl.textContent = '👤 ' + (st.stHandle || '');
+                }
+                stage.innerHTML = '';
+                const frame = document.createElement('iframe');
+                frame.style.cssText = 'width:100%;height:100%;border:0;background:#0a0a14';
+                // 走 /tavern 而非直连 8000：同域，cookie/CSRF 都不会出问题
+                frame.src = '/tavern/';
+                stage.appendChild(frame);
+            })
+            .catch(e => {
+                if (document.body.contains(mask)) {
+                    stage.innerHTML = `<div style="padding:26px;color:#ff7a8b">无法获取酒馆状态：${esc(e.message)}</div>`;
+                }
+            });
     },
 
     showDoc(title, html) {
