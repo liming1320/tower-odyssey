@@ -273,6 +273,9 @@ window.MiniGames = window.MiniGames || {};
             let spinnerAng = 0, spinnerVel = 0, spinnerAcc = 0;
             const cool = {};
 
+            /* ── 卡球自救（防软锁）：主球长时间低速滞留挡板死角 → 周期轻推，仍卡则强制重发 ── */
+            let stuckT = 0, stuckNudge = 0;
+
             const FL = { ...FLIP_L, ang: FLIP_L.rest, omega: 0, held: false };
             const FR = { ...FLIP_R, ang: FLIP_R.rest, omega: 0, held: false };
 
@@ -453,6 +456,8 @@ window.MiniGames = window.MiniGames || {};
                     e.preventDefault();
                 }
                 if (isMute) { try { AU.toggleMuted(); } catch (err) { } }
+                const isRelaunch = k === 'r' || k === 'R' || c === 'KeyR';
+                if (isRelaunch) manualRelaunch();
                 if (k) keys.add(k);
             };
             const ku = e => {
@@ -727,6 +732,13 @@ window.MiniGames = window.MiniGames || {};
                 trail.length = 0;
                 kickback.L = kickback.R = true;
             }
+            // 手动重发：放弃当前主球，从发射巷重新来一颗（走原漏球/失球逻辑，只是玩家主动触发）
+            function manualRelaunch() {
+                if (over || !launched || onRail || saucerHold > 0 || warpHold > 0) return;
+                live[0].y = PF.bot + 12; live[0].vx = 0; live[0].vy = 0;
+                stuckT = 0; stuckNudge = 0;
+                show('手动重发本球', 1.1);
+            }
 
             const finish = win => {
                 if (over) return;
@@ -916,6 +928,41 @@ window.MiniGames = window.MiniGames || {};
                         kickback.R = false; b.vy = -1000; b.vx = -40;
                         addScore(500); sfx('kick'); show('KICKBACK 救球 +500', 1.3);
                         spawn(b.x, b.y, 14, 190, 1.1, -Math.PI / 2);
+                    }
+                }
+
+                // 卡球自救：主球长时间低速滞留在挡板死角 → 周期轻推，仍卡则自动重发（防软锁）
+                if (!over && launched && !onRailNow && !mainFrozen && live.length > 0) {
+                    const mb = live[0];
+                    const stalled = mb.y > 558 && Math.hypot(mb.vx, mb.vy) < 45;
+                    if (stalled) {
+                        stuckT += dt;
+                        if (stuckT > 2.0 && stuckNudge === 0)
+                            show('球卡住了 · 按 R 重发或稍候自动救球', 1.6);
+                        if (stuckT > 2.5) {
+                            // 每 1.2s 轻推一次，方向朝台面中部，试图自己爬出来
+                            const want = Math.floor((stuckT - 2.5) / 1.2) + 1;
+                            if (want > stuckNudge) {
+                                stuckNudge = want;
+                                const dir = mb.x < 176 ? 1 : -1;
+                                mb.vx += dir * (130 + Math.random() * 110);
+                                mb.vy -= 270 + Math.random() * 130;
+                                try { sfx('flip'); } catch (e) { }
+                            }
+                        }
+                        if (stuckT > 7.0) {
+                            mb.y = PF.bot + 12; mb.vx = mb.vy = 0;
+                            stuckT = 0; stuckNudge = 0;
+                            show('卡球自动重发', 1.2);
+                        }
+                    } else { stuckT = 0; stuckNudge = 0; }
+                    // 额外球卡太久也清掉（不软锁，但避免台面留死球）
+                    for (let bi = 1; bi < live.length; bi++) {
+                        const xb = live[bi];
+                        if (xb.y > 560 && Math.hypot(xb.vx, xb.vy) < 40) {
+                            xb.__stuck = (xb.__stuck || 0) + dt;
+                            if (xb.__stuck > 9) { live.splice(bi, 1); bi--; }
+                        } else xb.__stuck = 0;
                     }
                 }
 
@@ -1671,6 +1718,14 @@ window.MiniGames = window.MiniGames || {};
             }
 
             function drawHints() {
+                // 常驻操作提示（小字、低透明度，不遮挡台面）
+                ctx.save();
+                ctx.globalAlpha = 0.32 + 0.12 * Math.sin(t * 3);
+                ctx.font = '9px "Segoe UI","PingFang SC",sans-serif';
+                ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+                ctx.fillStyle = '#9fb6e0';
+                ctx.fillText('← / → 挡板 · 空格 发射 · R 重发本球', 14, GH - 8);
+                ctx.restore();
                 if (launched) return;
                 ctx.save();
                 ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t * 3.5);
@@ -1783,6 +1838,8 @@ window.MiniGames = window.MiniGames || {};
                     get warpHold() { return warpHold; },
                     get railMode() { return railMode; },
                     addScore, finish, missionHit, startMultiball: n => startMultiball(n, true), enterTube,
+                    relaunch: () => manualRelaunch(),
+                    get stuckT() { return stuckT; },
                     warp() {
                         if (warpHold > 0 || warpLock > 0) return false;
                         onRail = false; saucerHold = 0;
