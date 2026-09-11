@@ -69,6 +69,19 @@ const AdminAPI = (() => {
         romCatalog: () => call('GET', '/api/admin/roms/catalog'),
         romScan: (dir) => call('POST', '/api/admin/roms/scan', { dir }),
         romImport: (items, move) => call('POST', '/api/admin/roms/import', { items, move }),
+        // BIOS 管家：neogeo/pgm/cps3 是基板固件，缺了对应平台全体黑屏，全库共用一份
+        romBiosList: () => call('GET', '/api/roms/bios'),
+        romBiosUpload: async (file, name) => {
+            const res = await fetch('/api/roms/bios/upload?name=' + encodeURIComponent(name), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream', 'Authorization': 'Bearer ' + token() },
+                body: file,
+            });
+            let json; try { json = await res.json(); } catch (e) { throw new Error('上传返回异常'); }
+            if (!res.ok) throw new Error(json.error || 'BIOS 上传失败');
+            return json;
+        },
+        romBiosDelete: (id) => call('POST', '/api/roms/bios/delete', { id }),
         // 收件箱：项目部署在服务器上时，管理员本地 ROM 目录服务器读不到，
         // 只能先把 ZIP 传到服务器 data/roms/inbox，再由图鉴扫描那个目录。
         romInboxUpload: async (file, onProgress) => {
@@ -1191,6 +1204,7 @@ const AdminApp = {
                 <div class="emu-list" id="rom-list"></div>
                 <p id="rom-empty" style="font-size:12px;color:#777;display:none">还没有上传任何 ROM。</p>
             </div>
+            <div id="bios-box"></div>
             <div id="rom-catalog-box"></div>
         `;
         const drop = body.querySelector('#rom-drop');
@@ -1211,7 +1225,82 @@ const AdminApp = {
             if (b && b.scrollIntoView) b.scrollIntoView({ behavior: 'smooth', block: 'start' });
         };
         await this.romRefreshList(body);
+        await this.renderBios(body);
         await this.renderRomCatalog(body);
+    },
+
+    // ================= BIOS 管家（基板固件） =================
+    // neogeo.zip / pgm.zip / cps3.zip 不是游戏，是基板固件；缺哪个，那一整类街机全体黑屏。
+    // 服务端接口早就有了（GET /api/roms/bios + upload/delete），这里只是补上一直缺的界面 ——
+    // 玩家端提示「请到后台 BIOS 管理上传」，之前管理员照着找是找不到的。
+    async renderBios(body) {
+        const box = body.querySelector('#bios-box');
+        if (!box) return;
+        let r;
+        try { r = await AdminAPI.romBiosList(); } catch (e) { box.innerHTML = ''; return; }
+        const bios = r.bios || [];
+        const missing = r.missing || [];
+        const PLAT_LABEL = { neogeo: 'NeoGeo', fbalpha2012_neogeo: 'NeoGeo(fbneo)', igs: 'IGS/PGM 三国战纪系', cps3: 'CPS3 街头霸王III系' };
+        const haveNames = new Set(bios.map(b => String(b.name).toLowerCase()));
+        box.innerHTML = `
+            <div class="card">
+                <h3>🔌 BIOS 管理（基板固件，不是游戏）</h3>
+                <p style="font-size:13px;color:#b9b3d8">
+                    <code>neogeo.zip</code> / <code>pgm.zip</code> / <code>cps3.zip</code> 是街机<b>基板的固件</b>，
+                    缺了对应文件那一整类游戏<b>全体黑屏</b>。它们全库共用一份，传一次就够（同名再传=覆盖更新）。
+                    ${r.admin === false ? '<b style="color:#ff9aa6">（当前令牌不是管理员，只能查看）</b>' : ''}
+                </p>
+                ${missing.length ? `
+                <div style="margin:10px 0;padding:10px 12px;border:1px solid rgba(255,123,123,.4);border-radius:8px;background:rgba(255,123,123,.08)">
+                    <b style="color:#ff7b7b">⚠ 缺 ${missing.length} 个必需 BIOS：</b>
+                    ${missing.map(m => `<code>${this.esc(m.file)}</code>（${this.esc(PLAT_LABEL[m.platform] || m.platform)}）`).join('、')}
+                    <span style="font-size:12px;color:#9c96b8">—— 玩家进这些游戏会提示缺少 BIOS 并黑屏</span>
+                </div>` : `
+                <div style="margin:10px 0;padding:10px 12px;border:1px solid rgba(90,212,138,.4);border-radius:8px;background:rgba(90,212,138,.08)">
+                    <b style="color:#5ad48a">✅ 必需 BIOS 齐全</b>，所有街机平台都能正常启动。
+                </div>`}
+                ${bios.length ? `
+                <div style="margin:8px 0">
+                    ${bios.map(b => `<div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.08)">
+                        <code style="min-width:130px">${this.esc(b.name)}</code>
+                        <span style="font-size:12px;color:#9c96b8">${this.romFmtSize(b.size)}</span>
+                        <span style="font-size:12px;color:#8f89ad">${new Date(b.addedAt).toLocaleDateString()}</span>
+                        <button class="btn ghost small" data-bios-del="${this.esc(b.id)}">删除</button>
+                    </div>`).join('')}
+                </div>` : '<p style="font-size:12.5px;color:#9c96b8">还没上传过任何 BIOS。</p>'}
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
+                    <button class="btn small" id="bios-up">📤 上传 BIOS（zip）</button>
+                    <input type="file" id="bios-file" accept=".zip" multiple style="display:none">
+                    <span style="font-size:12px;color:#9c96b8">文件名就是身份：neogeo.zip → neogeo，多选可一次传齐</span>
+                </div>
+                <div id="bios-msg" style="margin-top:8px;font-size:12.5px;color:#b9b3d8"></div>
+            </div>
+        `;
+        const fileInput = box.querySelector('#bios-file');
+        const msg = box.querySelector('#bios-msg');
+        box.querySelector('#bios-up').onclick = () => fileInput.click();
+        fileInput.onchange = async () => {
+            const files = [...fileInput.files]; fileInput.value = '';
+            if (!files.length) return;
+            let ok = 0; const errs = [];
+            for (const f of files) {
+                const name = String(f.name).replace(/\.zip$/i, '');
+                if (!name) { errs.push(f.name + '：取不出名称'); continue; }
+                msg.textContent = `上传中：${f.name}…`;
+                try { await AdminAPI.romBiosUpload(f, name); ok++; }
+                catch (e) { errs.push(f.name + '：' + e.message); }
+            }
+            msg.innerHTML = `✅ ${ok} 个已生效` + (errs.length ? `，<span style="color:#ff9aa6">${errs.length} 个失败（${this.esc(errs.join('；'))}）</span>` : '');
+            U.toast(ok ? `✅ BIOS 已更新（${ok} 个）` : '❌ ' + errs[0]);
+            this.renderBios(body);
+        };
+        box.querySelectorAll('button[data-bios-del]').forEach(btn => {
+            btn.onclick = async () => {
+                if (!confirm('删除这个 BIOS？引用它的 ROM 会退回「未挂 BIOS」状态，对应平台会黑屏。')) return;
+                try { await AdminAPI.romBiosDelete(btn.dataset.biosDel); U.toast('已删除'); this.renderBios(body); }
+                catch (e) { U.toast('❌ ' + e.message); }
+            };
+        });
     },
 
     // 批量上传到服务器收件箱：串行传（避免大文件并发把带宽打满、也便于逐个报错），
@@ -1399,7 +1488,7 @@ const AdminApp = {
         const bad = items.filter(i => i.crcStatus === 'mismatch' || i.crcStatus === 'partial').length;
         const nb = items.filter(i => i.isBios).length;
         res.innerHTML = `扫描到 <b>${items.length}</b> 个 ZIP${bad ? `，其中 <b style="color:#ffd56b">${bad} 个 CRC 异常</b>（残缺或错版，谨慎导入）` : ''}。`
-            + `${nb ? `<br><span style="color:#7fd1ff">检测到 ${nb} 个基板 BIOS（默认不勾选）—— 请在「BIOS 管家」里上传，不要当游戏导入。</span>` : ''}`
+            + `${nb ? `<br><span style="color:#7fd1ff">检测到 ${nb} 个基板 BIOS（默认不勾选）—— 请在上方「BIOS 管理」里上传，不要当游戏导入。</span>` : ''}`
             + `勾选后导入，中文名可直接改。`;
         list.innerHTML = `
             <div style="overflow:auto;max-height:420px;border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-top:8px">

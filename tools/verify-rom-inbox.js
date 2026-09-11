@@ -109,12 +109,36 @@ function req(method, p, { body, raw, headers, token } = {}) {
         console.log('\n【8】权限：非管理员不能上传');
         const noTok = await req('POST', '/api/admin/roms/inbox/upload?fileName=x.zip', { raw: true, body: zip });
         check('无 token 被拒 403', noTok.status === 403, String(noTok.status));
+        console.log('\n【9】BIOS 管家（上传 / 列表 / 缺失判定 / 删除）');
+        const biosZip = makeZip([{ name: 'neogeo.rom', data: Buffer.from('fake bios') }]);
+        const bl0 = await req('GET', '/api/roms/bios', { token });
+        check('BIOS 列表接口可用', bl0.status === 200 && Array.isArray(bl0.json.bios), bl0.text.slice(0, 120));
+        const miss0 = (bl0.json.missing || []).find(m => m.platform === 'neogeo');
+        check('未上传时 neogeo 标记缺失', !!miss0 && miss0.file === 'neogeo.zip', JSON.stringify(bl0.json.missing));
+        const bu = await req('POST', '/api/roms/bios/upload?name=neogeo', { token, raw: true, body: biosZip });
+        check('上传 neogeo BIOS 成功', bu.status === 200 && bu.json.ok === true, bu.text.slice(0, 160));
+        const bl1 = await req('GET', '/api/roms/bios', { token });
+        check('上传后 missing 不再含 neogeo', !((bl1.json.missing || []).some(m => m.platform === 'neogeo')));
+        const bu2 = await req('POST', '/api/roms/bios/upload?name=neogeo', { token, raw: true, body: biosZip });
+        check('同名再传=覆盖（replaced）', bu2.status === 200 && bu2.json.replaced === true, bu2.text.slice(0, 120));
+        const biosId = bu2.json.id;
+        const bd = await req('POST', '/api/roms/bios/delete', { token, body: { id: biosId } });
+        check('删除 BIOS 成功', bd.status === 200 && bd.json.ok === true, bd.text.slice(0, 120));
+        const bl2 = await req('GET', '/api/roms/bios', { token });
+        check('删除后 neogeo 恢复缺失标记', (bl2.json.missing || []).some(m => m.platform === 'neogeo'));
+        check('磁盘 BIOS 文件已清理', !fs.existsSync(path.join(ROOT, 'data', 'roms', 'bios', biosId + '.bin')));
+        const bno = await req('POST', '/api/roms/bios/upload?name=neogeo', { raw: true, body: biosZip });
+        check('无 token 上传 BIOS 被拒 403', bno.status === 403, String(bno.status));
+
     } catch (e) {
         fail++;
         console.log('\n\u2717 异常：' + (e && e.stack || e));
     } finally {
         // 回滚存档 + 清掉测试文件
         try {
+            try { for (const f of (fs.readdirSync(path.join(ROOT, 'data', 'roms', 'bios')) || [])) {
+                if (f.endsWith('.bin')) { try { fs.unlinkSync(path.join(ROOT, 'data', 'roms', 'bios', f)); } catch (e) { } }
+            } } catch (e) { }
             const inboxDir = path.join(ROOT, 'data', 'roms', 'inbox');
             for (const f of fs.readdirSync(inboxDir)) {
                 if (/\.zip$/i.test(f)) { try { fs.unlinkSync(path.join(inboxDir, f)); } catch (e) { } }
