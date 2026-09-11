@@ -1,0 +1,475 @@
+// 小游戏引擎 · 渲染模块（mg-render.js）
+// 职责：canvas 创建与 HiDPI 适配、通用绘图工具（圆角/棋盘/渐变）、画质引擎（背景缓存/立体面板/发光/血条）、分层渲染辅助（issue #13）。
+window.MG = window.MG || {};
+var MG = window.MG;
+
+// ================= 统一美术工具集（2026-09-09 视觉升级）=================
+// 各游戏的 draw() 复用：棋盘背景 / 渐变格子 / emoji / 高光，风格与 2048 妖怪版一致
+MG.ui = {
+    EMOJI_FONT: '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif',
+    // 圆角矩形路径（只描路径，不填充）
+    rr(ctx, x, y, w, h, r) {
+        r = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+    },
+    // 深蓝渐变棋盘背景 + 圆角 + 描边
+    board(ctx, w, h) {
+        MG.ui.rr(ctx, 0, 0, w, h, 14);
+        let g = null;
+        try { g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#3d5a80'); g.addColorStop(1, '#243a55'); } catch (e) {}
+        ctx.fillStyle = g || '#2e4666'; ctx.fill();
+        ctx.lineWidth = 3; ctx.strokeStyle = '#1a2c44'; ctx.stroke();
+    },
+    // 渐变游戏格子：底板渐变(c1→c2) + 描边(bd) + 顶部高光 + 投影
+    tile(ctx, x, y, s, c1, c2, bd, r) {
+        r = r == null ? 8 : r;
+        MG.ui.rr(ctx, x + 2, y + 3, s - 4, s - 4, r);
+        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fill();          // 投影
+        MG.ui.rr(ctx, x + 1, y + 1, s - 2, s - 2, r);
+        let g = null;
+        try { g = ctx.createLinearGradient(0, y, 0, y + s); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) {}
+        ctx.fillStyle = g || c1; ctx.fill();
+        ctx.lineWidth = 1.6; ctx.strokeStyle = bd; ctx.stroke();
+        MG.ui.rr(ctx, x + 4, y + 3, s - 8, s * 0.24, Math.min(r, 6));   // 顶部高光
+        ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill();
+    },
+    // emoji 绘制（居中）
+    emoji(ctx, ch, cx, cy, size) {
+        ctx.font = Math.round(size) + 'px ' + MG.ui.EMOJI_FONT;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ch, cx, cy);
+    },
+};
+
+// ================= 画质引擎（2026-09-10 全局高清化）=================
+// 目标：让全部 107 款小游戏具备与「三维弹球」一致的质感。三个关键手段：
+//  ① 颜色算子 —— 由单一基色自动派生材质的「高光 / 暗部 / 描边」，
+//     各游戏不必再传一堆颜色参数，接口零改动即可升级
+//  ② 背景预渲染缓存 —— 每帧重建「渐变 + 微网格 + 暗角」很贵，
+//     按 (色+尺寸+锐度) 缓存成离屏位图复用，每帧只 drawImage
+//  ③ 分辨率感知 —— 离屏按 deviceScale 渲染，高分屏背景依然锐利
+MG.gfx = {
+    _cache: new Map(),
+    MAX_CACHE: 48,
+
+    // ---------- 颜色算子 ----------
+    // 支持 #rgb / #rrggbb / rgb(a) 三种写法，其余原样返回由 canvas 兜底
+    rgb(c) {
+        if (typeof c !== 'string') return [0, 0, 0];
+        c = c.trim();
+        try {
+            if (c[0] === '#') {
+                let h = c.slice(1);
+                if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+                const n = parseInt(h.slice(0, 6), 16);
+                if (!isNaN(n)) return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+            }
+            const m = c.match(/rgba?\(([^)]+)\)/);
+            if (m) {
+                const p = m[1].split(',').map(parseFloat);
+                if (p.length >= 3 && p.every(v => !isNaN(v))) return [p[0], p[1], p[2]];
+            }
+        } catch (e) { }
+        return [90, 100, 130];
+    },
+    // amt>0 提亮，amt<0 压暗（0~1）
+    lighten(c, amt) {
+        const [r, g, b] = this.rgb(c);
+        const f = v => Math.max(0, Math.min(255, Math.round(amt > 0 ? v + (255 - v) * amt : v * (1 + amt))));
+        return `rgb(${f(r)},${f(g)},${f(b)})`;
+    },
+    darken(c, amt) { return this.lighten(c, -Math.abs(amt)); },
+    rgba(c, a) { const [r, g, b] = this.rgb(c); return `rgba(${r},${g},${b},${a})`; },
+
+    // ---------- 质感背景（带缓存）----------
+    // 内容：底色渐变 → 中心柔光 → 微网格 → 四角暗角 → 顶亮/底暗边
+    // 命中时刷新到队尾（维持严格 LRU 顺序，避免高频场景被新键挤掉）；达到上限淘汰队首
+    scene(ctx, W, H, c1, c2) {
+        const scale = ctx.__mgScale || 1;
+        const key = `s|${c1}|${c2}|${W}x${H}|${scale.toFixed(2)}`;
+        let img = this._cache.get(key);
+        if (img) { this._cache.delete(key); this._cache.set(key, img); return ctx.drawImage(img, 0, 0, W, H); }
+        img = this._buildScene(W, H, c1, c2, scale);
+        if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
+        this._cache.set(key, img);
+        ctx.drawImage(img, 0, 0, W, H);
+    },
+    // 手动清理缓存（切后台 / 大量换肤 / 内存紧张时调用）
+    clearCache() { this._cache.clear(); },
+    _buildScene(W, H, c1, c2, scale) {
+        const cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(W * scale));
+        cv.height = Math.max(1, Math.round(H * scale));
+        const x = cv.getContext('2d');
+        x.setTransform(scale, 0, 0, scale, 0, 0);
+        // 1) 底色：垂直渐变
+        let g = null;
+        try { g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) { }
+        x.fillStyle = g || c1; x.fillRect(0, 0, W, H);
+        // 2) 中心柔光（让画面有主光源，不再是一片死板的渐变）
+        try {
+            const rg = x.createRadialGradient(W * 0.5, H * 0.34, 0, W * 0.5, H * 0.34, Math.max(W, H) * 0.72);
+            rg.addColorStop(0, 'rgba(255,255,255,0.085)');
+            rg.addColorStop(0.55, 'rgba(255,255,255,0.025)');
+            rg.addColorStop(1, 'rgba(255,255,255,0)');
+            x.fillStyle = rg; x.fillRect(0, 0, W, H);
+        } catch (e) { }
+        // 3) 微网格（提供「分辨率/精度感」，是非常廉价的高级感来源）
+        const step = 26;
+        x.strokeStyle = 'rgba(255,255,255,0.030)';
+        x.lineWidth = 1;
+        x.beginPath();
+        for (let gx = step; gx < W; gx += step) { x.moveTo(gx + 0.5, 0); x.lineTo(gx + 0.5, H); }
+        for (let gy = step; gy < H; gy += step) { x.moveTo(0, gy + 0.5); x.lineTo(W, gy + 0.5); }
+        x.stroke();
+        // 4) 暗角 vignette（把注意力收到中心）
+        try {
+            const vg = x.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.max(W, H) * 0.78);
+            vg.addColorStop(0, 'rgba(0,0,0,0)');
+            vg.addColorStop(1, 'rgba(0,0,0,0.34)');
+            x.fillStyle = vg; x.fillRect(0, 0, W, H);
+        } catch (e) { }
+        // 5) 顶亮底暗：模拟面板的立体边框
+        let tg = null;
+        try { tg = x.createLinearGradient(0, 0, 0, 26); tg.addColorStop(0, 'rgba(255,255,255,0.20)'); tg.addColorStop(1, 'rgba(255,255,255,0)'); } catch (e) { }
+        if (tg) { x.fillStyle = tg; x.fillRect(0, 0, W, 26); }
+        let bg = null;
+        try { bg = x.createLinearGradient(0, H - 30, 0, H); bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, 'rgba(0,0,0,0.26)'); } catch (e) { }
+        if (bg) { x.fillStyle = bg; x.fillRect(0, H - 30, W, 30); }
+        return cv;
+    },
+
+    // ---------- 立体面板 / 卡片 ----------
+    // opt: { gloss:0.24 顶部高光强度, shadow:3 投影距离, edge:外描边色 }
+    panel(ctx, x, y, w, h, c1, c2, r, opt) {
+        opt = opt || {};
+        r = r == null ? 10 : r;
+        const rr = MG.ui.rr;
+        const sd = opt.shadow == null ? 3 : opt.shadow;
+        if (sd > 0) {
+            // 双层投影：贴近的深影 + 扩散的淡影（比 shadowBlur 便宜且更可控）
+            rr(ctx, x + 1, y + sd * 0.6, w - 2, h, r);
+            ctx.fillStyle = 'rgba(0,0,0,0.30)'; ctx.fill();
+            rr(ctx, x + 2, y + sd, w - 4, h, r);
+            ctx.fillStyle = 'rgba(0,0,0,0.16)'; ctx.fill();
+        }
+        // 主体
+        rr(ctx, x, y, w, h, r);
+        let g = null;
+        try { g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) { }
+        ctx.fillStyle = g || c1; ctx.fill();
+        // 顶部高光条（塑料/玻璃的反光）
+        ctx.save();
+        rr(ctx, x + 2, y + 2, w - 4, Math.max(4, h * 0.42), Math.max(2, r * 0.7));
+        ctx.clip();
+        let hg = null;
+        try {
+            hg = ctx.createLinearGradient(0, y, 0, y + h * 0.5);
+            hg.addColorStop(0, `rgba(255,255,255,${opt.gloss == null ? 0.26 : opt.gloss})`);
+            hg.addColorStop(1, 'rgba(255,255,255,0)');
+        } catch (e) { }
+        ctx.fillStyle = hg || 'transparent';
+        ctx.fillRect(x, y, w, h * 0.5);
+        ctx.restore();
+        // 底部内反光（环境光反射）
+        ctx.save();
+        rr(ctx, x + 2, y + h * 0.62, w - 4, h * 0.36, Math.max(2, r * 0.6));
+        ctx.clip();
+        let bgb = null;
+        try {
+            bgb = ctx.createLinearGradient(0, y + h * 0.62, 0, y + h);
+            bgb.addColorStop(0, 'rgba(255,255,255,0)');
+            bgb.addColorStop(1, 'rgba(255,255,255,0.09)');
+        } catch (e) { }
+        ctx.fillStyle = bgb || 'transparent';
+        ctx.fillRect(x, y + h * 0.62, w, h * 0.38);
+        ctx.restore();
+        // 外描边：下深上浅，做出厚度
+        rr(ctx, x, y, w, h, r);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = opt.edge || this.rgba(this.darken(c1, 0.42), 0.85);
+        ctx.stroke();
+        rr(ctx, x + 1, y + 1, w - 2, h - 2, Math.max(1, r - 1));
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+        ctx.stroke();
+    },
+
+    // ---------- 立体文字 ----------
+    // opt: { glow:0 发光半径, stroke:true 是否描边, align:'center', weight:'bold', emoji:true }
+    // emoji 会自动跳过描边/厚度（emoji 自带颜色，描边只会糊成一团）
+    EMOJI_RE: /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/u,
+    text(ctx, s, x, y, size, color, opt) {
+        opt = opt || {};
+        s = String(s == null ? '' : s);
+        if (!s) return;
+        const isEmoji = opt.emoji !== false && /\p{Extended_Pictographic}/u.test(s);
+        const w = opt.weight || (opt.bold === false ? '' : 'bold');
+        const font = opt.font || `"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif`;
+        const align = opt.align || 'center';
+        ctx.save();
+        ctx.font = `${w} ${Math.round(size)}px ${font}`;
+        ctx.textAlign = align;
+        ctx.textBaseline = opt.baseline || 'middle';
+        if (isEmoji) {
+            ctx.fillStyle = color || '#fff';
+            ctx.fillText(s, x, y);
+            ctx.restore();
+            return;
+        }
+        // 发光（先铺一层，再画主体）
+        if (opt.glow) {
+            ctx.shadowColor = opt.glowColor || color;
+            ctx.shadowBlur = opt.glow;
+        }
+        const th = Math.max(1, size * 0.055);   // 厚度偏移
+        // 1) 厚度：向下偏两层深色
+        ctx.fillStyle = this.rgba(this.darken(color, 0.62), 0.55);
+        ctx.fillText(s, x, y + th * 1.7);
+        // 2) 描边隔开主体与背景，任何底色上都清晰
+        if (opt.stroke !== false) {
+            ctx.lineWidth = Math.max(1.2, size * 0.13);
+            ctx.strokeStyle = this.rgba(this.darken(color, 0.68), 0.92);
+            ctx.lineJoin = 'round';
+            ctx.strokeText(s, x, y);
+        }
+        // 3) 主体
+        ctx.fillStyle = color || '#fff';
+        ctx.fillText(s, x, y);
+        ctx.shadowBlur = 0;
+        // 4) 顶部高光：主体色提亮后上移极小的量，形成弧面感
+        ctx.fillStyle = this.rgba(this.lighten(color, 0.55), 0.5);
+        ctx.fillText(s, x, y - Math.max(0.6, size * 0.045));
+        ctx.restore();
+    },
+
+    // ---------- 木纹棋盘纹理（带缓存）----------
+    // 内容：木色渐变 → 横向/纵向年轮纹路 → 节疤暗斑 → 顶亮底暗边 → 中心柔光
+    // 用法：MG.gfx.wood(ctx, x, y, w, h, c1='#e8c088', c2='#c09458', seed=42)
+    //   - seed 决定节疤位置（不同棋盘换 seed 看起来不会重复）
+    //   - 象棋 / 五子棋 / 围棋 / 跳棋 等一切"木质棋盘"游戏都直接调用
+    wood(ctx, x, y, W, H, c1, c2, seed) {
+        c1 = c1 || '#e8c088'; c2 = c2 || '#c09458';
+        seed = seed || 42;
+        const scale = ctx.__mgScale || 1;
+        const key = `w|${c1}|${c2}|${Math.round(W)}x${Math.round(H)}|${seed}|${scale.toFixed(2)}`;
+        let img = this._cache.get(key);
+        if (!img) {
+            img = this._buildWood(x, y, W, H, c1, c2, seed, scale);
+            if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
+            this._cache.set(key, img);
+        }
+        ctx.drawImage(img, x, y, W, H);
+    },
+    _buildWood(x, y, W, H, c1, c2, seed, scale) {
+        const cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(W * scale));
+        cv.height = Math.max(1, Math.round(H * scale));
+        const t = cv.getContext('2d');
+        t.setTransform(scale, 0, 0, scale, 0, 0);
+        // 1) 底色：对角渐变（让光从左上斜照下来）
+        let g = null;
+        try { g = t.createLinearGradient(x, y, x + W, y + H); g.addColorStop(0, c1); g.addColorStop(1, c2); } catch (e) {}
+        t.fillStyle = g || c1; t.fillRect(x, y, W, H);
+        // 2) 中心柔光（提亮中央，让细节看得清）
+        try {
+            const rg = t.createRadialGradient(x + W * 0.5, y + H * 0.4, 0, x + W * 0.5, y + H * 0.4, Math.max(W, H) * 0.65);
+            rg.addColorStop(0, 'rgba(255,240,200,0.18)');
+            rg.addColorStop(0.6, 'rgba(255,240,200,0.05)');
+            rg.addColorStop(1, 'rgba(255,240,200,0)');
+            t.fillStyle = rg; t.fillRect(x, y, W, H);
+        } catch (e) {}
+        // 3) 横向年轮纹路（细密深色横线 + 偶发粗纹）
+        const rng = this._seedRng(seed);
+        const lineCount = Math.max(8, Math.round(H / 9));
+        for (let i = 0; i < lineCount; i++) {
+            const yy = y + (i + 0.5) * (H / lineCount) + (rng() - 0.5) * 2;
+            const dark = 0.04 + rng() * 0.10;
+            const wavy = Math.sin((i * 0.7) + rng() * 6) * 1.5;
+            t.strokeStyle = `rgba(90,55,20,${dark.toFixed(3)})`;
+            t.lineWidth = 0.6 + rng() * 1.0;
+            t.beginPath();
+            for (let xx = x; xx <= x + W; xx += 6) {
+                const yo = yy + Math.sin(xx * 0.025 + i) * 1.4 + wavy;
+                if (xx === x) t.moveTo(xx, yo); else t.lineTo(xx, yo);
+            }
+            t.stroke();
+        }
+        // 4) 节疤暗斑（少量随机深色椭圆，模拟木结）
+        const knotCount = 2 + Math.floor(rng() * 3);
+        for (let k = 0; k < knotCount; k++) {
+            const kx = x + W * (0.15 + rng() * 0.7);
+            const ky = y + H * (0.15 + rng() * 0.7);
+            const r = 4 + rng() * 9;
+            const kg = t.createRadialGradient(kx, ky, 0, kx, ky, r);
+            kg.addColorStop(0, 'rgba(70,40,15,0.32)');
+            kg.addColorStop(0.7, 'rgba(70,40,15,0.08)');
+            kg.addColorStop(1, 'rgba(70,40,15,0)');
+            t.fillStyle = kg; t.beginPath(); t.ellipse(kx, ky, r * 1.2, r * 0.7, rng() * Math.PI, 0, Math.PI * 2); t.fill();
+        }
+        // 5) 顶部亮边（受光面）+ 底部暗边（背光面）= 立体边框
+        let tg = null;
+        try { tg = t.createLinearGradient(x, y, x, y + 14); tg.addColorStop(0, 'rgba(255,255,255,0.28)'); tg.addColorStop(1, 'rgba(255,255,255,0)'); } catch (e) {}
+        if (tg) { t.fillStyle = tg; t.fillRect(x, y, W, 14); }
+        let bg = null;
+        try { bg = t.createLinearGradient(x, y + H - 18, x, y + H); bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, 'rgba(0,0,0,0.30)'); } catch (e) {}
+        if (bg) { t.fillStyle = bg; t.fillRect(x, y + H - 18, W, 18); }
+        return cv;
+    },
+    // 简易确定性 RNG（mulberry32），木纹节疤位置复现用
+    _seedRng(seed) {
+        let s = seed | 0;
+        return function () {
+            s = (s + 0x6D2B79F5) | 0;
+            let t = Math.imul(s ^ (s >>> 15), 1 | s);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    },
+
+    // ---------- 发光精灵（离屏缓存，弹幕/火花/特效通用）----------
+    // 用法：MG.gfx.glow(ctx, x, y, r, '#ffd56b', { a:.8 })
+    // 按 (色+r+锐度) 缓存成离屏位图，每帧只 drawImage，支持同屏数百发光体不卡。
+    glow(ctx, x, y, r, color, opt) {
+        opt = opt || {};
+        const scale = (ctx && ctx.__mgScale) || 1;
+        const rr = Math.max(2, Math.round(r));
+        const key = 'g|' + color + '|' + rr + '|' + scale.toFixed(2);
+        let img = this._cache.get(key);
+        if (!img) {
+            const cv = document.createElement('canvas');
+            cv.width = cv.height = Math.max(1, Math.round(rr * 2 * scale));
+            const xc = cv.getContext('2d');
+            const cx = rr * scale;
+            const g = xc.createRadialGradient(cx, cx, 0, cx, cx, cx);
+            g.addColorStop(0, this.rgba(color, 0.95));
+            g.addColorStop(0.35, this.rgba(color, 0.4));
+            g.addColorStop(1, this.rgba(color, 0));
+            xc.fillStyle = g; xc.fillRect(0, 0, cv.width, cv.height);
+            img = cv;
+            this._cache.set(key, img);
+            if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
+        }
+        ctx.drawImage(img, x - rr, y - rr, rr * 2, rr * 2);
+    },
+
+    // ---------- 血条 / 进度条（圆角 + 渐变填充 + 描边 + 可选数值）----------
+    // 用法：MG.gfx.bar(ctx, x, y, w, h, ratio, { color:'#7ad86a', back:true, text:'12/20', lw:1.5 })
+    // color 可传函数(ratio)->色，或自动按 ratio 三档（绿/黄/红）。
+    bar(ctx, x, y, w, h, ratio, opt) {
+        opt = opt || {};
+        ratio = Math.max(0, Math.min(1, ratio == null ? 0 : ratio));
+        const r = opt.r != null ? opt.r : Math.min(h / 2, 5);
+        if (opt.back !== false) {
+            MG.ui.rr(ctx, x, y, w, h, r);
+            ctx.fillStyle = opt.backColor || 'rgba(0,0,0,0.45)'; ctx.fill();
+        }
+        const fw = Math.max(0, w * ratio);
+        if (fw > 0.5) {
+            ctx.save();
+            MG.ui.rr(ctx, x, y, w, h, r); ctx.clip();
+            let col = opt.color;
+            if (typeof col === 'function') col = col(ratio);
+            if (!col) col = ratio > 0.5 ? '#7ad86a' : (ratio > 0.25 ? '#ffd56b' : '#ff7a8b');
+            let g = null;
+            try { g = ctx.createLinearGradient(x, y, x, y + h); g.addColorStop(0, this.lighten(col, 0.28)); g.addColorStop(1, this.darken(col, 0.18)); } catch (e) { }
+            ctx.fillStyle = g || col; ctx.fillRect(x, y, fw, h);
+            // 顶部高光
+            ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x, y, fw, Math.max(1, h * 0.32));
+            ctx.restore();
+        }
+        MG.ui.rr(ctx, x, y, w, h, r);
+        ctx.lineWidth = opt.lw || 1.2; ctx.strokeStyle = opt.border || 'rgba(255,255,255,0.4)'; ctx.stroke();
+        if (opt.text) {
+            ctx.fillStyle = opt.textColor || '#fff';
+            ctx.font = 'bold ' + Math.round(h * 0.92) + 'px "Microsoft YaHei",sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(opt.text, x + w / 2, y + h / 2 + 0.5);
+        }
+    },
+};
+
+// ================= 创建自适应 canvas（填满容器，HiDPI 锐化）=================
+//   逻辑坐标系 (w,h) 不变；底层 backing store = w * deviceScale 像素
+//   ctx.setTransform(deviceScale) 让游戏继续按 w,h 画，自动按 backing 倍数
+//   输出。设备像素比 + 容器放大倍数共同决定 deviceScale（封顶 3）。
+MG.canvas = function (parent, w, h) {
+    const c = document.createElement('canvas');
+    c.style.maxWidth = '100%';
+    c.style.maxHeight = '100%';
+    c.style.touchAction = 'none';
+    parent.innerHTML = '';
+    parent.appendChild(c);
+    const ctx = c.getContext('2d');
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    let deviceScale = dpr;          // 第一次 fit 之前先给个初值
+    const applyTransform = () => ctx.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
+    const fit = () => {
+        const pw = parent.clientWidth, ph = parent.clientHeight;
+        const s = Math.min(pw / w, ph / h);
+        c.style.width = (w * s) + 'px';
+        c.style.height = (h * s) + 'px';
+        // backing 像素 = 逻辑 * dpr * 显示放大，封顶 3（避免低端机过载）
+        const target = Math.min(3, dpr * Math.max(1, s));
+        if (Math.abs(target - deviceScale) > 0.05 || c.width !== Math.round(w * target)) {
+            deviceScale = target;
+            c.width = Math.round(w * deviceScale);
+            c.height = Math.round(h * deviceScale);
+            applyTransform();
+        }
+        // 暴露当前锐度倍率：MG.gfx 用它决定离屏缓存的分辨率，保证高分屏不糊
+        ctx.__mgScale = deviceScale;
+    };
+    // 初次也走一次真正的 backing 设置（让位图级 font/lineWidth 不糊）
+    fit();
+    // 暴露给游戏在 viewport 变化后强制重排
+    parent.__mgRefit = fit;
+    window.addEventListener('resize', fit);
+    // 监听父容器尺寸变化（侧栏展开 / 弹窗 / 旋转 / 容器变化但窗口不变），销毁时断开
+    let ro = null;
+    if (typeof ResizeObserver !== 'undefined') {
+        ro = new ResizeObserver(() => { try { fit(); } catch (e) { } });
+        try { ro.observe(parent); } catch (e) { ro = null; }
+    }
+    // 绑在 canvas 上：让 MG.bind / 自定义事件处理能从 c.__mgW 推出 deviceScale
+    // （不依赖 ctx.__mgScale，因为部分外部代码取不到 ctx）
+    c.__mgW = w; c.__mgH = h;
+    return { c, ctx, w, h, fit, destroy() { window.removeEventListener('resize', fit); if (ro) { try { ro.disconnect(); } catch (e) { } } } };
+};
+
+// ================= 分层渲染辅助（issue #13）=================
+// 把「静态背景 / 游戏对象 / 特效 / HUD」拆成独立离屏层，避免每帧重绘整张画布：
+//   - 背景层（bg）：只在 bgDirty 时重绘一次（如 MG.gfx.scene / 棋盘 / 地图），之后只 blit
+//   - HUD 层（hud）：只在 markHudDirty() 时重绘，之后只 blit（屏幕固定、不随相机滚动）
+// 用法见 _engine.js：cfg.renderMode='layered' + cfg.bg(可选) + cfg.hud(可选)，
+// 游戏在状态变化时调用 api.markHudDirty() / api.markBgDirty()，引擎据此决定重绘。
+MG.makeLayered = function (W, H, scale) {
+    const s = scale && scale > 0 ? scale : 1;
+    const mk = () => {
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(W * s));
+        c.height = Math.max(1, Math.round(H * s));
+        const x = c.getContext('2d');
+        x.setTransform(s, 0, 0, s, 0, 0);   // 离屏按 deviceScale 渲染，保证高分屏不糊
+        x.__mgScale = s;
+        return { c, x };
+    };
+    const bg = mk(), hud = mk();
+    return {
+        W, H, scale: s,
+        bgCv: bg.c, bgCtx: bg.x,
+        hudCv: hud.c, hudCtx: hud.x,
+        bgDirty: true, hudDirty: true,
+        // 主 ctx 已带 deviceScale transform，blit 时按逻辑 W×H 绘制即可（位图本身已按 scale 放大）
+        blitBg(ctx) { try { ctx.drawImage(this.bgCv, 0, 0, W, H); } catch (e) { } },
+        blitHud(ctx) { try { ctx.drawImage(this.hudCv, 0, 0, W, H); } catch (e) { } },
+        markBgDirty() { this.bgDirty = true; },
+        markHudDirty() { this.hudDirty = true; },
+    };
+};

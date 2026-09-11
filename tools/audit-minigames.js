@@ -84,8 +84,10 @@ const html = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
 const srcs = [];
 html.replace(/<script src="([^"]+)"/g, (m, s) => { srcs.push(s.split('?')[0]); return m; });
 const mgFiles = srcs.filter(s => s.indexOf('/js/minigames/') === 0);
-// _shared.js 必须在最前
-const ordered = ['/js/minigames/_shared.js'].concat(mgFiles.filter(f => f !== '/js/minigames/_shared.js'));
+// 引擎模块（engine/）必须在最前，顺序与 index.html 一致
+const { ENGINE_FILES } = require('./mg-engine-files');
+const engPaths = ENGINE_FILES.map(f => '/js/minigames/engine/' + f);
+const ordered = engPaths.concat(mgFiles.filter(f => f.indexOf('/js/minigames/engine/') !== 0));
 const loaded = [];
 for (const f of ordered) {
     const p = path.join(ROOT, 'public', f);

@@ -36,6 +36,9 @@ window.MG = window.MG || {};
         const fx = MG.fxPool ? MG.fxPool() : null;
         const cam = MG.cam ? MG.cam() : null;
         const tw = (MG.makeTweenPool ? MG.makeTweenPool() : MG.tw);
+        // issue #13：分层渲染（按需启用，默认 full 不变）
+        const layered = (cfg.renderMode === 'layered' && MG.makeLayered)
+            ? MG.makeLayered(W, H, (ctx.__mgScale || 1)) : null;
         // 结算结果规范化：stars 限 0~3、score 必须为有限数、lines 必须为数组（见 issue #9）
         const norm = (res) => {
             res = res || {};
@@ -77,14 +80,40 @@ window.MG = window.MG || {};
             trail: (x, y, o) => fx && fx.trail(x, y, o),
             glow: (x, y, r, c2, o) => MG.gfx.glow(ctx, x, y, r, c2, o),
             bar: (x, y, w, h, rt, o) => MG.gfx.bar(ctx, x, y, w, h, rt, o),
+            // issue #13：游戏在状态变化时调用，驱动背景层 / HUD 层重绘（分层模式才生效）
+            markBgDirty: () => layered && layered.markBgDirty(),
+            markHudDirty: () => layered && layered.markHudDirty(),
         };
         const paint = () => {
-            ctx.clearRect(0, 0, W, H);
-            ctx.save();
-            if (cam) cam.apply(ctx, W, H);
-            try { cfg.draw && cfg.draw(ctx, S, P, W, H, api); } catch (e) { onError(e, 'draw'); }
-            if (fx) fx.draw(ctx, W, H);
-            ctx.restore();
+            if (layered) {
+                // 背景层：仅 markBgDirty() 后才重绘，之后每帧只 blit（棋盘/地图/场景等静态内容）
+                if (layered.bgDirty) {
+                    try { layered.bgCtx.clearRect(0, 0, W, H); cfg.bg && cfg.bg(layered.bgCtx, S, P, W, H, api); }
+                    catch (e) { onError(e, 'bg'); }
+                    layered.bgDirty = false;
+                }
+                ctx.clearRect(0, 0, W, H);
+                layered.blitBg(ctx);
+                ctx.save();
+                if (cam) cam.apply(ctx, W, H);
+                try { cfg.draw && cfg.draw(ctx, S, P, W, H, api); } catch (e) { onError(e, 'draw'); }
+                if (fx) fx.draw(ctx, W, H);
+                ctx.restore();
+                // HUD 层：仅 markHudDirty() 后才重绘，之后每帧只 blit（屏幕固定 UI/血条/分数等）
+                if (layered.hudDirty) {
+                    try { layered.hudCtx.clearRect(0, 0, W, H); cfg.hud && cfg.hud(layered.hudCtx, S, P, W, H, api); }
+                    catch (e) { onError(e, 'hud'); }
+                    layered.hudDirty = false;
+                }
+                layered.blitHud(ctx);
+            } else {
+                ctx.clearRect(0, 0, W, H);
+                ctx.save();
+                if (cam) cam.apply(ctx, W, H);
+                try { cfg.draw && cfg.draw(ctx, S, P, W, H, api); } catch (e) { onError(e, 'draw'); }
+                if (fx) fx.draw(ctx, W, H);
+                ctx.restore();
+            }
         };
         const pos = e => {
             const r = c.getBoundingClientRect();
