@@ -220,6 +220,9 @@ const GAMES = [
     sc('contra1', '魂斗罗·丛林突击', '50 关 + 无尽 · 本地双人 · 横版跑打', '#2f6a3a', '#12301a', ['\ud83c\udfb2', '\ud83d\udc64', '\ud83d\udc64']),
     sc('contra2', '魂斗罗·工厂渗透', '50 关 + 无尽 · 本地双人 · 机械关', '#3a4460', '#141a2a', ['\ud83e\udd16', '\ud83d\udd2b', '\ud83d\udc64']),
     sc('pinball', '三维弹球', '50 关 + 无尽 · 太空军校生 · 挡板弹射', '#2a2440', '#0e0a1c', ['\ud83d\udccf', '\u2b50', '\ud83d\udca5']),
+
+    // 本轮新增（1 款）
+    sc('cookingfever', '烹饪发烧友', '50 关 + 无尽 · 读单做菜 · 托盘凑齐自动上菜', '#e8a04a', '#7a3a12', ['\ud83c\udf74', '\ud83c\udf7f', '\ud83e\udd80', '\ud83c\udf66']),
 ];
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合
@@ -326,10 +329,37 @@ function g2048Thumb() {
     </svg>`;
 }
 
-// 2048 / 暗棋 使用专属手绘缩略图
-(function () {
-    const g2 = GAMES.find(g => g.id === 'g2048'); if (g2) g2.thumb = g2048Thumb();
-    const g3 = GAMES.find(g => g.id === 'banqi'); if (g3) g3.thumb = banqiThumb();
-})();
+    // 烹饪发烧友专属缩略图：厨师帽 + 汉堡薯条饮料
+    function cookingThumb() {
+        return `<svg viewBox="0 0 88 60" width="100%" height="100%">
+            <defs>
+                <linearGradient id="tcook" x1="0" y1="0" x2="0.6" y2="1">
+                    <stop offset="0" stop-color="#e8a04a"/><stop offset="1" stop-color="#7a3a12"/>
+                </linearGradient>
+            </defs>
+            <rect width="88" height="60" fill="url(#tcook)"/>
+            <rect x="2.5" y="2.5" width="83" height="55" rx="8" fill="none" stroke="#ffe0a8" stroke-width="1.2" stroke-opacity="0.55"/>
+            <!-- 厨师帽 -->
+            <g transform="translate(20 8)">
+                <ellipse cx="10" cy="14" rx="13" ry="8" fill="#fff"/>
+                <rect x="2" y="13" width="16" height="11" rx="3" fill="#fff"/>
+                <rect x="2" y="21" width="16" height="2.5" fill="#e8a04a"/>
+            </g>
+            <!-- 盘子 -->
+            <ellipse cx="58" cy="40" rx="22" ry="8" fill="#fff" opacity="0.85"/>
+            <ellipse cx="58" cy="39" rx="16" ry="5.5" fill="#e8d6b0"/>
+            <text x="49" y="40" text-anchor="middle" font-size="12">\ud83c\udf74</text>
+            <text x="61" y="40" text-anchor="middle" font-size="12">\ud83c\udf7f</text>
+            <text x="72" y="40" text-anchor="middle" font-size="12">\ud83e\udd80</text>
+            <text x="44" y="56" text-anchor="middle" font-size="7" font-weight="bold" fill="#ffe0a8" font-family="Microsoft YaHei, sans-serif">现做现卖</text>
+        </svg>`;
+    }
+
+    // 2048 / 暗棋 / 烹饪 使用专属手绘缩略图
+    (function () {
+        const g2 = GAMES.find(g => g.id === 'g2048'); if (g2) g2.thumb = g2048Thumb();
+        const g3 = GAMES.find(g => g.id === 'banqi'); if (g3) g3.thumb = banqiThumb();
+        const g4 = GAMES.find(g => g.id === 'cookingfever'); if (g4) g4.thumb = cookingThumb();
+    })();
 
 window.MinigamesView = MinigamesView;
