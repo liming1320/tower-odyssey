@@ -8,6 +8,8 @@ window.MiniGames = window.MiniGames || {};
     const E = MG.eng;
     const COLS = 7, ROWS = 9;
     const GLYPH = { 1: '鼠', 2: '猫', 3: '狗', 4: '狼', 5: '豹', 6: '虎', 7: '狮', 8: '象' };
+    // 动物棋子：彩色 emoji 头像（canvas 原生渲染，无外部资源）
+    const FACE = { 1: '🐭', 2: '🐱', 3: '🐶', 4: '🐺', 5: '🐆', 6: '🐯', 7: '🦁', 8: '🐘' };
     const DENS = [{ x: 3, y: 0 }, { x: 3, y: 8 }];
     const TRAPS = [
         { x: 2, y: 0, o: 0 }, { x: 4, y: 0, o: 0 }, { x: 3, y: 1, o: 0 },
@@ -187,12 +189,185 @@ window.MiniGames = window.MiniGames || {};
 
     // 测试钩子：只在自动化验证（window.__MG_TEST）下暴露，方便脚本直接走一步合法棋
     if (window.__MG_TEST) {
-        window.__jungleDbg = { movesFor, allMoves, apply, winnerOf, newBoard, ix, DENS };
+        window.__jungleDbg = { movesFor, allMoves, apply, undo, winnerOf, newBoard, ix, DENS };
     }
 
     // ---------------- 视图 ----------------
+    // 静态层缓存：藤蔓 + 木框棋盘 + 草地 + 河流 + 兽穴/陷阱，全部画进一张离屏 canvas，
+    // 每帧一次 drawImage（尺寸/格径变化才重建）。动态的棋子、选中高亮仍逐帧画。
+    let _cv = null, _cvKey = '';
+    function staticLayer(ctx, cell, x0, y0, bw, bh, W, H) {
+        const key = W + 'x' + H + '|' + cell;
+        if (_cvKey === key && _cv) return ctx.drawImage(_cv, 0, 0, W, H);
+        const cv = document.createElement('canvas');
+        cv.width = Math.max(1, W); cv.height = Math.max(1, H);
+        const c = cv.getContext('2d');
+        const G = MG.gfx;
+        // 确定性随机：装饰每局一致，不闪
+        let seed = 20260912;
+        const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+
+        // —— 丛林藤蔓剪影（顶层垂下 + 两侧叶簇）
+        const leaf = (lx, ly, len, ang, col) => {
+            c.save(); c.translate(lx, ly); c.rotate(ang);
+            c.beginPath(); c.ellipse(0, len / 2, len * 0.16, len / 2, 0, 0, Math.PI * 2);
+            c.fillStyle = col; c.fill(); c.restore();
+        };
+        for (let i = 0; i < 9; i++) {
+            const vx = (W / 9) * i + rnd() * 18, vl = 26 + rnd() * 52;
+            c.strokeStyle = 'rgba(14,42,27,.6)'; c.lineWidth = 2.2;
+            c.beginPath(); c.moveTo(vx, 0);
+            c.quadraticCurveTo(vx + (rnd() - .5) * 26, vl * .6, vx + (rnd() - .5) * 18, vl);
+            c.stroke();
+            for (let k = 0; k < 4; k++) leaf(vx + (rnd() - .5) * 14, vl * (0.25 + k * 0.2), 10 + rnd() * 9, (rnd() - .5) * 2.4, 'rgba(18,52,32,.55)');
+        }
+        for (let i = 0; i < 6; i++) {   // 左右两侧探出的叶簇
+            const side = i % 2 ? 1 : -1, ex = side < 0 ? 6 : W - 6, ey = 80 + rnd() * (H - 140);
+            for (let k = 0; k < 3; k++) leaf(ex, ey + (k - 1) * 12, 20 + rnd() * 16, side * (0.5 + rnd() * 0.5), 'rgba(16,48,30,.5)');
+        }
+
+        // —— 木框棋盘
+        G.panel(c, x0 - 9, y0 - 9, bw + 18, bh + 18, '#a5713a', '#5e3a1a', 12);
+        c.strokeStyle = 'rgba(58,34,14,.8)'; c.lineWidth = 2;
+        c.strokeRect(x0 - 3.5, y0 - 3.5, bw + 7, bh + 7);
+        // 木纹：几条淡色纵向纹理
+        c.strokeStyle = 'rgba(60,36,16,.18)'; c.lineWidth = 1.5;
+        for (let i = 0; i < 10; i++) {
+            const tx = x0 - 7 + rnd() * (bw + 14);
+            c.beginPath(); c.moveTo(tx, y0 - 7);
+            c.quadraticCurveTo(tx + (rnd() - .5) * 8, y0 + bh / 2, tx + (rnd() - .5) * 6, y0 + bh + 7);
+            c.stroke();
+        }
+        // 四角铜钉
+        for (const [nx, ny] of [[x0 - 6, y0 - 6], [x0 + bw + 6, y0 - 6], [x0 - 6, y0 + bh + 6], [x0 + bw + 6, y0 + bh + 6]]) {
+            c.beginPath(); c.arc(nx, ny, 3, 0, Math.PI * 2);
+            c.fillStyle = '#e8c069'; c.fill();
+            c.strokeStyle = '#7a5518'; c.lineWidth = 1; c.stroke();
+        }
+
+        // —— 格子：草地 / 河流
+        for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+            const px = x0 + x * cell, py = y0 + y * cell;
+            if (isWater(x, y)) {
+                const g = c.createLinearGradient(px, py, px, py + cell);
+                g.addColorStop(0, '#5fc0ec'); g.addColorStop(.5, '#2f8fc9'); g.addColorStop(1, '#1a5f96');
+                c.fillStyle = g; c.fillRect(px, py, cell, cell);
+                // 波浪 + 高光
+                c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 1.4;
+                for (let k = 0; k < 2; k++) {
+                    const yy = py + cell * (0.34 + k * 0.34);
+                    c.beginPath(); c.moveTo(px + 5, yy);
+                    c.quadraticCurveTo(px + cell / 2, yy - 4.5, px + cell - 5, yy);
+                    c.stroke();
+                }
+                c.strokeStyle = 'rgba(255,255,255,.14)';
+                c.beginPath(); c.moveTo(px + 6, py + 3.5); c.lineTo(px + cell - 6, py + 3.5); c.stroke();
+            } else {
+                c.fillStyle = ((x + y) & 1) ? '#84ba5c' : '#77ad50';
+                c.fillRect(px, py, cell, cell);
+                // 草簇 / 小花
+                const n = Math.floor(rnd() * 2.4);
+                for (let k = 0; k < n; k++) {
+                    const gx = px + 6 + rnd() * (cell - 12), gy = py + 7 + rnd() * (cell - 12);
+                    if (rnd() < 0.18) {   // 小花
+                        c.fillStyle = 'rgba(255,224,138,.85)';
+                        c.beginPath(); c.arc(gx, gy, 1.6, 0, Math.PI * 2); c.fill();
+                    } else {              // 三叶草簇
+                        c.strokeStyle = 'rgba(46,94,42,.5)'; c.lineWidth = 1.1;
+                        c.beginPath();
+                        c.moveTo(gx, gy); c.lineTo(gx - 2.4, gy - 4);
+                        c.moveTo(gx, gy); c.lineTo(gx, gy - 5);
+                        c.moveTo(gx, gy); c.lineTo(gx + 2.4, gy - 4);
+                        c.stroke();
+                    }
+                }
+            }
+        }
+        // 网格线
+        c.strokeStyle = 'rgba(52,88,40,.4)'; c.lineWidth = 1;
+        for (let x = 0; x <= COLS; x++) { c.beginPath(); c.moveTo(x0 + x * cell + .5, y0); c.lineTo(x0 + x * cell + .5, y0 + bh); c.stroke(); }
+        for (let y = 0; y <= ROWS; y++) { c.beginPath(); c.moveTo(x0, y0 + y * cell + .5); c.lineTo(x0 + bw, y0 + y * cell + .5); c.stroke(); }
+        // 中界小旗
+        G.text(c, '⚔️', x0 + bw / 2, y0 + bh / 2, cell * 0.5, '#fff');
+
+        // —— 兽穴：石圈洞穴
+        for (let s = 0; s < 2; s++) {
+            const d = DENS[s];
+            const cx = x0 + d.x * cell + cell / 2, cy = y0 + d.y * cell + cell / 2;
+            const g = c.createRadialGradient(cx, cy - 2, 2, cx, cy, cell * 0.44);
+            g.addColorStop(0, '#06080c');
+            g.addColorStop(.75, s === 0 ? '#23406e' : '#7c3232');
+            g.addColorStop(1, s === 0 ? '#31507f' : '#94443f');
+            c.beginPath(); c.arc(cx, cy, cell * 0.44, 0, Math.PI * 2); c.fillStyle = g; c.fill();
+            for (let k = 0; k < 9; k++) {   // 石圈
+                const a = (k / 9) * Math.PI * 2 + 0.3;
+                c.beginPath(); c.arc(cx + Math.cos(a) * cell * 0.44, cy + Math.sin(a) * cell * 0.44, cell * 0.075, 0, Math.PI * 2);
+                c.fillStyle = '#9aa0a8'; c.fill();
+                c.strokeStyle = 'rgba(40,44,50,.7)'; c.lineWidth = .8; c.stroke();
+            }
+            G.text(c, '穴', cx, cy + 1, cell * 0.26, s === 0 ? '#bcd0ff' : '#ffd6c8', { bold: true });
+        }
+        // —— 陷阱：捕兽网
+        for (const t of TRAPS) {
+            const px = x0 + t.x * cell, py = y0 + t.y * cell;
+            const cx = px + cell / 2, cy = py + cell / 2, rad = cell * 0.36;
+            c.save();
+            c.beginPath(); c.arc(cx, cy, rad, 0, Math.PI * 2); c.clip();
+            c.strokeStyle = 'rgba(140,58,46,.85)'; c.lineWidth = 1;
+            for (let k = -6; k <= 6; k++) {
+                c.beginPath(); c.moveTo(cx + k * cell / 6 - rad, cy + rad); c.lineTo(cx + k * cell / 6 + rad, cy - rad); c.stroke();
+                c.beginPath(); c.moveTo(cx + k * cell / 6 - rad, cy - rad); c.lineTo(cx + k * cell / 6 + rad, cy + rad); c.stroke();
+            }
+            c.restore();
+            c.beginPath(); c.arc(cx, cy, rad, 0, Math.PI * 2);
+            c.strokeStyle = 'rgba(120,44,36,.9)'; c.lineWidth = 1.6; c.stroke();
+            for (let k = 0; k < 4; k++) {   // 四角地桩
+                const a = Math.PI / 4 + k * Math.PI / 2;
+                c.beginPath(); c.arc(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad, 1.8, 0, Math.PI * 2);
+                c.fillStyle = '#6e342a'; c.fill();
+            }
+        }
+        _cv = cv; _cvKey = key;
+        ctx.drawImage(_cv, 0, 0, W, H);
+    }
+
+    // 单个棋子：动物头像盘（红=玩家暖金 / 黑=AI 靛蓝），带投影、金环、高光与等级徽章
+    function piece(ctx, p, cx, cy, cell) {
+        const G = MG.gfx;
+        const r = cell * 0.40, evil = p.s === 0;
+        // 落地投影
+        ctx.save(); ctx.translate(cx, cy + r * 0.78); ctx.scale(1, 0.42);
+        ctx.beginPath(); ctx.arc(0, 0, r * 0.9, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,.30)'; ctx.fill(); ctx.restore();
+        // 盘体
+        const g = ctx.createRadialGradient(cx - r * .35, cy - r * .4, r * .15, cx, cy, r);
+        if (evil) { g.addColorStop(0, '#cfdcf9'); g.addColorStop(.55, '#5b75b8'); g.addColorStop(1, '#22305a'); }
+        else { g.addColorStop(0, '#ffe6bc'); g.addColorStop(.55, '#e2894a'); g.addColorStop(1, '#9c3d16'); }
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+        ctx.strokeStyle = evil ? '#101a36' : '#6a2408'; ctx.lineWidth = 1.6; ctx.stroke();
+        // 内环
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2);
+        ctx.strokeStyle = evil ? 'rgba(196,214,255,.55)' : 'rgba(255,222,150,.65)'; ctx.lineWidth = 1.2; ctx.stroke();
+        // 顶部高光弧
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.7, -2.35, -0.75);
+        ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = r * 0.13; ctx.lineCap = 'round'; ctx.stroke(); ctx.lineCap = 'butt';
+        // 动物头像
+        ctx.save();
+        ctx.font = `${Math.round(cell * 0.46)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(FACE[p.r], cx, cy + cell * 0.03);
+        ctx.restore();
+        // 等级徽章
+        const bx = cx + r * 0.68, by = cy - r * 0.68, br = cell * 0.145;
+        ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2);
+        ctx.fillStyle = evil ? '#1b2748' : '#7a2d08'; ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 1; ctx.stroke();
+        G.text(ctx, String(p.r), bx, by + 0.5, cell * 0.19, evil ? '#bcd0ff' : '#ffd56b', { bold: true });
+    }
     E.def('jungle', {
-        w: 400, h: 520,
+        w: 440, h: 596,
         levels: E.nm(),
         hint: '点击己方棋子选中，再点高亮格移动 · 鼠能吃象、象怕鼠 · 进对方兽穴即胜',
         params(i, t) {
@@ -218,8 +393,8 @@ window.MiniGames = window.MiniGames || {};
         draw(ctx, S, P, W, H, api) {
             if (!S.rnd) S.rnd = api.rng(20260911);
             const G = MG.gfx;
-            G.scene(ctx, W, H, '#3b2f22', '#171008');
-            const cell = Math.floor(Math.min((W - 44) / COLS, (H - 120) / ROWS));
+            G.scene(ctx, W, H, '#1c3a26', '#08150d');
+            const cell = Math.floor(Math.min((W - 44) / COLS, (H - 124) / ROWS));
             const bw = cell * COLS, bh = cell * ROWS;
             const x0 = Math.round((W - bw) / 2), y0 = 66;
             S._geo = { cell, x0, y0 };
@@ -228,49 +403,12 @@ window.MiniGames = window.MiniGames || {};
             const turnTxt = S.winner >= 0
                 ? (S.winner === 1 ? '🏆 你赢了！' : '💀 AI 获胜')
                 : (S.turn === 1 ? '轮到你（红）' : 'AI 思考中…（黑）');
-            G.panel(ctx, 10, 10, W - 20, 46, '#4a3a28', '#2a1e12', 12);
-            G.text(ctx, turnTxt, W / 2, 33, 16, S.winner === 1 ? '#ffd56b' : (S.winner === 0 ? '#ff8a8a' : '#ffe9c8'), { bold: true });
+            G.panel(ctx, 10, 10, W - 20, 46, '#2f6a44', '#143321', 12);
+            G.text(ctx, turnTxt, W / 2, 33, 16, S.winner === 1 ? '#ffd56b' : (S.winner === 0 ? '#ff8a8a' : '#eafff0'), { bold: true });
 
-            // 棋盘底
-            G.panel(ctx, x0 - 6, y0 - 6, bw + 12, bh + 12, '#c9a06a', '#8a6234', 10);
-            for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-                const px = x0 + x * cell, py = y0 + y * cell;
-                if (isWater(x, y)) {
-                    const g = ctx.createLinearGradient(px, py, px, py + cell);
-                    g.addColorStop(0, '#4aa3d8'); g.addColorStop(1, '#1d6fa8');
-                    ctx.fillStyle = g; ctx.fillRect(px, py, cell, cell);
-                    ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    for (let k = 0; k < 2; k++) {
-                        const yy = py + cell * (0.35 + k * 0.32);
-                        ctx.moveTo(px + 4, yy);
-                        ctx.quadraticCurveTo(px + cell / 2, yy - 4, px + cell - 4, yy);
-                    }
-                    ctx.stroke();
-                } else {
-                    ctx.fillStyle = ((x + y) & 1) ? '#e8c99a' : '#dcbb88';
-                    ctx.fillRect(px, py, cell, cell);
-                }
-                ctx.strokeStyle = 'rgba(90,60,30,.35)'; ctx.lineWidth = 0.5;
-                ctx.strokeRect(px + .25, py + .25, cell - .5, cell - .5);
-            }
-            // 兽穴与陷阱
-            for (let s = 0; s < 2; s++) {
-                const d = DENS[s];
-                const px = x0 + d.x * cell, py = y0 + d.y * cell;
-                ctx.fillStyle = s === 0 ? 'rgba(40,60,90,.85)' : 'rgba(120,40,40,.85)';
-                ctx.fillRect(px + 2, py + 2, cell - 4, cell - 4);
-                G.text(ctx, '穴', px + cell / 2, py + cell / 2, cell * 0.42, '#ffe9c8', { bold: true });
-            }
-            for (const t of TRAPS) {
-                const px = x0 + t.x * cell, py = y0 + t.y * cell;
-                ctx.strokeStyle = 'rgba(190,60,60,.75)'; ctx.lineWidth = 2;
-                ctx.beginPath();
-                const m = cell * 0.22;
-                ctx.moveTo(px + m, py + m); ctx.lineTo(px + cell - m, py + cell - m);
-                ctx.moveTo(px + cell - m, py + m); ctx.lineTo(px + m, py + cell - m);
-                ctx.stroke();
-            }
+            // 静态层：藤蔓 + 木框棋盘 + 草地/河流 + 兽穴/陷阱
+            staticLayer(ctx, cell, x0, y0, bw, bh, W, H);
+
             // 上一步痕迹
             if (S.last) {
                 for (const q of [S.last.from, S.last.to]) {
@@ -287,7 +425,7 @@ window.MiniGames = window.MiniGames || {};
                     const t = S.B[ix(m.x, m.y)];
                     ctx.beginPath();
                     ctx.arc(px + cell / 2, py + cell / 2, cell * (t ? 0.42 : 0.17), 0, Math.PI * 2);
-                    ctx.fillStyle = t ? 'rgba(255,90,90,.28)' : 'rgba(80,220,140,.5)';
+                    ctx.fillStyle = t ? 'rgba(255,90,90,.30)' : 'rgba(140,255,190,.55)';
                     ctx.fill();
                     if (t) { ctx.strokeStyle = '#ff6a6a'; ctx.lineWidth = 2; ctx.stroke(); }
                 }
@@ -299,21 +437,11 @@ window.MiniGames = window.MiniGames || {};
             for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
                 const p = S.B[ix(x, y)];
                 if (!p) continue;
-                const px = x0 + x * cell, py = y0 + y * cell;
-                const cx = px + cell / 2, cy = py + cell / 2, r = cell * 0.38;
-                const evil = p.s === 0;
-                const g = ctx.createRadialGradient(cx - r * .3, cy - r * .3, r * .2, cx, cy, r);
-                if (evil) { g.addColorStop(0, '#7d90b8'); g.addColorStop(1, '#2b3552'); }
-                else { g.addColorStop(0, '#ff9d7a'); g.addColorStop(1, '#a02a20'); }
-                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.fillStyle = g; ctx.fill();
-                ctx.strokeStyle = evil ? '#0f1526' : '#5a1008'; ctx.lineWidth = 1.5; ctx.stroke();
-                G.text(ctx, GLYPH[p.r], cx, cy + 1, cell * 0.44, '#fff', { bold: true });
-                G.text(ctx, String(p.r), cx + r * 0.72, cy + r * 0.72, cell * 0.2, 'rgba(255,255,255,.85)', { bold: true });
+                piece(ctx, p, x0 + x * cell + cell / 2, y0 + y * cell + cell / 2, cell);
             }
             // 底部提示
-            G.text(ctx, S.msg, W / 2, y0 + bh + 26, 12, '#c9b48e');
-            G.text(ctx, '象8 狮7 虎6 豹5 狼4 狗3 猫2 鼠1 · 鼠吃象 · 象怕鼠', W / 2, y0 + bh + 46, 10.5, '#8f7f63');
+            G.text(ctx, S.msg, W / 2, y0 + bh + 26, 12, '#c9d8bd');
+            G.text(ctx, '象＞狮＞虎＞豹＞狼＞狗＞猫＞鼠 · 鼠吃象 · 象怕鼠', W / 2, y0 + bh + 46, 10.5, '#7f9a76');
         },
         tap(S, x, y, P, api) {
             if (S.winner >= 0 || S.turn !== 1 || S.busy) return;
