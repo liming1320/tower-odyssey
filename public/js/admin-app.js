@@ -1241,7 +1241,8 @@ const AdminApp = {
         const bios = r.bios || [];
         const missing = r.missing || [];
         const PLAT_LABEL = { neogeo: 'NeoGeo', fbalpha2012_neogeo: 'NeoGeo(fbneo)', igs: 'IGS/PGM 三国战纪系', cps3: 'CPS3 街头霸王III系' };
-        const haveNames = new Set(bios.map(b => String(b.name).toLowerCase()));
+        const biosPlat = m => ((m.platforms && m.platforms.length) ? m.platforms : ['（未用）'])
+            .map(p => PLAT_LABEL[p] || p).join('、');
         box.innerHTML = `
             <div class="card">
                 <h3>🔌 BIOS 管理（基板固件，不是游戏）</h3>
@@ -1252,21 +1253,34 @@ const AdminApp = {
                 </p>
                 ${missing.length ? `
                 <div style="margin:10px 0;padding:10px 12px;border:1px solid rgba(255,123,123,.4);border-radius:8px;background:rgba(255,123,123,.08)">
-                    <b style="color:#ff7b7b">⚠ 缺 ${missing.length} 个必需 BIOS：</b>
-                    ${missing.map(m => `<code>${this.esc(m.file)}</code>（${this.esc(PLAT_LABEL[m.platform] || m.platform)}）`).join('、')}
-                    <span style="font-size:12px;color:#9c96b8">—— 玩家进这些游戏会提示缺少 BIOS 并黑屏</span>
+                    <b style="color:#ff7b7b">⚠ 缺 ${missing.length} 个 BIOS，对应游戏会黑屏：</b>
+                    ${missing.map(m => `<code>${this.esc(m.file)}</code>（${this.esc(biosPlat(m))}）`).join('、')}
+                    <span style="font-size:12px;color:#9c96b8">—— 库里已有这些平台的游戏，必须补上</span>
                 </div>` : `
                 <div style="margin:10px 0;padding:10px 12px;border:1px solid rgba(90,212,138,.4);border-radius:8px;background:rgba(90,212,138,.08)">
-                    <b style="color:#5ad48a">✅ 必需 BIOS 齐全</b>，所有街机平台都能正常启动。
+                    <b style="color:#5ad48a">✅ 当前库里的街机都能启动</b>（没有缺 BIOS 的平台）。
                 </div>`}
+                ${(r.notNeeded || []).length ? `
+                <div style="margin:10px 0;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.03)">
+                    <b style="color:#c9c3e6">暂时用不上：</b>${(r.notNeeded || []).map(m => `<code>${this.esc(m.file)}</code>`).join(' ')}
+                    <div style="font-size:12.5px;color:#9c96b8;margin-top:6px">
+                        库里<b>还没有</b>这些基板的游戏，所以不需要它们 —— 等导入了对应游戏，这里会自动变红提醒。
+                        <code>pgm.zip</code> = IGS/PGM 基板（三国战纪、西游记释厄传…）、<code>cps3.zip</code> = CPS3 基板（街头霸王III、JOJO…）。
+                        这俩是<b>基板固件</b>，厂商不随游戏分发，普通 ROM 合集里本来就没有，找不到是正常的。
+                    </div>
+                </div>` : ''}
                 ${bios.length ? `
                 <div style="margin:8px 0">
-                    ${bios.map(b => `<div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.08)">
+                    ${bios.map(b => {
+                        const bare = String(b.name).replace(/\.zip$/i, '').toLowerCase();
+                        const u = (r.used || []).find(x => String(x.file).replace(/\.zip$/i, '') === bare);
+                        return `<div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.08)">
                         <code style="min-width:130px">${this.esc(b.name)}</code>
                         <span style="font-size:12px;color:#9c96b8">${this.romFmtSize(b.size)}</span>
                         <span style="font-size:12px;color:#8f89ad">${new Date(b.addedAt).toLocaleDateString()}</span>
+                        <span style="font-size:12px;color:${u ? '#5ad48a' : '#8f89ad'}">${u ? '服务中：' + this.esc(u.platforms.join('、')) : '暂未被引用'}</span>
                         <button class="btn ghost small" data-bios-del="${this.esc(b.id)}">删除</button>
-                    </div>`).join('')}
+                    </div>`; }).join('')}
                 </div>` : '<p style="font-size:12.5px;color:#9c96b8">还没上传过任何 BIOS。</p>'}
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
                     <button class="btn small" id="bios-up">📤 上传 BIOS（zip）</button>

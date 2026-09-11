@@ -2740,10 +2740,25 @@ const isArcadeCore = c => ARCADE_CORES.has(c);
 const ROM_PLATFORMS = {
     neogeo: 'NeoGeo', cps1: 'CPS1', cps2: 'CPS2', cps3: 'CPS3', igs: 'IGS', other: '其他街机',
 };
-// BIOS：NeoGeo 必须 neogeo.zip、IGS(PGM) 必须 pgm.zip，缺了就是黑屏（无任何报错提示）
-const ROM_BIOS_HINT = {
-    neogeo: 'neogeo.zip', fbalpha2012_neogeo: 'neogeo.zip', igs: 'pgm.zip', cps3: 'cps3.zip',
-};
+// BIOS：NeoGeo 必须 neogeo.zip、IGS(PGM) 必须 pgm.zip、CPS3 必须 cps3.zip，缺了就是黑屏（无任何报错提示）。
+// 判定分两套 key：platform（导入时写入，优先）和 core（老数据只有 core）——之前混在一个表里，
+// 导致 neogeo.zip 因为 neogeo / fbalpha2012_neogeo 两个 key 被算成"缺 2 个"。
+const ROM_BIOS_BY_PLATFORM = { neogeo: 'neogeo.zip', igs: 'pgm.zip', cps3: 'cps3.zip' };
+const ROM_BIOS_BY_CORE = { fbalpha2012_neogeo: 'neogeo.zip' };
+const ROM_BIOS_FILES = ['neogeo.zip', 'pgm.zip', 'cps3.zip'];
+const biosKeyLabel = k => ROM_PLATFORMS[k] || ROM_CORE_LABELS[k] || k;
+// 扫一遍库，只统计"真有人要玩"的 BIOS：库里没有 PGM/CPS3 游戏时，pgm.zip/cps3.zip 就完全不需要，
+// 不该报红吓人 —— 这两个固件厂商不随游戏分发，普通 ROM 合集里本来就没有。
+function romBiosDemand() {
+    const need = new Map();   // file -> Set<platform|core>
+    for (const r of DB.roms || []) {
+        const file = ROM_BIOS_BY_PLATFORM[r.platform] || ROM_BIOS_BY_CORE[r.core];
+        if (!file) continue;
+        if (!need.has(file)) need.set(file, new Set());
+        need.get(file).add(r.platform || r.core);
+    }
+    return need;
+}
 function romAdminOk(req) {
     // 双通道：后台独立管理员令牌（admin/workbuddy）或玩家端 isAdmin 账号（第一个注册的玩家）
     if (isAdminToken(req)) return true;
@@ -3241,14 +3256,22 @@ const biosMeta = b => ({ id: b.id, name: b.name, size: b.size, addedAt: b.addedA
 
 api['GET /api/roms/bios'] = (req, res) => {
     if (!getUserByToken(req)) return sendJson(res, 401, { error: '未登录' });
-    // 同时回传"每种街机平台缺哪个 BIOS"，前端据此在列表上标红警告
+    // 同时回传"每种街机平台缺哪个 BIOS"，前端据此在列表上标红警告。
+    // 只有库里真有该平台的游戏才算 missing（缺了必然黑屏）；库里没有的进 notNeeded（暂不需要）。
     const have = (DB.romBios || []).map(b => (b.name || '').toLowerCase());
-    const missing = [];
-    for (const [plat, file] of Object.entries(ROM_BIOS_HINT)) {
-        const key = file.replace(/\.zip$/i, '').toLowerCase();
-        if (!have.some(n => n === key || n === file.toLowerCase())) missing.push({ platform: plat, file });
+    const has = file => {
+        const bare = file.replace(/\.zip$/i, '').toLowerCase();
+        return have.some(n => n === file.toLowerCase() || n === bare);
+    };
+    const demand = romBiosDemand();
+    const missing = [], notNeeded = [], used = [];
+    for (const file of ROM_BIOS_FILES) {
+        const src = demand.get(file);
+        if (has(file)) { if (src && src.size) used.push({ file, platforms: [...src].map(biosKeyLabel) }); continue; }
+        if (src && src.size) missing.push({ file, platforms: [...src].map(biosKeyLabel) });
+        else notNeeded.push({ file });
     }
-    sendJson(res, 200, { bios: (DB.romBios || []).map(biosMeta), missing, admin: romAdminOk(req) });
+    sendJson(res, 200, { bios: (DB.romBios || []).map(biosMeta), missing, notNeeded, used, admin: romAdminOk(req) });
 };
 api['GET /api/roms/bios/download'] = (req, res) => {
     if (!getUserByToken(req)) return sendJson(res, 401, { error: '未登录' });
