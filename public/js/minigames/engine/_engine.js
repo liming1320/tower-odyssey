@@ -101,13 +101,109 @@ window.MG = window.MG || {};
         return r;
     }
 
+    // ---------------- 统一帧循环（issue #5：完整运行时）----------------
+    // 过去 E.game 只有一种「可变 dt」循环：tick 收到的 dt 取决于设备帧率，
+    //   30fps 机器 dt≈33ms、144fps 机器 dt≈7ms —— 同一份物理参数表现完全不同
+    //   （跳跃高度、球速、高速穿透），线上 bug 也永远复现不出来。
+    // 这里补上标准游戏循环，两块能力都保留：
+    //   - 可变步（默认，step=0）：行为与以前完全一致，全部 115 款游戏零回归
+    //   - 固定步（cfg.fixedStep）：tick 恒定 dt，物理与帧率解耦；渲染时给出
+    //     插值系数 alpha（本帧处在两步之间的位置），画面依然丝滑
+    // 另外统一提供：追帧上限（防死亡螺旋）、帧统计（fps / 平均帧时 / 掉帧数）、
+    // 时间缩放（慢动作 / 快进）、手动推进（测试与单步调试，不依赖 rAF）。
+    function makeLoop(o) {
+        const SCH = scheduler();
+        const step = Math.max(0, Number(o.step) || 0);
+        const maxSub = Math.max(1, o.maxSubSteps || 5);
+        const perf = { fps: 0, avgMs: 16.7, worstMs: 0, drops: 0, frames: 0, steps: 0, alpha: 0, fixed: step };
+        let rafId = null, last = 0, acc = 0, running = false, emaMs = 16.7;
+        function advance(rawSec) {
+            let raw = rawSec;
+            if (!(raw >= 0)) raw = 0;
+            if (raw > 0.25) raw = 0.25;                 // 长时间挂起（切后台 / 断点）后不追帧
+            const ms = raw * 1000;
+            emaMs = emaMs * 0.9 + ms * 0.1;
+            perf.frames++;
+            perf.avgMs = +emaMs.toFixed(2);
+            perf.fps = emaMs > 0 ? Math.round(1000 / emaMs) : 0;
+            if (ms > perf.worstMs) perf.worstMs = +ms.toFixed(2);
+            if (ms > 34) perf.drops++;                  // 慢于约 30fps 记一次掉帧
+            const scale = (typeof o.timeScale === 'function' ? o.timeScale() : 1);
+            const scaled = raw * (scale > 0 ? scale : 0);
+            let n = 0;
+            if (step > 0) {
+                if (!o.fixed) return 0;
+                acc += scaled;
+                while (acc >= step && n < maxSub) {
+                    acc -= step; n++; perf.steps++;
+                    o.fixed(step);
+                    if (o.over && o.over()) { acc = 0; break; }
+                }
+                if (acc > step * maxSub) acc = 0;       // 追不上就丢弃余量，避免「越卡越补、越补越卡」
+            } else {
+                if (!o.variable) return 0;
+                perf.steps++; n = 1;
+                o.variable(Math.max(0, Math.min(0.05, scaled)));   // dt 限幅 [0,50ms]（见 issue #6）
+            }
+            perf.alpha = step > 0 ? Math.min(1, Math.max(0, acc / step)) : 0;
+            if (o.render) o.render(perf.alpha);
+            return n;
+        }
+        function tick() {
+            if (!running) return;
+            if (o.alive && !o.alive()) { running = false; rafId = null; return; }
+            rafId = SCH.schedule(tick);
+            const t = now();
+            const raw = last ? (t - last) / 1000 : 0;
+            last = t;
+            if (o.paused && o.paused()) { if (o.render) o.render(perf.alpha); return; }   // 暂停只重绘不推进
+            advance(raw);
+        }
+        return {
+            perf,
+            get alpha() { return perf.alpha; },
+            get step() { return step; },
+            get running() { return running; },
+            // 手动推进一帧：测试 / 确定性回放 / 单步调试用，完全不依赖 rAF
+            advance(ms) { if (o.alive && !o.alive()) return 0; return advance((ms == null ? 16.7 : ms) / 1000); },
+            start() { if (running) return; running = true; last = now(); rafId = SCH.schedule(tick); },
+            stop() { running = false; if (rafId) { SCH.cancel(rafId); rafId = null; } },
+        };
+    }
+
+    // 确定性模式：把全局 Math.random 换成可复现的 mulberry32。
+    // 用途：复现线上 bug、自动测试固定出题、关卡回放。关掉后恢复原生随机，正常游玩不受影响。
+    let _realRandom = null;
+    MG.setDeterministic = function (seed) {
+        if (seed === false || seed == null) {
+            if (_realRandom) { Math.random = _realRandom; _realRandom = null; }
+            return false;
+        }
+        if (!_realRandom) _realRandom = Math.random;
+        Math.random = makeRng(seed);
+        return true;
+    };
+    MG.isDeterministic = () => !!_realRandom;
+    // 全局循环策略：MG.setFixedStep(1/60) 让所有 E.def 游戏统一走固定步（物理与帧率解耦）。
+    // 默认 0 = 可变步（与历史行为一致，零回归）；低端机卡顿、录屏、自动测试时可临时打开。
+    MG.loopPolicy = { step: 0, maxSubSteps: 5 };
+    MG.setFixedStep = function (step, maxSubSteps) {
+        MG.loopPolicy.step = step ? (step === true ? 1 / 60 : (Number(step) || 0)) : 0;
+        if (maxSubSteps) MG.loopPolicy.maxSubSteps = Math.max(1, maxSubSteps | 0);
+        return MG.loopPolicy.step;
+    };
+    // 运行时三件套对外开放：其它页面 / 自定义玩法也能直接复用同一套生命周期与循环语义
+    MG.makeRuntime = makeRuntime;
+    MG.makeLoop = makeLoop;
+    MG.makeRng = makeRng;
+
     E.game = function (container, opts, cfg) {
         const P = Object.assign({ endless: !!opts.endless }, opts.level || {});
         P.endless = !!opts.endless;
         const W = cfg.w || 400, H = cfg.h || 520;
         const cv = MG.canvas(container, W, H);
         const c = cv.c, ctx = cv.ctx;
-        let rafId = null, last = now(), done = false, paused = false;
+        let done = false, paused = false, timeScale = 1, quality = 1;
         // 实例运行域：定时器 / 事件 / 补间全部登记在这里，stop() 一次性回收（见 makeRuntime 说明）
         const rt = makeRuntime({ onError: (e, ph) => onError(e, ph) });
         let S = {};
@@ -115,7 +211,6 @@ window.MG = window.MG || {};
         catch (e) { onError(e, 'init'); }        // init 也纳入错误边界（见 issue #P1）
         S.t = 0;
         if (window.__MG_TEST) window.__mgS = S;   // 测试模式暴露状态，便于 headless 断言
-        const SCH = scheduler();
         // 每个游戏实例独立的粒子池 / 相机 / 补间池（stop() 自动清理，互不干扰，见 issue #4）
         const fx = MG.fxPool ? MG.fxPool() : null;
         const cam = MG.cam ? MG.cam() : null;
@@ -148,7 +243,8 @@ window.MG = window.MG || {};
             },
             get over() { return done; },
             pause() { paused = true; rt.setState('paused'); },
-            resume() { if (paused) { paused = false; rt.setState('running'); last = now(); } },   // 恢复时重置时间基准，避免 dt 跳变
+            // 恢复时不需要手工重置时间基准：makeLoop 在暂停帧同样刷新 last，恢复后 dt 不会跳变
+            resume() { if (paused) { paused = false; rt.setState('running'); } },
             get isPaused() { return paused; },
             // ---- 实例运行域（新写游戏请一律用这些，不要用全局 setTimeout / addEventListener）----
             // 定时器：stop() 自动清理，且停止后回调不会再执行（杜绝「切关后旧回调改新状态」）
@@ -159,6 +255,16 @@ window.MG = window.MG || {};
             // 确定性随机：传同一个 seed 必得同一结果，用于复现 bug / 关卡回放 / 自动测试
             rng: (seed) => makeRng(seed != null ? seed : ((P.seed || 0) + ((opts.levelIdx || 0) + 1) * 7919)),
             get state() { return rt.state; },
+            // ---- 完整运行时：帧统计 / 时间缩放 / 插值系数 / 手动推进（见 makeLoop 说明）----
+            get fps() { return L.perf.fps; },
+            get frame() { return L.perf.frames; },
+            get steps() { return L.perf.steps; },
+            get alpha() { return L.perf.alpha; },        // 固定步模式下的渲染插值系数（0~1）
+            get quality() { return quality; },            // 自适应画质系数（cfg.autoQuality 开启才可能 <1）
+            get perf() { return L.perf; },
+            setTimeScale(v) { timeScale = Math.max(0, Math.min(8, Number(v) || 0)); },
+            get timeScale() { return timeScale; },
+            step: (ms) => L.advance(ms),                 // 手动推进一帧，测试 / 单步调试用（不依赖 rAF）
             P, S, W, H, ctx, draw: () => paint(),
             fx, cam, tw,
             boom: (x, y, o) => fx && fx.burst(x, y, o),
@@ -259,14 +365,9 @@ window.MG = window.MG || {};
         // 切后台自动暂停：避免敌人继续移动 / 计时继续 / 音频持续（见 issue #17）
         rt.listen(document, 'visibilitychange', () => { if (document.hidden) api.pause(); else api.resume(); });
 
-        const loop = () => {
-            if (rt.stopped || done) return;
-            if (!c.isConnected) { rt.mark('stopped'); return; }   // 兜底：画布已从 DOM 移除时停机（见 issue #3）
-            rafId = SCH.schedule(loop);
-            if (paused) { paint(); return; }                    // 暂停时只重绘，不推进模拟
-            const t = now();
-            const dt = Math.max(0, Math.min(0.05, (t - last) / 1000));   // dt 限幅 [0,50ms]：防负 dt、防后台恢复跳变（issue #6）
-            last = t; S.t += dt;
+        // 一帧逻辑推进：固定步与可变步共用同一段（dt 由循环决定，见 makeLoop 说明）
+        const doTick = (dt) => {
+            S.t += dt;
             try {
                 if (fx && fx._hs > 0) {
                     // 顿帧：冻结 tick 与物理，营造打击感
@@ -280,17 +381,40 @@ window.MG = window.MG || {};
                     if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
                     if (cfg.check && !done) { const r = cfg.check(S, P); if (r) { api.finish(r); return; } }
                 }
-            } catch (err) { onError(err, 'tick'); return; }
-            paint();
+            } catch (err) { onError(err, 'tick'); }
         };
+        const L = makeLoop({
+            // 步长来源优先级：游戏自己声明 cfg.fixedStep > 全局策略 MG.setFixedStep() > 0（可变步）
+            step: cfg.fixedStep ? (cfg.fixedStep === true ? 1 / 60 : (Number(cfg.fixedStep) || 0))
+                : ((MG.loopPolicy && MG.loopPolicy.step) || 0),
+            maxSubSteps: cfg.maxSubSteps || (MG.loopPolicy && MG.loopPolicy.maxSubSteps) || 5,
+            alive() {
+                if (rt.stopped || done) return false;
+                if (!c.isConnected) { rt.mark('stopped'); return false; }   // 兜底：画布已从 DOM 移除时停机（issue #3）
+                return true;
+            },
+            paused: () => paused,
+            timeScale: () => timeScale,
+            over: () => done || rt.stopped,
+            fixed: doTick,
+            variable: doTick,
+            render() {
+                // 自适应画质：持续掉帧时逐步下调 quality（0.35~1），游戏可据此少放粒子/降级特效
+                if (cfg.autoQuality && L.perf.frames > 30) {
+                    if (L.perf.fps && L.perf.fps < 40) quality = Math.max(0.35, quality - 0.01);
+                    else if (L.perf.fps >= 55) quality = Math.min(1, quality + 0.005);
+                }
+                paint();
+            },
+        });
         if (cfg.hint) MG.hint(container, cfg.hint);
         paint();
         if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
-        rafId = SCH.schedule(loop);
+        L.start();
         return {
             // 幂等：重复调用只清理一次（防止「结算后又点返回」重复解绑/报错，见 issue #11）
             stop() {
-                if (rafId) { SCH.cancel(rafId); rafId = null; }
+                L.stop();
                 if (tw) { try { tw.clear(); } catch (e) { } }
                 if (cam && cam.reset) { try { cam.reset(); } catch (e) { } }
                 rt.stop();          // 里面统一解绑全部监听 + 清理定时器 + 跑游戏登记的 cleanup
@@ -298,6 +422,8 @@ window.MG = window.MG || {};
             },
             pause: () => api.pause(),
             resume: () => api.resume(),
+            step: (ms) => L.advance(ms),        // 手动推进一帧（headless 测试 / 确定性回放）
+            get perf() { return L.perf; },
             get isPaused() { return paused; },
             get state() { return rt.state; },
         };
@@ -341,11 +467,25 @@ window.MG = window.MG || {};
             });
             if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
         };
+        // 帧循环：DOM 游戏默认不跑（重绘靠 api.update()，成本可控且行为不变）。
+        // 只有声明了 cfg.tick 的游戏（倒计时 / 动画类）才会启动统一循环，
+        // 与 canvas 引擎共用 makeLoop：同样的固定步 / 时间缩放 / 手动推进能力。
+        const L = cfg.tick ? makeLoop({
+            step: cfg.fixedStep ? (cfg.fixedStep === true ? 1 / 60 : (Number(cfg.fixedStep) || 0)) : 0,
+            maxSubSteps: cfg.maxSubSteps || 5,
+            alive: () => !rt.stopped && !done,
+            timeScale: () => api.timeScale,
+            over: () => done || rt.stopped,
+            fixed: dt => { S.t = (S.t || 0) + dt; safe('tick', () => cfg.tick(S, dt, P, api)); },
+            variable: dt => { S.t = (S.t || 0) + dt; safe('tick', () => cfg.tick(S, dt, P, api)); },
+            // 不自动重绘：DOM 全量 innerHTML 重建很贵，交给游戏在 tick 里按需 api.update()
+        }) : null;
         const api = {
             update: () => { if (!rt.stopped && !done) paint(); },
             finish(res) {
                 if (done) return;
                 done = true;
+                if (L) L.stop();
                 rt.mark('finished');
                 res = res || {};
                 let stars = res.stars != null ? res.stars : (res.win ? 3 : 0);
@@ -363,16 +503,26 @@ window.MG = window.MG || {};
             cleanup: (fn) => rt.cleanup(fn),
             rng: (seed) => makeRng(seed != null ? seed : ((P.seed || 0) + ((opts.levelIdx || 0) + 1) * 7919)),
             get state() { return rt.state; },
+            // 与 canvas 引擎同款运行时能力（DOM 游戏极少用，但语义保持一致）
+            get fps() { return L ? L.perf.fps : 0; },
+            get frame() { return L ? L.perf.frames : 0; },
+            get perf() { return L ? L.perf : null; },
+            timeScale: 1,
+            step: (ms) => (L ? L.advance(ms) : 0),
         };
         if (cfg.hint) MG.hint(container, cfg.hint);
         paint();
+        if (L) L.start();
         return {
             stop() {
+                if (L) L.stop();
                 runDisposers();
                 rt.stop();
                 // 真正移除 root：以前只置 stopped，DOM 节点留着，全局事件/定时器就泄漏了
                 try { if (root.remove) root.remove(); else if (root.parentNode) root.parentNode.removeChild(root); } catch (e) { }
             },
+            step: (ms) => (L ? L.advance(ms) : 0),
+            get perf() { return L ? L.perf : null; },
             get state() { return rt.state; },
         };
     };
