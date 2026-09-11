@@ -44,6 +44,14 @@ body.admin-page { display: block !important; }
 .admin-body-wrap textarea::placeholder { color: #6e6788; }
 .admin-body-wrap select option { background: #2a2140; color: #f3f0e0; }
 
+/* AI 酒馆配置页 */
+.tv-label { display: block; font-size: 12px; color: #8f88a8; margin: 10px 0 4px; }
+.tv-check {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 13px; color: #b9b3d8; margin: 6px 0 2px; cursor: pointer;
+}
+.tv-check input[type=checkbox] { width: auto !important; margin: 0 !important; accent-color: #ff9d5c; }
+
 .admin-body-wrap .card {
     background: rgba(255,255,255,0.05);
     border-radius: 12px;

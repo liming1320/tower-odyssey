@@ -134,6 +134,7 @@ const AdminApp = {
             gift: () => this.renderGift(body),
             order: () => this.renderOrder(body),
             roms: () => this.renderRoms(body),
+            tavern: () => this.renderTavern(body),
         }[this.tab];
         fn().catch(e => {
             body.innerHTML = `<div class="card" style="color:#ff7a8b">加载失败：${e.message}</div>`;
@@ -1289,6 +1290,143 @@ const AdminApp = {
                 if (rs.unknown && rs.unknown.length) U.toast('未找到：' + rs.unknown.join('、'));
             }
         } catch (e) { U.toast(e.message); }
+    },
+
+    // ================= AI 酒馆（SillyTavern 网关） =================
+    async renderTavern(body) {
+        body.innerHTML = `
+            <div class="card">
+                <h3>🍺 AI 酒馆（SillyTavern）接入状态</h3>
+                <div id="tv-status" style="font-size:13px;color:#b9b3d8">正在检测…</div>
+                <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn small" id="tv-refresh">刷新状态</button>
+                    <button class="btn small ghost" id="tv-scan">扫描本机端口(8000-8010)</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>连接配置</h3>
+                <div class="admin-note" style="margin-bottom:10px">
+                    在这里填写后点「保存并生效」，<b>立即生效、不需要重启服务</b>，也不用再去服务器上改文件。<br>
+                    要求 SillyTavern 与塔界远征跑在<b>同一台服务器</b>上（网关连的是 127.0.0.1）。
+                </div>
+                <label class="tv-label">上游地址（SillyTavern 跑在哪）</label>
+                <input id="tv-url" placeholder="http://127.0.0.1:8000">
+                <label class="tv-label">管理员句柄（handle）</label>
+                <input id="tv-handle" placeholder="admin">
+                <label class="tv-label">管理员密码</label>
+                <input id="tv-pwd" type="password" placeholder="留空 = 只代理，不给玩家自动开号">
+                <label class="tv-check"><input type="checkbox" id="tv-enabled"> 启用 AI 酒馆网关</label>
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn small" id="tv-test">测试连接（不保存）</button>
+                    <button class="btn small" id="tv-save">保存并生效</button>
+                </div>
+                <div id="tv-result" style="margin-top:12px;font-size:12.5px;color:#b9b3d8"></div>
+            </div>
+            <div class="card">
+                <h3>怎么拿到「管理员句柄 / 密码」</h3>
+                <div style="font-size:12.5px;color:#b9b3d8;line-height:1.9">
+                    1. 在 SillyTavern 目录执行一次 <code>node server.js</code>，生成配置文件后 Ctrl+C 停掉<br>
+                    2. 编辑仓库<b>根目录</b>的 <code>config.yaml</code>（不是 <code>default/</code> 里那份）：<br>
+                    &nbsp;&nbsp;&nbsp;· <code>enableUserAccounts: true</code> ← 必须，否则没有多用户<br>
+                    &nbsp;&nbsp;&nbsp;· 增加 <code>sso</code> 段：<code>autheliaAuth: true</code>、<code>trustedProxies: [127.0.0.1]</code><br>
+                    &nbsp;&nbsp;&nbsp;· <code>listen</code> 保持 <code>false</code>（别加 --listen，会把能改 API Key 的面板暴露到公网）<br>
+                    3. 重启 SillyTavern，用服务器本机访问 <code>http://127.0.0.1:8000</code>，进「用户设置 → 管理员面板」<br>
+                    4. 给默认账号 <code>default-user</code> 设密码（它默认就是管理员），或新建一个提升为 Admin 的账号<br>
+                    5. 把句柄和密码填到上面，点「保存并生效」
+                </div>
+            </div>
+        `;
+
+        const el = id => body.querySelector('#' + id);
+        const result = el('tv-result');
+        let cfg = { url: 'http://127.0.0.1:8000', enabled: true, handle: 'admin', password: '' };
+
+        const renderStatus = async () => {
+            const box = el('tv-status');
+            if (!box) return;
+            box.textContent = '正在检测…';
+            try {
+                const r = await AdminAPI.api('/api/admin/tavern/config');
+                const c = r.config || {};
+                cfg = { url: c.url, enabled: c.enabled, handle: c.handle, password: c.password || '', forwardRealIp: c.forwardRealIp };
+                el('tv-url').value = c.url || '';
+                el('tv-handle').value = c.handle || '';
+                el('tv-pwd').value = c.password || '';
+                el('tv-enabled').checked = c.enabled !== false;
+            } catch (e) { /* 老版本服务端可能没这个接口 */ }
+
+            try {
+                const t = await AdminAPI.api('/api/admin/tavern/test', 'POST', {});
+                const dot = t.online ? '🟢' : '🔴';
+                const lines = [];
+                lines.push(`${dot} 上游 <code>${this.esc(t.upstream || cfg.url)}</code> —— ${t.online ? '已连通' : '连不上'}`);
+                if (t.note) lines.push(`<span style="color:#ff9aa6">${this.esc(t.note)}</span>`);
+                if (t.online) {
+                    if (!t.handle || !cfg.password) {
+                        lines.push('⚠️ 未填写管理员密码：玩家能打开酒馆，但<b>不会自动开号</b>，大家会挤在同一个账号里');
+                    } else if (t.admin && t.admin.ok) {
+                        lines.push(`🟢 管理员「${this.esc(t.handle)}」登录成功`);
+                        if (t.provision) {
+                            lines.push(t.provision.ok
+                                ? '🟢 自动开号可用（已用临时账号实测通过）'
+                                : `🔴 自动开号失败：${this.esc(t.provision.msg || '')}`);
+                        }
+                    } else {
+                        lines.push(`🔴 管理员登录失败：${this.esc((t.admin && t.admin.msg) || '未知原因')}`);
+                    }
+                } else {
+                    lines.push('提示：在 SillyTavern 目录执行 <code>node server.js</code>（<b>不要</b>加 --listen），再点刷新。');
+                }
+                box.innerHTML = lines.join('<br>');
+            } catch (e) {
+                box.innerHTML = `<span style="color:#ff9aa6">状态检测失败：${this.esc(e.message)}</span>`;
+            }
+        };
+
+        el('tv-refresh').onclick = renderStatus;
+
+        el('tv-scan').onclick = async () => {
+            U.toast('正在扫描本机 8000-8010 端口…');
+            try {
+                const r = await AdminAPI.api('/api/admin/tavern/scan', 'POST', { from: 8000, to: 8010 });
+                if (!r.ports || !r.ports.length) return U.toast('没扫到，确认 SillyTavern 是否已启动');
+                const port = r.ports[0];
+                el('tv-url').value = 'http://127.0.0.1:' + port;
+                U.toast('找到端口 ' + r.ports.join('、') + '，已填入地址框，记得保存');
+            } catch (e) { U.toast(e.message); }
+        };
+
+        el('tv-test').onclick = async () => {
+            result.textContent = '测试中…';
+            try {
+                const t = await AdminAPI.api('/api/admin/tavern/test', 'POST', {
+                    url: el('tv-url').value.trim(),
+                    handle: el('tv-handle').value.trim(),
+                    password: el('tv-pwd').value,
+                });
+                const lines = [t.online ? '🟢 连上了' : '🔴 连不上：' + (t.note || '')];
+                if (t.online && t.admin) lines.push((t.admin.ok ? '🟢 管理员登录成功' : '🔴 ' + t.admin.msg));
+                if (t.provision) lines.push(t.provision.ok ? '🟢 自动开号可用' : '🔴 自动开号失败：' + t.provision.msg);
+                result.innerHTML = lines.join('<br>') + '<br><span style="color:#7f8da3">（这是测试，尚未保存）</span>';
+            } catch (e) { result.innerHTML = `<span style="color:#ff9aa6">${this.esc(e.message)}</span>`; }
+        };
+
+        el('tv-save').onclick = async () => {
+            result.textContent = '保存中…';
+            try {
+                const r = await AdminAPI.api('/api/admin/tavern/config', 'POST', {
+                    url: el('tv-url').value.trim(),
+                    handle: el('tv-handle').value.trim(),
+                    password: el('tv-pwd').value,
+                    enabled: el('tv-enabled').checked,
+                });
+                U.toast('✅ 已保存并生效（无需重启）');
+                result.textContent = '✅ 已保存并生效，配置写入 ' + (r.config && r.config.file ? r.config.file : '服务端');
+                await renderStatus();
+            } catch (e) { result.innerHTML = `<span style="color:#ff9aa6">${this.esc(e.message)}</span>`; }
+        };
+
+        await renderStatus();
     },
 };
 

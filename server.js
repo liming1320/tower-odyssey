@@ -3287,6 +3287,78 @@ api['GET /api/admin/gift/list'] = (req, res) => {
     sendJson(res, 200, { ok: true, list });
 };
 
+// ============================================================
+// AI 酒馆（SillyTavern）网关配置 —— 管理后台可视化配置，改完立即生效、无需重启
+//   之前只能让运维去服务器上改 data/tavern-env.json，既找不到文件又要重启；
+//   现在后台填表 → 保存 → 热更新（同时写入 process.env，保证优先级压过环境变量）。
+// ============================================================
+api['GET /api/admin/tavern/config'] = (req, res) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '无权限' });
+    const cfg = Tavern.getConfig();
+    sendJson(res, 200, {
+        ok: true,
+        config: {
+            url: cfg.TAVERN_URL,
+            enabled: cfg.TAVERN_ENABLED !== '0',
+            handle: cfg.TAVERN_ADMIN_HANDLE,
+            password: cfg.TAVERN_ADMIN_PASSWORD,
+            forwardRealIp: cfg.TAVERN_FORWARD_REAL_IP === '1',
+        },
+        hasPassword: cfg.hasPassword,
+        file: cfg.file,
+    });
+};
+
+api['POST /api/admin/tavern/config'] = async (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '无权限' });
+    const patch = {};
+    if (body.url != null) {
+        const u = String(body.url).trim();
+        if (!/^https?:\/\//i.test(u)) return sendJson(res, 400, { error: '上游地址必须以 http:// 或 https:// 开头' });
+        patch.TAVERN_URL = u.replace(/\/+$/, '');
+    }
+    if (body.enabled != null) patch.TAVERN_ENABLED = body.enabled ? '1' : '0';
+    if (body.handle != null) patch.TAVERN_ADMIN_HANDLE = String(body.handle).trim().slice(0, 64);
+    if (body.forwardRealIp != null) patch.TAVERN_FORWARD_REAL_IP = body.forwardRealIp ? '1' : '0';
+    // 密码允许空串（= 不开自动开号，退化为共享账号模式）
+    if (body.password != null) patch.TAVERN_ADMIN_PASSWORD = String(body.password).slice(0, 256);
+
+    const r = Tavern.configure(patch);
+    if (!r.ok) return sendJson(res, 500, { error: r.msg });
+    // 保存后立刻自检一次，让后台直接显示「现在到底通没通」
+    let test = null;
+    try { test = await Tavern.testConnection(); } catch (e) { test = { ok: false, note: e.message }; }
+    sendJson(res, 200, { ok: true, config: r.config, test });
+};
+
+api['POST /api/admin/tavern/test'] = async (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '无权限' });
+    const patch = {};
+    if (body.url) patch.TAVERN_URL = String(body.url).trim().replace(/\/+$/, '');
+    if (body.handle) patch.TAVERN_ADMIN_HANDLE = String(body.handle).trim();
+    if (body.password != null) patch.TAVERN_ADMIN_PASSWORD = String(body.password);
+    try {
+        const r = await Tavern.testConnection(patch);
+        sendJson(res, 200, Object.assign({ ok: true }, r));
+    } catch (e) {
+        sendJson(res, 200, { ok: false, online: false, note: e.message });
+    }
+};
+
+// 扫描本机常见端口，帮管理员找到 SillyTavern 实际跑在哪个端口
+api['POST /api/admin/tavern/scan'] = async (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '无权限' });
+    const from = Number(body && body.from) || 8000;
+    const to = Number(body && body.to) || 8010;
+    if (to - from > 200) return sendJson(res, 400, { error: '扫描范围过大（最多 200 个端口）' });
+    try {
+        const ports = await Tavern.scanPorts(from, to);
+        sendJson(res, 200, { ok: true, ports });
+    } catch (e) {
+        sendJson(res, 200, { ok: false, ports: [], note: e.message });
+    }
+};
+
 // 删除玩家（含其 token、邮件、聊天中无关，存档直接抹除）
 api['POST /api/admin/user/delete'] = (req, res, body) => {
     const admin = getUserByToken(req);

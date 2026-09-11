@@ -188,18 +188,21 @@ const SettingsView = {
                             <h3 style="color:#ffd56b;margin:0 0 12px">🍺 AI 酒馆未启动</h3>
                             <div style="color:#ffb37a;margin-bottom:10px">${esc(st.note || '连不上 SillyTavern')}</div>
                             <div style="color:#7f8da3;font-size:12px">
-                                1. 克隆：<code style="background:#0d1218;padding:2px 6px;border-radius:4px">git clone https://github.com/SillyTavern/SillyTavern -b release</code><br>
-                                2. 安装：<code style="background:#0d1218;padding:2px 6px;border-radius:4px">cd SillyTavern &amp;&amp; npm install</code><br>
-                                3. 启动：<code style="background:#0d1218;padding:2px 6px;border-radius:4px">node server.js --listen false</code>（保持 <b>listen:false</b>，只经本游戏网关访问，勿暴露公网）<br>
+                                请联系管理员：在 SillyTavern 目录执行 <code style="background:#0d1218;padding:2px 6px;border-radius:4px">node server.js</code>
+                                （<b>不要</b>加 --listen，那会监听所有网卡、把能改 API Key 的面板暴露到公网）。<br>
+                                管理员可在<b>管理后台 → AI 酒馆</b>页直接配置地址与账号，改完立即生效、无需重启。<br>
                                 启动后刷新本页。
                             </div>
                         </div>`;
                     return;
                 }
+                // 注意：不要把管理员句柄显示给玩家，只在账号没打通时给个提示
                 if (st.admin && !st.admin.ok) {
                     scoreEl.textContent = '⚠ 账号未打通';
+                } else if (!st.hasPassword) {
+                    scoreEl.textContent = '👥 共享账号模式';
                 } else {
-                    scoreEl.textContent = '👤 ' + (st.stHandle || '');
+                    scoreEl.textContent = '👤 已自动登录';
                 }
                 stage.innerHTML = '';
                 const frame = document.createElement('iframe');

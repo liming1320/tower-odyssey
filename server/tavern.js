@@ -16,17 +16,84 @@
 const http = require('http');
 const https = require('https');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
-const UPSTREAM = String(process.env.TAVERN_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
 const PREFIX = '/tavern';
-const ENABLED = process.env.TAVERN_ENABLED !== '0';
 // Authelia 通道的标准请求头；不同版本可能读 Remote-User / X-Forwarded-User，两个都发更稳
 const SSO_HEADERS = ['remote-user', 'x-remote-user', 'x-forwarded-user'];
-const ADMIN_HANDLE = process.env.TAVERN_ADMIN_HANDLE || 'admin';
-const ADMIN_PASSWORD = process.env.TAVERN_ADMIN_PASSWORD || '';
-// 是否透传真实客户端 IP。默认不透传：ST 默认开白名单且只信任 127.0.0.1，
-// 透传 LAN 真实 IP 会让它直接拒绝；又因为 ST 只能经本网关访问，视为 localhost 更安全。
-const FORWARD_REAL_IP = process.env.TAVERN_FORWARD_REAL_IP === '1';
+
+// ==================================================================
+// 配置（支持热更新：管理后台改完立即生效，不需要重启服务）
+//
+// 优先级：环境变量 > data/tavern-env.json > 内置默认
+//   环境变量仍然是最高优先级，这是为了兼容已经在宝塔/PM2/systemd 里配好的部署。
+//   但后台保存时会**同时写进 process.env**，所以后台改的一定生效，不会被环境变量盖掉。
+//   data/tavern-env.json 只是「下次开机还记得」的持久化介质，已在 .gitignore 中（含口令）。
+// ==================================================================
+const DEFAULTS = {
+    TAVERN_URL: 'http://127.0.0.1:8000',
+    TAVERN_ENABLED: '1',
+    TAVERN_ADMIN_HANDLE: 'admin',
+    TAVERN_ADMIN_PASSWORD: '',
+    // 是否透传真实客户端 IP。默认不透传：ST 默认开白名单且只信任 127.0.0.1，
+    // 透传 LAN 真实 IP 会让它直接拒绝；又因为 ST 只能经本网关访问，视为 localhost 更安全。
+    TAVERN_FORWARD_REAL_IP: '0',
+};
+const DATA_FILE = path.join(__dirname, '..', 'data', 'tavern-env.json');
+
+function readFileCfg() {
+    try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) || {}; } catch (e) { return {}; }
+}
+function resolve() {
+    const file = readFileCfg();
+    const out = {};
+    for (const k of Object.keys(DEFAULTS)) {
+        out[k] = process.env[k] !== undefined ? String(process.env[k])
+            : (file[k] !== undefined ? String(file[k]) : DEFAULTS[k]);
+    }
+    return out;
+}
+let CFG = resolve();
+const upstreamOf = () => String(CFG.TAVERN_URL || DEFAULTS.TAVERN_URL).replace(/\/+$/, '') || DEFAULTS.TAVERN_URL;
+const enabledNow = () => CFG.TAVERN_ENABLED !== '0';
+const adminHandle = () => (CFG.TAVERN_ADMIN_HANDLE || DEFAULTS.TAVERN_ADMIN_HANDLE).trim() || DEFAULTS.TAVERN_ADMIN_HANDLE;
+const adminPassword = () => CFG.TAVERN_ADMIN_PASSWORD || '';
+const forwardRealIp = () => CFG.TAVERN_FORWARD_REAL_IP === '1';
+
+// 改配置后必须把缓存的管理员会话和状态探测作废，否则会用旧的密码/地址
+function invalidate() {
+    _admin = { cookie: '', at: 0, ok: false, msg: '' };
+    _status = { online: false, checkedAt: 0, note: '' };
+}
+function reload() { CFG = resolve(); invalidate(); return publicConfig(); }
+function configure(patch) {
+    const file = readFileCfg();
+    for (const k of Object.keys(DEFAULTS)) {
+        if (patch[k] === undefined) continue;
+        const v = String(patch[k]);
+        file[k] = v;
+        process.env[k] = v;   // 同步进环境变量，保证后台的修改优先级最高
+    }
+    try {
+        fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+        fs.writeFileSync(DATA_FILE, JSON.stringify(file, null, 2), 'utf8');
+    } catch (e) {
+        return { ok: false, msg: '写入 ' + DATA_FILE + ' 失败：' + e.message };
+    }
+    return { ok: true, config: reload() };
+}
+function publicConfig() {
+    return {
+        TAVERN_URL: upstreamOf(),
+        TAVERN_ENABLED: CFG.TAVERN_ENABLED,
+        TAVERN_ADMIN_HANDLE: adminHandle(),
+        TAVERN_ADMIN_PASSWORD: adminPassword(),
+        TAVERN_FORWARD_REAL_IP: CFG.TAVERN_FORWARD_REAL_IP,
+        hasPassword: !!adminPassword(),
+        file: DATA_FILE,
+    };
+}
 
 const HOP_BY_HOP = new Set([
     'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization',
@@ -35,7 +102,7 @@ const HOP_BY_HOP = new Set([
 
 // ------------------------------------------------------------------ 工具
 function pickUrl() {
-    const u = new URL(UPSTREAM);
+    const u = new URL(upstreamOf());
     return { proto: u.protocol === 'https:' ? https : http, host: u.hostname, port: u.port || (u.protocol === 'https:' ? 443 : 80), base: u.protocol + '//' + u.host };
 }
 function cleanReqHeaders(headers, clientIp) {
@@ -52,7 +119,7 @@ function cleanReqHeaders(headers, clientIp) {
     }
     out['host'] = pickUrl().base.replace(/^https?:\/\//, '');
     // ST 的默认白名单里只有 ::1 / 127.0.0.1；网关同机部署，一律按 localhost 放行
-    const visIp = FORWARD_REAL_IP && clientIp ? clientIp : '127.0.0.1';
+    const visIp = forwardRealIp() && clientIp ? clientIp : '127.0.0.1';
     out['x-forwarded-for'] = visIp;
     out['x-real-ip'] = visIp;
     out['x-forwarded-proto'] = 'http';
@@ -94,10 +161,10 @@ let _adminBusy = null;
 const ADMIN_TTL = 20 * 60 * 1000;
 
 async function adminSession(force) {
-    if (!ENABLED) { _admin.ok = false; _admin.msg = '未启用'; return _admin; }
-    if (!ADMIN_PASSWORD) {
+    if (!enabledNow()) { _admin.ok = false; _admin.msg = '未启用'; return _admin; }
+    if (!adminPassword()) {
         _admin.ok = false;
-        _admin.msg = '未配置 TAVERN_ADMIN_PASSWORD，无法自动开通账号';
+        _admin.msg = '未配置酒馆管理员密码，无法自动给玩家开号（可在管理后台「AI 酒馆」页填写）';
         return _admin;
     }
     if (!force && _admin.ok && Date.now() - _admin.at < ADMIN_TTL) return _admin;
@@ -121,7 +188,7 @@ async function adminSession(force) {
                     'X-Forwarded-For': '127.0.0.1',
                     'X-Real-IP': '127.0.0.1',
                 },
-                bodyBuf: Buffer.from(JSON.stringify({ username: ADMIN_HANDLE, password: ADMIN_PASSWORD })),
+                bodyBuf: Buffer.from(JSON.stringify({ username: adminHandle(), password: adminPassword() })),
             });
             // 会话 cookie 含 .sig 签名，必须整段原样回传，丢了就是 403
             if (login.setCookie.length) cookie = cookie + '; ' + cookiesToString(login.setCookie);
@@ -135,7 +202,7 @@ async function adminSession(force) {
             try { isAdmin = !!JSON.parse(me.buffer.toString('utf8')).admin; } catch (e) { }
             if (!isAdmin) {
                 _admin.ok = false;
-                _admin.msg = 'ST 账号 ' + ADMIN_HANDLE + ' 不是管理员，无法通过官方接口建号';
+                _admin.msg = 'ST 账号 ' + adminHandle() + ' 不是管理员，无法通过官方接口建号';
                 return _admin;
             }
             _admin = { cookie, at: Date.now(), ok: true, msg: '' };
@@ -240,8 +307,9 @@ let _status = { online: false, checkedAt: 0, note: '' };
 async function status(db, force) {
     if (!force && Date.now() - _status.checkedAt < 8000) return Object.assign({}, _status);
     const out = {
-        enabled: ENABLED, upstream: UPSTREAM, prefix: PREFIX, online: false,
+        enabled: enabledNow(), upstream: upstreamOf(), prefix: PREFIX, online: false,
         checkedAt: Date.now(), note: '', ssoHandles: [], user: null, admin: null, provisioned: false,
+        hasPassword: !!adminPassword(), handle: adminHandle(),
     };
     try {
         const base = pickUrl().base;
@@ -254,7 +322,7 @@ async function status(db, force) {
         // 等于把酒馆暴露到公网（面板能改 API Key）。config.yaml 默认 listen:false 就是只听本地，最安全。
         out.note = '连不上 SillyTavern（' + e.message + '）—— 请在它的目录直接执行 node server.js（不要加 --listen）';
     }
-    if (out.online && ADMIN_PASSWORD) {
+    if (out.online && adminPassword()) {
         const s = await adminSession();
         out.admin = { ok: s.ok, msg: s.msg };
     }
@@ -270,7 +338,7 @@ async function proxyRequest(req, res, deps) {
         res.writeHead(401, { 'Content-Type': 'text/plain; charset=utf-8' });
         return res.end('请先登录塔界远征，再进入 AI 酒馆');
     }
-    if (!ENABLED) {
+    if (!enabledNow()) {
         res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
         return res.end('SillyTavern 网关未启用');
     }
@@ -291,9 +359,12 @@ async function proxyRequest(req, res, deps) {
     const rest = req.url.slice(PREFIX.length) || '/';
     const target = pickUrl().base + (rest.startsWith('/') ? rest : '/' + rest);
     const headers = cleanReqHeaders(req.headers, clientIpOf(req));
-    if (prov.ok) {
+    // 即使没能开号也照样带 SSO 头：ST 若开了 Authelia 通道且能自行建号，这样仍可登录；
+    // 最差情况是退回 ST 自己的登录页，不会白屏。头永远由网关生成，客户端伪造的已在上面剥离。
+    const ssoHandle = (prov.ok && prov.handle) || slugifyHandle(user.username);
+    if (ssoHandle) {
         // Authelia 通道：只要网关在 sso.trustedProxies 里，ST 就会自动以该 handle 登录
-        for (const h of SSO_HEADERS) headers[h] = prov.handle;
+        for (const h of SSO_HEADERS) headers[h] = ssoHandle;
     }
 
     try {
@@ -326,7 +397,7 @@ async function proxyRequest(req, res, deps) {
                 .replace(/;\s*Secure/i, '')
                 .replace(/;\s*SameSite=[^;]*/i, '') + '; Path=/; SameSite=Lax');
             // WS 握手带不了 Authorization，这里顺手下发网关访问票（HttpOnly，12 小时）
-            if (prov.ok) {
+            if (ssoHandle) {
                 cookies.push('to_tavern=' + signTicket(deps.DB, user.id) + '; Path=/; HttpOnly; SameSite=Lax');
             }
             res.writeHead(ures.statusCode, Object.assign(outHeaders, { 'Set-Cookie': cookies }));
@@ -348,8 +419,8 @@ async function proxyRequest(req, res, deps) {
 
 // WebSocket 透传（ST 的 socket.io 走长连接，缺了它页面能开但收发消息卡死）
 function attachUpgrade(server, deps) {
-    if (!ENABLED) return;
     server.on('upgrade', (req, socket, head) => {
+        if (!enabledNow()) return;
         if (!String(req.url || '').startsWith(PREFIX)) return;
         const ck = parseCookies(req.headers.cookie);
         const uid = verifyTicket(deps.DB, ck.to_tavern);
@@ -389,8 +460,59 @@ function attachUpgrade(server, deps) {
     });
 }
 
+// ------------------------------------------------------------------ 连通性自检 / 端口扫描
+// 目的：管理后台点一下就能知道「ST 起没起、在哪、密码对不对、能不能开号」，
+// 不用去服务器上敲命令。
+async function testConnection(patch) {
+    const keep = CFG;
+    try {
+        if (patch && Object.keys(patch).length) {
+            for (const k of Object.keys(DEFAULTS)) {
+                if (patch[k] !== undefined) CFG[k] = String(patch[k]);
+            }
+            invalidate();
+        }
+        const st = await status(null, true);
+        let provision = null;
+        if (st.online && adminPassword() && st.admin && st.admin.ok) {
+            // 用一次真实建号来验证「能不能给玩家自动开号」，跑完不留垃圾账号
+            const probe = '__probe_' + Date.now();
+            const r = await ensureUser(probe, probe);
+            provision = { ok: r.ok, msg: r.msg || '', created: !!r.created };
+        }
+        return {
+            ok: !!st.online, online: !!st.online, note: st.note || '',
+            upstream: st.upstream, enabled: st.enabled, handle: st.handle,
+            admin: st.admin, provision,
+        };
+    } finally {
+        CFG = keep;   // 测试用的临时配置不要留在运行时
+        invalidate();
+    }
+}
+
+// 扫本机常见端口找 SillyTavern（默认 8000，改过端口或多人共用时很有用）
+async function scanPorts(from, to) {
+    const a = Number(from) || 8000, b = Number(to) || 8010;
+    const found = [];
+    const jobs = [];
+    for (let p = a; p <= b && p < 65536; p++) {
+        const port = p;
+        jobs.push((async () => {
+            try {
+                const r = await rawRequest('GET', 'http://127.0.0.1:' + port + '/csrf-token', { timeoutMs: 1200 });
+                if (r.status < 500) found.push(port);
+            } catch (e) { /* 端口没开 */ }
+        })());
+    }
+    await Promise.all(jobs);
+    return found.sort((x, y) => x - y);
+}
+
 module.exports = {
-    PREFIX, ENABLED, UPSTREAM,
+    PREFIX,
     proxyRequest, attachUpgrade, status, ensureUser, adminSession,
     signTicket, verifyTicket, slugifyHandle,
+    // 配置热更新（管理后台用）
+    getConfig: publicConfig, configure, reload, testConnection, scanPorts,
 };
