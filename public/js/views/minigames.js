@@ -55,7 +55,10 @@ const MinigamesView = {
         document.body.appendChild(mask);
         const stage = document.getElementById('mini-stage');
         const scoreEl = document.getElementById('mini-score');
+        // 保存当前游戏控制器，关闭时先 stop()（回收 RAF / 键盘监听 / 粒子 / 音频），再移除遮罩，避免性能泄漏（见 issue #3）
+        let ctrl = null;
         const close = () => {
+            try { ctrl && ctrl.stop && ctrl.stop(); } catch (e) {}
             mask.remove();
         };
         document.getElementById('mini-back').onclick = close;
@@ -65,10 +68,11 @@ const MinigamesView = {
             // 暗棋保留自己的关卡流程（猜拳→对局），走自己的 start
             if (g.id === 'banqi') {
                 const inst = game.start(stage, { onScore: s => scoreEl.textContent = s != null ? s : '' });
+                ctrl = inst;   // banqi 实例自带 stop()
                 inst && (inst._close = close);
             } else {
                 const levels = (game.LEVELS && game.LEVELS.length) ? game.LEVELS : defaultLevels(g);
-                MG.runGame(stage, {
+                ctrl = MG.runGame(stage, {
                     id: g.id, title: g.name, levels,
                     endless: game.ENDLESS || null,
                     start: (c, opts, lv) => game.start(c, opts, lv),
@@ -76,7 +80,7 @@ const MinigamesView = {
                 });
             }
         } catch (e) {
-            stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
+            stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${MG.escapeHtml(e.message)}</div>`;
         }
     }
 };

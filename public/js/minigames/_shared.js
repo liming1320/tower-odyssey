@@ -86,20 +86,19 @@ const MG = {
 
         // ---------- 质感背景（带缓存）----------
         // 内容：底色渐变 → 中心柔光 → 微网格 → 四角暗角 → 顶亮/底暗边
+        // 命中时刷新到队尾（维持严格 LRU 顺序，避免高频场景被新键挤掉）；达到上限淘汰队首
         scene(ctx, W, H, c1, c2) {
             const scale = ctx.__mgScale || 1;
             const key = `s|${c1}|${c2}|${W}x${H}|${scale.toFixed(2)}`;
             let img = this._cache.get(key);
-            if (!img) {
-                img = this._buildScene(W, H, c1, c2, scale);
-                if (this._cache.size >= this.MAX_CACHE) {
-                    // 简易 LRU：淘汰最早的一个
-                    this._cache.delete(this._cache.keys().next().value);
-                }
-                this._cache.set(key, img);
-            }
+            if (img) { this._cache.delete(key); this._cache.set(key, img); return ctx.drawImage(img, 0, 0, W, H); }
+            img = this._buildScene(W, H, c1, c2, scale);
+            if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
+            this._cache.set(key, img);
             ctx.drawImage(img, 0, 0, W, H);
         },
+        // 手动清理缓存（切后台 / 大量换肤 / 内存紧张时调用）
+        clearCache() { this._cache.clear(); },
         _buildScene(W, H, c1, c2, scale) {
             const cv = document.createElement('canvas');
             cv.width = Math.max(1, Math.round(W * scale));
@@ -565,9 +564,11 @@ const MG = {
     //   MG.tw.to(obj, { x: 100, y: 20 }, 0.3, { ease:'outBack', onDone(){} })
     //   MG.tw.add({ dur:.4, ease:'outCubic', delay:.1, onUpdate(v){}, onDone(){} })
     // E.game 每帧自动 update(dt)；stop 时 clear()，不留残留。
-    tw: {
-        list: [],
-        EASE: {
+    // 缓动补间：做成「工厂」而非单例，让每个游戏实例持有独立 pool，
+    // 避免全局 MG.tw.list 跨游戏残留、stop() 后还在改旧状态对象（见 issue #4）。
+    makeTweenPool() {
+        const list = [];
+        const EASE = {
             linear: t => t,
             inQuad: t => t * t,
             outQuad: t => t * (2 - t),
@@ -577,44 +578,38 @@ const MG = {
             outBack: t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
             outElastic: t => { const c4 = Math.PI * 2 / 3; return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1; },
             outBounce: t => { const n1 = 7.5625, d1 = 2.75; if (t < 1 / d1) return n1 * t * t; if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + .75; if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + .9375; return n1 * (t -= 2.625 / d1) * t + .984375; },
-        },
-        add(o) {
-            o = o || {};
-            const it = {
-                t: 0, dur: o.dur != null ? o.dur : 0.3,
-                ease: typeof o.ease === 'function' ? o.ease : (this.EASE[o.ease] || this.EASE.outCubic),
-                onUpdate: o.onUpdate, onDone: o.onDone, delay: o.delay || 0,
-            };
-            this.list.push(it);
-            return it;
-        },
-        to(target, props, dur, o) {
-            o = o || {};
-            const keys = Object.keys(props), from = {};
-            keys.forEach(k => { from[k] = target[k] || 0; });
-            return this.add({
-                dur, ease: o.ease || 'outCubic', delay: o.delay,
-                onUpdate: (v) => {
-                    for (let i = 0; i < keys.length; i++) { const k = keys[i]; target[k] = from[k] + (props[k] - from[k]) * v; }
-                    o.onUpdate && o.onUpdate(v);
-                },
-                onDone: o.onDone,
-            });
-        },
-        update(dt) {
-            const L = this.list;
-            for (let i = L.length - 1; i >= 0; i--) {
-                const it = L[i];
-                if (it.delay > 0) { it.delay -= dt; continue; }
-                it.t += dt;
-                const raw = it.dur > 0 ? Math.min(1, it.t / it.dur) : 1;
-                it.onUpdate && it.onUpdate(it.ease(raw), raw);
-                if (raw >= 1) { L.splice(i, 1); it.onDone && it.onDone(); }
-            }
-        },
-        clear() { this.list.length = 0; },
-        get count() { return this.list.length; },
+        };
+        return {
+            EASE, list,
+            add(o) {
+                o = o || {};
+                const it = { t: 0, dur: o.dur != null ? o.dur : 0.3, ease: typeof o.ease === 'function' ? o.ease : (EASE[o.ease] || EASE.outCubic), onUpdate: o.onUpdate, onDone: o.onDone, delay: o.delay || 0 };
+                list.push(it);
+                return it;
+            },
+            to(target, props, dur, o) {
+                o = o || {};
+                const keys = Object.keys(props), from = {};
+                keys.forEach(k => { from[k] = target[k] || 0; });
+                return this.add({ dur, ease: o.ease || 'outCubic', delay: o.delay, onUpdate: (v) => { for (let i = 0; i < keys.length; i++) { const k = keys[i]; target[k] = from[k] + (props[k] - from[k]) * v; } o.onUpdate && o.onUpdate(v); }, onDone: o.onDone });
+            },
+            update(dt) {
+                for (let i = list.length - 1; i >= 0; i--) {
+                    const it = list[i];
+                    if (it.delay > 0) { it.delay -= dt; continue; }
+                    it.t += dt;
+                    const raw = it.dur > 0 ? Math.min(1, it.t / it.dur) : 1;
+                    it.onUpdate && it.onUpdate(it.ease(raw), raw);
+                    if (raw >= 1) { list.splice(i, 1); it.onDone && it.onDone(); }
+                }
+            },
+            clear() { list.length = 0; },
+            get count() { return list.length; },
+        };
     },
+    _tw: null,
+    // 向后兼容：保留全局默认 pool（如老代码直接调 MG.tw.to）；新游戏应改用 api.tw（实例隔离）
+    get tw() { return this._tw || (this._tw = this.makeTweenPool()); },
 
     // ================= 相机（平移 / 缩放 / 震屏）=================
     // 用法：cam.shake(6, .28) 命中反馈；cam.set(x, y, zoom) 跟随。
@@ -780,12 +775,19 @@ const MG = {
             const ctx = this.init(); if (!ctx) return;
             const dur = o.dur || 0.1;
             const t0 = ctx.currentTime + (o.delay || 0);
-            try {
+            // 复用按时长+衰减缓存的噪声 buffer，避免高频触发（弹幕/射击/弹球）反复生成随机采样造成 GC 压力
+            const key = dur.toFixed(3) + '_' + (o.decay == null ? 1 : o.decay);
+            let buf = this._noiseBuf && this._noiseBuf[key];
+            if (!buf) {
                 const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
-                const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+                buf = ctx.createBuffer(1, len, ctx.sampleRate);
                 const d = buf.getChannelData(0);
                 const decay = o.decay == null ? 1 : o.decay;
                 for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+                this._noiseBuf = this._noiseBuf || {};
+                this._noiseBuf[key] = buf;
+            }
+            try {
                 const src = ctx.createBufferSource(); src.buffer = buf;
                 const f = ctx.createBiquadFilter();
                 f.type = o.type || 'bandpass';
@@ -939,10 +941,16 @@ const MG = {
         // 暴露给游戏在 viewport 变化后强制重排
         parent.__mgRefit = fit;
         window.addEventListener('resize', fit);
+        // 监听父容器尺寸变化（侧栏展开 / 弹窗 / 旋转 / 容器变化但窗口不变），销毁时断开
+        let ro = null;
+        if (typeof ResizeObserver !== 'undefined') {
+            ro = new ResizeObserver(() => { try { fit(); } catch (e) {} });
+            try { ro.observe(parent); } catch (e) { ro = null; }
+        }
         // 绑在 canvas 上：让 MG.bind / 自定义事件处理能从 c.__mgW 推出 deviceScale
         // （不依赖 ctx.__mgScale，因为部分外部代码取不到 ctx）
         c.__mgW = w; c.__mgH = h;
-        return { c, ctx, w, h, fit, destroy() { window.removeEventListener('resize', fit); } };
+        return { c, ctx, w, h, fit, destroy() { window.removeEventListener('resize', fit); if (ro) { try { ro.disconnect(); } catch (e) {} } } };
     },
     // 简单按钮覆盖层
     overlay(parent, html) {
@@ -994,10 +1002,24 @@ const MG = {
 
     // ================= 关卡进度系统（localStorage 持久化 + 服务器同步）=================
     PKEY: 'mg-progress-v1',
+    PROG_V: 1,
+    // 读取进度：支持「版本包裹 {v, games}」与「旧版裸 games map」两种格式，损坏数据自动备份
     progress() {
-        try { return JSON.parse(localStorage.getItem(this.PKEY)) || {}; } catch (e) { return {}; }
+        let raw = null;
+        try {
+            raw = localStorage.getItem(this.PKEY);
+            if (!raw) return {};
+            const obj = JSON.parse(raw);
+            if (obj && obj.v === this.PROG_V && obj.games) return obj.games;   // 新版
+            if (obj && typeof obj === 'object' && !obj.v) return obj;            // 兼容旧版（无版本包裹）
+            return {};
+        } catch (e) {
+            if (raw) { try { localStorage.setItem('mg-progress-corrupt-' + Date.now(), raw); } catch (_) {} }
+            return {};
+        }
     },
-    saveProgress(p) { try { localStorage.setItem(this.PKEY, JSON.stringify(p)); } catch (e) {} },
+    // 写入进度：统一包裹版本号，便于将来迁移；多标签页用 storage 事件合并（见 sync）
+    saveProgress(p) { try { localStorage.setItem(this.PKEY, JSON.stringify({ v: this.PROG_V, games: p || {} })); } catch (e) {} },
     getGameProgress(gameId) {
         return this.progress()[gameId] || { unlocked: 1, stars: {} };
     },
@@ -1007,11 +1029,13 @@ const MG = {
         const p = this.progress();
         const g = p[gameId] || { unlocked: 1, stars: {} };
         const old = g.stars[level] || 0;
-        if (stars > old) g.stars[level] = stars;
+        const improved = stars > old;                       // 仅首次通关 / 升星才变化
+        if (improved) g.stars[level] = stars;
         if (level > 0 && stars > 0 && level >= g.unlocked) g.unlocked = level + 1;
         p[gameId] = g;
         this.saveProgress(p);
-        this.report(gameId, level, stars);
+        // 仅首次/升星上报：避免重复通关反复下发奖励（服务端仍需幂等兜底，见 issue #20/#21）
+        if (improved) this.report(gameId, level, stars);
         return g;
     },
     totalStars(gameId) {
@@ -1177,7 +1201,7 @@ const MG = {
         wrap.className = 'mg-levelsel';
         const total = Object.values(p.stars).reduce((a, b) => a + b, 0);
         const maxTotal = fullLevels.length * 3;
-        wrap.innerHTML = `<div class="mg-ls-title">${cfg.title}
+        wrap.innerHTML = `<div class="mg-ls-title">${MG.escapeHtml(cfg.title)}
             <span class="mg-ls-total">⭐ ${total}/${maxTotal}</span></div>`;
         // 排行榜条
         const rankBar = document.createElement('div');
@@ -1194,8 +1218,8 @@ const MG = {
             const el = document.createElement('div');
             el.className = 'mg-ls-cell' + (locked ? ' locked' : (st > 0 ? ' done' : ''));
             el.innerHTML = `<div class="mg-ls-num">${locked ? '🔒' : n}</div>
-                <div class="mg-ls-name">${lv.name || ''}</div>
-                <div class="mg-ls-desc" title="${lv.desc || ''}">${lv.desc || ''}</div>
+                <div class="mg-ls-name">${MG.escapeHtml(lv.name)}</div>
+                <div class="mg-ls-desc" title="${MG.escapeHtml(lv.desc)}">${MG.escapeHtml(lv.desc)}</div>
                 <div class="mg-ls-stars">${'★'.repeat(st)}<span>${'☆'.repeat(3 - st)}</span></div>`;
             if (!locked) el.onclick = () => { wrap.remove(); cfg.onStart(idx, lv); };
             grid.appendChild(el);
@@ -1218,9 +1242,9 @@ const MG = {
         o.className = 'mg-result';
         o.innerHTML = `
             <div class="mg-result-card">
-                <div class="mg-result-title">${cfg.title || (cfg.win ? '🏆 胜利！' : '💥 失败')}</div>
+                <div class="mg-result-title">${MG.escapeHtml(cfg.title) || (cfg.win ? '🏆 胜利！' : '💥 失败')}</div>
                 ${cfg.stars != null ? `<div class="mg-result-stars">${'<i>★</i>'.repeat(cfg.stars)}${'<i class="off">☆</i>'.repeat(3 - cfg.stars)}</div>` : ''}
-                <div class="mg-result-lines">${(cfg.lines || []).map(l => `<div>${l}</div>`).join('')}</div>
+                <div class="mg-result-lines">${(cfg.lines || []).map(l => `<div>${MG.escapeHtml(l)}</div>`).join('')}</div>
                 <div class="mg-result-btns">
                     <button class="mg-btn" data-a="retry">↻ 重试</button>
                     ${cfg.hasNext ? '<button class="mg-btn primary" data-a="next">下一关 ›</button>' : ''}
@@ -1270,7 +1294,7 @@ const MG = {
             <div style="max-height:380px;overflow:auto;margin-top:8px">
             ${data.list.length ? `<table style="width:100%;font-size:13px;border-collapse:collapse">
                 <tr style="color:#ffd56b;border-bottom:1px solid #555"><th style="padding:4px;text-align:left">#</th><th style="text-align:left">玩家</th><th style="text-align:right">积分</th></tr>
-                ${data.list.map((x, i) => `<tr style="border-bottom:1px solid #2a3450"><td style="padding:5px;color:${i < 3 ? '#ffd56b' : '#7a90d8'};font-weight:bold">${x.rank}</td><td>${x.isAdmin ? '👑 ' : ''}${x.nickname || ''}</td><td style="text-align:right;color:#5cc7ff;font-weight:bold">${x.score}</td></tr>`).join('')}
+                ${data.list.map((x, i) => `<tr style="border-bottom:1px solid #2a3450"><td style="padding:5px;color:${i < 3 ? '#ffd56b' : '#7a90d8'};font-weight:bold">${x.rank}</td><td>${x.isAdmin ? '👑 ' : ''}${MG.escapeHtml(x.nickname)}</td><td style="text-align:right;color:#5cc7ff;font-weight:bold">${x.score}</td></tr>`).join('')}
                 </table>` : '<p style="color:#7a90d8;padding:30px;text-align:center">还没人上榜，快来当第一名！</p>'}
             </div>
             <div class="modal-actions" style="margin-top:10px"><button class="btn" onclick="U.closeModal()">关闭</button></div>`;
@@ -1604,8 +1628,35 @@ const MG = {
     haptics(pattern) {
         try { if (navigator.vibrate) { const p = typeof pattern === 'string' ? (MG.haptics.P[pattern] || [10]) : pattern; navigator.vibrate(p); } } catch (e) { }
     },
+    // ---------- 安全与错误上报 ----------
+    // HTML 转义：所有外部/服务端数据（榜单昵称、关卡名、描述、结算行）渲染前必须经过它
+    escapeHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    },
+    // 统一错误入口：引擎在 draw/tick 异常时调用。测试模式（__MG_TEST）继续抛出交给断言；
+    // 生产模式记录上下文（游戏 ID / 阶段）并交由引擎优雅停机 + 提示。
+    onError(err, ctx) {
+        const info = Object.assign({ ts: Date.now() }, ctx || {});
+        try { console.error('[MG] 游戏异常', info, err); } catch (e) {}
+        if (window.__MG_TEST) throw err;
+        return err;
+    },
+    showGameError(parent) {
+        try {
+            const el = document.createElement('div');
+            el.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(20,24,40,.92);color:#ff9aa6;padding:14px 18px;border-radius:10px;font-size:14px;z-index:99;text-align:center;pointer-events:none';
+            el.textContent = '游戏异常，请重试';
+            (parent || document.body).appendChild(el);
+            setTimeout(() => el.remove(), 2600);
+        } catch (e) {}
+    },
+    // 无尽模式最高分存储键（此前 bestKey 未定义，导致 setBest 永远静默失败）
+    bestKey(id) { return 'mg-best-' + String(id); },
     getBest(id) { try { return +(localStorage.getItem(this.bestKey(id)) || 0); } catch (e) { return 0; } },
     setBest(id, v) {
+        v = Number(v) || 0;
         if (v > this.getBest(id)) { try { localStorage.setItem(this.bestKey(id), String(v)); } catch (e) {} }
         return this.getBest(id);
     },

@@ -11,6 +11,16 @@ window.MG = window.MG || {};
     // ---------------- canvas 游戏引擎 ----------------
     // cfg: { w,h, hint, init(P), draw(ctx,S,P,W,H,api), tap(S,x,y,P,api),
     //        key(S,k,P,api), tick(S,dt,P,api), score(S,P), check(S,P) }
+    // 统一调度器：优先 requestAnimationFrame，缺失时退化为 setTimeout（嵌入 WebView / 旧浏览器 / 测试环境，见 issue #5）
+    function scheduler() {
+        const raf = (typeof requestAnimationFrame === 'function') ? requestAnimationFrame : null;
+        return {
+            schedule(cb) { return raf ? raf(cb) : setTimeout(() => cb(now()), 16); },
+            cancel(id) { try { (raf ? cancelAnimationFrame : clearTimeout)(id); } catch (e) { } },
+        };
+    }
+    function now() { return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now(); }
+
     E.game = function (container, opts, cfg) {
         const P = Object.assign({ endless: !!opts.endless }, opts.level || {});
         P.endless = !!opts.endless;
@@ -20,22 +30,41 @@ window.MG = window.MG || {};
         const S = (cfg.init ? cfg.init(P) : {}) || {};
         S.t = 0;
         if (window.__MG_TEST) window.__mgS = S;   // 测试模式暴露状态，便于 headless 断言
-        let raf = null, last = Date.now(), stopped = false, done = false;
-        // 每个游戏实例独立的粒子池与相机（stop() 自动清理，不会串到下一款游戏）
+        let rafId = null, last = now(), stopped = false, done = false, paused = false;
+        const SCH = scheduler();
+        // 每个游戏实例独立的粒子池 / 相机 / 补间池（stop() 自动清理，互不干扰，见 issue #4）
         const fx = MG.fxPool ? MG.fxPool() : null;
         const cam = MG.cam ? MG.cam() : null;
+        const tw = (MG.makeTweenPool ? MG.makeTweenPool() : MG.tw);
+        // 结算结果规范化：stars 限 0~3、score 必须为有限数、lines 必须为数组（见 issue #9）
+        const norm = (res) => {
+            res = res || {};
+            let stars = res.stars != null ? res.stars : (res.win ? 3 : 0);
+            stars = Math.max(0, Math.min(3, Math.floor(Number(stars)) || 0));
+            const score = Number.isFinite(res.score) ? Number(res.score) : 0;
+            const lines = Array.isArray(res.lines) ? res.lines.map(String) : (typeof res.lines === 'string' ? [res.lines] : []);
+            return { win: !!(res.win || stars > 0), stars, score, lines };
+        };
+        const onError = (e, phase) => {
+            try { MG.onError && MG.onError(e, { phase, gameId: cfg.id, opts: opts && opts.level && opts.level._id }); } catch (_) {}
+            if (window.__MG_TEST) throw e;
+            stopped = true;
+            try { MG.showGameError && MG.showGameError(c.parentElement || container); } catch (_) {}
+        };
 
         const api = {
             finish(res) {
                 if (done) return;
                 done = true;
-                const stars = res.stars != null ? res.stars : (res.win ? 3 : 0);
-                opts.onComplete && opts.onComplete(Object.assign({ win: false, stars, score: 0, lines: [] }, res, { stars }));
+                const r = norm(res);
+                opts.onComplete && opts.onComplete(Object.assign({ win: false, stars: 0, score: 0, lines: [] }, r, { stars: r.stars, win: r.win }));
             },
             get over() { return done; },
+            pause() { paused = true; },
+            resume() { if (paused) { paused = false; last = now(); } },   // 恢复时重置时间基准，避免 dt 跳变
+            get isPaused() { return paused; },
             P, S, W, H, ctx, draw: () => paint(),
-            // ---- 表现力 API（粒子 / 相机 / 补间 / 角色 / 音效 / 触感），游戏可直接调用 ----
-            fx, cam, tw: MG.tw,
+            fx, cam, tw,
             boom: (x, y, o) => fx && fx.burst(x, y, o),
             pop: (x, y, s, o) => fx && fx.text(x, y, s, o),
             ring: (x, y, o) => fx && fx.ring(x, y, o),
@@ -43,101 +72,109 @@ window.MG = window.MG || {};
             char: MG.char,
             sfx: MG.audio,
             haptics: MG.haptics,
-            flash: (c, a, d, o) => fx && fx.flash(c, a, d, o),
+            flash: (c2, a, d, o) => fx && fx.flash(c2, a, d, o),
             hitstop: (ms) => fx && fx.hitstop(ms),
             trail: (x, y, o) => fx && fx.trail(x, y, o),
-            glow: (x, y, r, c, o) => MG.gfx.glow(ctx, x, y, r, c, o),
+            glow: (x, y, r, c2, o) => MG.gfx.glow(ctx, x, y, r, c2, o),
             bar: (x, y, w, h, rt, o) => MG.gfx.bar(ctx, x, y, w, h, rt, o),
         };
         const paint = () => {
             ctx.clearRect(0, 0, W, H);
             ctx.save();
-            // 相机变换（震屏/平移/缩放）→ 游戏绘制 → 粒子层（同受相机影响）
             if (cam) cam.apply(ctx, W, H);
-            try { cfg.draw && cfg.draw(ctx, S, P, W, H, api); } catch (e) { if (window.__MG_TEST) throw e; }
+            try { cfg.draw && cfg.draw(ctx, S, P, W, H, api); } catch (e) { onError(e, 'draw'); }
             if (fx) fx.draw(ctx, W, H);
             ctx.restore();
         };
         const pos = e => {
             const r = c.getBoundingClientRect();
             const sx = W / (r.width || W), sy = H / (r.height || H);
-            const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
-            return { x: (t.clientX - r.left) * sx, y: (t.clientY - r.top) * sy };
+            return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
         };
+        // ---- Pointer Events 统一鼠标 + 触摸（替代分散的 mouse*/touch* 监听，清理更可靠，见 issue #2/#15）----
         const onDown = e => {
-            if (done || stopped) return;
+            if (done || stopped || paused) return;
+            try { c.setPointerCapture && c.setPointerCapture(e.pointerId); } catch (_) {}
             const p = pos(e);
             if (cfg.tap) { cfg.tap(S, p.x, p.y, P, api); paint(); }
-            if (cfg.drag) {
-                api._dragStart = { x: p.x, y: p.y, ox: (S.ox != null ? S.ox : 0), oy: (S.oy != null ? S.oy : 0) };
-            }
+            if (cfg.drag) api._dragStart = { x: p.x, y: p.y, ox: (S.ox != null ? S.ox : 0), oy: (S.oy != null ? S.oy : 0) };
         };
         const onMove = e => {
-            if (done || stopped || !api._dragStart || !cfg.drag) return;
+            if (done || stopped || paused || !api._dragStart || !cfg.drag) return;
             e.preventDefault();
             const p = pos(e);
             const dx = p.x - api._dragStart.x, dy = p.y - api._dragStart.y;
             cfg.drag(S, p.x, p.y, P, api, dx, dy); paint();
         };
         const onUp = e => {
-            // 拖拽松手回调（cfg.dragend）：返回松手位置，供纸牌类游戏做落点判定
             if (api._dragStart && cfg.dragend) {
-                const p = (e && (e.clientX != null || (e.changedTouches && e.changedTouches.length))) ? pos(e) : null;
+                let p = null;
+                try { const q = pos(e); p = { x: q.x, y: q.y }; } catch (_) {}
                 try { cfg.dragend(S, p ? p.x : null, p ? p.y : null, P, api); } catch (err) { if (window.__MG_TEST) throw err; }
                 paint();
             }
             api._dragStart = null;
         };
         const onKey = e => {
-            if (done || stopped || !cfg.key) return;
+            if (done || stopped || paused || !cfg.key) return;
+            // 由游戏声明需要拦截的按键（如方向键/空格），只对这些键 preventDefault，避免误拦（见 issue #16）
+            if (cfg.preventKeys && cfg.preventKeys.indexOf(e.key) >= 0) { try { e.preventDefault(); } catch (_) {} }
             cfg.key(S, e.key, P, api); paint();
         };
-        c.addEventListener('mousedown', onDown);
-        c.addEventListener('mousemove', onMove);
-        c.addEventListener('mouseup', onUp);
-        c.addEventListener('mouseleave', onUp);
-        c.addEventListener('touchstart', e => { e.preventDefault(); onDown(e); }, { passive: false });
-        c.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, { passive: false });
-        c.addEventListener('touchend', onUp);
+        c.addEventListener('pointerdown', onDown);
+        c.addEventListener('pointermove', onMove);
+        c.addEventListener('pointerup', onUp);
+        c.addEventListener('pointercancel', onUp);
         if (cfg.key) window.addEventListener('keydown', onKey);
+        // 切后台自动暂停：避免敌人继续移动 / 计时继续 / 音频持续（见 issue #17）
+        const onVis = () => { if (document.hidden) api.pause(); else api.resume(); };
+        document.addEventListener('visibilitychange', onVis);
 
         const loop = () => {
             if (stopped || done) return;
-            const now = Date.now();
-            const dt = Math.min(0.05, (now - last) / 1000);
-            last = now; S.t += dt;
+            if (!c.isConnected) { stopped = true; return; }   // 兜底：画布已从 DOM 移除时停机（见 issue #3）
+            rafId = SCH.schedule(loop);
+            if (paused) { paint(); return; }                    // 暂停时只重绘，不推进模拟
+            const t = now();
+            const dt = Math.max(0, Math.min(0.05, (t - last) / 1000));   // dt 限幅 [0,50ms]：防负 dt、防后台恢复跳变（issue #6）
+            last = t; S.t += dt;
             try {
                 if (fx && fx._hs > 0) {
                     // 顿帧：冻结 tick 与物理，营造打击感
                     fx._hs -= dt; if (fx._hs < 0) fx._hs = 0;
                 } else {
                     // 补间 / 粒子 / 相机统一在 tick 之前推进，保证当帧即可见
-                    if (MG.tw) MG.tw.update(dt);
+                    if (tw) tw.update(dt);
                     if (fx) fx.update(dt);
                     if (cam) cam.update(dt);
                     if (cfg.tick) cfg.tick(S, dt, P, api);
                     if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
                     if (cfg.check && !done) { const r = cfg.check(S, P); if (r) { api.finish(r); return; } }
                 }
-            } catch (err) { if (window.__MG_TEST) throw err; }
+            } catch (err) { onError(err, 'tick'); return; }
             paint();
-            raf = (typeof requestAnimationFrame === 'function') ? requestAnimationFrame(loop) : null;
         };
         if (cfg.hint) MG.hint(container, cfg.hint);
         paint();
         if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
-        if (typeof requestAnimationFrame === 'function') raf = requestAnimationFrame(loop);
+        rafId = SCH.schedule(loop);
         return {
             stop() {
                 stopped = true;
-                if (raf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(raf);
-                c.removeEventListener('mousedown', onDown);
-                c.removeEventListener('mousemove', onMove);
-                c.removeEventListener('mouseup', onUp);
-                c.removeEventListener('mouseleave', onUp);
+                if (rafId) SCH.cancel(rafId);
+                c.removeEventListener('pointerdown', onDown);
+                c.removeEventListener('pointermove', onMove);
+                c.removeEventListener('pointerup', onUp);
+                c.removeEventListener('pointercancel', onUp);
                 if (cfg.key) window.removeEventListener('keydown', onKey);
+                document.removeEventListener('visibilitychange', onVis);
+                if (tw) tw.clear();
+                if (cam && cam.reset) cam.reset();
                 cv.destroy();
             },
+            pause: () => api.pause(),
+            resume: () => api.resume(),
+            get isPaused() { return paused; },
         };
     };
 
@@ -161,8 +198,13 @@ window.MG = window.MG || {};
             finish(res) {
                 if (done) return;
                 done = true;
-                const stars = res.stars != null ? res.stars : (res.win ? 3 : 0);
-                opts.onComplete && opts.onComplete(Object.assign({ win: false, stars, score: 0, lines: [] }, res, { stars }));
+                res = res || {};
+                let stars = res.stars != null ? res.stars : (res.win ? 3 : 0);
+                stars = Math.max(0, Math.min(3, Math.floor(Number(stars)) || 0));
+                const score = Number.isFinite(res.score) ? Number(res.score) : 0;
+                const lines = Array.isArray(res.lines) ? res.lines.map(String) : (typeof res.lines === 'string' ? [res.lines] : []);
+                const win = !!(res.win || stars > 0);
+                opts.onComplete && opts.onComplete(Object.assign({ win: false, stars: 0, score: 0, lines: [] }, res, { stars, score, lines, win }));
             },
             get over() { return done; },
             P, S, root,
