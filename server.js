@@ -2715,6 +2715,9 @@ api['GET /api/admin/minigame/order'] = (req, res) => {
 // ---- 经典模拟器 ROM 库：管理员上传（存 data/roms/ 磁盘文件，元数据进 DB）· 全员游玩 ----
 // ROM 是二进制大文件，不适合塞进 db.json / MySQL 表；业界通行做法（yikm/dos.lol 同理）都是磁盘文件 + 元数据入库
 const ROMS_DIR = path.join(DATA_DIR, 'roms');
+// 图鉴「上传到服务器」的收件箱：项目部署在服务器上时，管理员本地的 ROM 目录
+// （如 F:\…\roms）服务器根本读不到，只能先把 ZIP 传到服务器的这个目录再扫描。
+const ROM_INBOX_DIR = path.join(ROMS_DIR, 'inbox');
 const ROM_MAX_BYTES = 512 * 1024 * 1024;   // 单文件上限 512MB（PS1 级别也够）
 // arcade 是历史遗留的泛化值（只吃 FBA v0.2.97.42 ROM 集，容易踩坑），保留用于兼容旧数据。
 // 街机新上传统一用 fbneo —— 一个核心同时覆盖 Neo Geo / CPS1 / CPS2，是 EmulatorJS 官方默认 arcade 核心。
@@ -3001,7 +3004,87 @@ api['POST /api/roms/delete'] = (req, res, body) => {
 api['GET /api/admin/roms/catalog'] = (req, res) => {
     if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员' });
     const st = romCatalog.status();
-    sendJson(res, 200, { catalog: st, zh: romCatalog.zh, platforms: romCatalog.PLATFORMS });
+    sendJson(res, 200, {
+        catalog: st, zh: romCatalog.zh, platforms: romCatalog.PLATFORMS,
+        // 服务器部署时管理员需要知道「往哪儿传、填什么路径」，这里直接把绝对路径给前端
+        server: {
+            platform: process.platform,
+            inboxDir: ROM_INBOX_DIR,
+            romsDir: ROMS_DIR,
+            cwd: ROOT,
+        },
+        inbox: romInboxList(),
+    });
+};
+// 收件箱：列出已上传到服务器的 ZIP（图鉴扫描的默认目标）
+function romInboxList() {
+    let files = [];
+    try {
+        files = fs.readdirSync(ROM_INBOX_DIR).filter(n => /\.zip$/i.test(n)).map(n => {
+            let size = 0, mtime = 0;
+            try { const st = fs.statSync(path.join(ROM_INBOX_DIR, n)); size = st.size; mtime = st.mtimeMs; } catch (e) { }
+            return { file: n, shortName: n.replace(/\.zip$/i, '').toLowerCase(), size, mtime };
+        });
+    } catch (e) { files = []; }
+    files.sort((a, b) => String(a.file).localeCompare(String(b.file)));
+    let total = 0; for (const f of files) total += f.size;
+    return { dir: ROM_INBOX_DIR, files, count: files.length, total };
+}
+// 收件箱上传：原始字节流（同 ROM 上传），文件名通过 query 传（短名必须保持原样）
+api['POST /api/admin/roms/inbox/upload'] = (req, res) => {
+    if (!romAdminOk(req)) { sendJson(res, 403, { error: '仅管理员' }); req.resume(); return; }
+    const q = url.parse(req.url, true).query;
+    const raw = String(q.fileName || q.name || '').slice(0, 180);
+    // 只保留安全字符；非 ZIP 一律拒收（图鉴只认 ZIP）
+    const safe = raw.replace(/[<>&"'\/\\:*?|]/g, '_').replace(/^\.+/, '');
+    // 宁可拒绝也不要「静默改名」：把 ../../evil.zip 洗成 _.._evil.zip 虽然当下安全，
+    // 但管理员会以为传成功了、文件名却被改了，短名一变街机就认不出这是哪个游戏。
+    // 而且一旦以后放宽替换规则，这种写法会直接退化成目录穿越。
+    if (raw.indexOf('..') >= 0) return sendJson(res, 400, { error: '文件名不合法（含 ..）：' + raw });
+    if (!/\.zip$/i.test(safe)) return sendJson(res, 400, { error: '只接受 .zip 文件：' + (raw || '(未给文件名)') });
+    const declared = parseInt(req.headers['content-length'] || '0', 10);
+    if (declared > ROM_MAX_BYTES) { req.resume(); return sendJson(res, 413, { error: '文件过大（上限 512MB）' }); }
+    try { fs.mkdirSync(ROM_INBOX_DIR, { recursive: true }); } catch (e) {
+        return sendJson(res, 500, { error: '无法创建收件箱目录：' + e.message });
+    }
+    const file = path.join(ROM_INBOX_DIR, safe);
+    let received = 0, over = false, done = false;
+    const finish = (code, data) => { if (done) return; done = true; sendJson(res, code, data); };
+    const cleanup = () => { try { fs.unlinkSync(file); } catch (e) { } };
+    let out = null;
+    try { out = fs.createWriteStream(file); } catch (e) { return finish(500, { error: '写入失败：' + e.message }); }
+    out.on('error', e => { cleanup(); finish(500, { error: '写入失败：' + e.message }); });
+    req.on('data', c => {
+        if (over) return;
+        received += c.length;
+        if (received > ROM_MAX_BYTES) {
+            over = true; out.destroy(); cleanup();
+            finish(413, { error: '文件过大（上限 512MB）' });
+            return;
+        }
+        if (!out.write(c)) { req.pause(); out.once('drain', () => req.resume()); }
+    });
+    req.on('end', () => {
+        if (over) return;
+        if (received === 0) { cleanup(); return finish(400, { error: '空文件：' + safe }); }
+        out.end(() => finish(200, { ok: true, file: safe, size: received, inbox: romInboxList() }));
+    });
+    req.on('error', () => { cleanup(); finish(500, { error: '上传中断' }); });
+};
+api['POST /api/admin/roms/inbox/clear'] = (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员' });
+    const only = Array.isArray((body || {}).files) ? (body || {}).files.map(String) : null;
+    let removed = 0;
+    try {
+        for (const n of fs.readdirSync(ROM_INBOX_DIR)) {
+            if (!/\.zip$/i.test(n)) continue;
+            if (only && only.indexOf(n) < 0) continue;
+            // 文件名来自 readdirSync，天然不含路径分隔符，不可能穿越出去
+            if (/[<>:*?|]/.test(n)) continue;
+            try { fs.unlinkSync(path.join(ROM_INBOX_DIR, n)); removed++; } catch (e) { }
+        }
+    } catch (e) { }
+    sendJson(res, 200, { ok: true, removed, inbox: romInboxList() });
 };
 // DAT 走原始文本流（同 ROM 上传，需加进 RAW_BODY_API），避免 JSON 转义撑大内存
 api['POST /api/admin/roms/dat'] = (req, res) => {
@@ -3052,9 +3135,16 @@ api['POST /api/admin/roms/zh'] = (req, res, body) => {
 // 扫描服务器目录：只读每个 ZIP 的中央目录（不解压），给出「待确认」预览
 api['POST /api/admin/roms/scan'] = (req, res, body) => {
     if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员' });
-    const dir = String((body || {}).dir || '').trim();
-    if (!dir) return sendJson(res, 400, { error: '请填写要扫描的目录' });
-    if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) return sendJson(res, 400, { error: '目录不存在：' + dir });
+    const dir = String((body || {}).dir || '').trim() || ROM_INBOX_DIR;   // 留空 = 扫收件箱
+    if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
+        // 报错里直接把「服务器路径 vs 本地路径」讲清楚：这是部署到服务器后最高频的误解
+        return sendJson(res, 400, {
+            error: '目录不存在：' + dir + '。注意这是**服务器**上的路径，不是你电脑上的；'
+                + '请先用上面的「上传到服务器」把 ROM 传进 ' + ROM_INBOX_DIR + '，再留空扫描。',
+            hint: '收件箱当前 ' + romInboxList().count + ' 个 ZIP',
+            inbox: romInboxList(),
+        });
+    }
     const r = romCatalog.scanDir(dir, { limit: (body || {}).limit });
     if (!r.ok) return sendJson(res, 400, { error: r.error });
     // 已导入标记：同 shortName 或同文件已入库 → 前端默认不勾选
@@ -3860,6 +3950,7 @@ const server = http.createServer(async (req, res) => {
             const RAW_BODY_API = new Set([
                 '/api/roms/upload', '/api/roms/bios/upload', '/api/emu/save',
                 '/api/admin/roms/dat',   // DAT 是原始文本（可能几十 MB），不能过 JSON 解析
+                '/api/admin/roms/inbox/upload',   // ROM ZIP 是原始二进制，流式落盘
             ]);
             const body = (req.method === 'GET' || req.method === 'DELETE' || RAW_BODY_API.has(pathname)) ? {} : await readBody(req);
             if (handler) { await handler(req, res, body); return; }

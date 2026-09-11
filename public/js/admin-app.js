@@ -69,6 +69,20 @@ const AdminAPI = (() => {
         romCatalog: () => call('GET', '/api/admin/roms/catalog'),
         romScan: (dir) => call('POST', '/api/admin/roms/scan', { dir }),
         romImport: (items, move) => call('POST', '/api/admin/roms/import', { items, move }),
+        // 收件箱：项目部署在服务器上时，管理员本地 ROM 目录服务器读不到，
+        // 只能先把 ZIP 传到服务器 data/roms/inbox，再由图鉴扫描那个目录。
+        romInboxUpload: async (file, onProgress) => {
+            const res = await fetch('/api/admin/roms/inbox/upload?fileName=' + encodeURIComponent(file.name), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream', 'Authorization': 'Bearer ' + token() },
+                body: file,
+            });
+            let json; try { json = await res.json(); } catch (e) { throw new Error('上传返回异常'); }
+            if (!res.ok) throw new Error(json.error || '上传失败');
+            if (onProgress) onProgress(json);
+            return json;
+        },
+        romInboxClear: (files) => call('POST', '/api/admin/roms/inbox/clear', { files: files || null }),
         romZhSave: (zh) => call('POST', '/api/admin/roms/zh', { zh }),
         romDatDelete: (file) => call('POST', '/api/admin/roms/dat/delete', { file }),
         romDatUpload: async (file) => {
@@ -1200,6 +1214,46 @@ const AdminApp = {
         await this.renderRomCatalog(body);
     },
 
+    // 批量上传到服务器收件箱：串行传（避免大文件并发把带宽打满、也便于逐个报错），
+    // 失败的不中断整批，最后汇总「成功 n / 失败 m」。
+    async romInboxUploadAll(body, files, progEl) {
+        const zips = files.filter(f => /\.zip$/i.test(f.name));
+        const skip = files.length - zips.length;
+        if (!zips.length) return U.toast('请选择 .zip 文件');
+        let ok = 0, fail = 0;
+        const errs = [];
+        for (let i = 0; i < zips.length; i++) {
+            const f = zips[i];
+            if (progEl) progEl.textContent = `上传中 ${i + 1}/${zips.length}：${f.name}（${this.romFmtSize(f.size)}）`;
+            try { await AdminAPI.romInboxUpload(f); ok++; }
+            catch (e) { fail++; errs.push(f.name + '：' + e.message); }
+        }
+        if (progEl) {
+            progEl.innerHTML = `✅ 完成：<b>${ok}</b> 个已传到服务器${skip ? `，${skip} 个非 zip 已忽略` : ''}`
+                + (fail ? `，<span style="color:#ff7b7b">${fail} 个失败</span>（${this.esc(errs.slice(0, 3).join('；'))}）` : '')
+                + '。点「直接扫描收件箱」继续。';
+        }
+        U.toast(fail ? `⚠ ${ok} 成功 / ${fail} 失败` : `✅ ${ok} 个 ROM 已传到服务器`);
+        this.renderRomCatalog(body);
+    },
+
+    // 扫描：dir 留空 = 扫服务器收件箱
+    async romDoScan(body, dir) {
+        const box = body.querySelector('#rom-catalog-box');
+        const res = box && box.querySelector('#rc-result');
+        U.toast('正在扫描（只读 ZIP 目录，不解压）…');
+        if (res) res.textContent = '扫描中…';
+        try {
+            const r = await AdminAPI.romScan(dir || '');
+            this._romScan = r.items || [];
+            this.romRenderScan(body, r);
+            U.toast(`✅ 扫到 ${this._romScan.length} 个 ZIP`);
+        } catch (e) {
+            U.toast('❌ ' + e.message);
+            if (res) res.innerHTML = '<span style="color:#ff7b7b;line-height:1.6">' + this.esc(e.message) + '</span>';
+        }
+    },
+
     // ================= ROM 图鉴（街机身份识别） =================
     // ZIP 内文件名是板卡芯片编号（223-p1.bin），只有 ZIP 短名（rbffspec）才是稳定身份。
     // 链路：上传 DAT → 扫描目录 → 预览确认（中文名 / 厂商年份 / 平台 / BIOS / CRC）→ 导入。
@@ -1210,9 +1264,12 @@ const AdminApp = {
     async renderRomCatalog(body) {
         const box = body.querySelector('#rom-catalog-box');
         if (!box) return;
-        let st = { catalog: { datLoaded: false, datCount: 0, zhCount: 0, datFiles: [] }, zh: {} };
+        let st = { catalog: { datLoaded: false, datCount: 0, zhCount: 0, datFiles: [] }, zh: {}, server: {}, inbox: { files: [], count: 0, total: 0 } };
         try { st = await AdminAPI.romCatalog(); } catch (e) { /* 接口不可用时仍渲染骨架 */ }
         const c = st.catalog || {};
+        const sv = st.server || {};
+        const inbox = st.inbox || { files: [], count: 0, total: 0 };
+        const inboxDir = sv.inboxDir || 'data/roms/inbox';
         box.innerHTML = `
             <div class="card">
                 <h3>📖 ROM 图鉴（街机短名 → 中文名 / CRC 校验）</h3>
@@ -1240,9 +1297,36 @@ const AdminApp = {
                         <span style="font-size:12px;color:#9c96b8">格式：{ "短名": { "titleZh": "中文名", "aliases": ["别名"], "platform": "neogeo" } }</span>
                     </div>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center;margin:12px 0 8px">
-                    <input id="rc-dir" placeholder="服务器上的 ROM 目录，例如 F:\\BaiduNetdiskDownload\\街机模拟器WinKawaks1.45中文典藏版" style="flex:1">
-                    <button class="emu-btn emu-btn-play" id="rc-scan">🔍 扫描</button>
+                <div style="margin:12px 0;padding:12px;border:1px solid rgba(255,213,107,.35);border-radius:10px;background:rgba(255,213,107,.06)">
+                    <div style="font-size:13px;font-weight:600;margin-bottom:6px">① 把 ROM 传到服务器</div>
+                    <p style="font-size:12px;color:#b9b3d8;margin:0 0 8px">
+                        扫描读的是 <b>服务器自己的磁盘</b>，你电脑上的 <code>F:\\…</code> 服务器看不到。
+                        项目部署在哪台机器，就把 ROM 传到哪台 —— 下面这个按钮会传到服务器目录：
+                        <code>${this.esc(inboxDir)}</code>
+                        ${sv.platform ? `<span style="color:#8f89ad">（服务器系统：${this.esc(sv.platform)}）</span>` : ''}
+                    </p>
+                    <div class="emu-drop" id="rc-inbox-drop" style="padding:14px;text-align:center;cursor:pointer">
+                        📤 点击选择 ROM（可多选）或拖拽到此处
+                        <input type="file" id="rc-inbox-file" accept=".zip" multiple style="display:none">
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+                        <span style="font-size:12px;color:#9c96b8">收件箱：<b id="rc-inbox-count">${inbox.count}</b> 个 ZIP${inbox.count ? ` · ${this.romFmtSize(inbox.total)}` : ''}</span>
+                        <button class="emu-btn emu-btn-play" id="rc-scan-inbox"${inbox.count ? '' : ' disabled'}>🔍 直接扫描收件箱</button>
+                        <button class="emu-btn emu-btn-del" id="rc-inbox-clear"${inbox.count ? '' : ' disabled'}>🗑 清空收件箱</button>
+                    </div>
+                    <div id="rc-inbox-prog" style="font-size:12px;color:#b9b3d8;margin-top:6px"></div>
+                </div>
+                <div style="margin:12px 0">
+                    <div style="font-size:13px;font-weight:600;margin-bottom:6px">② 扫描服务器目录</div>
+                    <p style="font-size:12px;color:#9c96b8;margin:0 0 6px">
+                        如果 ROM 已经通过 scp / 宝塔文件管理器 / 网盘同步放到了服务器上（比如
+                        <code>/www/wwwroot/tower-odyssey/data/roms/inbox</code>），直接填那个路径；
+                        <b>留空则默认扫上面的收件箱</b>。
+                    </p>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <input id="rc-dir" placeholder="${this.esc(inboxDir)}（留空=收件箱）" style="flex:1">
+                        <button class="emu-btn emu-btn-play" id="rc-scan">🔍 扫描</button>
+                    </div>
                 </div>
                 <div id="rc-result" style="font-size:13px;color:#b9b3d8"></div>
                 <div id="rc-items"></div>
@@ -1280,15 +1364,29 @@ const AdminApp = {
                 this.renderRomCatalog(body);
             } catch (e) { U.toast('❌ ' + e.message); }
         };
+        // ---- 收件箱：把本地 ROM 传到服务器（服务器部署时这是唯一入口） ----
+        const inboxDrop = box.querySelector('#rc-inbox-drop');
+        const inboxFile = box.querySelector('#rc-inbox-file');
+        const prog = box.querySelector('#rc-inbox-prog');
+        inboxDrop.onclick = () => inboxFile.click();
+        inboxFile.onchange = () => { if (inboxFile.files.length) this.romInboxUploadAll(body, [...inboxFile.files], prog); inboxFile.value = ''; };
+        inboxDrop.ondragover = e => { e.preventDefault(); inboxDrop.style.borderColor = 'rgba(255,213,107,.8)'; };
+        inboxDrop.ondragleave = () => { inboxDrop.style.borderColor = ''; };
+        inboxDrop.ondrop = e => {
+            e.preventDefault(); inboxDrop.style.borderColor = '';
+            if (e.dataTransfer.files.length) this.romInboxUploadAll(body, [...e.dataTransfer.files], prog);
+        };
+        const inboxClear = box.querySelector('#rc-inbox-clear');
+        if (inboxClear) inboxClear.onclick = async () => {
+            if (!confirm('清空服务器上收件箱里的所有 ZIP？（已导入进库的 ROM 不受影响）')) return;
+            try { await AdminAPI.romInboxClear(null); U.toast('✅ 收件箱已清空'); this.renderRomCatalog(body); }
+            catch (e) { U.toast('❌ ' + e.message); }
+        };
+        const scanInbox = box.querySelector('#rc-scan-inbox');
+        if (scanInbox) scanInbox.onclick = () => this.romDoScan(body, '');
         box.querySelector('#rc-scan').onclick = async () => {
             const dir = (box.querySelector('#rc-dir').value || '').trim();
-            if (!dir) return U.toast('请填写要扫描的目录');
-            U.toast('正在扫描（只读 ZIP 目录，不解压）…');
-            try {
-                const r = await AdminAPI.romScan(dir);
-                this._romScan = r.items || [];
-                this.romRenderScan(body, r);
-            } catch (e) { U.toast('❌ ' + e.message); }
+            this.romDoScan(body, dir);
         };
     },
 
