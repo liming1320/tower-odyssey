@@ -84,9 +84,15 @@
                         const d = parseInt(filters.decade, 10);
                         if (Math.floor(y / 10) * 10 !== d) return false;
                     }
-                    if (q && String(r.name || '').toLowerCase().indexOf(q) < 0
-                        && String(r.maker || '').toLowerCase().indexOf(q) < 0
-                        && String(r.genre || '').toLowerCase().indexOf(q) < 0) return false;
+                    // 搜索范围：显示名 + 中文名 + 英文原名 + 短名 + 别名（玩家常只记得「饿狼」或 kof98）
+                    if (q) {
+                        const hay = [r.name, r.titleZh, r.titleEn, r.shortName]
+                            .concat(Array.isArray(r.aliases) ? r.aliases : [])
+                            .filter(Boolean).join(' ').toLowerCase();
+                        if (hay.indexOf(q) < 0
+                            && String(r.maker || '').toLowerCase().indexOf(q) < 0
+                            && String(r.genre || '').toLowerCase().indexOf(q) < 0) return false;
+                    }
                     return true;
                 }).sort((a, b) => {
                     // 最近在玩置顶，其余按 sort → 更新时间
@@ -118,6 +124,9 @@
                     const cover = rom.cover || '🕹️';
                     const plat = rom.platform || 'other';
                     const miss = biosMissingFor(rom);
+                    // 英文名与短名作为副标题：玩家搜「kof98」/「Fatal Fury」也能找到
+                    const sub = [rom.titleEn && rom.titleEn !== rom.name ? rom.titleEn : '', rom.shortName]
+                        .filter(Boolean).join(' · ');
                     const meta = [
                         PLATFORMS[plat] || plat,
                         rom.year || '', rom.maker || '', rom.genre || '',
@@ -128,6 +137,7 @@
                         '<div class="emu-item-name"><span style="margin-right:6px">' + esc(cover) + '</span>' + esc(rom.name) +
                         '<span class="emu-plat ' + esc(plat) + '">' + esc(PLATFORMS[plat] || plat) + '</span>' +
                         (rom.category === 'invincible' ? ' <span class="emu-tag emu-tag-inv">无敌版</span>' : '') + '</div>' +
+                        (sub ? '<div class="emu-item-meta" style="opacity:.7">' + esc(sub) + '</div>' : '') +
                         '<div class="emu-item-meta">' + esc(meta) + '</div>' +
                         (miss ? '<div class="emu-warn">⚠ 缺 BIOS ' + esc(miss) + '，该基板游戏会黑屏</div>' : '')));
                     const play = document.createElement('button');

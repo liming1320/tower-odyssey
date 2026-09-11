@@ -44,6 +44,13 @@ const PUBLIC_DIR = path.join(ROOT, 'public');
 const DATA_DIR = path.join(ROOT, 'data');
 const DB_PATH = path.join(DATA_DIR, 'db.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+// ROM 图鉴解析器：街机 ZIP 短名 → 中文名 / 英文原名 / 厂商年份 / 平台 / BIOS / CRC 校验。
+// DAT 目录：data/roms/catalog/（后台上传，版本与核心对应）；中文覆盖表：data/rom-zh.json（可在线编辑）
+const romCatalog = require('./server/rom-catalog')({
+    catalogDir: path.join(DATA_DIR, 'roms', 'catalog'),
+    zhFile: path.join(DATA_DIR, 'rom-zh.json'),
+    seedFile: path.join(ROOT, 'server', 'rom-zh-seed.json'),
+});
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5180;
 
@@ -2746,7 +2753,19 @@ const romMeta = r => ({
     platform: r.platform || '', year: r.year || '', maker: r.maker || '',
     genre: r.genre || '', cover: r.cover || '',
     biosId: r.biosId || '', parentId: r.parentId || '',
+    // 图鉴身份（街机专用）：短名 = zip 文件名，是 ROM 的唯一稳定 ID；中文名/别名用于搜索
+    shortName: r.shortName || '', titleZh: r.titleZh || '', titleEn: r.titleEn || '',
+    aliases: r.aliases || [], crcStatus: r.crcStatus || '',
+    catalogVersion: r.catalogVersion || '', fileName: r.fileName || '',
 });
+// 搜索命中范围：显示名 + 中文名 + 英文原名 + 短名 + 别名 + 厂商（玩家可能只记得「饿狼」或 kof98）
+function romMatchQ(r, q) {
+    if (!q) return true;
+    const hay = [r.name, r.titleZh, r.titleEn, r.shortName, r.maker, r.genre]
+        .concat(Array.isArray(r.aliases) ? r.aliases : [])
+        .filter(Boolean).join(' ').toLowerCase();
+    return hay.indexOf(q) >= 0;
+}
 
 // ---------- ROM 内容 hash：上传去重 + 存量补算 ----------
 function romFileHash(file) {
@@ -2777,7 +2796,10 @@ async function romsBackfillHash() {
 api['GET /api/roms'] = (req, res) => {
     const user = getUserByToken(req);
     if (!user) return sendJson(res, 401, { error: '未登录' });
-    sendJson(res, 200, { roms: (DB.roms || []).map(romMeta), admin: romAdminOk(req) });
+    // q：按中文名 / 英文原名 / 短名 / 别名 / 厂商 搜索（街机玩家常只记得「饿狼」「kof98」）
+    const q = String(url.parse(req.url, true).query.q || '').trim().toLowerCase().slice(0, 60);
+    const list = (DB.roms || []).filter(r => romMatchQ(r, q));
+    sendJson(res, 200, { roms: list.map(romMeta), admin: romAdminOk(req), q });
 };
 // 玩家：下载 ROM（鉴权后流式回传，前端转 blob 喂给模拟器）
 api['GET /api/roms/download'] = (req, res) => {
@@ -2800,6 +2822,8 @@ api['POST /api/roms/upload'] = (req, res) => {
     if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员可上传 ROM' });
     const q = url.parse(req.url, true).query;
     const name = String(q.name || '').slice(0, 120).replace(/[<>&"'/\\]/g, '');
+    // 原始文件名：街机 ROM 的身份就在它身上（rbffspec.zip → 短名 rbffspec），必须保留
+    const fileName = String(q.fileName || name || '').slice(0, 180).replace(/[<>&"'/\\]/g, '');
     const core = String(q.core || '');
     if (!name || !ROM_CORES.has(core)) return sendJson(res, 400, { error: '参数不完整（name/core）' });
     // 扩展元数据（可选）：platform/year/maker/genre/cover/biosId/parentId
@@ -2849,14 +2873,44 @@ api['POST /api/roms/upload'] = (req, res) => {
                     return finish(409, { error: `重复上传：与「${dup.name}」（${ROM_CORE_LABELS[dup.core] || dup.core}）内容完全相同，已跳过` });
                 }
                 const u = getUserByToken(req);
+                // 图鉴识别：ZIP 短名 + 内部 CRC → 中文名 / 英文原名 / 厂商年份 / 平台 / BIOS / CRC 校验
+                let cat = null;
+                try {
+                    const short = String(fileName || name).replace(/\.(zip|7z|bin)$/i, '').toLowerCase();
+                    if (short) {
+                        const z = /\.zip$/i.test(fileName) ? romCatalog.readZipEntries(file) : { ok: false, entries: [] };
+                        cat = romCatalog.resolve({ shortName: short, entries: z.ok ? z.entries : [] });
+                    }
+                } catch (e) { /* 图鉴识别失败不影响上传 */ }
+                let dispName = name, plat = platform, yr = year, mk = maker, biosAuto = biosId;
+                if (cat && cat.shortName) {
+                    if (cat.displayName) dispName = cat.displayName;
+                    if (!plat && cat.platform) plat = cat.platform;
+                    if (!yr && cat.year) yr = cat.year;
+                    if (!mk && cat.maker) mk = cat.maker;
+                    // BIOS 自动挂载：NeoGeo→neogeo.zip、IGS→pgm.zip，库里已上传就自动绑
+                    if (!biosAuto && cat.bios) {
+                        const key = cat.bios.replace(/\.zip$/i, '').toLowerCase();
+                        const b = (DB.romBios || []).find(x =>
+                            String(x.name || '').toLowerCase().replace(/\.zip$/i, '') === key);
+                        if (b) biosAuto = b.id;
+                    }
+                }
                 DB.roms = DB.roms || [];
                 DB.roms.push({
-                    id, name, core, size: received, addedAt: Date.now(),
+                    id, name: dispName, core, size: received, addedAt: Date.now(),
                     by: (u && u.username) || 'admin', hash, category: 'normal', sort: 0,
-                    platform, year, maker, genre, cover, biosId, parentId,
+                    platform: plat, year: yr, maker: mk, genre, cover, biosId: biosAuto, parentId,
+                    fileName: fileName || name,
+                    shortName: (cat && cat.shortName) || '',
+                    titleZh: (cat && cat.titleZh) || '',
+                    titleEn: (cat && cat.titleEn) || '',
+                    aliases: (cat && cat.aliases) || [],
+                    crcStatus: (cat && cat.crcStatus) || '',
+                    catalogVersion: (cat && cat.catalogVersion) || '',
                 });
                 save();
-                finish(200, { ok: true, id, size: received });
+                finish(200, { ok: true, id, size: received, name: dispName, matched: cat });
             } catch (e) {
                 cleanup();
                 finish(500, { error: '保存失败：' + e.message });
@@ -2938,6 +2992,148 @@ api['POST /api/roms/delete'] = (req, res, body) => {
     try { fs.unlinkSync(path.join(ROMS_DIR, id + '.bin')); } catch (e) {}
     save();
     sendJson(res, 200, { ok: true });
+};
+
+// ---------------- ROM 图鉴（街机短名 → 中文名 / CRC 校验 / 批量导入）----------------
+// 背景：街机 ZIP 内文件名是板卡芯片编号（223-p1.bin），不含标题；唯一稳定身份是 ZIP 短名。
+// 流程：上传 DAT（与核心版本匹配）→ 扫描 ROM 目录 → 预览确认（中文名/厂商年份/平台/BIOS/CRC）→ 导入。
+// 中文名单独维护在 data/rom-zh.json，不混进 DAT，换 DAT 版本不影响翻译。
+api['GET /api/admin/roms/catalog'] = (req, res) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员' });
+    const st = romCatalog.status();
+    sendJson(res, 200, { catalog: st, zh: romCatalog.zh, platforms: romCatalog.PLATFORMS });
+};
+// DAT 走原始文本流（同 ROM 上传，需加进 RAW_BODY_API），避免 JSON 转义撑大内存
+api['POST /api/admin/roms/dat'] = (req, res) => {
+    // 注意：这里不能 res.destroy() —— 连接被掐断时浏览器只会报 ECONNRESET，
+    // 看不出是「没权限」还是「网络断了」。照常回 403，再把请求体排空即可。
+    if (!romAdminOk(req)) { sendJson(res, 403, { error: '仅管理员' }); req.resume(); return; }
+    const q = url.parse(req.url, true).query;
+    const file = String(q.file || '').slice(0, 60);
+    const chunks = [];
+    let received = 0, done = false;
+    const DAT_MAX = 128 * 1024 * 1024;
+    // 超限后不能只标记 done：必须继续排空请求体，否则客户端会卡在「上传中」
+    let overLimit = false;
+    const finish = (code, data) => { if (done) return; done = true; sendJson(res, code, data); };
+    req.on('data', c => {
+        if (overLimit) return;                      // 已判定超限：丢弃后续分片
+        received += c.length;
+        if (received > DAT_MAX) { overLimit = true; chunks.length = 0; return; }
+        chunks.push(c);
+    });
+    req.on('end', () => {
+        if (done) return;
+        if (overLimit) return finish(413, { error: 'DAT 过大（上限 128MB）' });
+        const text = Buffer.concat(chunks).toString('utf8');
+        const r = romCatalog.saveDat(file, text);
+        if (!r.ok) return finish(400, { error: r.error });
+        finish(200, { ok: true, ...r });
+    });
+    req.on('error', () => finish(500, { error: '上传中断' }));
+};
+api['POST /api/admin/roms/dat/delete'] = (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员' });
+    const r = romCatalog.deleteDat(String((body || {}).file || ''));
+    if (!r.ok) return sendJson(res, 404, { error: r.error });
+    sendJson(res, 200, { ok: true, ...romCatalog.status() });
+};
+api['POST /api/admin/roms/zh'] = (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员' });
+    const raw = (body || {}).zh;
+    let obj = raw;
+    if (typeof raw === 'string') {
+        try { obj = JSON.parse(raw); } catch (e) { return sendJson(res, 400, { error: 'JSON 格式错误：' + e.message }); }
+    }
+    if (!obj || typeof obj !== 'object') return sendJson(res, 400, { error: '参数不完整（zh 为对象或 JSON 字符串）' });
+    const zh = romCatalog.saveZh(obj);
+    sendJson(res, 200, { ok: true, count: Object.keys(zh).length, zh });
+};
+// 扫描服务器目录：只读每个 ZIP 的中央目录（不解压），给出「待确认」预览
+api['POST /api/admin/roms/scan'] = (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员' });
+    const dir = String((body || {}).dir || '').trim();
+    if (!dir) return sendJson(res, 400, { error: '请填写要扫描的目录' });
+    if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) return sendJson(res, 400, { error: '目录不存在：' + dir });
+    const r = romCatalog.scanDir(dir, { limit: (body || {}).limit });
+    if (!r.ok) return sendJson(res, 400, { error: r.error });
+    // 已导入标记：同 shortName 或同文件已入库 → 前端默认不勾选
+    const have = new Set((DB.roms || []).map(x => String(x.shortName || '').toLowerCase()).filter(Boolean));
+    for (const it of r.items) it.imported = have.has(it.shortName);
+    sendJson(res, 200, r);
+};
+// 批量导入：把选中的 ROM 复制（或移动）进库，自动挂 BIOS / 回填父 ROM
+api['POST /api/admin/roms/import'] = async (req, res, body) => {
+    if (!romAdminOk(req)) return sendJson(res, 403, { error: '仅管理员' });
+    const items = Array.isArray((body || {}).items) ? (body || {}).items : [];
+    if (!items.length) return sendJson(res, 400, { error: '没有选中任何 ROM' });
+    const move = !!(body || {}).move;
+    const u = getUserByToken(req);
+    DB.roms = DB.roms || [];
+    fs.mkdirSync(ROMS_DIR, { recursive: true });
+    const added = [], skipped = [];
+    for (const it of items.slice(0, 200)) {
+        const src = String(it.path || '');
+        if (!src || !src.toLowerCase().endsWith('.zip') || !fs.existsSync(src)) { skipped.push({ file: src, reason: '文件不存在或非 ZIP' }); continue; }
+        if (!path.isAbsolute(src)) { skipped.push({ file: src, reason: '路径必须是绝对路径' }); continue; }
+        const shortName = String(it.shortName || path.basename(src).replace(/\.zip$/i, '')).toLowerCase();
+        if ((DB.roms || []).some(r => r.shortName === shortName)) { skipped.push({ file: src, reason: '已导入过同短名 ROM' }); continue; }
+        // 允许管理员在预览表里改中文名 / 平台 / 年份
+        let info;
+        try {
+            const z = romCatalog.readZipEntries(src);
+            info = romCatalog.resolve({ shortName, entries: z.ok ? z.entries : [] });
+        } catch (e) { info = romCatalog.resolve({ shortName, entries: [] }); }
+        if (it.titleZh) info.titleZh = String(it.titleZh).slice(0, 60);
+        if (it.platform && romCatalog.PLATFORMS.includes(String(it.platform))) { info.platform = String(it.platform); info.bios = romCatalog.BIOS_HINT[info.platform] || ''; }
+        if (it.year) info.year = String(it.year).slice(0, 4);
+        const id = 'rom_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+        const dest = path.join(ROMS_DIR, id + '.bin');
+        try {
+            if (move) fs.renameSync(src, dest); else fs.copyFileSync(src, dest);
+        } catch (e) { skipped.push({ file: src, reason: '写入失败：' + e.message }); continue; }
+        let hash = '';
+        try { hash = await romFileHash(dest); } catch (e) { }
+        if (hash) {
+            const dup = (DB.roms || []).find(r => r.hash && r.hash === hash);
+            if (dup) {
+                try { fs.unlinkSync(dest); } catch (e) { }
+                skipped.push({ file: src, reason: `内容与「${dup.name}」完全相同` });
+                continue;
+            }
+        }
+        let biosId = '';
+        if (info.bios) {
+            const key = info.bios.replace(/\.zip$/i, '').toLowerCase();
+            const b = (DB.romBios || []).find(x => String(x.name || '').toLowerCase().replace(/\.zip$/i, '') === key);
+            if (b) biosId = b.id;
+        }
+        DB.roms.push({
+            id, name: info.titleZh || info.titleEn || shortName,
+            core: String(it.core || info.core || 'fbneo'),
+            size: fs.existsSync(dest) ? fs.statSync(dest).size : 0,
+            addedAt: Date.now(), by: (u && u.username) || 'admin', hash,
+            category: 'normal', sort: 0,
+            platform: info.platform || 'other', year: info.year || '', maker: info.maker || '',
+            genre: '', cover: '', biosId, parentId: '',
+            fileName: path.basename(src), shortName,
+            titleZh: info.titleZh || '', titleEn: info.titleEn || '',
+            aliases: info.aliases || [], crcStatus: info.crcStatus || '',
+            catalogVersion: info.catalogVersion || '',
+        });
+        added.push({ id, shortName, name: info.titleZh || info.titleEn || shortName, crcStatus: info.crcStatus, parentShortName: info.parentShortName });
+    }
+    // 父子 ROM 回填：克隆基板必须挂到母 ROM 上才能跑（前端据此传 EJS_gameParentUrl）
+    let linked = 0;
+    for (const a of added) {
+        if (!a.parentShortName) continue;
+        const p = (DB.roms || []).find(r => r.shortName === a.parentShortName);
+        if (!p) continue;
+        const self = (DB.roms || []).find(r => r.id === a.id);
+        if (self) { self.parentId = p.id; linked++; }
+    }
+    save();
+    sendJson(res, 200, { ok: true, added, skipped, linked, total: (DB.roms || []).length });
 };
 
 // ---------------- BIOS 管家（街机刚需） ----------------
@@ -3657,6 +3853,7 @@ const server = http.createServer(async (req, res) => {
             //    表现是「上传成功但 0 字节」（当年排查花了很久）。
             const RAW_BODY_API = new Set([
                 '/api/roms/upload', '/api/roms/bios/upload', '/api/emu/save',
+                '/api/admin/roms/dat',   // DAT 是原始文本（可能几十 MB），不能过 JSON 解析
             ]);
             const body = (req.method === 'GET' || req.method === 'DELETE' || RAW_BODY_API.has(pathname)) ? {} : await readBody(req);
             if (handler) { await handler(req, res, body); return; }

@@ -65,6 +65,29 @@ const AdminAPI = (() => {
             if (!res.ok) throw new Error(json.error || '上传失败');
             return json;
         },
+        // ROM 图鉴（街机短名 → 中文名 / 厂商年份 / 平台 / CRC 校验）
+        romCatalog: () => call('GET', '/api/admin/roms/catalog'),
+        romScan: (dir) => call('POST', '/api/admin/roms/scan', { dir }),
+        romImport: (items, move) => call('POST', '/api/admin/roms/import', { items, move }),
+        romZhSave: (zh) => call('POST', '/api/admin/roms/zh', { zh }),
+        romDatDelete: (file) => call('POST', '/api/admin/roms/dat/delete', { file }),
+        romDatUpload: async (file) => {
+            const text = await (file.text ? file.text() : new Promise((res, rej) => {
+                const fr = new FileReader();
+                fr.onload = () => res(fr.result);
+                fr.onerror = () => rej(fr.error);
+                fr.readAsText(file);
+            }));
+            const res = await fetch('/api/admin/roms/dat?file=' + encodeURIComponent(file.name), {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8', 'Authorization': 'Bearer ' + token() },
+                body: text,
+            });
+            let json;
+            try { json = await res.json(); } catch (e) { throw new Error('DAT 上传返回异常'); }
+            if (!res.ok) throw new Error(json.error || 'DAT 上传失败');
+            return json;
+        },
         // 通用 GET/POST（用于新增的任意后台接口）
         api: (path, method, body) => call(method || 'GET', path, body),
     };
@@ -1150,6 +1173,7 @@ const AdminApp = {
                 <div class="emu-list" id="rom-list"></div>
                 <p id="rom-empty" style="font-size:12px;color:#777;display:none">还没有上传任何 ROM。</p>
             </div>
+            <div id="rom-catalog-box"></div>
         `;
         const drop = body.querySelector('#rom-drop');
         const fileInput = body.querySelector('#rom-file');
@@ -1164,6 +1188,172 @@ const AdminApp = {
             if (e.dataTransfer.files.length) this.romHandleFiles(body, [...e.dataTransfer.files]);
         };
         await this.romRefreshList(body);
+        await this.renderRomCatalog(body);
+    },
+
+    // ================= ROM 图鉴（街机身份识别） =================
+    // ZIP 内文件名是板卡芯片编号（223-p1.bin），只有 ZIP 短名（rbffspec）才是稳定身份。
+    // 链路：上传 DAT → 扫描目录 → 预览确认（中文名 / 厂商年份 / 平台 / BIOS / CRC）→ 导入。
+    _romScan: [],
+    CRC_LABEL: { ok: '✅ 完整', partial: '⚠ 残缺/版本不符', mismatch: '✗ 错版', nodat: '？无 DAT 比对' },
+    CRC_COLOR: { ok: '#5ad48a', partial: '#ffd56b', mismatch: '#ff7b7b', nodat: '#9c96b8' },
+
+    async renderRomCatalog(body) {
+        const box = body.querySelector('#rom-catalog-box');
+        if (!box) return;
+        let st = { catalog: { datLoaded: false, datCount: 0, zhCount: 0, datFiles: [] }, zh: {} };
+        try { st = await AdminAPI.romCatalog(); } catch (e) { /* 接口不可用时仍渲染骨架 */ }
+        const c = st.catalog || {};
+        box.innerHTML = `
+            <div class="card">
+                <h3>📖 ROM 图鉴（街机短名 → 中文名 / CRC 校验）</h3>
+                <p style="font-size:13px;color:#b9b3d8">
+                    街机 ZIP 里的 <code>223-p1.bin</code> 是板卡芯片编号、<b>不含标题</b>；ROM 的稳定身份是短名
+                    （<code>rbffspec.zip → rbffspec</code>）。这里用 DAT 查短名得到英文原名/厂商/年份/平台，
+                    再用独立维护的中文表翻译，并用 ZIP 内 CRC32 校验是不是<b>残缺 / 错版</b> ROM。
+                    <b>不要给 ZIP 改名</b> —— 父子 ROM 与 BIOS 依赖都挂在短名上。
+                </p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0">
+                    <span style="font-size:13px">DAT：${c.datLoaded
+                        ? `✅ 已加载 <b>${this.esc(c.datFile || '')}</b>（${this.esc(c.datVersion || '未标注版本')} · ${c.datCount} 条）`
+                        : '⚠ 未加载（仍能识别中文名，但查不到厂商/年份/CRC）'}</span>
+                    <button class="emu-btn" id="rc-dat-up">📤 上传 DAT</button>
+                    <input type="file" id="rc-dat-file" accept=".dat,.xml,.txt" style="display:none">
+                    ${(c.datFiles || []).length ? `<button class="emu-btn emu-btn-del" id="rc-dat-del">✕ 删除 ${this.esc((c.datFiles || [])[0])}</button>` : ''}
+                    <span style="font-size:13px">中文覆盖表：<b>${c.zhCount || 0}</b> 条</span>
+                    <button class="emu-btn" id="rc-zh-edit">✏️ 编辑中文表</button>
+                </div>
+                <div id="rc-zh-box" style="display:none;margin:8px 0">
+                    <textarea id="rc-zh-text" rows="10" style="width:100%;font-family:monospace;font-size:12px">${this.esc(JSON.stringify(st.zh || {}, null, 2))}</textarea>
+                    <div style="margin-top:6px">
+                        <button class="emu-btn emu-btn-save" id="rc-zh-save">💾 保存中文表</button>
+                        <button class="emu-btn" id="rc-zh-cancel">取消</button>
+                        <span style="font-size:12px;color:#9c96b8">格式：{ "短名": { "titleZh": "中文名", "aliases": ["别名"], "platform": "neogeo" } }</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;margin:12px 0 8px">
+                    <input id="rc-dir" placeholder="服务器上的 ROM 目录，例如 F:\\BaiduNetdiskDownload\\街机模拟器WinKawaks1.45中文典藏版" style="flex:1">
+                    <button class="emu-btn emu-btn-play" id="rc-scan">🔍 扫描</button>
+                </div>
+                <div id="rc-result" style="font-size:13px;color:#b9b3d8"></div>
+                <div id="rc-items"></div>
+            </div>
+        `;
+        const fileInput = box.querySelector('#rc-dat-file');
+        box.querySelector('#rc-dat-up').onclick = () => fileInput.click();
+        fileInput.onchange = async () => {
+            const f = fileInput.files && fileInput.files[0];
+            fileInput.value = '';
+            if (!f) return;
+            U.toast('正在解析 DAT…');
+            try {
+                const r = await AdminAPI.romDatUpload(f);
+                U.toast(`✅ DAT 已生效：${r.datCount} 条（${r.datVersion || '未标注版本'}）`);
+                this.renderRomCatalog(body);
+            } catch (e) { U.toast('❌ ' + e.message); }
+        };
+        const del = box.querySelector('#rc-dat-del');
+        if (del) del.onclick = async () => {
+            try { await AdminAPI.romDatDelete((c.datFiles || [])[0]); U.toast('已删除 DAT'); this.renderRomCatalog(body); }
+            catch (e) { U.toast('❌ ' + e.message); }
+        };
+        const zhBox = box.querySelector('#rc-zh-box');
+        box.querySelector('#rc-zh-edit').onclick = () => { zhBox.style.display = zhBox.style.display === 'none' ? 'block' : 'none'; };
+        box.querySelector('#rc-zh-cancel').onclick = () => { zhBox.style.display = 'none'; };
+        box.querySelector('#rc-zh-save').onclick = async () => {
+            let obj = null;
+            try { obj = JSON.parse(box.querySelector('#rc-zh-text').value); }
+            catch (e) { return U.toast('❌ JSON 格式错误：' + e.message); }
+            try {
+                const r = await AdminAPI.romZhSave(obj);
+                U.toast(`✅ 中文表已保存（${r.count} 条）`);
+                zhBox.style.display = 'none';
+                this.renderRomCatalog(body);
+            } catch (e) { U.toast('❌ ' + e.message); }
+        };
+        box.querySelector('#rc-scan').onclick = async () => {
+            const dir = (box.querySelector('#rc-dir').value || '').trim();
+            if (!dir) return U.toast('请填写要扫描的目录');
+            U.toast('正在扫描（只读 ZIP 目录，不解压）…');
+            try {
+                const r = await AdminAPI.romScan(dir);
+                this._romScan = r.items || [];
+                this.romRenderScan(body, r);
+            } catch (e) { U.toast('❌ ' + e.message); }
+        };
+    },
+
+    romRenderScan(body, r) {
+        const box = body.querySelector('#rom-catalog-box');
+        const res = box.querySelector('#rc-result');
+        const list = box.querySelector('#rc-items');
+        const items = r.items || [];
+        if (!items.length) { res.textContent = '该目录下没有找到 .zip 文件。'; list.innerHTML = ''; return; }
+        const bad = items.filter(i => i.crcStatus === 'mismatch' || i.crcStatus === 'partial').length;
+        res.innerHTML = `扫描到 <b>${items.length}</b> 个 ZIP${bad ? `，其中 <b style="color:#ffd56b">${bad} 个 CRC 异常</b>（残缺或错版，谨慎导入）` : ''}。勾选后导入，中文名可直接改。`;
+        list.innerHTML = `
+            <div style="overflow:auto;max-height:420px;border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-top:8px">
+            <table class="admin-table" style="width:100%">
+                <thead><tr>
+                    <th style="width:32px"><input type="checkbox" id="rc-all" checked></th>
+                    <th>短名</th><th>中文名（可改）</th><th>英文原名</th><th>平台</th><th>年份</th><th>厂商</th><th>CRC</th><th>大小</th>
+                </tr></thead>
+                <tbody>
+                ${items.map((it, i) => `
+                    <tr${it.imported ? ' style="opacity:.5"' : ''}>
+                        <td><input type="checkbox" data-i="${i}"${it.imported ? '' : ' checked'}></td>
+                        <td><code>${this.esc(it.shortName)}</code>${it.imported ? '<br><span style="font-size:11px;color:#ffd56b">已导入</span>' : ''}</td>
+                        <td><input data-zh="${i}" value="${this.esc(it.titleZh || '')}" style="width:160px"></td>
+                        <td style="font-size:12px;color:#9c96b8">${this.esc(it.titleEn || '—')}</td>
+                        <td><select data-plat="${i}">
+                            ${['', 'neogeo', 'cps1', 'cps2', 'cps3', 'igs', 'other'].map(p =>
+                                `<option value="${p}"${(it.platform || '') === p ? ' selected' : ''}>${p || '自动'}</option>`).join('')}
+                        </select></td>
+                        <td><input data-year="${i}" value="${this.esc(it.year || '')}" style="width:56px"></td>
+                        <td>${this.esc(it.maker || '—')}</td>
+                        <td style="color:${this.CRC_COLOR[it.crcStatus] || '#9c96b8'};font-size:12px">${this.CRC_LABEL[it.crcStatus] || it.crcStatus}
+                            ${it.bios ? `<br><span style="font-size:11px;color:#ffd56b">需 ${this.esc(it.bios)}</span>` : ''}</td>
+                        <td style="font-size:12px">${this.romFmtSize(it.size)}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table></div>
+            <div style="margin-top:10px;display:flex;gap:8px">
+                <button class="emu-btn emu-btn-play" id="rc-import">⬇ 导入选中（复制）</button>
+                <button class="emu-btn" id="rc-import-move">➡ 导入选中（移动，省空间）</button>
+            </div>`;
+        const all = list.querySelector('#rc-all');
+        all.onchange = () => list.querySelectorAll('[data-i]').forEach(c => { c.checked = all.checked; });
+        const collect = () => {
+            const out = [];
+            list.querySelectorAll('[data-i]').forEach(c => {
+                if (!c.checked) return;
+                const i = parseInt(c.dataset.i, 10);
+                const it = items[i];
+                if (!it || it.imported) return;
+                out.push({
+                    path: it.path, shortName: it.shortName,
+                    titleZh: (list.querySelector(`[data-zh="${i}"]`).value || '').trim(),
+                    platform: list.querySelector(`[data-plat="${i}"]`).value,
+                    year: (list.querySelector(`[data-year="${i}"]`).value || '').trim(),
+                });
+            });
+            return out;
+        };
+        const doImport = async (move) => {
+            const sel = collect();
+            if (!sel.length) return U.toast('没有选中任何 ROM');
+            if (!U.confirm(`确定导入 ${sel.length} 个 ROM？${move ? '（移动：原目录文件会被移走）' : '（复制：保留原文件）'}`)) return;
+            try {
+                const r = await AdminAPI.romImport(sel, move);
+                U.toast(`✅ 导入 ${(r.added || []).length} 个${(r.skipped || []).length ? `，跳过 ${r.skipped.length} 个` : ''}${(r.linked || 0) ? `，${r.linked} 个克隆 ROM 已挂到母 ROM` : ''}`);
+                if ((r.skipped || []).length) console.warn('[rom] 跳过明细', r.skipped);
+                this._romScan = [];
+                this.renderRomCatalog(body);
+                this.romRefreshList(body);
+            } catch (e) { U.toast('❌ ' + e.message); }
+        };
+        list.querySelector('#rc-import').onclick = () => doImport(false);
+        list.querySelector('#rc-import-move').onclick = () => doImport(true);
     },
 
     async romRefreshList(body) {

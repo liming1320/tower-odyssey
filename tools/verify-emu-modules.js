@@ -31,7 +31,7 @@ function fakeCtx() {
     });
 }
 function fakeEl() {
-    return {
+    const o = {
         style: {}, classList: { add() { }, remove() { }, toggle() { }, contains: () => false },
         appendChild(c) { return c; }, removeChild() { }, remove() { },
         addEventListener() { }, removeEventListener() { },
@@ -40,11 +40,21 @@ function fakeEl() {
         getContext: () => fakeCtx(),
         clientWidth: 400, clientHeight: 520, width: 400, height: 520,
         focus() { }, click() { }, value: '', dataset: {}, setAttribute() { },
-        isConnected: true, innerHTML: '', textContent: '',
+        isConnected: true, textContent: '',
     };
+    // innerHTML 记录下来：列表是往子元素里塞的，容器自身的 innerHTML 永远是空，
+    // 想断言「渲染出了什么」只能靠全局日志（置 global.__htmlLog 即开启）。
+    let __html = '';
+    Object.defineProperty(o, 'innerHTML', {
+        get() { return __html; },
+        set(v) { __html = String(v); if (global.__htmlLog) global.__htmlLog.push(__html); },
+        configurable: true, enumerable: true,
+    });
+    return o;
 }
 global.document = {
     createElement: fakeEl, getElementById: () => fakeEl(),
+    createDocumentFragment: fakeEl,   // 列表用它批量挂载，缺了会在渲染时炸
     querySelector: () => fakeEl(), querySelectorAll: () => [],
     addEventListener() { }, removeEventListener() { },
     body: { appendChild() { } },
@@ -97,5 +107,41 @@ for (const id of ['emulator', 'arcade']) {
 // 街机入口依赖模拟器模块的播放链路，必须真实存在
 check('arcade 依赖的 window.MiniGames.emulator 存在', !!(M && M.emulator));
 
-console.log('\n' + (fail ? '\u2717 ' : '\u2713 ') + pass + ' 通过 / ' + fail + ' 失败');
-process.exit(fail ? 1 : 0);
+// ---------- 列表渲染路径：带图鉴字段的 ROM 真的能渲染出来 ----------
+// 为什么要单独验：列表是在 fetch 之后的 .then 里渲染的，里面的 ReferenceError
+// 不会让 start() 抛错、也不会进上面的 try，只会变成一个「列表空白」的静默故障。
+// 这里喂一条带 titleZh/titleEn/shortName/aliases 的 ROM，抓 unhandledRejection。
+const asyncErrors = [];
+let inst2 = null;
+// 注意：列表渲染在 Promise 链里，异常会被 .catch 吞掉并渲染成「加载失败：xxx」，
+// 不会变成 unhandledRejection。所以断言必须落在**渲染结果**上，而不是全局异常。
+global.fetch = () => Promise.resolve({
+    ok: true, status: 200,
+    json: () => Promise.resolve({
+        roms: [{
+            id: 'r1', name: '真饿狼传说特别版', core: 'fbneo', size: 1234567, addedAt: Date.now(),
+            titleZh: '真饿狼传说特别版', titleEn: 'Real Bout Fatal Fury Special',
+            shortName: 'rbffspec', aliases: ['RB 饿狼传说特别版'],
+            platform: 'neogeo', year: '1997', maker: 'SNK', genre: '格斗', crcStatus: 'ok',
+        }],
+        bios: [], missing: [],
+    }),
+    text: () => Promise.resolve(''),
+    blob: () => Promise.resolve({}),
+});
+const box2 = fakeEl();
+global.__htmlLog = [];
+try { inst2 = M.arcade.start(box2, { level: M.arcade.LEVELS[0], levelIdx: 0, endless: false, onScore: () => { }, onComplete: () => { } }); }
+catch (e) { asyncErrors.push(e.message); }
+setTimeout(() => {
+    const html = String(box2.innerHTML || '') + '\n' + (global.__htmlLog || []).join('\n');
+    check('带图鉴字段的 ROM 渲染列表无异常（不出现「加载失败」）',
+        asyncErrors.length === 0 && html.indexOf('加载失败') < 0,
+        (asyncErrors.join(' | ') || '').trim() || html.slice(0, 120));
+    check('列表显示中文名 + 英文原名/短名副标题',
+        html.indexOf('真饿狼传说特别版') >= 0 && html.indexOf('rbffspec') >= 0,
+        html.slice(0, 200));
+    try { inst2 && inst2.stop && inst2.stop(); } catch (e) { }
+    console.log('\n' + (fail ? '\u2717 ' : '\u2713 ') + pass + ' 通过 / ' + fail + ' 失败');
+    process.exit(fail ? 1 : 0);
+}, 80);

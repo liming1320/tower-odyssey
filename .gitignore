@@ -39,6 +39,10 @@ tools/_retired-hero-png/
 # 数据库连接配置（含密码）
 data/db-env.json
 
+# ROM 中文名覆盖表（运行时数据：由 server/rom-zh-seed.json 自动生成、后台可在线编辑）
+# 与 db.json 同理 —— 线上改过的翻译不该被本地版本覆盖
+data/rom-zh.json
+
 # AI 酒馆网关配置（含 SillyTavern 管理员口令）
 data/tavern-env.json
 
