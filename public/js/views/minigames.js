@@ -151,6 +151,13 @@ const GAMES = [
     sc('war', '纸牌大战', '50 关 · 点数大者胜', '#3a2f52', '#1a1430', ['\ud83c\udccf', '\u2694']),
     sc('monopoly', '大富翁', '50 关 · 4 人局 · 买地建楼 · 自动存档', '#2f4a3a', '#12241c', ['\ud83c\udfe0', '\ud83c\udfb2', '\ud83d\udcb0']),
     sc('richman', '强手棋', '50 关 + 无尽 · 32 格大地图 · 卡牌/神明/股市/商店', '#4a2f5c', '#1e1230', ['\ud83c\udccf', '\ud83d\udcb0', '\ud83d\udcc8']),
+    sc('zuma', '祖玛', '50 关 · 射球三消 · 蛙口弹道', '#8a4a2f', '#3a1c10', ['\ud83d\udc0d', '\ud83d\udc19', '\ud83c\udfaf']),
+    sc('bejeweled', '宝石迷阵', '50 关 · 换位三消 · 连锁加成', '#4a6a9f', '#1c2c4a', ['\ud83d\udc8e', '\u2728', '\ud83d\udd31']),
+    sc('bubble', '泡泡龙', '50 关 · 瞄准弹射 · 悬空掉落', '#2f5c8a', '#122840', ['\ud83e\udee7', '\ud83c\udfaf', '\ud83c\udf0a']),
+    sc('alienshoot', '孤胆枪手', '50 关 · 俯视扫射 · 异形潮 · 首领', '#3a5c3a', '#101c10', ['\ud83d\udd2b', '\ud83d\udc1b', '\ud83d\udca5']),
+    sc('mummymaze', '木乃伊迷宫', '50 关 · 回合走位 · 木乃伊追踪', '#8a7a3a', '#3a3010', ['\ud83e\udddf', '\u26fd', '\ud83d\udeaa']),
+    sc('rocketmania', '疯狂火箭', '50 关 · 转管接引信 · 点火升空', '#5c4a2f', '#241a0a', ['\ud83d\ude80', '\ud83d\udd25', '\ud83d\udd27']),
+    sc('jigsaw', '拼图', '导入图片 · 自选 3\u00d73~8\u00d78 切块', '#4a6a5c', '#1a2c24', ['\ud83e\uddfe', '\ud83d\uddbc\ufe0f', '\ud83d\uddbc\ufe0f']),
 
     sc('maze', '迷宫', '50 关 · 迷宫越来越大', '#2f3a52', '#141c2c', ['\ud83c\udfc1', '\ud83c\udfc3']),
     sc('lightsout', '点灯', '50 关 · 全部熄灭', '#ffe08a', '#3a3452', ['\ud83d\udca1']),
