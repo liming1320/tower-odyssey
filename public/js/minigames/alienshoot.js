@@ -24,6 +24,7 @@ window.MiniGames = window.MiniGames || {};
             const keys = new Set();
             let mvx = 0, mvy = 0, walkT = 0, muzzle = 0;
             let joyId = null, joyOx = 0, joyOy = 0, joyVx = 0, joyVy = 0;
+            let joyCX = 0, joyCY = 0, isTouch = false;   // 摇杆绘制（画布坐标）与触屏标记
 
             container.innerHTML = '';
             const cvs = document.createElement('canvas');
@@ -203,6 +204,33 @@ window.MiniGames = window.MiniGames || {};
                 // 玩家：俯视士兵（影子 → 摆腿 → 身体防弹背心 → 双手持枪 → 头盔 → 枪口焰）
                 const ang = Math.atan2(aim.y - py, aim.x - px);
                 drawSoldier(px, py, ang);
+                // 触屏常驻提示：左下移动区 / 右下射击区
+                if (isTouch) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.22; ctx.strokeStyle = '#cfe3ff'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
+                    ctx.beginPath(); ctx.arc(64, H - 64, 40, 0, Math.PI * 2); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.globalAlpha = 0.5; ctx.fillStyle = '#cfe3ff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('✥ 移动', 64, H - 108);
+                    ctx.fillText('🎯 射击', W - 70, H - 108);
+                    ctx.restore();
+                }
+                // 虚拟摇杆（按住左半屏时显示）
+                if (joyId !== null) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.55;
+                    ctx.beginPath(); ctx.arc(joyCX, joyCY, 42, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(20,30,45,0.45)'; ctx.fill();
+                    ctx.strokeStyle = '#9fc4ef'; ctx.lineWidth = 2.5; ctx.stroke();
+                    const kl = Math.hypot(joyVx, joyVy) || 1;
+                    const kx = joyCX + (joyVx / kl) * Math.min(1, kl) * 42, ky = joyCY + (joyVy / kl) * Math.min(1, kl) * 42;
+                    ctx.beginPath(); ctx.arc(kx, ky, 18, 0, Math.PI * 2);
+                    const kg = ctx.createRadialGradient(kx - 5, ky - 5, 3, kx, ky, 18);
+                    kg.addColorStop(0, '#e8f3ff'); kg.addColorStop(1, '#5b83b8');
+                    ctx.fillStyle = kg; ctx.fill();
+                    ctx.strokeStyle = '#dceaff'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.restore();
+                }
                 // 开场操作提示
                 if (t < 4) {
                     ctx.globalAlpha = Math.min(1, (4 - t) / 1.2);
@@ -291,10 +319,12 @@ window.MiniGames = window.MiniGames || {};
             cvs.addEventListener('pointerdown', e => {
                 const r = cvs.getBoundingClientRect();
                 const lx = (e.clientX - r.left) * (W / r.width);
+                if (e.pointerType !== 'mouse') isTouch = true;
                 if (e.pointerType !== 'mouse' && lx < W * 0.4) {
                     // 移动摇杆
                     joyId = e.pointerId;
                     joyOx = e.clientX; joyOy = e.clientY; joyVx = 0; joyVy = 0;
+                    joyCX = lx; joyCY = (e.clientY - r.top) * (H / r.height);
                 } else {
                     firingId = e.pointerId; firing = true; setPos(e);
                 }
