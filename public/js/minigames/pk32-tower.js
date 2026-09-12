@@ -31,14 +31,29 @@
   var WALLS = { '03': 1, '04': 1, '40': 1, '66': 1 };
   var COLORS = { floor: '#f4ead0', wall: '#39434f', door: '#a64b37', key: '#e3b341', enemy: '#713c74', exit: '#2d8c72', player: '#2374a8' };
   var TILE_NAMES = { '00': '地板', '01': '主角', '02': '地板', '03': '墙', '04': '墙', '05': '地板', '06': '地板', '07': '地板', '08': '地板', '09': '地板', '10': '地板', '11': '主角', '12': '红门', '16': '蓝门', '17': '黄门', '18': '绿门', '20': '红钥匙', '21': '蓝钥匙', '22': '黄钥匙', '23': '绿钥匙', '72': '出口' };
-  function tileName(code) { return TILE_NAMES[code] || (isEnemy(code) ? '怪物' : '地板'); }
-  function tileGlyph(code) { if (isWall(code)) return ''; if (isDoor(code)) return ''; if (isKey(code)) return ''; if (code === '72') return ''; if (isEnemy(code)) return ''; return ''; }
-  function tileSprite(code) { var value = parseInt(code, 10); return { x: (value % 19) * 32, y: Math.floor(value / 19) * 32 }; }
+  function tileName(code) { return TILE_NAMES[code] || (isTreasure(code) ? '道具' : isEnemy(code) ? '怪物' : '地板'); }
+  function tileKind(code) {
+    if (isWall(code)) return 'wall';
+    if (isDoor(code)) return 'door';
+    if (isKey(code)) return 'key';
+    if (isTreasure(code)) return 'treasure';
+    if (code === '72') return 'exit';
+    if (code === '01' || code === '11') return 'player';
+    if (isEnemy(code)) return 'enemy';
+    return 'floor';
+  }
+  function tileGlyph(code) {
+    var kind = tileKind(code);
+    return kind === 'wall' ? '#' : kind === 'door' ? 'D' : kind === 'key' ? 'K' : kind === 'treasure' ? 'T' : kind === 'exit' ? '>' : kind === 'player' ? '@' : kind === 'enemy' ? 'E' : '';
+  }
+  // Map codes are game IDs, not row-major atlas indexes. Do not render guessed art.
+  function tileSprite(code) { return null; }
 
   function codeAt(map, x, y) { return map.slice((y * WIDTH + x) * 2, (y * WIDTH + x + 1) * 2); }
   function isWall(code) { return !!WALLS[code]; }
   function isDoor(code) { return code === '12' || code === '16' || code === '17' || code === '18'; }
   function isKey(code) { return code === '20' || code === '21' || code === '22' || code === '23'; }
+  function isTreasure(code) { return parseInt(code, 10) >= 24 && parseInt(code, 10) < 30; }
   function isEnemy(code) { var n = parseInt(code, 10); return n >= 30 && n < 90 && code !== '40' && code !== '66'; }
   function makeLayer(map, index) {
     var cells = [];
@@ -52,7 +67,7 @@
 
   function cloneState(layerIndex) {
     var layer = LAYERS[layerIndex];
-    return { layer: layerIndex, x: layer.start.x, y: layer.start.y, hp: 100, attack: 10, defense: 5, gold: 0, keys: { red: 0, blue: 0, yellow: 0 }, defeated: {}, won: false, lost: false };
+    return { layer: layerIndex, x: layer.start.x, y: layer.start.y, hp: 100, attack: 10, defense: 5, gold: 0, keys: { red: 0, blue: 0, yellow: 0, green: 0 }, defeated: {}, won: false, lost: false };
   }
   function Tower(container, opts) {
     opts = opts || {};
@@ -61,9 +76,10 @@
     this.handlers = [];
     this.render();
   }
+  Tower.prototype.getState = function () { return JSON.parse(JSON.stringify(this.state)); };
   Tower.prototype.on = function (el, type, fn) { el.addEventListener(type, fn); this.handlers.push([el, type, fn]); };
   Tower.prototype.save = function () { try { localStorage.setItem(SAVE_KEY, JSON.stringify(this.state)); this.note('已保存当前楼层和状态'); } catch (e) { this.note('存档不可用'); } };
-  Tower.prototype.load = function () { try { var s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (!s || s.layer < 0 || s.layer >= LAYERS.length || s.x < 0 || s.x >= WIDTH || s.y < 0 || s.y >= HEIGHT || !s.keys || typeof s.keys.red !== 'number' || typeof s.keys.blue !== 'number' || typeof s.keys.yellow !== 'number' || !s.defeated || typeof s.defeated !== 'object') throw new Error('invalid save'); this.state = s; this.render(); this.note('已读取存档'); } catch (e) { this.note('存档无效或不可用'); } };
+  Tower.prototype.load = function () { try { var s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (!s || s.layer < 0 || s.layer >= LAYERS.length || s.x < 0 || s.x >= WIDTH || s.y < 0 || s.y >= HEIGHT || !s.keys || typeof s.keys.red !== 'number' || typeof s.keys.blue !== 'number' || typeof s.keys.yellow !== 'number' || typeof s.keys.green !== 'number' || !s.defeated || typeof s.defeated !== 'object') throw new Error('invalid save'); this.state = s; this.render(); this.note('已读取存档'); } catch (e) { this.note('存档无效或不可用'); } };
   Tower.prototype.restart = function () { this.state = cloneState(this.state.layer); this.render(); };
   Tower.prototype.note = function (message) { var el = this.container.querySelector('[data-role=message]'); if (el) el.textContent = message; };
   Tower.prototype.move = function (dx, dy) {
@@ -72,9 +88,9 @@
     if (nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT) return;
     var i = ny * WIDTH + nx, code = LAYERS[this.state.layer].cells[i];
     if (isWall(code)) return this.note('墙壁无法通过');
-    if (isDoor(code)) { var color = code === '12' ? 'red' : code === '16' ? 'blue' : 'yellow'; if (!this.state.keys[color]) return this.note('需要' + color + '钥匙'); this.state.keys[color] -= 1; }
+    if (isDoor(code)) { var color = code === '12' ? 'red' : code === '16' ? 'blue' : code === '17' ? 'yellow' : 'green'; if (!this.state.keys[color]) return this.note('需要' + color + '钥匙'); this.state.keys[color] -= 1; }
     if (isEnemy(code) && !this.state.defeated[i]) { var power = Math.max(1, parseInt(code, 10) - 25); this.state.hp -= Math.max(1, power - this.state.defense); if (this.state.hp <= 0) { this.state.lost = true; this.note('战斗失败，请重开'); this.render(); return; } this.state.gold += power; this.state.defeated[i] = true; }
-    if (isKey(code)) { var key = code === '20' ? 'red' : code === '21' ? 'blue' : 'yellow'; this.state.keys[key] += 1; this.state.gold += 5; }
+    if (isKey(code)) { var key = code === '20' ? 'red' : code === '21' ? 'blue' : code === '22' ? 'yellow' : 'green'; this.state.keys[key] += 1; this.state.gold += 5; }
     this.state.x = nx; this.state.y = ny;
     if (code === '72' || (this.state.layer === LAYERS.length - 1 && nx === WIDTH - 2 && ny === 1)) { if (this.state.layer < LAYERS.length - 1) { this.state.layer += 1; var next = LAYERS[this.state.layer].start; this.state.x = next.x; this.state.y = next.y; this.note('进入第' + (this.state.layer + 1) + '层'); } else { this.state.won = true; this.note('恭喜通关 PK32 魔塔'); } }
     this.render();
@@ -82,10 +98,10 @@
   Tower.prototype.render = function () {
     var self = this, layer = LAYERS[this.state.layer];
     this.handlers.forEach(function (h) { h[0].removeEventListener(h[1], h[2]); }); this.handlers = []; this.keyBound = false;
-    this.container.innerHTML = '<div data-role="pk32-tower" style="font-family:system-ui;max-width:760px;margin:auto;color:#20252b"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>PK32 魔塔原版迁移</strong><label>地图 <select data-role="layer"></select></label><button data-role="restart">重开</button><button data-role="save">存档</button><button data-role="load">读档</button></div><div data-role="message" style="min-height:28px;padding:8px 0">第' + (this.state.layer + 1) + '层</div><div data-role="stats"></div><div data-role="grid" style="display:grid;grid-template-columns:repeat(11,minmax(28px,1fr));gap:1px;max-width:420px;touch-action:none"></div><div style="display:flex;justify-content:center;gap:8px;margin-top:10px"><button data-dir="up">上</button><button data-dir="left">左</button><button data-dir="down">下</button><button data-dir="right">右</button></div></div>';
+    this.container.innerHTML = '<div data-role="pk32-tower" style="font-family:system-ui;max-width:760px;margin:auto;color:#20252b"><style>.pk32-tower-tile{position:relative;display:grid;place-items:center;min-width:28px;min-height:28px;aspect-ratio:1;border:1px solid #b9a878;padding:0;font-weight:700;font-family:monospace;font-size:16px}.pk32-tower-tile[data-kind=floor]{background:#f4ead0;color:#c9bd9c}.pk32-tower-tile[data-kind=wall]{background:#39434f;color:#d7dce0}.pk32-tower-tile[data-kind=door]{background:#a64b37;color:#fff}.pk32-tower-tile[data-kind=key]{background:#e3b341;color:#20252b}.pk32-tower-tile[data-kind=treasure]{background:#c88934;color:#fff}.pk32-tower-tile[data-kind=enemy]{background:#713c74;color:#fff}.pk32-tower-tile[data-kind=player]{background:#2374a8;color:#fff}.pk32-tower-tile[data-kind=exit]{background:#2d8c72;color:#fff}</style><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>PK32 魔塔原版迁移</strong><label>地图 <select data-role="layer"></select></label><button data-role="restart">重开</button><button data-role="save">存档</button><button data-role="load">读档</button></div><div data-role="message" style="min-height:28px;padding:8px 0">第' + (this.state.layer + 1) + '层</div><div data-role="stats"></div><div data-role="grid" style="display:grid;grid-template-columns:repeat(11,minmax(28px,1fr));gap:1px;max-width:420px;touch-action:none"></div><div style="display:flex;justify-content:center;gap:8px;margin-top:10px"><button data-dir=up>上</button><button data-dir=left>左</button><button data-dir=down>下</button><button data-dir=right>右</button></div></div>';
     var select = this.container.querySelector('[data-role=layer]'); LAYERS.forEach(function (_, i) { var o = document.createElement('option'); o.value = i; o.textContent = '第' + (i + 1) + '层'; o.selected = i === self.state.layer; select.appendChild(o); });
-    var grid = this.container.querySelector('[data-role=grid]'); layer.cells.forEach(function (code, i) { var b = document.createElement('button'), x = i % WIDTH, y = Math.floor(i / WIDTH), text = tileGlyph(code), sprite = tileSprite(code); b.type = 'button'; b.title = tileName(code) + '（资源编码 ' + code + '）'; b.setAttribute('aria-label', b.title); b.style.cssText = 'aspect-ratio:1;border:0;padding:0;font-size:18px;background:' + (isWall(code) ? COLORS.wall : isDoor(code) ? COLORS.door : isKey(code) ? COLORS.key : isEnemy(code) && !self.state.defeated[i] ? COLORS.enemy : code === '72' ? COLORS.exit : COLORS.floor) + ';color:' + (isWall(code) || isEnemy(code) ? '#fff' : '#20252b') + ';background-image:url("/img/pk32/tower-sheet.png");background-repeat:no-repeat;background-position:-' + sprite.x + 'px -' + sprite.y + 'px;background-size:989px 989px'; if (self.state.x === x && self.state.y === y) { text = ''; b.style.backgroundColor = COLORS.player; } else if (self.state.defeated[i]) text = ''; b.textContent = text; self.on(b, 'click', function () { if (Math.abs(self.state.x - x) + Math.abs(self.state.y - y) === 1) self.move(x - self.state.x, y - self.state.y); }); grid.appendChild(b); });
-    this.container.querySelector('[data-role=stats]').textContent = '生命 ' + this.state.hp + '　攻击 ' + this.state.attack + '　防御 ' + this.state.defense + '　金币 ' + this.state.gold + '　钥匙：红 ' + this.state.keys.red + ' 蓝 ' + this.state.keys.blue + ' 黄 ' + this.state.keys.yellow;
+    var grid = this.container.querySelector('[data-role=grid]'); layer.cells.forEach(function (code, i) { var b = document.createElement('button'), x = i % WIDTH, y = Math.floor(i / WIDTH), kind = tileKind(code), text = tileGlyph(code); b.type = 'button'; b.className = 'pk32-tower-tile'; b.dataset.code = code; b.dataset.kind = kind; b.title = tileName(code) + '（资源编码 ' + code + '）'; b.setAttribute('aria-label', b.title); if (self.state.x === x && self.state.y === y) { text = '@'; b.dataset.kind = 'player'; } else if (self.state.defeated[i]) text = ''; b.textContent = text; self.on(b, 'click', function () { if (Math.abs(self.state.x - x) + Math.abs(self.state.y - y) === 1) self.move(x - self.state.x, y - self.state.y); }); grid.appendChild(b); });
+    this.container.querySelector('[data-role=stats]').textContent = '生命 ' + this.state.hp + '　攻击 ' + this.state.attack + '　防御 ' + this.state.defense + '　金币 ' + this.state.gold + '　钥匙：红 ' + this.state.keys.red + ' 蓝 ' + this.state.keys.blue + ' 黄 ' + this.state.keys.yellow + ' 绿 ' + this.state.keys.green;
     this.on(select, 'change', function () { self.state = cloneState(Number(select.value)); self.render(); }); this.on(this.container.querySelector('[data-role=restart]'), 'click', function () { self.restart(); }); this.on(this.container.querySelector('[data-role=save]'), 'click', function () { self.save(); }); this.on(this.container.querySelector('[data-role=load]'), 'click', function () { self.load(); });
     [['up', 0, -1], ['left', -1, 0], ['down', 0, 1], ['right', 1, 0]].forEach(function (d) { self.on(self.container.querySelector('[data-dir=' + d[0] + ']'), 'click', function () { self.move(d[1], d[2]); }); });
     if (!this.keyBound) { this.keyBound = true; this.on(this.container, 'keydown', function (e) { var k = { ArrowUp: [0, -1], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowRight: [1, 0], w: [0, -1], a: [-1, 0], s: [0, 1], d: [1, 0] }[e.key]; if (k) { e.preventDefault(); self.move(k[0], k[1]); } }); } this.container.tabIndex = 0;
