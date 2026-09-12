@@ -145,6 +145,13 @@ window.MiniGames = window.MiniGames || {};
                 ctx.strokeStyle = '#3a2f4d'; ctx.lineWidth = 30; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 ctx.beginPath(); path.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
                 ctx.strokeStyle = '#241c36'; ctx.lineWidth = 22; ctx.stroke();
+                // 入口洞（球链从这冒出来）
+                const p0 = path.pts[0];
+                ctx.beginPath(); ctx.arc(p0.x, p0.y, 19, 0, Math.PI * 2);
+                ctx.fillStyle = '#08050f'; ctx.fill();
+                ctx.strokeStyle = '#4a3c66'; ctx.lineWidth = 3; ctx.stroke();
+                ctx.beginPath(); ctx.arc(p0.x, p0.y, 12, 0, Math.PI * 2);
+                ctx.fillStyle = '#000'; ctx.fill();
                 // 球链
                 for (let j = chain.length - 1; j >= 0; j--) {
                     const p = ptAt(path, chain[j].d);
@@ -154,6 +161,25 @@ window.MiniGames = window.MiniGames || {};
                 // 蛙：石台底座 + 蹲坐蛤蟆（朝瞄准方向旋转，朝左时上下翻回正）
                 drawFrogBase(frog.x, frog.y + 6);
                 const ang = Math.atan2(aim.y - frog.y, aim.x - frog.x);
+                // 瞄准虚线：从蛙口沿射击方向，到第一颗链球（或屏幕边）为止
+                {
+                    const dx = Math.cos(ang), dy = Math.sin(ang);
+                    let tEnd = 920;
+                    for (const ch of chain) {
+                        const p = ptAt(path, ch.d);
+                        const rel = (p.x - frog.x) * dx + (p.y - frog.y) * dy;
+                        if (rel <= 10) continue;
+                        const perp = Math.abs(-(p.x - frog.x) * dy + (p.y - frog.y) * dx);
+                        if (perp < R * 1.7 && rel < tEnd) tEnd = rel;
+                    }
+                    ctx.setLineDash([4, 9]);
+                    ctx.strokeStyle = 'rgba(255,235,180,0.4)'; ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(frog.x + dx * 30, frog.y + dy * 30);
+                    ctx.lineTo(frog.x + dx * tEnd, frog.y + dy * tEnd);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
                 drawFrog(frog.x, frog.y, ang);
                 // 待发球与下一球
                 ball(frog.x + Math.cos(ang) * 26, frog.y + Math.sin(ang) * 26, cur, 12);
