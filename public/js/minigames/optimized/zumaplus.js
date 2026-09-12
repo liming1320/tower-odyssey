@@ -325,9 +325,9 @@ window.MiniGames = window.MiniGames || {};
                 const r = cvs.getBoundingClientRect();
                 aim = { x: (e.clientX - r.left) * (W / r.width), y: (e.clientY - r.top) * (H / r.height) };
                 if (over || cool > 0) return;
+                if (Math.hypot(aim.x - (frog.x + 34), aim.y - (frog.y + 30)) < 20) { [cur, next] = [next, cur]; return; }
                 const ang = Math.atan2(aim.y - frog.y, aim.x - frog.x);
                 shots.push({ x: frog.x + Math.cos(ang) * 26, y: frog.y + Math.sin(ang) * 26, vx: Math.cos(ang) * 430, vy: Math.sin(ang) * 430, c: cur });
-                if (Math.hypot(aim.x - (frog.x + 34), aim.y - (frog.y + 30)) < 20) { [cur, next] = [next, cur]; return; }
                 cur = next; next = availableColor();
                 cool = 0.24;
             });

@@ -1,4 +1,4 @@
-// 泡泡龙：发射泡泡粘上球阵，同色三连爆破，悬空球掉落
+// 独立优化版：正确六邻接、真实下压、反弹瞄准、可用色弹药及掉落动画。
 window.MiniGames = window.MiniGames || {};
 (function () {
     const W = 400, H = 540, R = 16, COLS = 11, ROWH = R * 1.732;
@@ -22,6 +22,8 @@ window.MiniGames = window.MiniGames || {};
             const MAXROW = 13;
             // board[r][c] = color | -1 空（r 顶部 0 起）
             let board = [], cur = 0, next = 1, shot = null, shotsFired = 0, score = 0, over = false, aim = -Math.PI / 2;
+            let ceiling = 0, falling = [], misses = 0;
+            const keys = new AbortController();
 
             container.innerHTML = '';
             const cvs = document.createElement('canvas');
@@ -29,21 +31,30 @@ window.MiniGames = window.MiniGames || {};
             cvs.style.cssText = 'max-width:100%;max-height:100%;touch-action:none;cursor:crosshair;';
             container.appendChild(cvs);
             const ctx = cvs.getContext('2d');
-            const rndC = () => MG.ri(0, nColors - 1);
+            const rndC = () => {
+                const colors = [...new Set(board.flat().filter(c => c >= 0))];
+                return colors.length ? colors[MG.ri(0, colors.length - 1)] : 0;
+            };
 
             function cellX(r, c) { return W / 2 - COLS * R + (c + 0.5) * 2 * R + (r % 2 ? R : 0); }
-            function cellY(r) { return 40 + r * ROWH + R; }
+            function cellY(r) { return 40 + ceiling + r * ROWH + R; }
             function colAt(r, x) { return Math.round((x - (W / 2 - COLS * R + (r % 2 ? R : 0))) / (2 * R) - 0.5); }
-            function rowAt(y) { return Math.round((y - 40 - R) / ROWH); }
+            function rowAt(y) { return Math.round((y - 40 - ceiling - R) / ROWH); }
             function inGrid(r, c) { return r >= 0 && r < MAXROW && c >= 0 && c < COLS - (r % 2 ? 1 : 0); }
             function reset() {
                 board = Array.from({ length: MAXROW }, () => Array(COLS).fill(-1));
-                for (let r = 0; r < initRows; r++) for (let c = 0; c < COLS - (r % 2 ? 1 : 0); c++) board[r][c] = rndC();
+                const rng = MG.makeRng(8301 + idx * 977);
+                for (let r = 0; r < initRows; r++) for (let c = 0; c < COLS - (r % 2 ? 1 : 0); c++) {
+                    const shape = idx % 3;
+                    if (shape === 1 && r > 1 && (c < r / 2 || c > COLS - 2 - r / 2)) continue;
+                    if (shape === 2 && r > 2 && c % 3 === 1) continue;
+                    board[r][c] = Math.floor(rng() * nColors);
+                }
                 cur = rndC(); next = rndC();
             }
             function neighbors(r, c) {
                 const odd = r % 2, out = [];
-                const offs = odd ? [[0, -1], [0, 1], [-1, -1], [-1, 0], [1, -1], [1, 0]] : [[0, -1], [0, 1], [-1, 0], [-1, 1], [1, 0], [1, 1]];
+                const offs = odd ? [[0, -1], [0, 1], [-1, 0], [-1, 1], [1, 0], [1, 1]] : [[0, -1], [0, 1], [-1, -1], [-1, 0], [1, -1], [1, 0]];
                 for (const [dr, dc] of offs) { const nr = r + dr, nc = c + dc; if (inGrid(nr, nc)) out.push([nr, nc]); }
                 return out;
             }
@@ -57,7 +68,7 @@ window.MiniGames = window.MiniGames || {};
                     }
                 }
                 if (group.length < 3) return 0;
-                group.forEach(([r2, c2]) => board[r2][c2] = -1);
+                group.forEach(([r2, c2]) => { falling.push({ x: cellX(r2, c2), y: cellY(r2), c: board[r2][c2], vy: -60, life: .35 }); board[r2][c2] = -1; });
                 // 悬空球掉落：从顶行泛洪，未触达的全部掉落
                 const reach = new Set(), st2 = [];
                 for (let c2 = 0; c2 < COLS; c2++) if (inGrid(0, c2) && board[0][c2] >= 0) { reach.add('0,' + c2); st2.push([0, c2]); }
@@ -70,9 +81,9 @@ window.MiniGames = window.MiniGames || {};
                 }
                 let fell = 0;
                 for (let r2 = 0; r2 < MAXROW; r2++) for (let c2 = 0; c2 < COLS; c2++) {
-                    if (inGrid(r2, c2) && board[r2][c2] >= 0 && !reach.has(r2 + ',' + c2)) { board[r2][c2] = -1; fell++; }
+                    if (inGrid(r2, c2) && board[r2][c2] >= 0 && !reach.has(r2 + ',' + c2)) { falling.push({ x: cellX(r2, c2), y: cellY(r2), c: board[r2][c2], vy: 0, life: 1.6 }); board[r2][c2] = -1; fell++; }
                 }
-                score += group.length * 20 + fell * 15;
+                score += group.length * 20 + fell * 50;
                 return group.length;
             }
             function shoot() {
@@ -80,72 +91,71 @@ window.MiniGames = window.MiniGames || {};
                 cur = next; next = rndC();
                 shotsFired++;
             }
-            function stick(s) {
-                let r = Math.max(0, rowAt(s.y)), c = Math.max(0, colAt(r, s.x));
-                if (!inGrid(r, c) || board[r][c] >= 0) { // 找最近空位
-                    let best = 1e9, br = r, bc = c;
-                    for (let rr = Math.max(0, r - 1); rr <= r + 1; rr++) for (let cc = 0; cc < COLS; cc++) {
-                        if (!inGrid(rr, cc) || board[rr][cc] >= 0) continue;
-                        const d = Math.hypot(cellX(rr, cc) - s.x, cellY(rr) - s.y);
-                        if (d < best) { best = d; br = rr; bc = cc; }
-                    }
-                    r = br; c = bc;
-                }
-                if (!inGrid(r, c)) return lose();
+            function stick(s, hit) {
+                const candidates = hit ? neighbors(hit[0], hit[1]) : Array.from({ length: COLS }, (_, c) => [0, c]);
+                const slots = candidates.filter(([r, c]) => inGrid(r, c) && board[r][c] < 0);
+                slots.sort((a, b) => Math.hypot(cellX(...a) - s.x, cellY(a[0]) - s.y) - Math.hypot(cellX(...b) - s.x, cellY(b[0]) - s.y));
+                if (!slots.length) { shot = null; return lose(); }
+                const [r, c] = slots[0];
                 board[r][c] = s.c;
                 shot = null;
-                popAt(r, c);
-                if (shotsFired % dropEvery === 0) dropCeiling();
+                const popped = popAt(r, c);
+                if (!popped) misses++;
                 if (board.every(row => row.every(v => v < 0))) return win2();
+                if (misses >= dropEvery) { dropCeiling(); misses = 0; }
+                const colors = new Set(board.flat().filter(c => c >= 0));
+                if (!colors.has(cur)) cur = rndC();
+                if (!colors.has(next)) next = rndC();
                 if (board.some((row, rr) => row.some(v => v >= 0) && cellY(rr) > H - 110)) return lose();
             }
             function dropCeiling() {
-                for (let r = 0; r < MAXROW - 1; r++) board[r] = board[r + 1];
-                board[MAXROW - 1] = Array(COLS).fill(-1);
-                board[0] = board[0].map(v => v); // 顶行保持
-                // 顶部补一行偶发新泡
-                if (MG.ri(0, 2) === 0) for (let c = 0; c < COLS - 1; c++) if (Math.random() < 0.5) board[0][c] = rndC();
+                ceiling += ROWH;
             }
             const done = (win, lines) => {
                 if (over) return; over = true; clearInterval(timer);
-                opts.onComplete && opts.onComplete({ win, stars: win ? (score >= 800 ? 3 : score >= 450 ? 2 : 1) : 0, lines });
+                keys.abort();
+                opts.onComplete && opts.onComplete({ win, score, stars: win ? (score >= 800 ? 3 : score >= 450 ? 2 : 1) : 0, lines });
             };
             const win2 = () => done(true, ['清空所有泡泡！', '得分 ' + score]);
             const lose = () => done(false, ['泡泡压过底线了…', '得分 ' + score]);
 
             function step() {
-                if (over) return;
+                if (over || document.hidden) return;
                 const dt = 0.028;
-                if (shot) {
-                    shot.x += shot.vx * dt; shot.y += shot.vy * dt;
-                    if (shot.x < R) { shot.x = R; shot.vx *= -1; }
-                    if (shot.x > W - R) { shot.x = W - R; shot.vx *= -1; }
-                    if (shot.y < 40 + R) return stick(shot);
-                    let hit = false;
+                falling = falling.filter(p => { p.life -= dt; p.vy += dt * 550; p.y += p.vy * dt; return p.life > 0 && p.y < H; });
+                for (let sub = 0; sub < 4 && shot; sub++) {
+                    shot.x += shot.vx * dt / 4; shot.y += shot.vy * dt / 4;
+                    if (shot.x < 40) { shot.x = 80 - shot.x; shot.vx = Math.abs(shot.vx); }
+                    if (shot.x > 360) { shot.x = 720 - shot.x; shot.vx = -Math.abs(shot.vx); }
+                    if (shot.y <= cellY(0)) { stick(shot); break; }
+                    let hit = null;
                     for (let r = 0; r < MAXROW && !hit; r++) for (let c = 0; c < COLS; c++) {
-                        if (inGrid(r, c) && board[r][c] >= 0 && Math.hypot(cellX(r, c) - shot.x, cellY(r) - shot.y) < R * 1.85) { hit = true; break; }
+                        if (inGrid(r, c) && board[r][c] >= 0 && Math.hypot(cellX(r, c) - shot.x, cellY(r) - shot.y) <= R * 2) { hit = [r, c]; break; }
                     }
-                    if (hit) stick(shot);
+                    if (hit) stick(shot, hit);
                     if (shot && shot.y > H) shot = null;
                 }
                 draw();
-                opts.onScore && opts.onScore(`得分 ${score}`);
+                opts.onScore && opts.onScore(`得分 ${score} · 下压 ${dropEvery - misses}`);
             }
             function draw() {
                 const g = ctx.createLinearGradient(0, 0, 0, H);
                 g.addColorStop(0, '#14304a'); g.addColorStop(1, '#0a1626');
                 ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-                ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(0, 40, W, 4);
+                ctx.fillStyle = '#788b95'; ctx.fillRect(24, 40, 352, ceiling + 4);
+                ctx.fillStyle = '#bbcad0'; ctx.fillRect(24, 40 + ceiling, 352, 4);
+                ctx.strokeStyle = '#779ca8'; ctx.lineWidth = 3; ctx.strokeRect(24, 40, 352, H - 150);
+                ctx.strokeStyle = '#e97274'; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.moveTo(24, H - 110); ctx.lineTo(376, H - 110); ctx.stroke(); ctx.setLineDash([]);
                 // 瞄准虚线（含一次反弹）
                 ctx.setLineDash([5, 7]); ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 2;
                 let ax = W / 2, ay = H - 56, dx = Math.cos(aim), dy = Math.sin(aim);
                 ctx.beginPath(); ctx.moveTo(ax, ay);
-                for (let k = 0; k < 2; k++) {
-                    let len = k === 0 ? (dx < 0 ? (ax - R) / -dx : dx > 0 ? (W - R - ax) / dx : 1e9) : 1e9;
-                    len = Math.min(len, 900);
-                    const nx = ax + dx * len, ny = ay + dy * len;
-                    if (ny > 40) { ctx.lineTo(nx, ny); break; }
-                    ctx.lineTo(nx, 40); break;
+                for (let k = 0; k < 350; k++) {
+                    ax += dx * 3; ay += dy * 3;
+                    if (ax < 40) { ax = 80 - ax; dx *= -1; }
+                    if (ax > 360) { ax = 720 - ax; dx *= -1; }
+                    ctx.lineTo(ax, ay);
+                    if (ay <= cellY(0) || board.some((row, r) => row.some((v, c) => v >= 0 && Math.hypot(cellX(r, c) - ax, cellY(r) - ay) <= R * 2))) break;
                 }
                 ctx.stroke(); ctx.setLineDash([]);
                 // 球阵
@@ -169,6 +179,8 @@ window.MiniGames = window.MiniGames || {};
                 ctx.fillStyle = '#183250'; MG.ui.rr(ctx, W / 2 + 52, H - 26, 34, 20, 8); ctx.fill();
                 bub(W / 2 + 69, H - 16, next, R * 0.6);
                 if (shot) bub(shot.x, shot.y, shot.c, R);
+                for (const p of falling) { ctx.globalAlpha = Math.min(1, p.life * 3); bub(p.x, p.y, p.c, R); }
+                ctx.globalAlpha = 1; ctx.textAlign = 'center'; ctx.fillStyle = '#ebf6f4'; ctx.font = 'bold 16px sans-serif'; ctx.fillText('泡泡龙优化版', W / 2, 25);
             }
             // 泡泡龙小龙（蹲坐，头随视线微偏）
             function drawDragon(x, y, aim) {
@@ -249,12 +261,20 @@ window.MiniGames = window.MiniGames || {};
                 if (aim > -0.12) aim = -0.12; if (aim < -Math.PI + 0.12) aim = -Math.PI + 0.12;
             }
             cvs.addEventListener('pointermove', setAim);
-            cvs.addEventListener('pointerdown', e => { setAim(e); if (!over && !shot) shoot(); });
+            cvs.addEventListener('pointerdown', e => { if (e.button === 2) return; setAim(e); if (!over && !shot) shoot(); });
+            cvs.addEventListener('contextmenu', e => { e.preventDefault(); if (!over && !shot) [cur, next] = [next, cur]; });
+            window.addEventListener('keydown', e => {
+                if (over || shot) return;
+                if (['ArrowLeft', 'ArrowRight', 'Space', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
+                if (e.code === 'ArrowLeft') aim = Math.max(-Math.PI + .12, aim - .06);
+                if (e.code === 'ArrowRight') aim = Math.min(-.12, aim + .06);
+                if (e.code === 'Space' || e.code === 'ArrowUp') shoot();
+                if (e.code === 'ArrowDown') [cur, next] = [next, cur];
+            }, { signal: keys.signal });
             reset(); draw();
-            window.__bubblePlusDbg = { popAt, neighbors, inGrid, get board() { return board; }, set board(v) { board = v; } };
+            if (window.__MG_TEST) window.__bubblePlusDbg = { popAt, neighbors, inGrid, stick, dropCeiling, cellY, cellX, get board() { return board; }, set board(v) { board = v; } };
             const timer = setInterval(step, 28);
-            return { stop() { clearInterval(timer); } };
+            return { stop() { over = true; clearInterval(timer); keys.abort(); } };
         },
     };
 })();
-

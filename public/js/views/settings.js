@@ -37,6 +37,10 @@ const SettingsView = {
                     <div class="set-tile-ico">🎰</div>
                     <div>街机模拟器</div>
                 </div>
+                <div class="set-tile" data-act="pk32">
+                    <div class="set-tile-ico">🗃️</div>
+                    <div>PK32 原版迁移</div>
+                </div>
                 <div class="set-tile" data-act="tavern">
                     <div class="set-tile-ico">🍺</div>
                     <div>AI 酒馆</div>
@@ -87,6 +91,8 @@ const SettingsView = {
             this.openEmulator(app);
         } else if (act === 'arcade') {
             this.openArcade(app);
+        } else if (act === 'pk32') {
+            this.openPk32(app);
         } else if (act === 'tavern') {
             this.openTavern(app);
         } else if (act === 'privacy') {
@@ -154,6 +160,32 @@ const SettingsView = {
             if (!game) throw new Error('未加载到街机模拟器模块');
             const inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; } });
             inst && (inst._close = close);
+        } catch (e) {
+            stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
+        }
+    },
+
+    // PK32 原版迁移馆：独立于小游戏关卡系统，按原版流程逐款接入
+    openPk32(app) {
+        U.closeModal();
+        const mask = U.el(`<div class="mini-mask" id="pk32-mask">
+            <div class="mini-topbar">
+                <button class="btn-back" id="pk32-back">‹ 返回</button>
+                <div class="mini-title">🗃️ PK32 原版迁移</div>
+                <div class="mini-score" id="pk32-score"></div>
+            </div>
+            <div class="mini-stage" id="pk32-stage"></div>
+        </div>`);
+        document.body.appendChild(mask);
+        const stage = document.getElementById('pk32-stage');
+        const scoreEl = document.getElementById('pk32-score');
+        let inst = null;
+        const close = () => { try { inst && inst.stop && inst.stop(); } catch (e) {} mask.remove(); };
+        document.getElementById('pk32-back').onclick = close;
+        try {
+            const game = window.MiniGames && window.MiniGames.pk32;
+            if (!game) throw new Error('未加载到 PK32 迁移模块');
+            inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; } });
         } catch (e) {
             stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
         }
