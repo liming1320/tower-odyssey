@@ -151,24 +151,91 @@ window.MiniGames = window.MiniGames || {};
                     if (chain[j].d < -2) continue;
                     ball(p.x, p.y, chain[j].c, R);
                 }
-                // 蛙
-                ctx.beginPath(); ctx.arc(frog.x, frog.y, 20, 0, Math.PI * 2);
-                ctx.fillStyle = '#3f7d3a'; ctx.fill();
-                ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 3; ctx.stroke();
+                // 蛙：石台底座 + 蹲坐蛤蟆（朝瞄准方向旋转，朝左时上下翻回正）
+                drawFrogBase(frog.x, frog.y + 6);
                 const ang = Math.atan2(aim.y - frog.y, aim.x - frog.x);
-                ctx.strokeStyle = '#8fce7c'; ctx.lineWidth = 7;
-                ctx.beginPath(); ctx.moveTo(frog.x, frog.y); ctx.lineTo(frog.x + Math.cos(ang) * 26, frog.y + Math.sin(ang) * 26); ctx.stroke();
+                drawFrog(frog.x, frog.y, ang);
                 // 待发球与下一球
                 ball(frog.x + Math.cos(ang) * 26, frog.y + Math.sin(ang) * 26, cur, 12);
-                ball(frog.x + 30, frog.y + 26, next, 9);
+                ball(frog.x + 34, frog.y + 30, next, 9);
                 // 飞行球
                 for (const b of shots) ball(b.x, b.y, b.c, 12);
+            }
+            // 石台
+            function drawFrogBase(x, y) {
+                ctx.beginPath(); ctx.ellipse(x, y, 30, 13, 0, 0, Math.PI * 2);
+                const sg = ctx.createLinearGradient(x, y - 13, x, y + 13);
+                sg.addColorStop(0, '#8a8fa3'); sg.addColorStop(0.55, '#5d6275'); sg.addColorStop(1, '#3a3e4d');
+                ctx.fillStyle = sg; ctx.fill();
+                ctx.strokeStyle = '#23262f'; ctx.lineWidth = 2.5; ctx.stroke();
+                // 石纹
+                ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1.4;
+                ctx.beginPath(); ctx.moveTo(x - 18, y - 3); ctx.lineTo(x - 8, y - 5); ctx.moveTo(x + 4, y + 4); ctx.lineTo(x + 16, y + 1); ctx.stroke();
+            }
+            // 蛤蟆本体（局部坐标：+x 为嘴方向，+y 为下）
+            function frogShape() {
+                // 后腿（左右两坨）
+                for (const s of [-1, 1]) {
+                    ctx.beginPath(); ctx.ellipse(-10, 8 * s * 0.6 + 6, 9, 6, s * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#2f6b2a'; ctx.fill();
+                }
+                // 身体
+                ctx.beginPath(); ctx.ellipse(0, 0, 20, 16, 0, 0, Math.PI * 2);
+                const bg = ctx.createRadialGradient(-4, -6, 3, 0, 2, 24);
+                bg.addColorStop(0, '#8fce5f'); bg.addColorStop(0.45, '#57a53f'); bg.addColorStop(1, '#2f6b2a');
+                ctx.fillStyle = bg; ctx.fill();
+                ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 2.4; ctx.stroke();
+                // 背部斑纹
+                ctx.fillStyle = 'rgba(30,70,25,0.55)';
+                ctx.beginPath(); ctx.ellipse(-8, -4, 3.4, 2.4, 0.5, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(-3, -8, 2.6, 1.8, 0.3, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(-13, 3, 2.2, 1.6, -0.4, 0, Math.PI * 2); ctx.fill();
+                // 肚皮
+                ctx.beginPath(); ctx.ellipse(4, 7, 12, 7, 0.1, 0, Math.PI * 2);
+                ctx.fillStyle = '#d8eda6'; ctx.fill();
+                // 张开的嘴（前端楔形暗口，球从这里射出）
+                ctx.beginPath();
+                ctx.moveTo(14, -6); ctx.quadraticCurveTo(26, 0, 14, 7);
+                ctx.quadraticCurveTo(18, 0, 14, -6);
+                ctx.fillStyle = '#132a10'; ctx.fill();
+                ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 2; ctx.stroke();
+                // 嘴角线
+                ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(6, 3); ctx.quadraticCurveTo(13, 5, 17, 2); ctx.stroke();
+                // 头顶两只大眼（眼柄 + 眼球 + 瞳孔 + 高光）
+                for (const s of [-1, 1]) {
+                    ctx.beginPath(); ctx.ellipse(6, -14 + s * 5.5, 7, 7, 0, 0, Math.PI * 2);
+                    const eg = ctx.createRadialGradient(4, -17, 1.5, 6, -14 + s * 5.5, 8);
+                    eg.addColorStop(0, '#a8dd6e'); eg.addColorStop(1, '#3f7d3a');
+                    ctx.fillStyle = eg; ctx.fill();
+                    ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(8, -14 + s * 5.5, 4.4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fdfdf2'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(9.6, -14 + s * 5.5, 2.2, 0, Math.PI * 2);
+                    ctx.fillStyle = '#141414'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(8.6, -15.6 + s * 5.5, 0.9, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff'; ctx.fill();
+                }
+                // 鼻孔
+                ctx.fillStyle = '#1d3d1b';
+                ctx.beginPath(); ctx.arc(17, -2, 0.9, 0, Math.PI * 2); ctx.fill();
+            }
+            function drawFrog(x, y, ang) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(ang);
+                if (Math.cos(ang) < 0) ctx.scale(1, -1);   // 朝左时翻回正，不倒挂
+                frogShape();
+                ctx.restore();
             }
             function ball(x, y, c, r) {
                 const col = COLORS[c % COLORS.length];
                 const rg = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.15, x, y, r);
                 rg.addColorStop(0, '#ffffff'); rg.addColorStop(0.25, col); rg.addColorStop(1, '#00000088');
                 ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = rg; ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1.4; ctx.stroke();
+                ctx.beginPath(); ctx.arc(x - r * 0.38, y - r * 0.38, r * 0.16, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill();
             }
 
             cvs.addEventListener('pointermove', e => {

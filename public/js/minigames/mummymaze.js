@@ -103,18 +103,111 @@ window.MiniGames = window.MiniGames || {};
                 for (const m of mums) { if (mumStep(m)) { over = true; render(); return opts.onComplete && opts.onComplete({ win: false, stars: 0, lines: ['被木乃伊抓住了…', `走了 ${steps} 步`] }); } }
                 render();
             }
+            // ---------- 像素贴图（点阵位图 → canvas，替换 emoji） ----------
+            const ART = {
+                hero: [
+                    '....OOOO....',
+                    '...OHHHHO...',
+                    '..OHHHHHHO..',
+                    '..OhhhhhhO..',
+                    '.OOOOOOOOOO.',
+                    '..OFEFFEFO..',
+                    '...OFFFFO...',
+                    '..OSSSSSSO..',
+                    '.OsSSSSSSsO.',
+                    '..OSsSSsSO..',
+                    '...OP..PO...',
+                    '..OBB..BBO..',
+                ],
+                mummyW: [
+                    '....OOOO....',
+                    '...OWWWWO...',
+                    '..OWEWWEWO..',
+                    '..OWwWWwWO..',
+                    '..OWWWWWWO..',
+                    '..OwWWWWwO..',
+                    '..OWWWwWWO..',
+                    '..OwWWWwWO..',
+                    '..OWWwWWWO..',
+                    '..OwWWWWWO..',
+                    '..OWW..WWO..',
+                    '...OO..OO...',
+                ],
+                mummyR: [
+                    '....OOOO....',
+                    '...ONNNNO...',
+                    '..ONnNNnNO..',
+                    '..ONNNNNNO..',
+                    '..OFEFFEFO..',
+                    '..OnFFFFnO..',
+                    '..ORRRRRRO..',
+                    '..OrRRRRrO..',
+                    '..ORRrRRRO..',
+                    '..OrRRRrRO..',
+                    '..ORR..RRO..',
+                    '..OO...OO...',
+                ],
+                door: [
+                    'OOOOOOOOOOOO',
+                    'ODddddddddDO',
+                    'ODDDDDDDDDDO',
+                    'ODddddddddDO',
+                    'ODDDDDDDDDDO',
+                    'ODdddddddGDO',
+                    'ODDDDDDDGGDO',
+                    'ODddddddddDO',
+                    'ODDDDDDDDDDO',
+                    'ODddddddddDO',
+                    'ODDDDDDDDDDO',
+                    'OOOOOOOOOOOO',
+                ],
+                wall: [
+                    'RrrrRrrrrRrr',
+                    'RrrrRrrrrRrr',
+                    'MMMMMMMMMMMM',
+                    'rrRrrrRrrrRr',
+                    'rrRrrrRrrrRr',
+                    'MMMMMMMMMMMM',
+                    'RrrrRrrrrRrr',
+                    'RrrrRrrrrRrr',
+                    'MMMMMMMMMMMM',
+                    'rrRrrrRrrrRr',
+                    'rrRrrrRrrrRr',
+                    'MMMMMMMMMMMM',
+                ],
+            };
+            const PAL = {
+                hero: { O: '#241a0e', H: '#e6d290', h: '#8a6d3b', F: '#e8b27d', E: '#20242c', S: '#7a8a4a', s: '#55622f', P: '#6b5233', B: '#332619' },
+                mummyW: { O: '#4d4840', W: '#ece8da', w: '#b9b2a0', E: '#20242c' },
+                mummyR: { O: '#3a2410', N: '#d9b23c', n: '#2c5aa0', F: '#d8a86e', E: '#20242c', R: '#b03a2e', r: '#7c241c', G: '#f0d060' },
+                door: { O: '#1d1208', D: '#7a4a26', d: '#5a3418', G: '#f0c850' },
+                wall: { r: '#8a5a33', R: '#9c6b3e', M: '#4a3420' },
+            };
+            const sprCache = new Map();
+            function sprCanvas(name) {
+                let cv = sprCache.get(name);
+                if (cv) return cv;
+                cv = MG.gfx.px(ART[name], PAL[name], 'mz|' + name);
+                const out = document.createElement('canvas');
+                out.width = cell; out.height = cell;
+                const c2 = out.getContext('2d');
+                MG.gfx.pxDraw(c2, cv, 1, 1, cell - 2, cell - 2);
+                sprCache.set(name, out);
+                return out;
+            }
             function render() {
                 for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
                     const d = cells[y * N + x];
-                    let bg = walls[y][x] ? '#4a3a26' : '#c8a86a';
-                    let txt = '', fs = cell * 0.58;
-                    if (x === N - 1 && y === N - 1) { txt = '🚪'; bg = '#3f7d3a'; }
-                    else if (walls[y][x]) txt = '🧱';
+                    let bg = walls[y][x] ? '#3a2c1c' : '#c8a86a';
+                    let spr = '';
+                    if (x === N - 1 && y === N - 1) { bg = '#3f7d3a'; spr = 'door'; }
+                    else if (walls[y][x]) spr = 'wall';
                     const m = mums.find(mm => mm.x === x && mm.y === y);
-                    if (m) txt = m.red ? '👳' : '🧟';
-                    if (px === x && py === y) txt = '⛏️';
+                    if (m) spr = m.red ? 'mummyR' : 'mummyW';
+                    if (px === x && py === y) spr = 'hero';
                     d.style.background = bg;
-                    d.textContent = txt;
+                    d.textContent = '';
+                    if (spr) d.appendChild(sprCanvas(spr));
                 }
                 opts.onScore && opts.onScore(`步数 ${steps} · 出口在右下 🚪`);
             }

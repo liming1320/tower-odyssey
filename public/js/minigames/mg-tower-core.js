@@ -185,6 +185,246 @@ window.MG = window.MG || {};
         return seen;
     }
 
+    // ---------------- 原版魔塔像素贴图（12×12 点阵）----------------
+    const PIX_ART = {
+        hero: [
+            '...ooooo....',
+            '..ohhhhho...',
+            '..ohhhhho..w',
+            '..ossssso..w',
+            '..osesseso.w',
+            '...ossso...w',
+            '..oaaaaao..w',
+            '.oaaaaaaao.w',
+            '.oasaaasao.w',
+            '.oaaaaaaao.W',
+            '...oa.ao....',
+            '...ob.bo....',
+        ],
+        slime: [
+            '............',
+            '....oooo....',
+            '..oogggoo...',
+            '.olggggglo..',
+            'ogggggggggo.',
+            'ogggggggggo.',
+            'ogeggggego..',
+            'ogggggggggo.',
+            'ogggmmggggo.',
+            '.ogggggggo..',
+            '..oooooooo..',
+            '............',
+        ],
+        bat: [
+            '............',
+            '.o........o.',
+            'oro......oro',
+            'orrro..orrro',
+            'orrroooorrro',
+            '.orroEEorro.',
+            '.orrrrrrrro.',
+            '..orrrrrro..',
+            '...orWWro...',
+            '....orro....',
+            '............',
+            '............',
+        ],
+        skeleton: [
+            '....oooo....',
+            '...owwwwo...',
+            '..owwwwwwo..',
+            '..owEwwEwo..',
+            '..owwwwwwo..',
+            '...owwwwo...',
+            '.....oo.....',
+            'o..owwwwo..o',
+            'oo.owwwwo.oo',
+            '...ow..wo...',
+            '....w..w....',
+            '...ww..ww...',
+        ],
+        orc: [
+            '.o........o.',
+            '.oo......oo.',
+            '..ogggggo...',
+            '.oggggggggo.',
+            '.ogeggggego.',
+            '.oggggggggo.',
+            '..otgggto...',
+            '.oBBBBBBBBo.',
+            '.oBBBBBBBBo.',
+            '..oBBBBBBo..',
+            '...og..go...',
+            '...oo..oo...',
+        ],
+        mage: [
+            '....oooo....',
+            '...oppppo...',
+            '..oppppppo..',
+            '..opkeekpo..',
+            '..opppppppo.',
+            '.oppppppppo.',
+            '.oppppppppo.',
+            'opppppppppos',
+            'opppppppppos',
+            'opppppppppos',
+            '.opppppppos.',
+            '..oooooooo..',
+        ],
+        golem: [
+            '............',
+            '..oooooo....',
+            '..oGGGGo....',
+            '..oeGGeo....',
+            '.ooGGGGoo...',
+            '.oGGGGGGGo..',
+            'oGooGGGGooGo',
+            'oGoGGGGGGoGo',
+            '.ooGGGGGGoo.',
+            '..oGGGGGGo..',
+            '..oGGooGGo..',
+            '.ooo....ooo.',
+        ],
+        demon: [
+            '.o........o.',
+            '.oo......oo.',
+            '..orrrrro...',
+            '..oreerro...',
+            '..orrrrro...',
+            'oo.orrrro.oo',
+            'oRoorrroRoo.',
+            '.oorrrrroo..',
+            '..orrrrro...',
+            '..orrrrro...',
+            '...or..ro...',
+            '...oo..oo...',
+        ],
+        potion: [
+            '............',
+            '....occo....',
+            '....occo....',
+            '....oggo....',
+            '...og..go...',
+            '..og....go..',
+            '..oLLLLLLo..',
+            '..oLLLLLLo..',
+            '..oLLLLLLo..',
+            '..oggggggo..',
+            '...oooooo...',
+            '............',
+        ],
+        sword: [
+            '............',
+            '.....oo.....',
+            '....owwo....',
+            '....owwo....',
+            '....owwo....',
+            '....owwo....',
+            '....owwo....',
+            '.oWWwwWWo...',
+            '....oWWo....',
+            '....oWWo....',
+            '....oooo....',
+            '............',
+        ],
+        shield: [
+            '............',
+            '..oooooooo..',
+            '.oSSSSSSSSo.',
+            '.oSSSwwSSSo.',
+            '.oSSSwwSSSo.',
+            '.oSSSSSSSSo.',
+            '..oSSSSSSo..',
+            '...oSSSSo...',
+            '....oSSo....',
+            '.....oo.....',
+            '............',
+            '............',
+        ],
+        goldbag: [
+            '............',
+            '.....oo.....',
+            '....oyyo....',
+            '...oyyyyo...',
+            '..oyyyyyyo..',
+            '..oYYYYYYo..',
+            '.oYYYYYYYYo.',
+            '.oYYYYYYYYo.',
+            '..oYYYYYYo..',
+            '...oYYYYo...',
+            '....oooo....',
+            '............',
+        ],
+        scroll: [
+            '............',
+            '..oooooooo..',
+            '.oppppppppo.',
+            '.oppppppppo.',
+            '.oppkkkkppo.',
+            '.oppppppppo.',
+            '.oppkkkkppo.',
+            '.oppppppppo.',
+            '..oooooooo..',
+            '............',
+            '............',
+            '............',
+        ],
+        key: [
+            '............',
+            '...ooo......',
+            '..ok.ko.....',
+            '..ok.ko.....',
+            '...ooo......',
+            '....oko.....',
+            '....oko.....',
+            '....okko....',
+            '....oko.....',
+            '....okko....',
+            '............',
+            '............',
+        ],
+        wing: [
+            '....o.......',
+            '...owo......',
+            '..owwwo.....',
+            '.owwwwwo....',
+            'owwwwwwwo...',
+            '.owwwwwo....',
+            '..owwwo.....',
+            '...owo......',
+            '....o.......',
+            '............',
+            '............',
+            '............',
+        ],
+    };
+    const PIX_PAL = {
+        hero: { o: '#241c10', h: '#6a4520', s: '#f2c79a', e: '#1c2430', a: '#f2c33c', w: '#dce4ec', W: '#7a4a20', b: '#5a3c1c' },
+        slime: { o: '#173a10', g: '#5ec44a', l: '#a8e888', e: '#182028', m: '#1d4a18' },
+        bat: { o: '#3a1018', r: '#e05565', E: '#ffe14a', W: '#ffffff' },
+        skeleton: { o: '#3a3a48', w: '#e8e8e0', E: '#141420' },
+        orc: { o: '#1c2c10', g: '#7aa844', e: '#e03030', t: '#ffffff', B: '#7a5230' },
+        mage: { o: '#241038', p: '#8a5ccc', k: '#100818', e: '#8affd8', s: '#8a6a3a' },
+        golem: { o: '#2a2a30', G: '#9a9484', e: '#ffb04a' },
+        demon: { o: '#2c0c0c', r: '#d04030', e: '#ffe14a', R: '#7c1f18' },
+        potionR: { c: '#8a5a2a', g: '#dce8f0', L: '#e04848' },
+        potionB: { c: '#8a5a2a', g: '#dce8f0', L: '#4878e0' },
+        sword: { o: '#2a2a34', w: '#d8e0ea', W: '#8a5a28' },
+        shield: { o: '#3a2a18', S: '#4878c8', w: '#e8e8f0' },
+        goldbag: { o: '#5a3c10', y: '#c89838', Y: '#f0c048' },
+        scroll: { o: '#5a4428', p: '#efe4c0', k: '#7a5c30' },
+        keyY: { o: '#5a4208', k: '#f0c840' },
+        keyB: { o: '#0c2a5a', k: '#5a9cf0' },
+        keyR: { o: '#5a0c14', k: '#f05a68' },
+        wing: { o: '#3a3a50', w: '#e8ecf4' },
+    };
+    const MON_SPR = { slime: 'slime', bat: 'bat', skeleton: 'skeleton', orc: 'orc', mage: 'mage', golem: 'golem', demon: 'demon' };
+    // 画一个点阵精灵：居中于 (cx,cy)，边长约 ts
+    function pxSpriteC(ctx, artName, palName, cx, cy, ts) {
+        const cv = G.px(PIX_ART[artName], PIX_PAL[palName], 'mt|' + artName + '|' + palName);
+        G.pxDraw(ctx, cv, cx - ts * 0.46, cy - ts * 0.46, ts * 0.92, ts * 0.92);
+    }
+
     // ---------------- 配置构建 ----------------
     function buildCfg(opts) {
         const W = opts.W, H = opts.H;
@@ -415,15 +655,21 @@ window.MG = window.MG || {};
         if (S.terrain) ctx.drawImage(S.terrain, S.ox, S.oy);
         // 门
         for (const d of S.doors) drawDoor(ctx, S, d);
+        // 楼梯
+        drawStairs(ctx, S);
         // 道具
         for (const it of S.items) drawItem(ctx, S, it);
         // 怪物
         for (const m of S.monsters) if (m.hp > 0) drawMonster(ctx, S, m);
         // NPC
         for (const np of S.npcs) drawNpc(ctx, S, np);
-        // 英雄
+        // 英雄（原版像素勇者）
         const bob = Math.sin(S.t * 3) * 1.2 * (S.stepping ? 1.6 : 0.6);
-        MG.char.draw(ctx, S.hx, S.hy - S.ts * 0.42 + bob, S.ts / 44, S.heroChar, { t: S.t, pose: S.stepping ? 'walk' : 'idle', face: 1 });
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(S.hx, S.hy + S.ts * 0.3, S.ts * 0.26, S.ts * 0.09, 0, 0, 7); ctx.fill();
+        pxSpriteC(ctx, 'hero', 'hero', S.hx, S.hy + bob, S.ts);
+        ctx.restore();
         // 小地图
         GRID.mini(ctx, S.map, S.cx, S.cy, 2, 10, Hc - 26 - 6, S.explored);
         // 顶栏 HUD
@@ -459,36 +705,68 @@ window.MG = window.MG || {};
     function drawDoor(ctx, S, d) {
         const x = S.ox + d.x * S.ts, y = S.oy + d.y * S.ts, s = S.ts, c = KEYCOL[d.color];
         ctx.save();
-        MG.ui.rr(ctx, x + 2, y + 2, s - 4, s - 4, 4); ctx.fillStyle = c; ctx.fill();
-        ctx.fillStyle = 'rgba(0,0,0,0.25)'; MG.ui.rr(ctx, x + s * 0.3, y + s * 0.2, s * 0.4, s * 0.6, 3); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + s * 0.5, y + s * 0.52, s * 0.07, 0, 7); ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5; ctx.stroke();
+        // 门框（石）
+        ctx.fillStyle = '#3a3428'; ctx.fillRect(x + 1, y + 1, s - 2, s - 2);
+        ctx.fillStyle = '#554c38'; ctx.fillRect(x + 1, y + 1, s - 2, 2); ctx.fillRect(x + 1, y + 1, 2, s - 2);
+        // 门板（本色，带横梁与铆钉，原版门样式）
+        ctx.fillStyle = c; ctx.fillRect(x + s * 0.14, y + s * 0.08, s * 0.72, s * 0.86);
+        ctx.fillStyle = G.darken(c, 0.3);
+        ctx.fillRect(x + s * 0.14, y + s * 0.38, s * 0.72, s * 0.08);
+        ctx.fillRect(x + s * 0.14, y + s * 0.66, s * 0.72, s * 0.08);
+        ctx.fillStyle = G.lighten(c, 0.4);
+        for (const ry of [0.2, 0.52, 0.8]) for (const rx of [0.24, 0.76]) {
+            ctx.fillRect(x + s * rx - 1, y + s * ry - 1, 2.5, 2.5);
+        }
+        ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(x + s * 0.14, y + s * 0.08, s * 0.72, s * 0.86);
         ctx.restore();
     }
     function drawItem(ctx, S, it) {
         const cx = S.ox + (it.x + 0.5) * S.ts, cy = S.oy + (it.y + 0.5) * S.ts + Math.sin(S.t * 3 + it.x) * 2;
-        const icon = { hp: '🧪', atk: '⚔️', def: '🛡️', gold: '💰', exp: '📜', key: '🔑', wing: '🕊️' }[it.type] || '✨';
-        const col = it.type === 'key' ? KEYCOL[it.color] : null;
-        if (col) { ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 8; }
-        MG.ui.emoji(ctx, icon, cx, cy, S.ts * 0.5);
-        if (col) ctx.restore();
+        const s = S.ts;
+        const spr = {
+            hp: ['potion', 'potionR'], atk: ['sword', 'sword'], def: ['shield', 'shield'],
+            gold: ['goldbag', 'goldbag'], exp: ['scroll', 'scroll'],
+            key: ['key', 'key' + (it.color || 'y').toUpperCase()],
+            wing: ['wing', 'wing'],
+        }[it.type];
+        if (!spr) return;
+        if (it.type === 'key') { ctx.save(); ctx.shadowColor = KEYCOL[it.color]; ctx.shadowBlur = 8; }
+        pxSpriteC(ctx, spr[0], spr[1], cx, cy, s);
+        if (it.type === 'key') ctx.restore();
     }
     function drawMonster(ctx, S, m) {
         const cx = S.ox + (m.x + 0.5) * S.ts, cy = S.oy + (m.y + 0.5) * S.ts + Math.sin(S.t * 2.5 + m.x) * 1.5, s = S.ts;
         ctx.save();
         ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(cx, cy + s * 0.32, s * 0.3, s * 0.1, 0, 0, 7); ctx.fill();
-        const g = ctx.createRadialGradient(cx - s * 0.1, cy - s * 0.1, s * 0.1, cx, cy, s * 0.42); g.addColorStop(0, G.lighten(m.color, 0.25)); g.addColorStop(1, G.darken(m.color, 0.15));
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, s * 0.34, 0, 7); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx - s * 0.12, cy - s * 0.08, s * 0.08, 0, 7); ctx.arc(cx + s * 0.12, cy - s * 0.08, s * 0.08, 0, 7); ctx.fill();
-        ctx.fillStyle = '#1a1a28'; ctx.beginPath(); ctx.arc(cx - s * 0.12, cy - s * 0.06, s * 0.04, 0, 7); ctx.arc(cx + s * 0.12, cy - s * 0.06, s * 0.04, 0, 7); ctx.fill();
-        if (m.isBoss || m.isGuard) { ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, s * 0.42, 0, 7); ctx.stroke(); }
+        pxSpriteC(ctx, MON_SPR[m.key] || 'slime', MON_SPR[m.key] || 'slime', cx, cy, s);
+        if (m.isBoss || m.isGuard) {
+            ctx.strokeStyle = m.isBoss ? '#ffd56b' : '#c8c8d8'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(cx, cy, s * 0.48, 0, 7); ctx.stroke();
+            if (m.isBoss) { MG.ui.emoji(ctx, '👑', cx, cy - s * 0.52, s * 0.3); }
+            else { MG.ui.emoji(ctx, '💀', cx + s * 0.42, cy - s * 0.42, s * 0.24); }
+        }
         ctx.restore();
         // 血条
         const r = Math.max(0, m.hp / m.max);
-        const bw = s * 0.7, bx = cx - bw / 2, by = cy - s * 0.5;
+        const bw = s * 0.7, bx = cx - bw / 2, by = cy - s * 0.52;
         ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(bx, by, bw, 4);
         ctx.fillStyle = r > 0.4 ? '#7ad86a' : '#ff6b6b'; ctx.fillRect(bx, by, bw * r, 4);
-        MG.ui.emoji(ctx, m.isBoss ? '👑' : m.isGuard ? '💀' : ({ slime: '🟢', bat: '🦇', skeleton: '💀', orc: '👹', mage: '🧙', golem: '🗿', demon: '😈' }[m.key] || '👾'), cx, cy - s * 0.02, s * 0.34);
+    }
+    function drawStairs(ctx, S) {
+        if (S.bossHere) return;   // 顶层楼梯被魔王占着
+        const x = S.ox + S.stairs.x * S.ts, y = S.oy + S.stairs.y * S.ts, s = S.ts;
+        ctx.save();
+        ctx.fillStyle = '#181410'; MG.ui.rr(ctx, x + 1, y + 1, s - 2, s - 2, 3); ctx.fill();
+        // 四级台阶（向下沉的洞口 → 上行阶梯）
+        const steps = 4;
+        for (let k = 0; k < steps; k++) {
+            const t = k / steps;
+            ctx.fillStyle = `rgb(${90 + k * 30},${80 + k * 30},${64 + k * 26})`;
+            ctx.fillRect(x + s * 0.12 + t * s * 0.1, y + s * 0.14 + k * (s * 0.72 / steps), s * (0.76 - t * 0.2), s * 0.72 / steps - 1);
+        }
+        MG.ui.emoji(ctx, '⬆', x + s * 0.5, y + s * 0.3, s * 0.3);
+        ctx.restore();
     }
     function drawNpc(ctx, S, np) {
         const cx = S.ox + (np.x + 0.5) * S.ts, cy = S.oy + (np.y + 0.5) * S.ts;

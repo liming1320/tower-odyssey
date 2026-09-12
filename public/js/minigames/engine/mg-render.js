@@ -98,6 +98,47 @@ MG.gfx = {
         return ((h * 60) + 360) % 360;
     },
 
+    // ---------- 像素精灵（点阵位图 → canvas，2026-09-12）----------
+    // art: 字符串数组，每字符对应 palette 中一色；'.'/' ' 为透明
+    // palette: { 'a':'#1a3d1f', ... }
+    // 返回离屏 canvas（原始 1:1 点阵），绘制时配合 pxDraw 关闭平滑放大
+    px(art, palette, key) {
+        key = key || ('px|' + art.join('|') + '|' + JSON.stringify(palette));
+        let img = this._cache.get(key);
+        if (img) { this._cache.delete(key); this._cache.set(key, img); return img; }
+        const w = art[0].length, h = art.length;
+        img = document.createElement('canvas');
+        img.width = w; img.height = h;
+        const x = img.getContext('2d');
+        for (let r = 0; r < h; r++) {
+            const row = art[r];
+            for (let c = 0; c < w; c++) {
+                const ch = row[c];
+                if (ch === '.' || ch === ' ') continue;
+                const col = palette[ch];
+                if (!col) continue;
+                x.fillStyle = col;
+                x.fillRect(c, r, 1, 1);
+            }
+        }
+        if (this._cache.size >= this.MAX_CACHE * 4) this._cache.delete(this._cache.keys().next().value);
+        this._cache.set(key, img);
+        return img;
+    },
+    // 以目标尺寸绘制像素精灵（关闭平滑，保持硬边像素风）
+    pxDraw(ctx, cv, x, y, w, h) {
+        const prev = ctx.imageSmoothingEnabled;
+        try { ctx.imageSmoothingEnabled = false; } catch (e) {}
+        ctx.drawImage(cv, x, y, w, h);
+        try { ctx.imageSmoothingEnabled = prev !== false; } catch (e) {}
+    },
+    // 像素精灵按点阵缩放 s 倍绘制（w=h=点阵尺寸×s）
+    pxSprite(ctx, art, palette, x, y, s, key) {
+        const cv = this.px(art, palette, key);
+        this.pxDraw(ctx, cv, x, y, cv.width * s, cv.height * s);
+        return cv;
+    },
+
     // ---------- 质感背景（带缓存）----------
     // 内容：底色渐变 → 中心柔光 → 微网格 → 四角暗角 → 顶亮/底暗边
     // 命中时刷新到队尾（维持严格 LRU 顺序，避免高频场景被新键挤掉）；达到上限淘汰队首

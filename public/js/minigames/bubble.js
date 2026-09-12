@@ -152,11 +152,88 @@ window.MiniGames = window.MiniGames || {};
                 for (let r = 0; r < MAXROW; r++) for (let c = 0; c < COLS; c++) {
                     if (inGrid(r, c) && board[r][c] >= 0) bub(cellX(r, c), cellY(r), board[r][c], R);
                 }
-                // 发射台
+                // 发射台：石座 + 绿色泡泡龙 + 旋转炮管
                 ctx.fillStyle = '#23405e'; ctx.fillRect(0, H - 40, W, 40);
-                bub(W / 2, H - 56, cur, R);
-                bub(W / 2 + 40, H - 22, next, R * 0.7);
+                ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(0, H - 40, W, 2);
+                const lv0 = { x: W / 2, y: H - 52 };
+                // 炮管（在龙身后方绘制，随瞄准旋转）
+                ctx.save();
+                ctx.translate(lv0.x, lv0.y); ctx.rotate(aim);
+                ctx.fillStyle = '#1e5c2c'; MG.ui.rr(ctx, -6, -7, 34, 14, 6); ctx.fill();
+                ctx.strokeStyle = '#0d3016'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.fillStyle = '#2e8b3f'; MG.ui.rr(ctx, 2, -4.5, 22, 9, 4); ctx.fill();
+                ctx.restore();
+                drawDragon(lv0.x, lv0.y + 12, aim);
+                bub(lv0.x + Math.cos(aim) * 34, lv0.y + Math.sin(aim) * 34, cur, R);
+                // 待发球托架
+                ctx.fillStyle = '#183250'; MG.ui.rr(ctx, W / 2 + 52, H - 26, 34, 20, 8); ctx.fill();
+                bub(W / 2 + 69, H - 16, next, R * 0.6);
                 if (shot) bub(shot.x, shot.y, shot.c, R);
+            }
+            // 泡泡龙小龙（蹲坐，头随视线微偏）
+            function drawDragon(x, y, aim) {
+                const look = Math.cos(aim) * 2.2;   // 眼球朝瞄准方向偏
+                // 尾巴
+                ctx.strokeStyle = '#2e8b3f'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(x - 10, y + 2);
+                ctx.quadraticCurveTo(x - 26, y + 4, x - 30, y - 8); ctx.stroke();
+                ctx.lineWidth = 4; ctx.strokeStyle = '#7ee06a';
+                ctx.beginPath(); ctx.moveTo(x - 24, y + 4); ctx.quadraticCurveTo(x - 29, y + 3, x - 30, y - 6); ctx.stroke();
+                // 脚
+                ctx.fillStyle = '#1e5c2c';
+                ctx.beginPath(); ctx.ellipse(x - 10, y + 10, 8, 4.5, 0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(x + 10, y + 10, 8, 4.5, -0.2, 0, Math.PI * 2); ctx.fill();
+                // 身体
+                ctx.beginPath(); ctx.ellipse(x, y + 4, 16, 13, 0, 0, Math.PI * 2);
+                const bg = ctx.createRadialGradient(x - 4, y - 2, 3, x, y + 4, 20);
+                bg.addColorStop(0, '#8fe06e'); bg.addColorStop(0.5, '#3fae4c'); bg.addColorStop(1, '#1e6b2d');
+                ctx.fillStyle = bg; ctx.fill();
+                ctx.strokeStyle = '#0d3016'; ctx.lineWidth = 2; ctx.stroke();
+                // 肚皮
+                ctx.beginPath(); ctx.ellipse(x, y + 7, 9, 8, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#f0f5b8'; ctx.fill();
+                // 肚皮横纹
+                ctx.strokeStyle = 'rgba(120,130,50,0.5)'; ctx.lineWidth = 1.2;
+                ctx.beginPath(); ctx.moveTo(x - 7, y + 6); ctx.lineTo(x + 7, y + 6); ctx.moveTo(x - 6, y + 10); ctx.lineTo(x + 6, y + 10); ctx.stroke();
+                // 背鳍（三枚小三角）
+                ctx.fillStyle = '#e0483e';
+                for (let k = -1; k <= 1; k++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + k * 9 - 3, y - 4 + Math.abs(k) * 3);
+                    ctx.lineTo(x + k * 9, y - 11 + Math.abs(k) * 3.5);
+                    ctx.lineTo(x + k * 9 + 3, y - 4 + Math.abs(k) * 3);
+                    ctx.closePath(); ctx.fill();
+                }
+                // 大头
+                ctx.beginPath(); ctx.arc(x, y - 14, 14, 0, Math.PI * 2);
+                const hg = ctx.createRadialGradient(x - 4, y - 19, 3, x, y - 14, 17);
+                hg.addColorStop(0, '#9ce878'); hg.addColorStop(0.55, '#3fae4c'); hg.addColorStop(1, '#1e6b2d');
+                ctx.fillStyle = hg; ctx.fill();
+                ctx.strokeStyle = '#0d3016'; ctx.lineWidth = 2; ctx.stroke();
+                // 吻部
+                ctx.beginPath(); ctx.ellipse(x, y - 8, 8, 5.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#b8ec8e'; ctx.fill();
+                ctx.strokeStyle = '#0d3016'; ctx.lineWidth = 1.4; ctx.stroke();
+                // 鼻孔 + 嘴
+                ctx.fillStyle = '#0d3016';
+                ctx.beginPath(); ctx.arc(x - 3, y - 9.5, 1, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 3, y - 9.5, 1, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#0d3016'; ctx.lineWidth = 1.4;
+                ctx.beginPath(); ctx.arc(x, y - 5.5, 3.4, 0.15, Math.PI - 0.15); ctx.stroke();
+                // 大眼（白底黑瞳，看向瞄准方向）
+                for (const s of [-1, 1]) {
+                    ctx.beginPath(); ctx.arc(x + s * 6.5, y - 18, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff'; ctx.fill();
+                    ctx.strokeStyle = '#0d3016'; ctx.lineWidth = 1.3; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(x + s * 6.5 + look, y - 17.4, 2.3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#141414'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(x + s * 6.5 + look - 0.8, y - 18.6, 0.8, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff'; ctx.fill();
+                }
+                // 小手扶炮座
+                ctx.fillStyle = '#2e8b3f';
+                ctx.beginPath(); ctx.arc(x - 13, y - 2, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 13, y - 2, 4, 0, Math.PI * 2); ctx.fill();
             }
             function bub(x, y, c, r) {
                 const col = COLORS[c % COLORS.length];

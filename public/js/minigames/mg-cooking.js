@@ -128,6 +128,18 @@
         ctx.fillStyle = 'rgba(255,255,255,.85)';           // 小领子
         ctx.beginPath(); ctx.moveTo(cx - 7, by + 8); ctx.lineTo(cx, by + 16); ctx.lineTo(cx + 7, by + 8); ctx.closePath(); ctx.fill();
 
+        // 手臂搭在台面 + 手
+        ctx.strokeStyle = clothD; ctx.lineWidth = 7; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(cx - 16, by + 15); ctx.quadraticCurveTo(cx - 25, by + 26, cx - 19, by + 35); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx + 16, by + 15); ctx.quadraticCurveTo(cx + 25, by + 26, cx + 19, by + 35); ctx.stroke();
+        ctx.fillStyle = skin;
+        ctx.beginPath(); ctx.ellipse(cx - 19, by + 37, 4.2, 3.4, 0, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 19, by + 37, 4.2, 3.4, 0, 0, 6.283); ctx.fill();
+        // 小皮鞋
+        ctx.fillStyle = '#4a3428';
+        ctx.beginPath(); ctx.ellipse(cx - 8, by + 42, 5.5, 3, 0, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 8, by + 42, 5.5, 3, 0, 0, 6.283); ctx.fill();
+
         // 后发（根据发型）
         const hx = cx, hy = by - 14;
         ctx.fillStyle = hair;
