@@ -14,13 +14,13 @@
         return Array.from({ length: rows }, () => Array(cols).fill(fill || 0));
     }
 
-    function lineWinner(cells, rows, cols, target) {
+    function lineWinner(cells, rows, cols, target, needed) {
         for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
             if (cells[r][c] !== target) continue;
             for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
                 let n = 1;
                 while (inside(r + dr * n, c + dc * n, rows, cols) && cells[r + dr * n][c + dc * n] === target) n++;
-                if (n >= 5) return true;
+                if (n >= needed) return true;
             }
         }
         return false;
@@ -54,10 +54,10 @@
     function animalState() {
         const b = board(9, 7);
         const pieces = [
-            [1, 0, 'elephant'], [1, 6, 'lion'], [2, 1, 'cat'], [2, 5, 'wolf'], [2, 2, 'dog'], [2, 4, 'leopard'], [3, 0, 'rat'],
-            [7, 6, 'elephant'], [7, 0, 'lion'], [6, 5, 'cat'], [6, 1, 'wolf'], [6, 4, 'dog'], [6, 2, 'leopard'], [5, 6, 'rat']
+            [0, 6, 'elephant'], [0, 0, 'lion'], [0, 2, 'tiger'], [1, 5, 'dog'], [1, 1, 'cat'], [2, 6, 'leopard'], [2, 4, 'wolf'], [2, 0, 'rat'],
+            [8, 0, 'elephant'], [8, 6, 'lion'], [8, 4, 'tiger'], [7, 1, 'dog'], [7, 5, 'cat'], [6, 0, 'leopard'], [6, 2, 'wolf'], [6, 6, 'rat']
         ];
-        pieces.forEach((p, i) => { b[p[0]][p[1]] = { side: i < 7 ? 2 : 1, rank: p[2] }; });
+        pieces.forEach((p, i) => { b[p[0]][p[1]] = { side: i < 8 ? 2 : 1, rank: p[2] }; });
         return {
             type: 'animal-chess', rows: 9, cols: 7, board: b, turn: 1, moveCount: 0, phase: 'playing', selected: null,
             traps: [[0, 2], [0, 4], [8, 2], [8, 4]], dens: [[0, 3], [8, 3]]
@@ -137,17 +137,50 @@
                 moves.push({ from: [row, col], to: [jr, jc], capture: [r, c] });
             }
         }
-        return moves;
+        const captures = moves.filter(x => x.capture);
+        if (captures.length) return captures;
+        if (state.mustContinue) return [];
+        const anyCapture = allCheckersMoves(state).some(x => x.capture);
+        return anyCapture ? [] : moves;
+    }
+
+    function allCheckersMoves(state) {
+        const result = [];
+        for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+            const piece = state.board[r][c];
+            if (!piece || piece.side !== state.turn) continue;
+            const dirs = piece.king ? [[-1, -1], [-1, 1], [1, -1], [1, 1]] : (piece.side === 1 ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]]);
+            dirs.forEach(([dr, dc]) => {
+                const mr = r + dr, mc = c + dc, jr = r + dr * 2, jc = c + dc * 2;
+                if (inside(jr, jc, 8, 8) && state.board[mr][mc] && state.board[mr][mc].side !== state.turn && !state.board[jr][jc]) result.push({ from: [r, c], to: [jr, jc], capture: [mr, mc] });
+            });
+        }
+        return result;
     }
 
     function animalCanMove(state, from, to) {
         const p = state.board[from[0]] && state.board[from[0]][from[1]];
         if (!p || p.side !== state.turn || !inside(to[0], to[1], 9, 7)) return false;
         const dr = Math.abs(to[0] - from[0]), dc = Math.abs(to[1] - from[1]);
-        if (dr + dc !== 1) return false;
         const target = state.board[to[0]][to[1]];
         if (target && target.side === p.side) return false;
-        return !state.dens.some(d => d[0] === to[0] && d[1] === to[1] && p.side === 1) || !state.dens.some(d => d[0] === from[0] && d[1] === from[1]);
+        const isRiver = (r, c) => r >= 3 && r <= 5 && (c === 1 || c === 2 || c === 4 || c === 5);
+        const isDen = (r, c) => state.dens.some(d => d[0] === r && d[1] === c);
+        const isTrap = (r, c) => state.traps.some(t => t[0] === r && t[1] === c);
+        const ownDen = isDen(to[0], to[1]) && ((to[0] === 0 && p.side === 2) || (to[0] === 8 && p.side === 1));
+        if (ownDen) return false;
+        const rank = { rat: 1, cat: 2, dog: 3, wolf: 4, leopard: 5, tiger: 6, lion: 7, elephant: 8 };
+        const pRank = isTrap(from[0], from[1]) ? 0 : (rank[p.rank] || 0);
+        const targetRank = target && (isDen(to[0], to[1]) || isTrap(to[0], to[1]) ? 0 : (rank[target.rank] || 0));
+        const canCapture = !target || pRank >= targetRank || (p.rank === 'rat' && target.rank === 'elephant');
+        if (!canCapture) return false;
+        if (p.rank !== 'rat' && isRiver(to[0], to[1])) return false;
+        if (dr + dc === 1) return true;
+        if ((p.rank !== 'lion' && p.rank !== 'tiger') || (dr !== 0 && dc !== 0)) return false;
+        const stepR = Math.sign(to[0] - from[0]), stepC = Math.sign(to[1] - from[1]);
+        let r = from[0] + stepR, c = from[1] + stepC, jumpedRiver = false;
+        while (r !== to[0] || c !== to[1]) { if (isRiver(r, c)) jumpedRiver = true; if (state.board[r][c] && state.board[r][c].rank === 'rat') return false; r += stepR; c += stepC; }
+        return jumpedRiver;
     }
 
     function move(state, action) {
@@ -168,13 +201,17 @@
             state.moveCount++; state.turn = 3 - p;
             if (!legalReversi(state, state.turn)) { state.passCount++; state.turn = 3 - state.turn; }
         } else if (state.type === 'checkers') {
+            if (state.mustContinue && (state.mustContinue[0] !== action.row || state.mustContinue[1] !== action.col)) return { ok: false, reason: 'continue-capture' };
             const options = checkersMoves(state, action.row, action.col);
             const chosen = options.find(x => x.to[0] === action.toRow && x.to[1] === action.toCol);
             if (!chosen) return { ok: false, reason: 'illegal-move' };
             const piece = state.board[action.row][action.col]; state.board[action.row][action.col] = 0; state.board[chosen.to[0]][chosen.to[1]] = piece;
             if (chosen.capture) state.board[chosen.capture[0]][chosen.capture[1]] = 0;
             if ((piece.side === 1 && chosen.to[0] === 0) || (piece.side === 2 && chosen.to[0] === 7)) piece.king = true;
-            state.moveCount++; state.turn = 3 - p;
+            state.moveCount++;
+            const continuationState = Object.assign({}, state, { mustContinue: null });
+            if (chosen.capture && checkersMoves(continuationState, chosen.to[0], chosen.to[1]).some(x => x.capture)) state.mustContinue = chosen.to;
+            else { state.mustContinue = null; state.turn = 3 - p; }
         } else if (state.type === 'animal-chess') {
             if (!animalCanMove(state, action.from, action.to)) return { ok: false, reason: 'illegal-move' };
             const piece = state.board[action.from[0]][action.from[1]]; state.board[action.from[0]][action.from[1]] = 0; state.board[action.to[0]][action.to[1]] = piece;
@@ -187,8 +224,8 @@
 
     function outcome(state, lastPlayer) {
         const b = state.board;
-        if (state.type === 'tictactoe' && lineWinner(b, 3, 3, lastPlayer)) return { winner: lastPlayer, reason: 'three-in-a-row' };
-        if (state.type === 'gomoku' && lineWinner(b, 15, 15, lastPlayer)) return { winner: lastPlayer, reason: 'five-in-a-row' };
+        if (state.type === 'tictactoe' && lineWinner(b, 3, 3, lastPlayer, 3)) return { winner: lastPlayer, reason: 'three-in-a-row' };
+        if (state.type === 'gomoku' && lineWinner(b, 15, 15, lastPlayer, 5)) return { winner: lastPlayer, reason: 'five-in-a-row' };
         if (state.type === 'connect4') {
             for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++) if (b[r][c] === lastPlayer) for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
                 let n = 0, rr = r, cc = c; while (inside(rr, cc, 6, 7) && b[rr][cc] === lastPlayer) { n++; rr += dr; cc += dc; }
@@ -201,7 +238,18 @@
             const a = b.flat().filter(x => x === 1).length, z = b.flat().filter(x => x === 2).length;
             return { winner: a === z ? 0 : a > z ? 1 : 2, reason: 'most-discs', score: { 1: a, 2: z } };
         }
+        if (state.type === 'checkers') {
+            if (state.mustContinue) return null;
+            const opponent = 3 - lastPlayer;
+            const probe = Object.assign({}, state, { turn: opponent, mustContinue: null });
+            let pieceCount = 0, hasMove = false;
+            for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+                if (b[r][c] && b[r][c].side === opponent) { pieceCount++; if (checkersMoves(probe, r, c).length) hasMove = true; }
+            }
+            if (!pieceCount || !hasMove) return { winner: lastPlayer, reason: 'capture-or-block' };
+        }
         if (state.type === 'animal-chess' && state.dens.some(d => b[d[0]][d[1]] && b[d[0]][d[1]].side === lastPlayer)) return { winner: lastPlayer, reason: 'den' };
+        if (state.type === 'animal-chess' && !b.flat().some(x => x && x.side === 3 - lastPlayer)) return { winner: lastPlayer, reason: 'capture' };
         return null;
     }
 
@@ -246,7 +294,7 @@
         };
         const cellText = (value, row, col) => {
             if (typeof value === 'object') {
-                const names = { elephant: '象', lion: '狮', cat: '猫', wolf: '狼', dog: '犬', leopard: '豹', rat: '鼠' };
+                const names = { elephant: '象', lion: '狮', tiger: '虎', cat: '猫', wolf: '狼', dog: '犬', leopard: '豹', rat: '鼠' };
                 return (value.side === 1 ? '我' : '敌') + (names[value.rank] || '兽');
             }
             if (value) return valueLabel(value);

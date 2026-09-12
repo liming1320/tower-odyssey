@@ -14,12 +14,13 @@
     };
     // 只有明确存在对应实现的项目才提供启动按钮；按钮文案刻意标明适配状态。
     const PLAYABLE = {
+        '魔塔': { gameId: 'tower', label: '魔塔原版独立版', note: '已接入 PK32 提取的 22 张原版地图，独立保存进度' },
         '强手棋': { gameId: 'richman', label: '强手棋适配预览', note: '当前使用独立强手棋实现，PK32 原版规则仍在复核' },
     };
     const MODULE_CONFIG = {
         '五子棋': { family: 'board', id: 'gomoku' }, '四子棋': { family: 'board', id: 'connect4' },
         '黑白棋': { family: 'board', id: 'reversi' }, '跳棋': { family: 'board', id: 'checkers' },
-        '井字牌': { family: 'board', id: 'tictactoe' }, '斗兽棋': { family: 'board', id: 'animal-chess' },
+        '井字牌': { family: 'board', id: 'tictactoe' }, '斗兽棋': { family: 'board', id: 'jungle' },
     };
     const CASUAL_CONFIG = {
         '接龙': 'solitaire', '接龙二': 'solitaire', '空当接龙': 'freecell', '蜘蛛纸牌': 'spider',
@@ -30,6 +31,21 @@
         '泡泡彩球': 'bubble-match', '多彩泡泡': 'bubble-match', '爆破彩球': 'bubble-match',
         '爆破彩球二': 'bubble-match', '变色彩球': 'bubble-match', '交换彩球': 'bubble-match',
     };
+    const ACTION_CONFIG = {
+        '打地鼠': 'whackMole', '俄罗斯方块': 'tetris', '贪吃蛇': 'snake', '坦克大战': 'tankBattle',
+        '打砖块': 'breakout', '飞镖王': 'dartKing', '飞一百米': 'hundredMeters', '吃豆子': 'pacMan',
+        '火箭大战': 'rocketBattle', '绝妙飞行': 'rocketBattle',
+    };
+    const STRATEGY_CONFIG = {};
+    ['飞行棋', '前进棋', '赛马', '轮盘', '老虎机', '神符', '原子', '开心辞典', '开心灯谜', '七盏灯', '上一百层', '下一百层'].forEach(name => { STRATEGY_CONFIG[name] = name; });
+    const CARD_CONFIG = {};
+    const CARD_NAMES = '跟花|丰收|拱猪|十点半|钓鱼|争上游|抽乌龟|梭哈|牌九|扑克麻将|百智牌|FF8卡片|移动|争夺|同花|三打三|记忆|变幻牌|挑选|暗牌|24点|炮牌|猜数|幸运|读心术|斗地主|拖拉机-升级|纸牌魔法阵|别棍|14点|考眼力|13点|扎金花|纸牌算命|桥牌|塔罗牌|数字魔方|三张牌|魔力纸牌|梭哈二|纸牌|抽乌龟二|抽乌龟三|读心术三|梭哈三|梭哈四|读心术四|梭哈五|抽乌龟四|抽乌龟五|梭哈六|梭哈七|跟花二'.split('|');
+    CARD_NAMES.forEach(name => { CARD_CONFIG[name] = name; });
+    '梭哈二|梭哈三|梭哈四|梭哈五|梭哈六|梭哈七|抽乌龟二|抽乌龟三|抽乌龟四|抽乌龟五|读心术三|读心术四|跟花二|纸牌|21点二|24点二'.split('|').forEach(name => { CARD_CONFIG[name] = name; });
+    const PUZZLE_CONFIG = {};
+    '同色方块|五彩连珠|七彩宝石|宝石方块|找不同|找彩球|变化彩球|连结电线|连结电线二|移彩球|数独|迷宫|华容道|推箱子二|推箱子三|推箱子四|推箱子五|推箱子六|扩展线路|立体魔方|七巧板|汉诺塔|十字绣|拼图|独粒钻石'.split('|').forEach(name => { PUZZLE_CONFIG[name] = name; });
+    const VARIANT_CONFIG = {};
+    '锄大地|追逐|记数|转换|配对|连击|连珠牌|憋七|FF9卡片|7鬼523|读心术二|24点二|排数字|变色龙|超级99|重合|幸运数字|40点|数字魔方|同色方块变体|同步移动|摘花朵|平面魔方|激光坦克|中国象棋|围棋|象棋-暗棋|国际象棋|军棋|正方形棋|军棋-暗棋|麻将|极品飞车|六子连珠|天地棋|冒泡大战|剪刀石头布|海盗船|木乃伊|记忆考验|反应测试|海豚骰|魔力珠宝|智商测试|五连板|白手起家|跳跃棋|像素岛|捡棋子|成语填字|邻居|麻将王|麻将王二|麻将王三|过河|电磁彩球|绿洲|魅力之球|圈地|智慧之光|禅宗花园|骰子王|数谜|航海迷题|魔法城堡|弹力连珠|魔法城堡二|潜艇大战|跳棋二|拼疑犯|禅宗迷宫|马跳棋盘|花式九球|美式落袋|斯诺克|宇宙黑洞|海底寻宝|碰撞彩球|彩球迷宫|反射镜|企鹅|立体魔方二|彩球连线|建筑制造|魔塔二|魔塔三|魔塔四|????'.split('|').forEach(name => { VARIANT_CONFIG[name] = name; });
     const GROUPS = [
         [0, 80, '扑克与纸牌'], [80, 147, '棋类与益智'], [147, 196, '休闲与解谜'], [196, NAMES.length, '其他原版游戏'],
     ];
@@ -45,12 +61,17 @@
         return NAMES.map((name, index) => ({
             id: 'pk32-' + String(index + 1).padStart(3, '0'),
             name, index: index + 1, group: groupOf(index),
-            status: PLAYABLE[name] || MODULE_CONFIG[name] ? 'rules-partial' : 'catalogued',
+            status: PLAYABLE[name] || MODULE_CONFIG[name] || CASUAL_CONFIG[name] || ACTION_CONFIG[name] || STRATEGY_CONFIG[name] || CARD_CONFIG[name] || PUZZLE_CONFIG[name] || VARIANT_CONFIG[name] ? 'rules-partial' : 'catalogued',
             levelText: '原版关数：待核对',
             evidence: EVIDENCE[name] || '已从 PK32 原版菜单识别，等待资源与规则迁移',
             playable: PLAYABLE[name] || null,
             module: MODULE_CONFIG[name] || null,
             casual: CASUAL_CONFIG[name] || null,
+            action: ACTION_CONFIG[name] || null,
+            strategy: STRATEGY_CONFIG[name] || null,
+            card: CARD_CONFIG[name] || null,
+            puzzle: PUZZLE_CONFIG[name] || null,
+            variant: VARIANT_CONFIG[name] || null,
         }));
     }
 
@@ -93,17 +114,28 @@
             (x.playable ? '<button class="btn ghost pk32-launch" data-pk32-launch="' + esc(x.id) + '">' + esc(x.playable.label) + '</button>' : '') +
                     (x.module ? '<button class="btn ghost pk32-module-launch" data-pk32-module="' + esc(x.id) + '">独立启动</button>' : '') +
                     (x.casual ? '<button class="btn ghost pk32-casual-launch" data-pk32-casual="' + esc(x.id) + '">独立启动</button>' : '') +
+                    (x.action ? '<button class="btn ghost pk32-action-launch" data-pk32-action="' + esc(x.id) + '">独立启动</button>' : '') +
+                    (x.strategy ? '<button class="btn ghost pk32-strategy-launch" data-pk32-strategy="' + esc(x.id) + '">独立启动</button>' : '') +
+                    (x.card ? '<button class="btn ghost pk32-card-launch" data-pk32-card="' + esc(x.id) + '">独立启动</button>' : '') +
+                    (x.puzzle ? '<button class="btn ghost pk32-puzzle-launch" data-pk32-puzzle="' + esc(x.id) + '">独立启动</button>' : '') +
+                    (x.variant ? '<button class="btn ghost pk32-variant-launch" data-pk32-variant="' + esc(x.id) + '">独立启动</button>' : '') +
                     '<span class="emu-tag" style="color:#ffd56b;border-color:rgba(255,213,107,.35)">' + esc(x.status === 'rules-partial' ? '规则接入中' : '迁移中') + '</span></div>'
                 ).join('');
                 list.querySelectorAll('[data-pk32-launch]').forEach(btn => btn.onclick = () => launch(all.find(x => x.id === btn.dataset.pk32Launch)));
                 list.querySelectorAll('[data-pk32-module]').forEach(btn => btn.onclick = () => launchModule(all.find(x => x.id === btn.dataset.pk32Module)));
                 list.querySelectorAll('[data-pk32-casual]').forEach(btn => btn.onclick = () => launchCasual(all.find(x => x.id === btn.dataset.pk32Casual)));
+                list.querySelectorAll('[data-pk32-action]').forEach(btn => btn.onclick = () => launchAction(all.find(x => x.id === btn.dataset.pk32Action)));
+                list.querySelectorAll('[data-pk32-strategy]').forEach(btn => btn.onclick = () => launchStrategy(all.find(x => x.id === btn.dataset.pk32Strategy)));
+                list.querySelectorAll('[data-pk32-card]').forEach(btn => btn.onclick = () => launchCard(all.find(x => x.id === btn.dataset.pk32Card)));
+                list.querySelectorAll('[data-pk32-puzzle]').forEach(btn => btn.onclick = () => launchPuzzle(all.find(x => x.id === btn.dataset.pk32Puzzle)));
+                list.querySelectorAll('[data-pk32-variant]').forEach(btn => btn.onclick = () => launchVariant(all.find(x => x.id === btn.dataset.pk32Variant)));
             }
             function mount(record, title, start) {
+                let session = null;
                 list.innerHTML = '<div class="emu-note"><b>' + esc(record.name) + ' · ' + esc(title) + '</b><br>独立 PK32 迁移玩法；不使用 50 关模板。</div>';
                 const host = document.createElement('div'); host.style.cssText = 'min-height:420px;margin-top:12px;'; list.appendChild(host);
-                const back = document.createElement('button'); back.className = 'btn ghost'; back.textContent = '返回 PK32 目录'; back.style.marginTop = '10px'; back.onclick = render; list.appendChild(back);
-                try { start(host); } catch (e) { host.innerHTML = '<div style="padding:20px;color:#ff7a8b">启动失败：' + esc(e.message) + '</div>'; }
+                const back = document.createElement('button'); back.className = 'btn ghost'; back.textContent = '返回 PK32 目录'; back.style.marginTop = '10px'; back.onclick = () => { try { session && (session.stop ? session.stop() : session.destroy && session.destroy()); } catch (e) {} render(); }; list.appendChild(back);
+                try { session = start(host); } catch (e) { host.innerHTML = '<div style="padding:20px;color:#ff7a8b">启动失败：' + esc(e.message) + '</div>'; }
             }
             function launchModule(record) {
                 const mod = window.PK32Board, spec = record && record.module;
@@ -115,8 +147,36 @@
                 if (!mod || !mod.startGame) return;
                 mount(record, '纸牌/益智独立版', host => mod.startGame(host, spec, { onScore: opts.onScore }));
             }
+            function launchAction(record) {
+                const mod = window.PK32Action, spec = record && record.action;
+                if (!mod || !mod.startGame) return;
+                mount(record, '动作独立版', host => mod.startGame(host, spec, { onScore: opts.onScore }));
+            }
+            function launchStrategy(record) {
+                const mod = window.PK32Strategy, spec = record && record.strategy;
+                if (!mod || !mod.startGame) return;
+                mount(record, '策略独立版', host => mod.startGame(host, spec, { onScore: opts.onScore }));
+            }
+            function launchCard(record) {
+                if (window.PK32Card) mount(record, '纸牌独立版', host => window.PK32Card.startGame(host, record.card, { onScore: opts.onScore }));
+            }
+            function launchPuzzle(record) {
+                if (window.PK32Puzzle) mount(record, '益智独立版', host => window.PK32Puzzle.startGame(host, record.puzzle, { onScore: opts.onScore }));
+            }
+            function launchVariant(record) {
+                if (record && /^魔塔[二三四]$/.test(record.name) && window.PK32Tower) {
+                    const layer = record.name === '魔塔二' ? 6 : record.name === '魔塔三' ? 12 : 18;
+                    mount(record, '魔塔原版独立版', host => window.PK32Tower.startUI(host, { layer: layer }));
+                    return;
+                }
+                if (window.PK32Variants) mount(record, 'PK32 独立版', host => window.PK32Variants.startGame(host, record.variant, { onScore: opts.onScore }));
+            }
             function launch(record) {
                 const spec = record && record.playable;
+                if (spec && spec.gameId === 'tower') {
+                    mount(record, '魔塔原版独立版', host => window.PK32Tower.startUI(host, { onScore: opts.onScore }));
+                    return;
+                }
                 const game = spec && window.MiniGames && window.MiniGames[spec.gameId];
                 if (!game) {
                     opts.onScore && opts.onScore('该适配模块尚未加载');

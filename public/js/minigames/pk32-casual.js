@@ -50,6 +50,9 @@
     function playSession(host, config, session) {
         const mode = config.mode;
         const title = '<div class="emu-note"><b>' + esc(config.name) + '</b><br><span class="emu-tip">PK32 独立玩法 · 原版流程模式</span></div>';
+        if (mode === 'klondike') return klondike(host, title, session);
+        if (mode === 'freecell') return freecell(host, title, session);
+        if (mode === 'spider') return spider(host, title, session);
         if (mode === 'minesweeper') return mines(host, title, session);
         if (mode === 'high-low') return highLow(host, title, session);
         if (mode === 'blackjack') return blackjack(host, title, session);
@@ -63,6 +66,43 @@
         host.innerHTML = title + '<div class="emu-note"><span id="pk32-play-status">' + esc(status || '') + '</span></div><div id="pk32-play-area">' + body + '</div>';
         return host.querySelector('#pk32-play-area');
     }
+
+    function cardGame(host, title, session, kind) {
+        const suits = ['S', 'H', 'C', 'D'], marks = ['♠', '♥', '♣', '♦'];
+        let stock, waste, columns, foundations, freecells, selected = null, over = false;
+        function makeDeck() { const d = []; const copies = kind === 'spider' ? 2 : 1; for (let copy = 0; copy < copies; copy++) suits.forEach((s, si) => { for (let r = 1; r <= 13; r++) d.push({ s, r, red: si === 1 || si === 3, copy: copy }); }); return d.sort(() => Math.random() - .5); }
+        function text(c) { return c ? marks[suits.indexOf(c.s)] + (c.r === 1 ? 'A' : c.r === 11 ? 'J' : c.r === 12 ? 'Q' : c.r === 13 ? 'K' : c.r) : '空'; }
+        function canStack(a, b) { return a && b && a.r === b.r - 1 && (kind === 'spider' || a.red !== b.red); }
+        function done() { return foundations.every(x => x === 13) || (kind === 'spider' && columns.every(c => !c.length)); }
+        function reset() {
+            const d = makeDeck(); stock = []; waste = []; foundations = [0, 0, 0, 0]; freecells = [null, null, null, null]; selected = null; over = false;
+            if (kind === 'klondike') { columns = Array.from({ length: 7 }, () => []); for (let col = 0; col < 7; col++) for (let i = 0; i <= col; i++) { const c = d.pop(); c.face = i === col; columns[col].push(c); } stock = d; }
+            else if (kind === 'freecell') { columns = Array.from({ length: 8 }, () => []); d.forEach((c, i) => columns[i % 8].push(c)); columns.forEach(c => c.forEach(x => { x.face = true; })); stock = []; }
+            else { columns = Array.from({ length: 10 }, () => []); d.slice(0, 54).forEach((c, i) => { c.face = true; columns[i % 10].push(c); }); stock = d.slice(54); }
+            draw();
+        }
+        function draw() {
+            const area = shell(host, title, '', kind === 'klondike' ? '接龙：点击牌列，再点击目标列或回收区' : kind === 'freecell' ? '空当接龙：移动牌到空位、牌列或回收区' : '蜘蛛纸牌：按同花色顺序排列并收集完整牌组');
+            const top = document.createElement('div'); top.className = 'pk32-card-top';
+            const stockBtn = document.createElement('button'); stockBtn.className = 'btn ghost'; stockBtn.textContent = '牌堆 ' + stock.length; stockBtn.onclick = () => { if (stock.length) { waste.push(stock.pop()); draw(); } };
+            top.appendChild(stockBtn); const discard = document.createElement('span'); discard.textContent = ' 弃牌：' + (waste.length ? text(waste[waste.length - 1]) : '空'); top.appendChild(discard);
+            if (kind === 'freecell') freecells.forEach((c, i) => { const b = document.createElement('button'); b.className = 'btn ghost'; b.textContent = '空当 ' + (c ? text(c) : '空'); b.onclick = () => { if (selected && typeof selected.from === 'number' && !freecells[i]) { freecells[i] = columns[selected.from].pop(); selected = null; draw(); } }; top.appendChild(b); });
+            foundations.forEach((n, i) => { const b = document.createElement('button'); b.className = 'btn ghost'; b.textContent = '回收 ' + marks[i] + ' ' + n; b.onclick = () => { if (selected && selected.from === 'waste' && selected.card.s === suits[i] && selected.card.r === n + 1) { waste.pop(); foundations[i]++; selected = null; draw(); } }; top.appendChild(b); });
+            area.appendChild(top);
+            const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:5px;align-items:flex-start;overflow:auto;margin-top:8px;';
+            columns.forEach((col, ci) => { const box = document.createElement('div'); box.style.cssText = 'min-width:58px;min-height:125px;border:1px dashed #60758a;padding:3px;'; const label = document.createElement('div'); label.textContent = '列 ' + (ci + 1); box.appendChild(label); col.forEach((c, i) => { const b = document.createElement('button'); b.className = 'btn ghost'; b.style.cssText = 'display:block;width:54px;padding:4px 2px;margin-top:2px;color:' + (c.red ? '#ff8a8a' : '#fff'); b.textContent = c.face ? text(c) : '■'; b.onclick = () => { if (!c.face) return; if (!selected) { selected = { from: ci, index: i, card: c }; b.classList.add('selected'); draw(); return; } if (selected.from !== ci && canStack(selected.card, c)) { const src = columns[selected.from]; const moving = src.splice(selected.index); col.push(...moving); selected = null; draw(); } }; box.appendChild(b); }); box.onclick = () => { if (selected && selected.from !== ci && (!col.length || canStack(selected.card, col[col.length - 1]))) { const src = columns[selected.from]; col.push(...src.splice(selected.index)); selected = null; draw(); } }; row.appendChild(box); });
+            area.appendChild(row);
+            const end = document.createElement('button'); end.className = 'btn ghost'; end.textContent = '检查完成'; end.onclick = () => { if (done()) { over = true; setStatus(host, '本局完成'); } else setStatus(host, '仍有牌未完成'); }; area.appendChild(end);
+        }
+        function setStatus(root, value) { const node = root.querySelector('#pk32-play-status'); if (node) node.textContent = value; }
+        session.cleanup = session.cleanup || [];
+        session.cleanup.push(() => { selected = null; });
+        session.reset = reset; reset();
+        return session;
+    }
+    function klondike(host, title, session) { return cardGame(host, title, session, 'klondike'); }
+    function freecell(host, title, session) { return cardGame(host, title, session, 'freecell'); }
+    function spider(host, title, session) { return cardGame(host, title, session, 'spider'); }
 
     function mines(host, title, session) {
         const size = 8, mineCount = 10;
@@ -80,22 +120,25 @@
 
     function blackjack(host, title) { let player, dealer, done; function card() { return 1 + Math.floor(Math.random() * 10); } function total(a) { return a.reduce(function (x, n) { return x + n; }, 0); } function draw() { const area = shell(host, title, button('新局', 'new'), ''); area.querySelector('[data-action="new"]').onclick = function () { player = [card(), card()]; dealer = [card(), card()]; done = false; show(); }; function show() { area.innerHTML = '<div>你的牌：' + player.join('、') + '（' + total(player) + '）</div><div>庄家明牌：' + dealer[0] + '</div>' + (done ? '<div>庄家：' + dealer.join('、') + '（' + total(dealer) + '）</div>' : '') + (done ? button('再来一局', 'new') : button('要牌', 'hit') + button('停牌', 'stand')); area.querySelectorAll('[data-action]').forEach(function (b) { b.onclick = function () { if (b.dataset.action === 'hit') { player.push(card()); if (total(player) >= 21) done = true; } else if (b.dataset.action === 'stand') { done = true; while (total(dealer) < 17) dealer.push(card()); } show(); }; }); } } draw(); }
 
-    function sokoban(host, title) { const map = ['#####','# . #','# $ #','# @ #','#####']; let p, box; function draw() { const area = shell(host, title, button('重置', 'reset'), '方向键或点击方向移动，把箱子推到目标'); const dirs = [[0,-1,'上'],[0,1,'下'],[-1,0,'左'],[1,0,'右']]; area.innerHTML += '<div id="soko-board" style="font-size:32px;line-height:1.1;margin:12px 0"></div>' + dirs.map(function (d) { return button(d[2], 'd' + d[2]); }).join(''); const b = area.querySelector('#soko-board'); b.textContent = map.map(function (r, y) { return r.split('').map(function (c, x) { if (x === p[0] && y === p[1]) return '🙂'; if (x === box[0] && y === box[1]) return (x === 2 && y === 1) ? '◎' : '□'; return c === '#' ? '墙' : (c === '.' ? '◎' : '　'); }).join(''); }).join('\n'); area.querySelector('[data-action="reset"]').onclick = init; dirs.forEach(function (d) { const btn = area.querySelector('[data-action="d' + d[2] + '"]'); btn.onclick = function () { move(d[0], d[1]); }; }); } function move(dx, dy) { const nx = p[0] + dx, ny = p[1] + dy; if (map[ny][nx] === '#') return; if (nx === box[0] && ny === box[1]) { const bx = nx + dx, by = ny + dy; if (map[by][bx] === '#' || (bx === p[0] && by === p[1])) return; box = [bx, by]; } p = [nx, ny]; draw(); if (box[0] === 2 && box[1] === 1) { const s = host.querySelector('#pk32-play-status'); if (s) s.textContent = '完成本局'; } } function init() { p = [2, 3]; box = [2, 2]; draw(); } document.addEventListener('keydown', function (e) { if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(e.key) >= 0) { const d = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0] }[e.key]; move(d[0], d[1]); } }); init(); }
+    function sokoban(host, title, session) { const map = ['#####','# . #','# $ #','# @ #']; let p, box; const key = function (e) { if (session.stopped || ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(e.key) < 0) return; const d = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0] }[e.key]; move(d[0], d[1]); }; document.addEventListener('keydown', key); session.cleanup = session.cleanup || []; session.cleanup.push(function () { document.removeEventListener('keydown', key); }); function draw() { const area = shell(host, title, button('重置', 'reset'), '方向键或点击方向移动，把箱子推到目标'); const dirs = [[0,-1,'上'],[0,1,'下'],[-1,0,'左'],[1,0,'右']]; area.innerHTML += '<div id="soko-board" style="font-size:32px;line-height:1.1;margin:12px 0"></div>' + dirs.map(function (d) { return button(d[2], 'd' + d[2]); }).join(''); const b = area.querySelector('#soko-board'); b.textContent = map.map(function (r, y) { return r.split('').map(function (c, x) { if (x === p[0] && y === p[1]) return '🙂'; if (x === box[0] && y === box[1]) return (x === 2 && y === 1) ? '◎' : '□'; return c === '#' ? '墙' : (c === '.' ? '◎' : '　'); }).join(''); }).join('\n'); area.querySelector('[data-action="reset"]').onclick = init; dirs.forEach(function (d) { const btn = area.querySelector('[data-action="d' + d[2] + '"]'); btn.onclick = function () { move(d[0], d[1]); }; }); } function move(dx, dy) { if (session.stopped) return; const nx = p[0] + dx, ny = p[1] + dy; if (!map[ny] || map[ny][nx] === '#') return; if (nx === box[0] && ny === box[1]) { const bx = nx + dx, by = ny + dy; if (!map[by] || map[by][bx] === '#' || (bx === p[0] && by === p[1])) return; box = [bx, by]; } p = [nx, ny]; draw(); if (box[0] === 2 && box[1] === 1) { const s = host.querySelector('#pk32-play-status'); if (s) s.textContent = '完成本局'; } } function init() { p = [2, 3]; box = [2, 2]; draw(); } init(); }
 
-    function pipes(host, title) { let grid; function init() { grid = Array.from({ length: 16 }, function () { return Math.floor(Math.random() * 4); }); draw(); } function draw() { const area = shell(host, title, button('重置', 'reset'), '点击旋转水管，连接左上角到右下角'); area.innerHTML += '<div style="display:grid;grid-template-columns:repeat(4,48px);gap:3px;margin-top:10px">' + grid.map(function (r, i) { return '<button class="btn ghost" style="width:48px;height:48px;font-size:24px" data-p="' + i + '">' + ['└','┌','┐','┘'][r] + '</button>'; }).join('') + '</div>'; area.querySelector('[data-action="reset"]').onclick = init; area.querySelectorAll('[data-p]').forEach(function (b) { b.onclick = function () { grid[+b.dataset.p] = (grid[+b.dataset.p] + 1) % 4; draw(); }; }); } init(); }
+    function pipes(host, title) { let grid; const size = 4; function init() { grid = Array.from({ length: size * size }, function () { return Math.floor(Math.random() * 4); }); draw(); } function links(i) { const r = grid[i], out = []; if (r === 0 || r === 1) out.push('D'); if (r === 1 || r === 2) out.push('R'); if (r === 2 || r === 3) out.push('U'); if (r === 3 || r === 0) out.push('L'); return out; } function connected() { const seen = new Set([0]), queue = [0]; while (queue.length) { const i = queue.shift(), x = i % size, y = Math.floor(i / size); links(i).forEach(function (dir) { const nx = x + (dir === 'R' ? 1 : dir === 'L' ? -1 : 0), ny = y + (dir === 'D' ? 1 : dir === 'U' ? -1 : 0); if (nx < 0 || ny < 0 || nx >= size || ny >= size) return; const n = ny * size + nx, opposite = { R: 'L', L: 'R', U: 'D', D: 'U' }[dir]; if (links(n).indexOf(opposite) >= 0 && !seen.has(n)) { seen.add(n); queue.push(n); } }); } return seen.has(size * size - 1); } function draw() { const area = shell(host, title, button('重置', 'reset'), '旋转管道，令左上角连接到右下角'); area.innerHTML += '<div style="display:grid;grid-template-columns:repeat(4,48px);gap:3px;margin-top:10px">' + grid.map(function (r, i) { return '<button class="btn ghost" style="width:48px;height:48px;font-size:24px" data-p="' + i + '">' + ['└','┌','┐','┘'][r] + '</button>'; }).join('') + '</div>'; area.querySelector('[data-action="reset"]').onclick = init; area.querySelectorAll('[data-p]').forEach(function (b) { b.onclick = function () { grid[+b.dataset.p] = (grid[+b.dataset.p] + 1) % 4; if (connected()) { const s = host.querySelector('#pk32-play-status'); if (s) s.textContent = '管道已接通，完成本局'; } draw(); }; }); } init(); }
 
-    function bubbles(host, title) { let cells; function init() { cells = Array.from({ length: 36 }, function () { return Math.floor(Math.random() * 4); }); draw(); } function draw() { const area = shell(host, title, button('重置', 'reset'), '点击相邻同色球消除，至少两个相连才可消除'); area.innerHTML += '<div style="display:grid;grid-template-columns:repeat(6,38px);gap:4px;margin-top:10px">' + cells.map(function (c, i) { return '<button class="btn ghost" style="width:38px;height:38px;padding:0;background:' + ['#e85d75','#55a7e8','#65c878','#e4b84c'][c] + '" data-b="' + i + '">●</button>'; }).join('') + '</div>'; area.querySelector('[data-action="reset"]').onclick = init; area.querySelectorAll('[data-b]').forEach(function (b) { b.onclick = function () { const i = +b.dataset.b, c = cells[i], group = [i]; [i-1,i+1,i-6,i+6].forEach(function (n) { if (n >= 0 && n < 36 && cells[n] === c && Math.abs((n % 6) - (i % 6)) <= 1) group.push(n); }); if (group.length > 1) { group.forEach(function (n) { cells[n] = -1; }); draw(); } }; }); } init(); }
+    function bubbles(host, title) { let cells; const size = 6; function init() { cells = Array.from({ length: size * size }, function () { return Math.floor(Math.random() * 4); }); draw(); } function groupAt(start) { const color = cells[start], group = [], seen = new Set([start]), queue = [start]; while (queue.length) { const i = queue.shift(); if (cells[i] !== color) continue; group.push(i); const x = i % size, y = Math.floor(i / size); [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].forEach(function (p) { if (p[0] >= 0 && p[0] < size && p[1] >= 0 && p[1] < size) { const n = p[1] * size + p[0]; if (!seen.has(n)) { seen.add(n); queue.push(n); } } }); } return group; } function collapse() { for (let x = 0; x < size; x++) { const col = cells.filter(function (_, i) { return i % size === x && cells[i] >= 0; }); for (let y = 0; y < size; y++) cells[y * size + x] = y < size - col.length ? -1 : col[y - (size - col.length)]; } } function draw() { const area = shell(host, title, button('重置', 'reset'), '点击相邻同色球消除，至少两个相连才可消除'); area.innerHTML += '<div style="display:grid;grid-template-columns:repeat(6,38px);gap:4px;margin-top:10px">' + cells.map(function (c, i) { return '<button class="btn ghost" style="width:38px;height:38px;padding:0;background:' + (c < 0 ? '#18232c' : ['#e85d75','#55a7e8','#65c878','#e4b84c'][c]) + '" data-b="' + i + '">' + (c < 0 ? '' : '●') + '</button>'; }).join('') + '</div>'; area.querySelector('[data-action="reset"]').onclick = init; area.querySelectorAll('[data-b]').forEach(function (b) { b.onclick = function () { const i = +b.dataset.b, group = cells[i] < 0 ? [] : groupAt(i); if (group.length > 1) { group.forEach(function (n) { cells[n] = -1; }); collapse(); if (!cells.some(function (c) { return c >= 0; })) { const s = host.querySelector('#pk32-play-status'); if (s) s.textContent = '全部彩球消除，完成本局'; } draw(); } }; }); } init(); }
 
     function createSession(host, config, opts) {
-        const session = {
-            config: config,
-            host: host,
-            options: opts || {},
-            stopped: false,
-            stop: function () {
-                this.stopped = true;
-                host.innerHTML = '';
-            },
+        const session = opts && opts.session ? opts.session : { config: config, host: host, options: opts || {}, stopped: false };
+        session.config = config;
+        session.host = host;
+        session.options = opts || {};
+        session.stopped = false;
+        session.cleanup = session.cleanup || [];
+        session.stop = function () {
+            if (this.stopped) return;
+            this.stopped = true;
+            this.cleanup.forEach(function (fn) { fn(); });
+            this.cleanup = [];
+            host.innerHTML = '';
         };
         playSession(host, config, session);
         return session;
@@ -107,12 +150,14 @@
         get(name) { return CONFIGS[name] || null; },
         list() { return Object.keys(CONFIGS).map(function (name) { return CONFIGS[name]; }); },
         startGame(container, spec, opts) {
-            const config = typeof spec === 'string' ? CONFIGS[spec] : spec;
+            const config = typeof spec === 'string' ? (CONFIGS[spec] || SPECS.reduce(function (found, item) {
+                return found || (item.id === spec ? copySpec(item, item.names[0]) : null);
+            }, null)) : spec;
             if (!config) throw new Error('Unknown PK32 casual game');
             const session = { config: config, host: container, options: opts || {}, stopped: false };
-            session.stop = function () { session.stopped = true; container.innerHTML = ''; };
-            createSession(container, config, session);
-            return session;
+            session.cleanup = [];
+            session.stop = function () { if (session.stopped) return; session.stopped = true; session.cleanup.forEach(function (fn) { fn(); }); session.cleanup = []; container.innerHTML = ''; };
+            return createSession(container, config, { session: session });
         },
         start(container, opts) {
             opts = opts || {};

@@ -60,6 +60,8 @@ function install() {
             addEventListener(t, f) { (el.__h[t] = el.__h[t] || []).push(f); },
             removeEventListener(t, f) { const a = el.__h[t] || []; const i = a.indexOf(f); if (i >= 0) a.splice(i, 1); },
             appendChild(c) { el.children.push(c); return c; },
+            append() { for (const c of arguments) el.appendChild(c); },
+            replaceChildren() { el.children = Array.prototype.slice.call(arguments); },
             removeChild() { }, remove() { },
             querySelector: () => makeEl('div'), querySelectorAll: () => [],
             getBoundingClientRect: () => ({ left: 0, top: 0, width: 400, height: 520 }),
