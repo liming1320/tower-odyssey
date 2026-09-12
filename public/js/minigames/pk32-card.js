@@ -112,10 +112,10 @@
     }
     function landlord() {
       var d = doubleDeck();
-      var hands = [d.slice(0, 27), d.slice(27, 54), d.slice(54, 81), d.slice(81, 108)], landlordIndex = 0;
+      var hands = [d.slice(0, 25), d.slice(25, 50), d.slice(50, 75)], landlordIndex = 0;
       var human = hands[0], turn = 0, lastRank = 0, lastCount = 0, passes = 0;
       hands.forEach(function (h) { h.sort(function (a, b) { return b.r - a.r; }); });
-      say('四人两副牌：你是 1 号农民，轮到叫地主');
+      say('三人两副牌：你是 1 号农民，轮到叫地主');
       var call = button('叫地主', function () { if (ended) return; landlordIndex = 0; turn = 0; say('你是地主，选择三张底牌后出牌'); show(); });
       var passCall = button('不叫', function () { if (ended) return; landlordIndex = 1; turn = 0; say('电脑成为地主，你是农民'); show(); });
       controls.appendChild(call); controls.appendChild(passCall);
@@ -134,10 +134,10 @@
         if (!human.length) return finish('农民获胜'); turn = 1; show(); aiTurn();
       }
       function pass() { if (ended || turn !== 0) return; passes++; selected = []; turn = 1; show(); aiTurn(); }
-      function aiTurn() { timers.push(setTimeout(function () { if (ended) return; var h = hands[turn], ix = h.findIndex(function (c) { return !lastCount || (c.r === lastRank); }); if (ix < 0) { passes++; } else { var c = h.splice(ix, 1)[0]; lastRank = c.r; lastCount = 1; passes = 0; } if (!h.length) return finish('电脑获胜'); turn = (turn + 1) % 4; if (passes >= 3) { lastRank = 0; lastCount = 0; passes = 0; } if (turn === 0) show(); else aiTurn(); }, 260)); }
+      function aiTurn() { timers.push(setTimeout(function () { if (ended) return; var h = hands[turn], ix = h.findIndex(function (c) { return !lastCount || (c.r === lastRank); }); if (ix < 0) { passes++; } else { var c = h.splice(ix, 1)[0]; lastRank = c.r; lastCount = 1; passes = 0; } if (!h.length) return finish('电脑获胜'); turn = (turn + 1) % 3; if (passes >= 2) { lastRank = 0; lastCount = 0; passes = 0; } if (turn === 0) show(); else aiTurn(); }, 260)); }
     }
     function showhand() {
-      var mine = [], opp = [], d = deck(); for (var i = 0; i < 5; i++) { mine.push(d.pop()); opp.push(d.pop()); }
+      var mine = [], opp = [], d = deck().filter(function (c) { return c.r === 1 || c.r >= 8; }); for (var i = 0; i < 5; i++) { mine.push(d.pop()); opp.push(d.pop()); }
       say('梭哈：五张牌牌型比较'); renderHand(mine, function () {}, function () { return true; });
       board.appendChild(el('div', '你的牌：' + mine.map(label).join(' ')));
       controls.appendChild(button('比较牌型', function () { var a = handValue(mine), b = handValue(opp), compared = compareValue(a, b); score = compared > 0 ? 100 : 0; finish((compared === 0 ? '平局' : compared > 0 ? '你赢了' : '电脑赢了') + ' · 对手牌型 ' + a[2] + '/' + b[2]); }));

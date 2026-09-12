@@ -59,8 +59,8 @@
         const body = el('div');
         const bar = el('div', 'bar');
         const restart = button('重开', reset);
-        const finish = button('结束', end);
-        bar.append(restart, finish); root.append(title, meta, status, bar, body); container.appendChild(root);
+        const finishButton = button('结束', end);
+        bar.append(restart, finishButton); root.append(title, meta, status, bar, body); container.appendChild(root);
         function setMessage(v) { status.textContent = v; }
         function reset() { state = { turn: 1, score: 0, ended: false, position: 0, pawns: [0, 0, 0, 0], money: opts.money == null ? 100 : opts.money }; body.innerHTML = ''; draw(); }
         function end() { state.ended = true; setMessage('本局已结束。'); body.querySelectorAll('button').forEach(b => b.disabled = true); }
