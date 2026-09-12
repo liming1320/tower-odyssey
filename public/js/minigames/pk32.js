@@ -15,7 +15,7 @@
     // 只有明确存在对应实现的项目才提供启动按钮；按钮文案刻意标明适配状态。
     const PLAYABLE = {
         '魔塔': { gameId: 'tower', label: '魔塔原版独立版', note: '已接入 PK32 提取的 22 张原版地图，独立保存进度' },
-        '强手棋': { gameId: 'richman', label: '强手棋适配预览', note: '当前使用独立强手棋实现，PK32 原版规则仍在复核' },
+        '强手棋': { gameId: 'pk32-richman', label: 'PK32 强手棋原版迁移', note: '使用 PK32 独立棋盘、资产和存档' },
     };
     const MODULE_CONFIG = {
         '五子棋': { family: 'board', id: 'gomoku' }, '四子棋': { family: 'board', id: 'connect4' },
@@ -175,6 +175,10 @@
                 const spec = record && record.playable;
                 if (spec && spec.gameId === 'tower') {
                     mount(record, '魔塔原版独立版', host => window.PK32Tower.startUI(host, { onScore: opts.onScore }));
+                    return;
+                }
+                if (spec && spec.gameId === 'pk32-richman') {
+                    mount(record, '强手棋原版独立版', host => window.PK32Richman.start(host, { onScore: opts.onScore }));
                     return;
                 }
                 const game = spec && window.MiniGames && window.MiniGames[spec.gameId];
