@@ -86,6 +86,17 @@ MG.gfx = {
     },
     darken(c, amt) { return this.lighten(c, -Math.abs(amt)); },
     rgba(c, a) { const [r, g, b] = this.rgb(c); return `rgba(${r},${g},${b},${a})`; },
+    // 色相（0~359），解析失败返回 220（中性蓝）
+    hue(c) {
+        const [r, g, b] = this.rgb(c).map(v => v / 255);
+        const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+        if (d < 1e-4) return 220;
+        let h = 0;
+        if (mx === r) h = ((g - b) / d) % 6;
+        else if (mx === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        return ((h * 60) + 360) % 360;
+    },
 
     // ---------- 质感背景（带缓存）----------
     // 内容：底色渐变 → 中心柔光 → 微网格 → 四角暗角 → 顶亮/底暗边
@@ -142,7 +153,105 @@ MG.gfx = {
         let bg = null;
         try { bg = x.createLinearGradient(0, H - 30, 0, H); bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, 'rgba(0,0,0,0.26)'); } catch (e) { }
         if (bg) { x.fillStyle = bg; x.fillRect(0, H - 30, W, 30); }
+        // 6) 主题装饰层（2026-09-12 v3）：按基色色相派生「场地感」，
+        //    同一套场景公式不再千篇一律 —— 暖色=木质火光 / 绿=丛林草地 /
+        //    蓝青=科技霓虹 / 紫粉=星云。装饰画在离屏缓存里，零每帧成本。
+        this._themeDecor(x, W, H, c1);
+        // 7) 细噪点颗粒（胶片感，压住大面积纯色的「塑料感」）
+        const grainN = Math.round(W * H / 130);
+        const gr = this._seedRng(Math.round(this.hue(c1) * 13 + 7));
+        for (let i = 0; i < grainN; i++) {
+            const gx = gr() * W, gy = gr() * H;
+            x.fillStyle = gr() < 0.5 ? 'rgba(255,255,255,0.028)' : 'rgba(0,0,0,0.05)';
+            x.fillRect(gx, gy, 1.2, 1.2);
+        }
         return cv;
+    },
+    // 主题装饰：斜射光束 + 主题粒子/纹理。hue 决定主题，种子由色相派生（同色同纹）
+    _themeDecor(x, W, H, c1) {
+        const hue = this.hue(c1);
+        const rng = this._seedRng(Math.round(hue * 97 + 13));
+        // 斜射光束（所有主题通用：从左上斜切下来的两道体积光）
+        try {
+            x.save();
+            x.globalCompositeOperation = 'lighter';
+            for (let b = 0; b < 2; b++) {
+                const bx = W * (0.12 + b * 0.34 + rng() * 0.08);
+                const bw = W * (0.10 + rng() * 0.10);
+                const bgd = x.createLinearGradient(bx, 0, bx + bw * 1.6, H);
+                const wa = 0.045 - b * 0.015;
+                bgd.addColorStop(0, `rgba(255,255,240,${wa})`);
+                bgd.addColorStop(0.5, `rgba(255,255,240,${wa * 0.45})`);
+                bgd.addColorStop(1, 'rgba(255,255,240,0)');
+                x.fillStyle = bgd;
+                x.beginPath();
+                x.moveTo(bx, 0); x.lineTo(bx + bw, 0);
+                x.lineTo(bx + bw * 2.4, H); x.lineTo(bx + bw * 0.9, H);
+                x.closePath(); x.fill();
+            }
+            x.restore();
+        } catch (e) { }
+        // 主题粒子 / 纹理
+        const warm = hue < 55 || hue >= 325;
+        const nature = hue >= 55 && hue < 172;
+        const tech = hue >= 172 && hue < 258;
+        const dotCol = warm ? '255,190,110' : nature ? '190,235,160' : tech ? '120,210,255' : '225,160,255';
+        try {
+            x.save();
+            if (nature) {
+                // 草地：底部密草丛（细短竖线，两色渐层）
+                const blades = Math.round(W / 3.2);
+                for (let i = 0; i < blades; i++) {
+                    const gx = rng() * W, gy = H * (0.62 + rng() * 0.38);
+                    const gh = 3 + rng() * 7, lean = (rng() - 0.5) * 3;
+                    x.strokeStyle = rng() < 0.5 ? 'rgba(160,220,120,0.07)' : 'rgba(40,80,40,0.16)';
+                    x.lineWidth = 1;
+                    x.beginPath(); x.moveTo(gx, gy); x.quadraticCurveTo(gx + lean * 0.5, gy - gh * 0.6, gx + lean, gy - gh); x.stroke();
+                }
+            } else if (tech) {
+                // 霓虹：地平线上方的横向扫描光带 + 电路节点
+                for (let s = 0; s < 4; s++) {
+                    const sy = H * (0.30 + s * 0.16 + rng() * 0.04);
+                    const sg = x.createLinearGradient(0, sy - 8, 0, sy + 8);
+                    sg.addColorStop(0, 'rgba(120,210,255,0)');
+                    sg.addColorStop(0.5, `rgba(140,220,255,${0.030 - s * 0.005})`);
+                    sg.addColorStop(1, 'rgba(120,210,255,0)');
+                    x.fillStyle = sg; x.fillRect(0, sy - 8, W, 16);
+                }
+                for (let n2 = 0; n2 < 10; n2++) {
+                    const nx = rng() * W, ny = rng() * H;
+                    x.strokeStyle = 'rgba(130,215,255,0.06)';
+                    x.lineWidth = 1;
+                    x.beginPath(); x.moveTo(nx, ny); x.lineTo(nx + (rng() - 0.5) * 60, ny); x.lineTo(nx + (rng() - 0.5) * 60, ny + (rng() - 0.5) * 40); x.stroke();
+                    x.fillStyle = 'rgba(140,220,255,0.10)';
+                    x.beginPath(); x.arc(nx, ny, 1.6, 0, 6.284); x.fill();
+                }
+            } else if (!warm) {
+                // 星云：星点 + 一团彩色星云光
+                for (let s = 0; s < 26; s++) {
+                    const sx = rng() * W, sy = rng() * H, sr = 0.6 + rng() * 1.5;
+                    x.fillStyle = `rgba(255,255,255,${0.05 + rng() * 0.13})`;
+                    x.beginPath(); x.arc(sx, sy, sr, 0, 6.284); x.fill();
+                }
+                const nx = W * (0.25 + rng() * 0.5), ny = H * (0.2 + rng() * 0.35), nr = Math.max(W, H) * 0.28;
+                const ng = x.createRadialGradient(nx, ny, 0, nx, ny, nr);
+                ng.addColorStop(0, `rgba(${dotCol},0.05)`);
+                ng.addColorStop(1, `rgba(${dotCol},0)`);
+                x.fillStyle = ng; x.fillRect(0, 0, W, H);
+            }
+            // 漂浮光斑（所有主题）：近大远小的 bokeh
+            const bokeh = 9 + Math.round(rng() * 5);
+            for (let i = 0; i < bokeh; i++) {
+                const bx = rng() * W, by = rng() * H, br = 2 + rng() * 8, ba = 0.035 + rng() * 0.07;
+                const bgd = x.createRadialGradient(bx, by, 0, bx, by, br);
+                bgd.addColorStop(0, `rgba(${dotCol},${ba.toFixed(3)})`);
+                bgd.addColorStop(0.7, `rgba(${dotCol},${(ba * 0.4).toFixed(3)})`);
+                bgd.addColorStop(1, `rgba(${dotCol},0)`);
+                x.fillStyle = bgd;
+                x.beginPath(); x.arc(bx, by, br, 0, 6.284); x.fill();
+            }
+            x.restore();
+        } catch (e) { }
     },
 
     // ---------- 立体面板 / 卡片 ----------
@@ -261,7 +370,9 @@ MG.gfx = {
         const key = `w|${c1}|${c2}|${Math.round(W)}x${Math.round(H)}|${seed}|${scale.toFixed(2)}`;
         let img = this._cache.get(key);
         if (!img) {
-            img = this._buildWood(x, y, W, H, c1, c2, seed, scale);
+            // 只按 (0,0) 烘焙位图，再由 drawImage(img,x,y) 放置 —— 缓存 key 不含 x,y，
+            // 若把 x,y 烤进像素，不同位置的木框会复用错位位图（右下露出透明底）。
+            img = this._buildWood(0, 0, W, H, c1, c2, seed, scale);
             if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
             this._cache.set(key, img);
         }

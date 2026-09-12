@@ -622,6 +622,83 @@ window.MG = window.MG || {};
     E.card = (ctx, x, y, w, h, c1, c2, r) => {
         G.panel(ctx, x, y, w, h, c1, c2, r == null ? 10 : r);
     };
+    // 镶木框游戏房间（2026-09-12 视觉升级）：木纹外框 + 呢面/皮革内衬 + 内阴影 + 四角铜钉。
+    // 棋类 / 牌类 / 益智类通用：把裸露的 flat 格子盘升级成「实体桌台」。
+    // opt: { felt:'#2f5d43', frame:'#c9a06a', frame2:'#8a6234', seed:1, r:14, frameW:14, nail:true }
+    E.broom = (ctx, x, y, w, h, opt) => {
+        opt = opt || {};
+        const fw = opt.frameW == null ? 14 : opt.frameW;
+        const r = opt.r == null ? 14 : opt.r;
+        // 外框（木纹，带缓存）+ 立体描边
+        G.wood(ctx, x - fw, y - fw, w + fw * 2, h + fw * 2, opt.frame || '#c9a06a', opt.frame2 || '#8a6234', opt.seed || 1);
+        U.rr(ctx, x - fw, y - fw, w + fw * 2, h + fw * 2, r);
+        ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(40,22,8,0.55)'; ctx.stroke();
+        U.rr(ctx, x - fw + 1.5, y - fw + 1.5, w + fw * 2 - 3, h + fw * 2 - 3, Math.max(1, r - 1.5));
+        ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,235,200,0.30)'; ctx.stroke();
+        // 内衬呢面（径向光：中央受光、四角沉入阴影）
+        U.rr(ctx, x, y, w, h, Math.max(4, r * 0.55));
+        const felt = opt.felt || '#2f5d43';
+        let fg = null;
+        try {
+            fg = ctx.createRadialGradient(x + w / 2, y + h * 0.42, 0, x + w / 2, y + h / 2, Math.max(w, h) * 0.75);
+            fg.addColorStop(0, G.lighten(felt, 0.16));
+            fg.addColorStop(0.65, felt);
+            fg.addColorStop(1, G.darken(felt, 0.32));
+        } catch (e) { }
+        ctx.fillStyle = fg || felt; ctx.fill();
+        // 内阴影（上侧重、下侧轻，让呢面「凹进」木框）
+        ctx.save();
+        U.rr(ctx, x, y, w, h, Math.max(4, r * 0.55)); ctx.clip();
+        let isg = null;
+        try { isg = ctx.createLinearGradient(x, y, x, y + 18); isg.addColorStop(0, 'rgba(0,0,0,0.30)'); isg.addColorStop(1, 'rgba(0,0,0,0)'); } catch (e) { }
+        ctx.fillStyle = isg || 'rgba(0,0,0,0.2)'; ctx.fillRect(x, y, w, 18);
+        try { isg = ctx.createLinearGradient(x, y + h - 12, x, y + h); isg.addColorStop(0, 'rgba(0,0,0,0)'); isg.addColorStop(1, 'rgba(0,0,0,0.20)'); } catch (e) { }
+        ctx.fillStyle = isg || 'rgba(0,0,0,0.12)'; ctx.fillRect(x, y + h - 12, w, 12);
+        ctx.restore();
+        // 呢面细织纹（斜细线，非常淡）
+        ctx.save();
+        U.rr(ctx, x, y, w, h, Math.max(4, r * 0.55)); ctx.clip();
+        ctx.strokeStyle = 'rgba(255,255,255,0.022)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let s = -h; s < w; s += 7) { ctx.moveTo(x + s, y); ctx.lineTo(x + s + h, y + h); }
+        ctx.stroke();
+        ctx.restore();
+        // 四角铜钉
+        if (opt.nail !== false) {
+            const nr = Math.max(2.5, fw * 0.26);
+            for (const [nx, ny] of [[x - fw / 2, y - fw / 2], [x + w + fw / 2, y - fw / 2], [x - fw / 2, y + h + fw / 2], [x + w + fw / 2, y + h + fw / 2]]) {
+                const ng = ctx.createRadialGradient(nx - nr * 0.3, ny - nr * 0.3, 0, nx, ny, nr);
+                ng.addColorStop(0, '#f0d9a0'); ng.addColorStop(0.6, '#b98d4a'); ng.addColorStop(1, '#5f3f18');
+                ctx.beginPath(); ctx.arc(nx, ny, nr, 0, 6.284);
+                ctx.fillStyle = ng; ctx.fill();
+            }
+        }
+    };
+    // 光泽棋子（圆盘：径向渐变 + 环口 + 顶高光 + 投影）。黑白棋/四子棋/跳棋等通用
+    // c1/c2 为主体渐变（上亮下暗），rim 为环口色
+    E.piece = (ctx, cx, cy, r, c1, c2, rim) => {
+        // 落地投影
+        ctx.beginPath(); ctx.ellipse(cx + r * 0.08, cy + r * 0.18, r * 0.98, r * 0.9, 0, 0, 6.284);
+        ctx.fillStyle = 'rgba(0,0,0,0.30)'; ctx.fill();
+        // 主体
+        let g = null;
+        try {
+            g = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.15, cx, cy, r * 1.05);
+            g.addColorStop(0, G.lighten(c1, 0.35));
+            g.addColorStop(0.55, c1);
+            g.addColorStop(1, c2 || G.darken(c1, 0.35));
+        } catch (e) { }
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.284);
+        ctx.fillStyle = g || c1; ctx.fill();
+        // 环口
+        ctx.lineWidth = Math.max(1.2, r * 0.10);
+        ctx.strokeStyle = rim || 'rgba(0,0,0,0.4)';
+        ctx.stroke();
+        // 顶高光（椭圆弧面反光）
+        ctx.beginPath(); ctx.ellipse(cx - r * 0.28, cy - r * 0.42, r * 0.42, r * 0.26, -0.5, 0, 6.284);
+        ctx.fillStyle = 'rgba(255,255,255,0.34)'; ctx.fill();
+    };
     E.btnBox = (ctx, x, y, w, h, label, c1, c2) => {
         E.card(ctx, x, y, w, h, c1, c2, 10);
         E.txt(ctx, label, x + w / 2, y + h / 2, Math.min(20, h * 0.45), '#fff', true);

@@ -13,11 +13,14 @@
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#2e4666', '#16233a');
             const C = 96, ox = (W - C * 3) / 2, oy = 92;
+            E.broom(ctx, ox, oy, C * 3, C * 3, { felt: '#2a4d78', frame: '#b0885a', frame2: '#7a5a34', seed: 11 });
             for (let k = 0; k < 9; k++) {
                 const x = ox + (k % 3) * C, y = oy + ((k / 3) | 0) * C;
-                E.card(ctx, x + 4, y + 4, C - 8, C - 8, '#40628f', '#2b4670', 12);
-                if (S.b[k] === 1) E.txt(ctx, '✕', x + C / 2, y + C / 2, 46, '#ff8a9b', true);
-                if (S.b[k] === 2) E.txt(ctx, '○', x + C / 2, y + C / 2, 46, '#6cd7ff', true);
+                U.rr(ctx, x + 5, y + 5, C - 10, C - 10, 9);
+                ctx.fillStyle = 'rgba(0,0,0,0.16)'; ctx.fill();
+                ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.stroke();
+                if (S.b[k] === 1) E.txt(ctx, '✕', x + C / 2, y + C / 2 + 1, 48, '#ff8a9b', true);
+                if (S.b[k] === 2) E.txt(ctx, '○', x + C / 2, y + C / 2 + 1, 48, '#6cd7ff', true);
             }
             E.txt(ctx, S.res || (S.turn === 1 ? '你的回合 ✕' : '电脑思考…'), W / 2, 46, 19, '#ffd56b', true);
         },
@@ -72,16 +75,17 @@
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#1b3a6b', '#0d1e3a');
             const C = 46, ox = 9, oy = 70;
+            E.broom(ctx, ox, oy, C * 7, C * 6, { felt: '#1c4a8f', frame: '#e0a838', frame2: '#a06f18', seed: 22, r: 16, frameW: 13 });
             for (let i = 0; i < 6; i++) for (let j = 0; j < 7; j++) {
                 const x = ox + j * C, y = oy + i * C;
-                ctx.beginPath(); ctx.arc(x + C / 2, y + C / 2, C / 2 - 3, 0, 6.284);
-                ctx.fillStyle = '#12305c'; ctx.fill();
-                if (S.b[i][j]) {
-                    ctx.beginPath(); ctx.arc(x + C / 2, y + C / 2, C / 2 - 4, 0, 6.284);
-                    ctx.fillStyle = S.b[i][j] === 1 ? '#ff6b7f' : '#ffd56b'; ctx.fill();
-                    ctx.fillStyle = 'rgba(255,255,255,.3)';
-                    ctx.beginPath(); ctx.arc(x + C / 2 - 5, y + C / 2 - 6, 5, 0, 6.284); ctx.fill();
-                }
+                // 空洞：深色凹坑（径向渐变，中心更暗）
+                const hx = x + C / 2, hy = y + C / 2, hr = C / 2 - 3;
+                let hg = null;
+                try { hg = ctx.createRadialGradient(hx, hy - hr * 0.3, hr * 0.2, hx, hy, hr); hg.addColorStop(0, '#0d2c5e'); hg.addColorStop(1, '#081c40'); } catch (e) { }
+                ctx.beginPath(); ctx.arc(hx, hy, hr, 0, 6.284);
+                ctx.fillStyle = hg || '#0d2c5e'; ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.stroke();
+                if (S.b[i][j]) E.piece(ctx, hx, hy, C / 2 - 5, S.b[i][j] === 1 ? '#ff6b7f' : '#ffd56b', S.b[i][j] === 1 ? '#b02438' : '#c89020');
             }
             E.txt(ctx, S.res || (S.turn === 1 ? '你的回合（红）' : '电脑思考…'), W / 2, 38, 18, '#ffd56b', true);
         },
@@ -138,15 +142,14 @@
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#1f5c3a', '#0e2e1d');
             const C = 44, ox = (W - C * 8) / 2, oy = 62;
+            E.broom(ctx, ox, oy, C * 8, C * 8, { felt: '#2e6e48', frame: '#8a6234', frame2: '#5a3c1c', seed: 33 });
             for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
                 const x = ox + j * C, y = oy + i * C;
-                ctx.fillStyle = '#2a7a4e'; ctx.fillRect(x + 1, y + 1, C - 2, C - 2);
-                ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.strokeRect(x + 1, y + 1, C - 2, C - 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.13)'; ctx.fillRect(x + 1, y + 1, C - 2, C - 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.strokeRect(x + 1.5, y + 1.5, C - 3, C - 3);
                 const v = S.b[i][j];
                 if (!v) continue;
-                ctx.beginPath(); ctx.arc(x + C / 2, y + C / 2, C / 2 - 4, 0, 6.284);
-                ctx.fillStyle = v === 1 ? '#f4f4f8' : '#20202c'; ctx.fill();
-                ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.stroke();
+                E.piece(ctx, x + C / 2, y + C / 2, C / 2 - 4, v === 1 ? '#f4f4f8' : '#3a3a4c', v === 1 ? '#b8b8c8' : '#101018', v === 1 ? 'rgba(120,120,140,0.6)' : 'rgba(0,0,0,0.55)');
             }
             if (S.turn === 1) rvHints(ctx, S, C, ox, oy);
             const c1 = S.b.flat().filter(v => v === 1).length, c2 = S.b.flat().filter(v => v === 2).length;
@@ -219,13 +222,12 @@
         init: P => ({ n: P.n, turn: 1, msg: '你先手，选 1/2/3', res: false }),
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#4a3a26', '#241a10');
-            E.txt(ctx, `剩余 ${S.n} 颗`, W / 2, 46, 22, '#ffd56b', true);
-            let x = 24, y = 90;
+            E.txt(ctx, `剩余 ${S.n} 颗`, W / 2, 40, 22, '#ffd56b', true);
+            E.broom(ctx, 14, 62, W - 28, 156, { felt: '#33261a', frame: '#a9825a', frame2: '#6f4e2c', seed: 44, frameW: 12 });
+            let x = 30, y = 96;
             for (let k = 0; k < Math.min(S.n, 60); k++) {
-                ctx.beginPath(); ctx.arc(x, y, 11, 0, 6.284);
-                ctx.fillStyle = '#c8a878'; ctx.fill();
-                ctx.strokeStyle = '#7a5a30'; ctx.lineWidth = 2; ctx.stroke();
-                x += 26; if (x > W - 24) { x = 24; y += 26; }
+                E.piece(ctx, x, y, 10, '#d2b288', '#8a683c', 'rgba(60,40,18,0.6)');
+                x += 26; if (x > W - 26) { x = 30; y += 27; }
             }
             for (let k = 1; k <= 3; k++) E.btnBox(ctx, 30 + (k - 1) * 105, H - 110, 90, 52, '取 ' + k, '#8a5a2f', '#5a3a1c');
             E.txt(ctx, S.msg, W / 2, H - 34, 16, '#f0e0c8');
@@ -276,11 +278,16 @@
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#0e2a4a', '#061626');
             const n = S.n, C = Math.min(38, (W - 20) / n), ox = (W - C * n) / 2, oy = 76;
+            E.broom(ctx, ox, oy, C * n, C * n, { felt: '#0f3557', frame: '#7a8ca0', frame2: '#46586c', seed: 55, frameW: 11 });
             for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
                 const x = ox + j * C, y = oy + i * C, s = S.seen[i][j];
-                if (!s) { E.card(ctx, x + 1, y + 1, C - 2, C - 2, '#2a5c8f', '#17406a', 6); }
-                else if (s === 1) { E.card(ctx, x + 1, y + 1, C - 2, C - 2, '#12304f', '#0a1c30', 6); U.emoji(ctx, '💧', x + C / 2, y + C / 2, C * 0.5); }
-                else { E.card(ctx, x + 1, y + 1, C - 2, C - 2, '#a02828', '#601010', 6); U.emoji(ctx, '🔥', x + C / 2, y + C / 2, C * 0.55); }
+                if (!s) {
+                    U.rr(ctx, x + 1, y + 1, C - 2, C - 2, 5);
+                    ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill();
+                    ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(160,210,255,0.16)'; ctx.stroke();
+                }
+                else if (s === 1) { U.rr(ctx, x + 1, y + 1, C - 2, C - 2, 5); ctx.fillStyle = 'rgba(0,10,25,0.55)'; ctx.fill(); U.emoji(ctx, '💧', x + C / 2, y + C / 2, C * 0.5); }
+                else { U.rr(ctx, x + 1, y + 1, C - 2, C - 2, 5); ctx.fillStyle = 'rgba(140,25,20,0.75)'; ctx.fill(); U.emoji(ctx, '🔥', x + C / 2, y + C / 2, C * 0.55); }
             }
             E.txt(ctx, `剩余炮弹 ${S.shots} · 命中 ${S.hits}/${S.total}`, W / 2, 40, 18, '#ffd56b', true);
         },
@@ -313,6 +320,7 @@
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#2b2545', '#151130');
             const n = S.n, C = Math.min(44, (W - 60) / n), ox = (W - C * n) / 2, oy = 80;
+            E.broom(ctx, ox - 14, oy - 14, C * n + 28, C * n + 28, { felt: '#37305c', frame: '#8a7aa8', frame2: '#4e4070', seed: 77, frameW: 11, nail: false });
             for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
                 if (S.own[i][j]) {
                     E.card(ctx, ox + j * C + 4, oy + i * C + 4, C - 8, C - 8, S.own[i][j] === 1 ? '#3a7adf' : '#c85a4a', S.own[i][j] === 1 ? '#1f4a9a' : '#8a2f28', 6);
@@ -407,22 +415,32 @@
         init: P => ({ p: [P.seed, P.seed, P.seed, P.seed, P.seed, P.seed, 0, P.seed, P.seed, P.seed, P.seed, P.seed, P.seed, 0], turn: 1, msg: '你的回合（下方 6 坑）' }),
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#7a4a26', '#3a2010');
-            E.card(ctx, 6, 120, 56, 180, '#5a3418', '#33190a', 14);
+            E.broom(ctx, 62, 96, W - 124, 246, { felt: '#4a2c14', frame: '#c9955a', frame2: '#7a5228', seed: 66, frameW: 12, nail: false });
+            // 两端仓库：凹坑质感
+            const pit = (px, py, pw, ph) => {
+                U.rr(ctx, px, py, pw, ph, 14);
+                let pg = null;
+                try { pg = ctx.createRadialGradient(px + pw / 2, py + ph / 2 - 8, 4, px + pw / 2, py + ph / 2, Math.max(pw, ph) * 0.7); pg.addColorStop(0, '#1c0e04'); pg.addColorStop(1, '#4a2a10'); } catch (e) { }
+                ctx.fillStyle = pg || '#2a1808'; ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.stroke();
+                ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,220,170,0.15)'; ctx.stroke();
+            };
+            pit(6, 120, 56, 180);
             E.txt(ctx, S.p[6], 34, 210, 26, '#ffd56b', true);
-            E.card(ctx, W - 62, 120, 56, 180, '#5a3418', '#33190a', 14);
+            pit(W - 62, 120, 56, 180);
             E.txt(ctx, S.p[13], W - 34, 210, 26, '#ffd56b', true);
             for (let k = 0; k < 6; k++) {
                 const x = 76 + k * 54;
-                E.card(ctx, x, 250, 46, 56, '#8a5a2f', '#5a3418', 12);
+                pit(x, 250, 46, 56);
                 E.txt(ctx, S.p[k], x + 23, 278, 18, '#fff', true);
                 E.txt(ctx, k, x + 23, 320, 12, '#d8c0a0');
             }
             for (let k = 0; k < 6; k++) {
                 const x = 76 + (5 - k) * 54;
-                E.card(ctx, x, 120, 46, 56, '#4a3a52', '#2a2032', 12);
+                pit(x, 120, 46, 56);
                 E.txt(ctx, S.p[7 + k], x + 23, 148, 18, '#fff', true);
             }
-            E.txt(ctx, S.msg, W / 2, 46, 17, '#ffd56b', true);
+            E.txt(ctx, S.msg, W / 2, 66, 17, '#ffd56b', true);
         },
         tap(S, x, y, P, api) {
             if (S.turn !== 1) return;
@@ -487,10 +505,16 @@
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#3a2f52', '#1c1630');
             const n = S.n, C = Math.min(52, (W - 40) / n), ox = (W - C * n) / 2, oy = 84;
+            E.broom(ctx, ox - 10, oy - 10, C * n + 20, C * n + 20, { felt: '#453868', frame: '#9a7ab8', frame2: '#573f78', seed: 88, frameW: 10, nail: false });
             for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
                 const x = ox + j * C, y = oy + i * C;
-                E.card(ctx, x + 2, y + 2, C - 4, C - 4, (i + j) % 2 ? '#5a4a7a' : '#473a63', (i + j) % 2 ? '#3a2f52' : '#2e2544', 6);
-                if (S.q[i][j]) U.emoji(ctx, '♛', x + C / 2, y + C / 2, C * 0.6);
+                ctx.fillStyle = (i + j) % 2 ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.05)';
+                ctx.fillRect(x + 1, y + 1, C - 2, C - 2);
+                if (S.q[i][j]) {
+                    ctx.beginPath(); ctx.arc(x + C / 2, y + C / 2, C * 0.42, 0, 6.284);
+                    ctx.fillStyle = 'rgba(255,213,107,0.14)'; ctx.fill();
+                    U.emoji(ctx, '♛', x + C / 2, y + C / 2 + 1, C * 0.6);
+                }
             }
             const cnt = S.q.flat().filter(v => v).length;
             E.txt(ctx, `已放置 ${cnt}/${n} 个皇后`, W / 2, 44, 18, '#ffd56b', true);
@@ -532,22 +556,19 @@
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#4a3a26', '#241a10');
             const C = 50, ox = (W - C * 7) / 2, oy = 70;
+            E.broom(ctx, ox - 8, oy - 8, C * 7 + 16, C * 7 + 16, { felt: '#3d2d1a', frame: '#b0885a', frame2: '#6f4e2c', seed: 99, frameW: 12 });
             for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) {
                 if (S.b[i][j] < 0) continue;
                 const x = ox + j * C + C / 2, y = oy + i * C + C / 2;
-                ctx.beginPath(); ctx.arc(x, y + 3, 16, 0, 6.284);
-                ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fill();
-                if (S.b[i][j]) {
-                    ctx.beginPath(); ctx.arc(x, y, 17, 0, 6.284);
-                    let g = null; try { g = ctx.createLinearGradient(0, y - 17, 0, y + 17); g.addColorStop(0, '#f0e0b0'); g.addColorStop(1, '#b09050'); } catch (e) {}
-                    ctx.fillStyle = g || '#d8c090'; ctx.fill();
-                    ctx.strokeStyle = '#7a5a28'; ctx.lineWidth = 2; ctx.stroke();
-                    ctx.beginPath(); ctx.arc(x - 5, y - 6, 5, 0, 6.284); ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.fill();
-                } else {
-                    ctx.beginPath(); ctx.arc(x, y, 15, 0, 6.284); ctx.fillStyle = '#2a1c0e'; ctx.fill();
-                }
+                // 凹坑（所有有效格都画，空位显示坑）
+                ctx.beginPath(); ctx.arc(x, y + 2, 15, 0, 6.284);
+                let hg = null;
+                try { hg = ctx.createRadialGradient(x, y - 4, 3, x, y + 2, 15); hg.addColorStop(0, '#140c04'); hg.addColorStop(1, '#3a2a16'); } catch (e) { }
+                ctx.fillStyle = hg || '#241808'; ctx.fill();
+                ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.stroke();
+                if (S.b[i][j]) E.piece(ctx, x, y, 16, '#f0e0b0', '#a8813f', 'rgba(90,60,20,0.7)');
                 if (S.sel && S.sel[0] === i && S.sel[1] === j) {
-                    ctx.beginPath(); ctx.arc(x, y, 20, 0, 6.284); ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(x, y, 21, 0, 6.284); ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.stroke();
                 }
             }
             const left = S.b.flat().filter(v => v === 1).length;
@@ -601,12 +622,17 @@
         draw(ctx, S, P, W, H) {
             E.bg(ctx, W, H, '#2f3a52', '#161e30');
             const n = S.n, C = Math.min(60, (W - 30) / n), ox = (W - C * n) / 2, oy = 76;
+            E.broom(ctx, ox - 10, oy - 10, C * n + 20, C * n + 20, { felt: '#3c4a68', frame: '#8a94ac', frame2: '#4e5870', seed: 111, frameW: 10, nail: false });
+            // 双方底线标记（蓝方目标在上、红方目标在下）
+            ctx.fillStyle = 'rgba(110,190,255,0.10)'; ctx.fillRect(ox, oy, C * n, C);
+            ctx.fillStyle = 'rgba(255,110,120,0.10)'; ctx.fillRect(ox, oy + C * (n - 1), C * n, C);
             for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
                 const x = ox + j * C, y = oy + i * C;
-                E.card(ctx, x + 1, y + 1, C - 2, C - 2, (i + j) % 2 ? '#4a5878' : '#3a4660', (i + j) % 2 ? '#2a3450' : '#222c42', 4);
+                ctx.fillStyle = (i + j) % 2 ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.035)';
+                ctx.fillRect(x + 1, y + 1, C - 2, C - 2);
                 if (S.sel && S.sel[0] === i && S.sel[1] === j) { ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.strokeRect(x + 2, y + 2, C - 4, C - 4); }
                 if (!S.b[i][j]) continue;
-                U.emoji(ctx, S.b[i][j] === 1 ? '🔵' : '🔴', x + C / 2, y + C / 2, C * 0.6);
+                E.piece(ctx, x + C / 2, y + C / 2, C * 0.32, S.b[i][j] === 1 ? '#5cb8ff' : '#ff7a86', S.b[i][j] === 1 ? '#1a5a9a' : '#a02030');
             }
             E.txt(ctx, S.turn === 1 ? '你的回合（蓝）' : '电脑思考…', W / 2, 42, 18, '#ffd56b', true);
         },

@@ -819,7 +819,7 @@ body.in-battle .avatar-btn { display: none; }
     flex: 1; position: relative; overflow: hidden;
     display: flex; align-items: center; justify-content: center;
 }
-.mini-stage canvas, .mini-stage > div { display: block; }
+.mini-stage canvas, .mini-stage > div:not(.mg-dom) { display: block; }
 /* 2026-09-10 升级：mini-stage 用机柜风格外壳（和 MG.gfx.scene 配套）
    canvas 类游戏的背景由 MG.gfx.scene 预渲染（带网格+暗角+顶亮底暗），此兜底
    解决 DGame/DOM 类游戏的容器质感和防黑边 */
@@ -1105,7 +1105,29 @@ body.in-battle .avatar-btn { display: none; }
     100% { transform: translateX(-50%) translateY(-10px); opacity: 0; } }
 
 /* ================= 答题类小游戏通用样式（2026-09-09） ================= */
-.mg-dom { width: 100%; padding: 6px 10px; box-sizing: border-box; }
+/* 2026-09-12 DOM 游戏容器质感升级：卡片式面板 + 顶部光带 + 噪点纹理，
+   解决问答/记忆类「光秃秃文字贴底」的简陋感（不碰各游戏自己的布局类） */
+.mg-dom {
+    width: 100%; padding: 14px 14px 18px; box-sizing: border-box;
+    min-height: 100%;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.10), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,0.055), rgba(0,0,0,0.16)),
+        linear-gradient(180deg, #232c44, #141a2c);
+    border-radius: 14px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -1px 0 rgba(0,0,0,0.4),
+        0 6px 22px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.mg-dom { position: relative; display: flex; flex-direction: column; }
+/* 子项 margin:auto 垂直居中：空间不足时自动退化为顶对齐，不会像 justify-content:center 那样裁掉溢出内容 */
+.mg-dom > * { margin: auto 0; }
+.mg-dom::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    border-radius: 14px;
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 5px);
+}
+.mg-dom > * { position: relative; z-index: 1; }
 .mgq { text-align: center; }
 .mgq-h { font-size: 12px; color: #b9b3d8; margin-bottom: 4px; }
 .mgq-t { font-size: 19px; font-weight: bold; color: #fff; margin: 6px 0 10px; line-height: 1.4; }

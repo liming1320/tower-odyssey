@@ -11,9 +11,43 @@
         return MG.shuffle(d);
     }
     function paint(ctx, x, y, w, h, c, hidden) {
-        if (hidden) { E.card(ctx, x, y, w, h, '#3f6fbf', '#1f3a6f', 6); E.txt(ctx, '?', x + w / 2, y + h / 2, w * 0.5, '#cfe0ff', true); return; }
-        E.card(ctx, x, y, w, h, '#fdfdf5', '#dcd8cc', 6);
-        E.txt(ctx, lab(c), x + w / 2, y + h / 2, w * 0.42, isRed(c.s) ? '#d03040' : '#20202c', true);
+        if (hidden) {
+            // 牌背：深蓝渐变 + 白色内框 + 斜纹 lattice + 中心徽标
+            E.card(ctx, x, y, w, h, '#4a7cc9', '#22406f', 6);
+            U.rr(ctx, x + 4, y + 4, w - 8, h - 8, 4);
+            ctx.strokeStyle = 'rgba(255,255,255,0.38)'; ctx.lineWidth = 1.4; ctx.stroke();
+            ctx.save();
+            U.rr(ctx, x + 4, y + 4, w - 8, h - 8, 4); ctx.clip();
+            ctx.strokeStyle = 'rgba(255,255,255,0.13)'; ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let s = -h; s < w; s += 6) { ctx.moveTo(x + s, y); ctx.lineTo(x + s + h, y + h); ctx.moveTo(x + s + h, y); ctx.lineTo(x + s, y + h); }
+            ctx.stroke();
+            ctx.restore();
+            U.emoji(ctx, '✦', x + w / 2, y + h / 2 + 1, w * 0.34);
+            return;
+        }
+        E.card(ctx, x, y, w, h, '#fdfdf5', '#d8d4c8', 6);
+        const col = isRed(c.s) ? '#d03040' : '#20202c';
+        // 角标：点数 + 花色（左上正排、右下倒排）
+        const fs = Math.max(9, Math.round(w * 0.26));
+        ctx.fillStyle = col;
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.font = 'bold ' + fs + 'px "Segoe UI","Microsoft YaHei",sans-serif';
+        ctx.fillText(RK[c.r], x + 4, y + 3);
+        ctx.font = fs + 'px "Segoe UI Symbol","Segoe UI",sans-serif';
+        ctx.fillText(SU[c.s], x + 4, y + 4 + fs * 1.02);
+        ctx.save();
+        ctx.translate(x + w - 4, y + h - 3); ctx.rotate(Math.PI);
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.font = 'bold ' + fs + 'px "Segoe UI","Microsoft YaHei",sans-serif';
+        ctx.fillText(RK[c.r], 0, 0);
+        ctx.font = fs + 'px "Segoe UI Symbol","Segoe UI",sans-serif';
+        ctx.fillText(SU[c.s], 0, 1 + fs * 1.02);
+        ctx.restore();
+        // 中心大花色
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = Math.round(w * 0.52) + 'px "Segoe UI Symbol","Segoe UI",sans-serif';
+        ctx.fillText(SU[c.s], x + w / 2, y + h / 2 + 1);
     }
     const hitc = (x, y, cx, cy, cw, ch) => E.hit(x, y, cx, cy, cw, ch);
 
