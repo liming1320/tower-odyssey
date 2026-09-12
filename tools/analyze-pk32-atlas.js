@@ -22,8 +22,8 @@ function occupied(image, x, y, size) {
 
 const file = process.argv[2] || path.join(__dirname, '..', 'output', 'pk32-reference', 'sheet-5579f0.png');
 const out = process.argv[3] || path.join(__dirname, '..', 'output', 'pk32-reference', 'atlas-5579f0.json');
-const image = readPng(file); const size = 32; const cells = [];
+const image = readPng(file); const size = 33; const cells = [];
 for (let y = 0; y < image.height; y += size) for (let x = 0; x < image.width; x += size) cells.push({ x, y, width: Math.min(size, image.width - x), height: Math.min(size, image.height - y), pixels: occupied(image, x, y, size) });
-const result = { file, width: image.width, height: image.height, cellSize: size, cells };
+const result = { file, width: image.width, height: image.height, cellSize: size, columns: Math.ceil(image.width / size), rows: Math.ceil(image.height / size), cells };
 fs.writeFileSync(out, JSON.stringify(result, null, 2));
 console.log(JSON.stringify({ file, width: image.width, height: image.height, cells: cells.length, occupied: cells.filter(x => x.pixels > 0).length, output: out }));

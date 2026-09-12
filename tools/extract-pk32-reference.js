@@ -16,6 +16,14 @@ for (let i = 0; i < b.length - 8; i += 2) {
 fs.writeFileSync(path.join(output, 'strings.json'), JSON.stringify(strings, null, 2));
 const tower = strings.filter(s => s.offset >= 0x1d4bec && s.offset <= 0x1d7544 && /^\d{242}$/.test(s.text));
 fs.writeFileSync(path.join(output, 'tower1-maps.json'), JSON.stringify(tower, null, 2));
+const numericMaps = strings.filter(s => /^\d+$/.test(s.text) && (s.text.length === 242 || s.text.length === 900));
+const towerSets = [
+    { name: '魔塔', min: 0x1d4bec, max: 0x1d7544, width: 11, height: 11 },
+    { name: '魔塔二', min: 0x2a9064, max: 0x2af6f4, width: 11, height: 11 },
+    { name: '魔塔三', min: 0x2b1098, max: 0x2b4408, width: 11, height: 11 },
+    { name: '魔塔四', min: 0x2fe278, max: 0x3013e8, width: 30, height: 30 }
+].map(set => Object.assign(set, { maps: numericMaps.filter(s => s.offset >= set.min && s.offset <= set.max) }));
+fs.writeFileSync(path.join(output, 'tower-maps-index.json'), JSON.stringify(towerSets, null, 2));
 const bitmaps = [];
 for (let p = 0; (p = b.indexOf(Buffer.from('BM'), p)) >= 0; p++) {
     if (p + 54 >= b.length) break;
@@ -29,4 +37,4 @@ for (let p = 0; (p = b.indexOf(Buffer.from('BM'), p)) >= 0; p++) {
     bitmaps.push({ file, offset: p, width, height, sha256: crypto.createHash('sha256').update(bytes).digest('hex') });
 }
 fs.writeFileSync(path.join(output, 'bitmaps.json'), JSON.stringify(bitmaps, null, 2));
-console.log(JSON.stringify({ strings: strings.length, tower1Maps: tower.length, bitmaps: bitmaps.length }));
+console.log(JSON.stringify({ strings: strings.length, tower1Maps: tower.length, towerSets: towerSets.map(s => ({ name: s.name, maps: s.maps.length, width: s.width, height: s.height })), bitmaps: bitmaps.length }));

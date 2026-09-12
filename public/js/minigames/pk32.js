@@ -165,8 +165,7 @@
             }
             function launchVariant(record) {
                 if (record && /^魔塔[二三四]$/.test(record.name) && window.PK32Tower) {
-                    const layer = record.name === '魔塔二' ? 6 : record.name === '魔塔三' ? 12 : 18;
-                    mount(record, '魔塔原版独立版', host => window.PK32Tower.startUI(host, { layer: layer }));
+                    mount(record, record.name + '独立版', host => window.PK32Tower.startUI(host, { set: record.name, layer: 0 }));
                     return;
                 }
                 if (window.PK32Variants) mount(record, 'PK32 独立版', host => window.PK32Variants.startGame(host, record.variant, { onScore: opts.onScore }));
