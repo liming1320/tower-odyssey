@@ -1,0 +1,2391 @@
+[
+  {
+    "rva": 22556672,
+    "address": 26750976,
+    "bytes": "41",
+    "instruction": "inc ecx",
+    "strings": []
+  },
+  {
+    "rva": 22556673,
+    "address": 26750977,
+    "bytes": "50",
+    "instruction": "push eax",
+    "strings": []
+  },
+  {
+    "rva": 22556674,
+    "address": 26750978,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556680,
+    "address": 26750984,
+    "bytes": "66895a52",
+    "instruction": "mov word ptr [edx + 0x52], bx",
+    "strings": []
+  },
+  {
+    "rva": 22556684,
+    "address": 26750988,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556690,
+    "address": 26750994,
+    "bytes": "66897954",
+    "instruction": "mov word ptr [ecx + 0x54], di",
+    "strings": []
+  },
+  {
+    "rva": 22556694,
+    "address": 26750998,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556700,
+    "address": 26751004,
+    "bytes": "66897256",
+    "instruction": "mov word ptr [edx + 0x56], si",
+    "strings": []
+  },
+  {
+    "rva": 22556704,
+    "address": 26751008,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556710,
+    "address": 26751014,
+    "bytes": "6689715e",
+    "instruction": "mov word ptr [ecx + 0x5e], si",
+    "strings": []
+  },
+  {
+    "rva": 22556714,
+    "address": 26751018,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556720,
+    "address": 26751024,
+    "bytes": "668982f0000000",
+    "instruction": "mov word ptr [edx + 0xf0], ax",
+    "strings": []
+  },
+  {
+    "rva": 22556727,
+    "address": 26751031,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556733,
+    "address": 26751037,
+    "bytes": "668999f2000000",
+    "instruction": "mov word ptr [ecx + 0xf2], bx",
+    "strings": []
+  },
+  {
+    "rva": 22556740,
+    "address": 26751044,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556746,
+    "address": 26751050,
+    "bytes": "6689baf4000000",
+    "instruction": "mov word ptr [edx + 0xf4], di",
+    "strings": []
+  },
+  {
+    "rva": 22556753,
+    "address": 26751057,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556759,
+    "address": 26751063,
+    "bytes": "6689b1f6000000",
+    "instruction": "mov word ptr [ecx + 0xf6], si",
+    "strings": []
+  },
+  {
+    "rva": 22556766,
+    "address": 26751070,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556772,
+    "address": 26751076,
+    "bytes": "6689b2fe000000",
+    "instruction": "mov word ptr [edx + 0xfe], si",
+    "strings": []
+  },
+  {
+    "rva": 22556779,
+    "address": 26751083,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556785,
+    "address": 26751089,
+    "bytes": "66898190010000",
+    "instruction": "mov word ptr [ecx + 0x190], ax",
+    "strings": []
+  },
+  {
+    "rva": 22556792,
+    "address": 26751096,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556798,
+    "address": 26751102,
+    "bytes": "66899a92010000",
+    "instruction": "mov word ptr [edx + 0x192], bx",
+    "strings": []
+  },
+  {
+    "rva": 22556805,
+    "address": 26751109,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556811,
+    "address": 26751115,
+    "bytes": "6689b994010000",
+    "instruction": "mov word ptr [ecx + 0x194], di",
+    "strings": []
+  },
+  {
+    "rva": 22556818,
+    "address": 26751122,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556824,
+    "address": 26751128,
+    "bytes": "6689b296010000",
+    "instruction": "mov word ptr [edx + 0x196], si",
+    "strings": []
+  },
+  {
+    "rva": 22556831,
+    "address": 26751135,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556837,
+    "address": 26751141,
+    "bytes": "6689b19e010000",
+    "instruction": "mov word ptr [ecx + 0x19e], si",
+    "strings": []
+  },
+  {
+    "rva": 22556844,
+    "address": 26751148,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556850,
+    "address": 26751154,
+    "bytes": "66898230020000",
+    "instruction": "mov word ptr [edx + 0x230], ax",
+    "strings": []
+  },
+  {
+    "rva": 22556857,
+    "address": 26751161,
+    "bytes": "a1b8b22402",
+    "instruction": "mov eax, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556862,
+    "address": 26751166,
+    "bytes": "66899832020000",
+    "instruction": "mov word ptr [eax + 0x232], bx",
+    "strings": []
+  },
+  {
+    "rva": 22556869,
+    "address": 26751173,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556875,
+    "address": 26751179,
+    "bytes": "6689b934020000",
+    "instruction": "mov word ptr [ecx + 0x234], di",
+    "strings": []
+  },
+  {
+    "rva": 22556882,
+    "address": 26751186,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556888,
+    "address": 26751192,
+    "bytes": "6689b236020000",
+    "instruction": "mov word ptr [edx + 0x236], si",
+    "strings": []
+  },
+  {
+    "rva": 22556895,
+    "address": 26751199,
+    "bytes": "a1b8b22402",
+    "instruction": "mov eax, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556900,
+    "address": 26751204,
+    "bytes": "6689b03e020000",
+    "instruction": "mov word ptr [eax + 0x23e], si",
+    "strings": []
+  },
+  {
+    "rva": 22556907,
+    "address": 26751211,
+    "bytes": "8b0db8b22402",
+    "instruction": "mov ecx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556913,
+    "address": 26751217,
+    "bytes": "6689b1ce000000",
+    "instruction": "mov word ptr [ecx + 0xce], si",
+    "strings": []
+  },
+  {
+    "rva": 22556920,
+    "address": 26751224,
+    "bytes": "8b15b8b22402",
+    "instruction": "mov edx, dword ptr [0x224b2b8]",
+    "strings": []
+  },
+  {
+    "rva": 22556926,
+    "address": 26751230,
+    "bytes": "6689b2ce010000",
+    "instruction": "mov word ptr [edx + 0x1ce], si",
+    "strings": []
+  },
+  {
+    "rva": 22556933,
+    "address": 26751237,
+    "bytes": "8b442414",
+    "instruction": "mov eax, dword ptr [esp + 0x14]",
+    "strings": []
+  },
+  {
+    "rva": 22556937,
+    "address": 26751241,
+    "bytes": "66833802",
+    "instruction": "cmp word ptr [eax], 2",
+    "strings": []
+  },
+  {
+    "rva": 22556941,
+    "address": 26751245,
+    "bytes": "0f85bf010000",
+    "instruction": "jne 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22556947,
+    "address": 26751251,
+    "bytes": "8b4c2418",
+    "instruction": "mov ecx, dword ptr [esp + 0x18]",
+    "strings": []
+  },
+  {
+    "rva": 22556951,
+    "address": 26751255,
+    "bytes": "0fbf01",
+    "instruction": "movsx eax, word ptr [ecx]",
+    "strings": []
+  },
+  {
+    "rva": 22556954,
+    "address": 26751258,
+    "bytes": "83f813",
+    "instruction": "cmp eax, 0x13",
+    "strings": []
+  },
+  {
+    "rva": 22556957,
+    "address": 26751261,
+    "bytes": "0f87af010000",
+    "instruction": "ja 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22556963,
+    "address": 26751267,
+    "bytes": "ff2485fc359801",
+    "instruction": "jmp dword ptr [eax*4 + 0x19835fc]",
+    "strings": []
+  },
+  {
+    "rva": 22556970,
+    "address": 26751274,
+    "bytes": "bac8845700",
+    "instruction": "mov edx, 0x5784c8",
+    "strings": [
+      {
+        "address": 5735624,
+        "text": "今天是您的生日，向每人收取礼金100元"
+      }
+    ]
+  },
+  {
+    "rva": 22556975,
+    "address": 26751279,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22556980,
+    "address": 26751284,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22556982,
+    "address": 26751286,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22556988,
+    "address": 26751292,
+    "bytes": "66c7026400",
+    "instruction": "mov word ptr [edx], 0x64",
+    "strings": []
+  },
+  {
+    "rva": 22556993,
+    "address": 26751297,
+    "bytes": "e98c010000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22556998,
+    "address": 26751302,
+    "bytes": "baf4845700",
+    "instruction": "mov edx, 0x5784f4",
+    "strings": [
+      {
+        "address": 5735668,
+        "text": "选美大赛获亚军，得100元"
+      }
+    ]
+  },
+  {
+    "rva": 22557003,
+    "address": 26751307,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557008,
+    "address": 26751312,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557010,
+    "address": 26751314,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557015,
+    "address": 26751319,
+    "bytes": "66c7006400",
+    "instruction": "mov word ptr [eax], 0x64",
+    "strings": []
+  },
+  {
+    "rva": 22557020,
+    "address": 26751324,
+    "bytes": "e971010000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557025,
+    "address": 26751329,
+    "bytes": "ba14855700",
+    "instruction": "mov edx, 0x578514",
+    "strings": [
+      {
+        "address": 5735700,
+        "text": "当棉被一条，得500元"
+      }
+    ]
+  },
+  {
+    "rva": 22557030,
+    "address": 26751334,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557035,
+    "address": 26751339,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557037,
+    "address": 26751341,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557043,
+    "address": 26751347,
+    "bytes": "668919",
+    "instruction": "mov word ptr [ecx], bx",
+    "strings": []
+  },
+  {
+    "rva": 22557046,
+    "address": 26751350,
+    "bytes": "e957010000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557051,
+    "address": 26751355,
+    "bytes": "ba30855700",
+    "instruction": "mov edx, 0x578530",
+    "strings": [
+      {
+        "address": 5735728,
+        "text": "卖黄牛，得1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557056,
+    "address": 26751360,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557061,
+    "address": 26751365,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557063,
+    "address": 26751367,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557069,
+    "address": 26751373,
+    "bytes": "66893a",
+    "instruction": "mov word ptr [edx], di",
+    "strings": []
+  },
+  {
+    "rva": 22557072,
+    "address": 26751376,
+    "bytes": "e93d010000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557077,
+    "address": 26751381,
+    "bytes": "ba4c855700",
+    "instruction": "mov edx, 0x57854c",
+    "strings": [
+      {
+        "address": 5735756,
+        "text": "拾金不昧，失主酬劳，得1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557082,
+    "address": 26751386,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557087,
+    "address": 26751391,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557089,
+    "address": 26751393,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557094,
+    "address": 26751398,
+    "bytes": "668938",
+    "instruction": "mov word ptr [eax], di",
+    "strings": []
+  },
+  {
+    "rva": 22557097,
+    "address": 26751401,
+    "bytes": "e924010000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557102,
+    "address": 26751406,
+    "bytes": "ba74855700",
+    "instruction": "mov edx, 0x578574",
+    "strings": [
+      {
+        "address": 5735796,
+        "text": "人民大学奖学金，得1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557107,
+    "address": 26751411,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557112,
+    "address": 26751416,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557114,
+    "address": 26751418,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557120,
+    "address": 26751424,
+    "bytes": "668939",
+    "instruction": "mov word ptr [ecx], di",
+    "strings": []
+  },
+  {
+    "rva": 22557123,
+    "address": 26751427,
+    "bytes": "e90a010000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557128,
+    "address": 26751432,
+    "bytes": "ba98855700",
+    "instruction": "mov edx, 0x578598",
+    "strings": [
+      {
+        "address": 5735832,
+        "text": "工作努力得奖金，得2000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557133,
+    "address": 26751437,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557138,
+    "address": 26751442,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557140,
+    "address": 26751444,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557146,
+    "address": 26751450,
+    "bytes": "668932",
+    "instruction": "mov word ptr [edx], si",
+    "strings": []
+  },
+  {
+    "rva": 22557149,
+    "address": 26751453,
+    "bytes": "e9f0000000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557154,
+    "address": 26751458,
+    "bytes": "babc855700",
+    "instruction": "mov edx, 0x5785bc",
+    "strings": [
+      {
+        "address": 5735868,
+        "text": "爱国奖券中奖，得2000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557159,
+    "address": 26751463,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557164,
+    "address": 26751468,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557166,
+    "address": 26751470,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557171,
+    "address": 26751475,
+    "bytes": "668930",
+    "instruction": "mov word ptr [eax], si",
+    "strings": []
+  },
+  {
+    "rva": 22557174,
+    "address": 26751478,
+    "bytes": "e9d7000000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557179,
+    "address": 26751483,
+    "bytes": "badc855700",
+    "instruction": "mov edx, 0x5785dc",
+    "strings": [
+      {
+        "address": 5735900,
+        "text": "付保险费500元"
+      }
+    ]
+  },
+  {
+    "rva": 22557184,
+    "address": 26751488,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557189,
+    "address": 26751493,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557191,
+    "address": 26751495,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557197,
+    "address": 26751501,
+    "bytes": "66c7010cfe",
+    "instruction": "mov word ptr [ecx], 0xfe0c",
+    "strings": []
+  },
+  {
+    "rva": 22557202,
+    "address": 26751506,
+    "bytes": "e9bb000000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557207,
+    "address": 26751511,
+    "bytes": "baf4855700",
+    "instruction": "mov edx, 0x5785f4",
+    "strings": [
+      {
+        "address": 5735924,
+        "text": "医院药费付1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557212,
+    "address": 26751516,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557217,
+    "address": 26751521,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557219,
+    "address": 26751523,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557225,
+    "address": 26751529,
+    "bytes": "66c70218fc",
+    "instruction": "mov word ptr [edx], 0xfc18",
+    "strings": []
+  },
+  {
+    "rva": 22557230,
+    "address": 26751534,
+    "bytes": "e99f000000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557235,
+    "address": 26751539,
+    "bytes": "ba10865700",
+    "instruction": "mov edx, 0x578610",
+    "strings": [
+      {
+        "address": 5735952,
+        "text": "慈善集资捐款1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557240,
+    "address": 26751544,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557245,
+    "address": 26751549,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557247,
+    "address": 26751551,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557252,
+    "address": 26751556,
+    "bytes": "66c70018fc",
+    "instruction": "mov word ptr [eax], 0xfc18",
+    "strings": []
+  },
+  {
+    "rva": 22557257,
+    "address": 26751561,
+    "bytes": "e984000000",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557262,
+    "address": 26751566,
+    "bytes": "ba2c865700",
+    "instruction": "mov edx, 0x57862c",
+    "strings": [
+      {
+        "address": 5735980,
+        "text": "小偷光顾损失1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557267,
+    "address": 26751571,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557272,
+    "address": 26751576,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557274,
+    "address": 26751578,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557280,
+    "address": 26751584,
+    "bytes": "66c70118fc",
+    "instruction": "mov word ptr [ecx], 0xfc18",
+    "strings": []
+  },
+  {
+    "rva": 22557285,
+    "address": 26751589,
+    "bytes": "eb6b",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557287,
+    "address": 26751591,
+    "bytes": "ba48865700",
+    "instruction": "mov edx, 0x578648",
+    "strings": [
+      {
+        "address": 5736008,
+        "text": "修理自己所有房屋，房屋每栋付250元，旅馆每栋付1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557292,
+    "address": 26751596,
+    "bytes": "eb3a",
+    "instruction": "jmp 0x19832a8",
+    "strings": []
+  },
+  {
+    "rva": 22557294,
+    "address": 26751598,
+    "bytes": "ba78fa4e00",
+    "instruction": "mov edx, 0x4efa78",
+    "strings": [
+      {
+        "address": 5175928,
+        "text": "拘票--立刻坐牢"
+      }
+    ]
+  },
+  {
+    "rva": 22557299,
+    "address": 26751603,
+    "bytes": "eb4c",
+    "instruction": "jmp 0x19832c1",
+    "strings": []
+  },
+  {
+    "rva": 22557301,
+    "address": 26751605,
+    "bytes": "ba90865700",
+    "instruction": "mov edx, 0x578690",
+    "strings": [
+      {
+        "address": 5736080,
+        "text": "不小心在房屋旁捡得<建房卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557306,
+    "address": 26751610,
+    "bytes": "eb13",
+    "instruction": "jmp 0x198328f",
+    "strings": []
+  },
+  {
+    "rva": 22557308,
+    "address": 26751612,
+    "bytes": "bab8865700",
+    "instruction": "mov edx, 0x5786b8",
+    "strings": [
+      {
+        "address": 5736120,
+        "text": "不小心在旅馆前捡得<建楼卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557313,
+    "address": 26751617,
+    "bytes": "eb25",
+    "instruction": "jmp 0x19832a8",
+    "strings": []
+  },
+  {
+    "rva": 22557315,
+    "address": 26751619,
+    "bytes": "bae0865700",
+    "instruction": "mov edx, 0x5786e0",
+    "strings": [
+      {
+        "address": 5736160,
+        "text": "不小心在马路边捡得<建街卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557320,
+    "address": 26751624,
+    "bytes": "eb37",
+    "instruction": "jmp 0x19832c1",
+    "strings": []
+  },
+  {
+    "rva": 22557322,
+    "address": 26751626,
+    "bytes": "ba08875700",
+    "instruction": "mov edx, 0x578708",
+    "strings": [
+      {
+        "address": 5736200,
+        "text": "不小心在房屋的楼顶捡得<拆房卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557327,
+    "address": 26751631,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557332,
+    "address": 26751636,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557334,
+    "address": 26751638,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557340,
+    "address": 26751644,
+    "bytes": "66c7010000",
+    "instruction": "mov word ptr [ecx], 0",
+    "strings": []
+  },
+  {
+    "rva": 22557345,
+    "address": 26751649,
+    "bytes": "eb2f",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557347,
+    "address": 26751651,
+    "bytes": "ba34875700",
+    "instruction": "mov edx, 0x578734",
+    "strings": [
+      {
+        "address": 5736244,
+        "text": "不小心在旅馆停车场捡得<拆楼卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557352,
+    "address": 26751656,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557357,
+    "address": 26751661,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557359,
+    "address": 26751663,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557365,
+    "address": 26751669,
+    "bytes": "66c7020000",
+    "instruction": "mov word ptr [edx], 0",
+    "strings": []
+  },
+  {
+    "rva": 22557370,
+    "address": 26751674,
+    "bytes": "eb16",
+    "instruction": "jmp 0x19832d2",
+    "strings": []
+  },
+  {
+    "rva": 22557372,
+    "address": 26751676,
+    "bytes": "ba60875700",
+    "instruction": "mov edx, 0x578760",
+    "strings": [
+      {
+        "address": 5736288,
+        "text": "不小心在马路的中间捡得<拆街卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557377,
+    "address": 26751681,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557382,
+    "address": 26751686,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557384,
+    "address": 26751688,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557389,
+    "address": 26751693,
+    "bytes": "66c7000000",
+    "instruction": "mov word ptr [eax], 0",
+    "strings": []
+  },
+  {
+    "rva": 22557394,
+    "address": 26751698,
+    "bytes": "8b742414",
+    "instruction": "mov esi, dword ptr [esp + 0x14]",
+    "strings": []
+  },
+  {
+    "rva": 22557398,
+    "address": 26751702,
+    "bytes": "66833e03",
+    "instruction": "cmp word ptr [esi], 3",
+    "strings": []
+  },
+  {
+    "rva": 22557402,
+    "address": 26751706,
+    "bytes": "0f8573010000",
+    "instruction": "jne 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557408,
+    "address": 26751712,
+    "bytes": "8b4c2418",
+    "instruction": "mov ecx, dword ptr [esp + 0x18]",
+    "strings": []
+  },
+  {
+    "rva": 22557412,
+    "address": 26751716,
+    "bytes": "0fbf01",
+    "instruction": "movsx eax, word ptr [ecx]",
+    "strings": []
+  },
+  {
+    "rva": 22557415,
+    "address": 26751719,
+    "bytes": "83f813",
+    "instruction": "cmp eax, 0x13",
+    "strings": []
+  },
+  {
+    "rva": 22557418,
+    "address": 26751722,
+    "bytes": "0f8763010000",
+    "instruction": "ja 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557424,
+    "address": 26751728,
+    "bytes": "ff24854c369801",
+    "instruction": "jmp dword ptr [eax*4 + 0x198364c]",
+    "strings": []
+  },
+  {
+    "rva": 22557431,
+    "address": 26751735,
+    "bytes": "ba8c875700",
+    "instruction": "mov edx, 0x57878c",
+    "strings": [
+      {
+        "address": 5736332,
+        "text": "银行付您利息500元"
+      }
+    ]
+  },
+  {
+    "rva": 22557436,
+    "address": 26751740,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557441,
+    "address": 26751745,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557443,
+    "address": 26751747,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557449,
+    "address": 26751753,
+    "bytes": "66891a",
+    "instruction": "mov word ptr [edx], bx",
+    "strings": []
+  },
+  {
+    "rva": 22557452,
+    "address": 26751756,
+    "bytes": "e942010000",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557457,
+    "address": 26751761,
+    "bytes": "baa8875700",
+    "instruction": "mov edx, 0x5787a8",
+    "strings": [
+      {
+        "address": 5736360,
+        "text": "积极缴纳税款得奖金1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557462,
+    "address": 26751766,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557467,
+    "address": 26751771,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557469,
+    "address": 26751773,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557474,
+    "address": 26751778,
+    "bytes": "668938",
+    "instruction": "mov word ptr [eax], di",
+    "strings": []
+  },
+  {
+    "rva": 22557477,
+    "address": 26751781,
+    "bytes": "e929010000",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557482,
+    "address": 26751786,
+    "bytes": "bacc875700",
+    "instruction": "mov edx, 0x5787cc",
+    "strings": [
+      {
+        "address": 5736396,
+        "text": "运动会跳水冠军得奖金1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557487,
+    "address": 26751791,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557492,
+    "address": 26751796,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557494,
+    "address": 26751798,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557500,
+    "address": 26751804,
+    "bytes": "668939",
+    "instruction": "mov word ptr [ecx], di",
+    "strings": []
+  },
+  {
+    "rva": 22557503,
+    "address": 26751807,
+    "bytes": "e90f010000",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557508,
+    "address": 26751812,
+    "bytes": "baf0875700",
+    "instruction": "mov edx, 0x5787f0",
+    "strings": [
+      {
+        "address": 5736432,
+        "text": "经营小本生意获利1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557513,
+    "address": 26751817,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557518,
+    "address": 26751822,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557520,
+    "address": 26751824,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557526,
+    "address": 26751830,
+    "bytes": "66893a",
+    "instruction": "mov word ptr [edx], di",
+    "strings": []
+  },
+  {
+    "rva": 22557529,
+    "address": 26751833,
+    "bytes": "e9f5000000",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557534,
+    "address": 26751838,
+    "bytes": "ba10885700",
+    "instruction": "mov edx, 0x578810",
+    "strings": [
+      {
+        "address": 5736464,
+        "text": "行车超速罚款150元"
+      }
+    ]
+  },
+  {
+    "rva": 22557539,
+    "address": 26751843,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557544,
+    "address": 26751848,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557546,
+    "address": 26751850,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557551,
+    "address": 26751855,
+    "bytes": "66c7006aff",
+    "instruction": "mov word ptr [eax], 0xff6a",
+    "strings": []
+  },
+  {
+    "rva": 22557556,
+    "address": 26751860,
+    "bytes": "e9da000000",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557561,
+    "address": 26751865,
+    "bytes": "ba2c885700",
+    "instruction": "mov edx, 0x57882c",
+    "strings": [
+      {
+        "address": 5736492,
+        "text": "酗酒闹事罚款200元"
+      }
+    ]
+  },
+  {
+    "rva": 22557566,
+    "address": 26751870,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557571,
+    "address": 26751875,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557573,
+    "address": 26751877,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557579,
+    "address": 26751883,
+    "bytes": "66c70138ff",
+    "instruction": "mov word ptr [ecx], 0xff38",
+    "strings": []
+  },
+  {
+    "rva": 22557584,
+    "address": 26751888,
+    "bytes": "e9be000000",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557589,
+    "address": 26751893,
+    "bytes": "ba74ef4e00",
+    "instruction": "mov edx, 0x4eef74",
+    "strings": [
+      {
+        "address": 5173108,
+        "text": "付学费1500元"
+      }
+    ]
+  },
+  {
+    "rva": 22557594,
+    "address": 26751898,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557599,
+    "address": 26751903,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557601,
+    "address": 26751905,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557607,
+    "address": 26751911,
+    "bytes": "66c70224fa",
+    "instruction": "mov word ptr [edx], 0xfa24",
+    "strings": []
+  },
+  {
+    "rva": 22557612,
+    "address": 26751916,
+    "bytes": "e9a2000000",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557617,
+    "address": 26751921,
+    "bytes": "baf8c64e00",
+    "instruction": "mov edx, 0x4ec6f8",
+    "strings": [
+      {
+        "address": 5162744,
+        "text": "留学保证金付2400元"
+      }
+    ]
+  },
+  {
+    "rva": 22557622,
+    "address": 26751926,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557627,
+    "address": 26751931,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557629,
+    "address": 26751933,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557634,
+    "address": 26751938,
+    "bytes": "66c700a0f6",
+    "instruction": "mov word ptr [eax], 0xf6a0",
+    "strings": []
+  },
+  {
+    "rva": 22557639,
+    "address": 26751943,
+    "bytes": "e987000000",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557644,
+    "address": 26751948,
+    "bytes": "ba54885700",
+    "instruction": "mov edx, 0x578854",
+    "strings": [
+      {
+        "address": 5736532,
+        "text": "前进到民主路，如经过<开始>得2000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557649,
+    "address": 26751953,
+    "bytes": "eb3d",
+    "instruction": "jmp 0x1983410",
+    "strings": []
+  },
+  {
+    "rva": 22557651,
+    "address": 26751955,
+    "bytes": "ba84885700",
+    "instruction": "mov edx, 0x578884",
+    "strings": [
+      {
+        "address": 5736580,
+        "text": "直达上海站，如经过<开始>得2000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557656,
+    "address": 26751960,
+    "bytes": "eb4f",
+    "instruction": "jmp 0x1983429",
+    "strings": []
+  },
+  {
+    "rva": 22557658,
+    "address": 26751962,
+    "bytes": "bab0885700",
+    "instruction": "mov edx, 0x5788b0",
+    "strings": [
+      {
+        "address": 5736624,
+        "text": "前进到环城路，如经过<开始>得2000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557663,
+    "address": 26751967,
+    "bytes": "eb61",
+    "instruction": "jmp 0x1983442",
+    "strings": []
+  },
+  {
+    "rva": 22557665,
+    "address": 26751969,
+    "bytes": "ba48865700",
+    "instruction": "mov edx, 0x578648",
+    "strings": [
+      {
+        "address": 5736008,
+        "text": "修理自己所有房屋，房屋每栋付250元，旅馆每栋付1000元"
+      }
+    ]
+  },
+  {
+    "rva": 22557670,
+    "address": 26751974,
+    "bytes": "eb28",
+    "instruction": "jmp 0x1983410",
+    "strings": []
+  },
+  {
+    "rva": 22557672,
+    "address": 26751976,
+    "bytes": "bae0885700",
+    "instruction": "mov edx, 0x5788e0",
+    "strings": [
+      {
+        "address": 5736672,
+        "text": "付房产税，房屋每栋400元，旅馆每栋1200元"
+      }
+    ]
+  },
+  {
+    "rva": 22557677,
+    "address": 26751981,
+    "bytes": "eb3a",
+    "instruction": "jmp 0x1983429",
+    "strings": []
+  },
+  {
+    "rva": 22557679,
+    "address": 26751983,
+    "bytes": "ba78fa4e00",
+    "instruction": "mov edx, 0x4efa78",
+    "strings": [
+      {
+        "address": 5175928,
+        "text": "拘票--立刻坐牢"
+      }
+    ]
+  },
+  {
+    "rva": 22557684,
+    "address": 26751988,
+    "bytes": "eb4c",
+    "instruction": "jmp 0x1983442",
+    "strings": []
+  },
+  {
+    "rva": 22557686,
+    "address": 26751990,
+    "bytes": "ba14895700",
+    "instruction": "mov edx, 0x578914",
+    "strings": [
+      {
+        "address": 5736724,
+        "text": "福神给您<均富卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557691,
+    "address": 26751995,
+    "bytes": "eb13",
+    "instruction": "jmp 0x1983410",
+    "strings": []
+  },
+  {
+    "rva": 22557693,
+    "address": 26751997,
+    "bytes": "ba30895700",
+    "instruction": "mov edx, 0x578930",
+    "strings": [
+      {
+        "address": 5736752,
+        "text": "财神给您<抢钱卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557698,
+    "address": 26752002,
+    "bytes": "eb25",
+    "instruction": "jmp 0x1983429",
+    "strings": []
+  },
+  {
+    "rva": 22557700,
+    "address": 26752004,
+    "bytes": "ba4c895700",
+    "instruction": "mov edx, 0x57894c",
+    "strings": [
+      {
+        "address": 5736780,
+        "text": "从别人那里讨得<抢夺卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557705,
+    "address": 26752009,
+    "bytes": "eb37",
+    "instruction": "jmp 0x1983442",
+    "strings": []
+  },
+  {
+    "rva": 22557707,
+    "address": 26752011,
+    "bytes": "ba70895700",
+    "instruction": "mov edx, 0x578970",
+    "strings": [
+      {
+        "address": 5736816,
+        "text": "土地公公给您<购地卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557712,
+    "address": 26752016,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557717,
+    "address": 26752021,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557719,
+    "address": 26752023,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557725,
+    "address": 26752029,
+    "bytes": "66c7010000",
+    "instruction": "mov word ptr [ecx], 0",
+    "strings": []
+  },
+  {
+    "rva": 22557730,
+    "address": 26752034,
+    "bytes": "eb2f",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557732,
+    "address": 26752036,
+    "bytes": "ba90895700",
+    "instruction": "mov edx, 0x578990",
+    "strings": [
+      {
+        "address": 5736848,
+        "text": "天上掉下来<免罪卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557737,
+    "address": 26752041,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557742,
+    "address": 26752046,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557744,
+    "address": 26752048,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557750,
+    "address": 26752054,
+    "bytes": "66c7020000",
+    "instruction": "mov word ptr [edx], 0",
+    "strings": []
+  },
+  {
+    "rva": 22557755,
+    "address": 26752059,
+    "bytes": "eb16",
+    "instruction": "jmp 0x1983453",
+    "strings": []
+  },
+  {
+    "rva": 22557757,
+    "address": 26752061,
+    "bytes": "bab0895700",
+    "instruction": "mov edx, 0x5789b0",
+    "strings": [
+      {
+        "address": 5736880,
+        "text": "007给您<间谍卡>一张"
+      }
+    ]
+  },
+  {
+    "rva": 22557762,
+    "address": 26752066,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557767,
+    "address": 26752071,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557769,
+    "address": 26752073,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22557774,
+    "address": 26752078,
+    "bytes": "66c7000000",
+    "instruction": "mov word ptr [eax], 0",
+    "strings": []
+  },
+  {
+    "rva": 22557779,
+    "address": 26752083,
+    "bytes": "66833e04",
+    "instruction": "cmp word ptr [esi], 4",
+    "strings": []
+  },
+  {
+    "rva": 22557783,
+    "address": 26752087,
+    "bytes": "0f85f5000000",
+    "instruction": "jne 0x1983552",
+    "strings": []
+  },
+  {
+    "rva": 22557789,
+    "address": 26752093,
+    "bytes": "8b4c2418",
+    "instruction": "mov ecx, dword ptr [esp + 0x18]",
+    "strings": []
+  },
+  {
+    "rva": 22557793,
+    "address": 26752097,
+    "bytes": "0fbf01",
+    "instruction": "movsx eax, word ptr [ecx]",
+    "strings": []
+  },
+  {
+    "rva": 22557796,
+    "address": 26752100,
+    "bytes": "48",
+    "instruction": "dec eax",
+    "strings": []
+  },
+  {
+    "rva": 22557797,
+    "address": 26752101,
+    "bytes": "83f80b",
+    "instruction": "cmp eax, 0xb",
+    "strings": []
+  },
+  {
+    "rva": 22557800,
+    "address": 26752104,
+    "bytes": "0f87e4000000",
+    "instruction": "ja 0x1983552",
+    "strings": []
+  },
+  {
+    "rva": 22557806,
+    "address": 26752110,
+    "bytes": "ff24859c369801",
+    "instruction": "jmp dword ptr [eax*4 + 0x198369c]",
+    "strings": []
+  },
+  {
+    "rva": 22557813,
+    "address": 26752117,
+    "bytes": "bad0895700",
+    "instruction": "mov edx, 0x5789d0",
+    "strings": [
+      {
+        "address": 5736912,
+        "text": "建房卡"
+      }
+    ]
+  },
+  {
+    "rva": 22557818,
+    "address": 26752122,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557823,
+    "address": 26752127,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557825,
+    "address": 26752129,
+    "bytes": "5f",
+    "instruction": "pop edi",
+    "strings": []
+  },
+  {
+    "rva": 22557826,
+    "address": 26752130,
+    "bytes": "5e",
+    "instruction": "pop esi",
+    "strings": []
+  },
+  {
+    "rva": 22557827,
+    "address": 26752131,
+    "bytes": "5d",
+    "instruction": "pop ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557828,
+    "address": 26752132,
+    "bytes": "5b",
+    "instruction": "pop ebx",
+    "strings": []
+  },
+  {
+    "rva": 22557829,
+    "address": 26752133,
+    "bytes": "c20800",
+    "instruction": "ret 8",
+    "strings": []
+  },
+  {
+    "rva": 22557832,
+    "address": 26752136,
+    "bytes": "badc895700",
+    "instruction": "mov edx, 0x5789dc",
+    "strings": [
+      {
+        "address": 5736924,
+        "text": "建楼卡"
+      }
+    ]
+  },
+  {
+    "rva": 22557837,
+    "address": 26752141,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557842,
+    "address": 26752146,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557844,
+    "address": 26752148,
+    "bytes": "5f",
+    "instruction": "pop edi",
+    "strings": []
+  },
+  {
+    "rva": 22557845,
+    "address": 26752149,
+    "bytes": "5e",
+    "instruction": "pop esi",
+    "strings": []
+  },
+  {
+    "rva": 22557846,
+    "address": 26752150,
+    "bytes": "5d",
+    "instruction": "pop ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557847,
+    "address": 26752151,
+    "bytes": "5b",
+    "instruction": "pop ebx",
+    "strings": []
+  },
+  {
+    "rva": 22557848,
+    "address": 26752152,
+    "bytes": "c20800",
+    "instruction": "ret 8",
+    "strings": []
+  },
+  {
+    "rva": 22557851,
+    "address": 26752155,
+    "bytes": "bae8895700",
+    "instruction": "mov edx, 0x5789e8",
+    "strings": [
+      {
+        "address": 5736936,
+        "text": "建街卡"
+      }
+    ]
+  },
+  {
+    "rva": 22557856,
+    "address": 26752160,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557861,
+    "address": 26752165,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557863,
+    "address": 26752167,
+    "bytes": "5f",
+    "instruction": "pop edi",
+    "strings": []
+  },
+  {
+    "rva": 22557864,
+    "address": 26752168,
+    "bytes": "5e",
+    "instruction": "pop esi",
+    "strings": []
+  },
+  {
+    "rva": 22557865,
+    "address": 26752169,
+    "bytes": "5d",
+    "instruction": "pop ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557866,
+    "address": 26752170,
+    "bytes": "5b",
+    "instruction": "pop ebx",
+    "strings": []
+  },
+  {
+    "rva": 22557867,
+    "address": 26752171,
+    "bytes": "c20800",
+    "instruction": "ret 8",
+    "strings": []
+  },
+  {
+    "rva": 22557870,
+    "address": 26752174,
+    "bytes": "baf4895700",
+    "instruction": "mov edx, 0x5789f4",
+    "strings": [
+      {
+        "address": 5736948,
+        "text": "拆房卡"
+      }
+    ]
+  },
+  {
+    "rva": 22557875,
+    "address": 26752179,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557880,
+    "address": 26752184,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557882,
+    "address": 26752186,
+    "bytes": "5f",
+    "instruction": "pop edi",
+    "strings": []
+  },
+  {
+    "rva": 22557883,
+    "address": 26752187,
+    "bytes": "5e",
+    "instruction": "pop esi",
+    "strings": []
+  },
+  {
+    "rva": 22557884,
+    "address": 26752188,
+    "bytes": "5d",
+    "instruction": "pop ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557885,
+    "address": 26752189,
+    "bytes": "5b",
+    "instruction": "pop ebx",
+    "strings": []
+  },
+  {
+    "rva": 22557886,
+    "address": 26752190,
+    "bytes": "c20800",
+    "instruction": "ret 8",
+    "strings": []
+  },
+  {
+    "rva": 22557889,
+    "address": 26752193,
+    "bytes": "ba008a5700",
+    "instruction": "mov edx, 0x578a00",
+    "strings": [
+      {
+        "address": 5736960,
+        "text": "拆楼卡"
+      }
+    ]
+  },
+  {
+    "rva": 22557894,
+    "address": 26752198,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557899,
+    "address": 26752203,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557901,
+    "address": 26752205,
+    "bytes": "5f",
+    "instruction": "pop edi",
+    "strings": []
+  },
+  {
+    "rva": 22557902,
+    "address": 26752206,
+    "bytes": "5e",
+    "instruction": "pop esi",
+    "strings": []
+  },
+  {
+    "rva": 22557903,
+    "address": 26752207,
+    "bytes": "5d",
+    "instruction": "pop ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557904,
+    "address": 26752208,
+    "bytes": "5b",
+    "instruction": "pop ebx",
+    "strings": []
+  },
+  {
+    "rva": 22557905,
+    "address": 26752209,
+    "bytes": "c20800",
+    "instruction": "ret 8",
+    "strings": []
+  },
+  {
+    "rva": 22557908,
+    "address": 26752212,
+    "bytes": "ba48885700",
+    "instruction": "mov edx, 0x578848",
+    "strings": [
+      {
+        "address": 5736520,
+        "text": "拆街卡"
+      }
+    ]
+  },
+  {
+    "rva": 22557913,
+    "address": 26752217,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557918,
+    "address": 26752222,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557920,
+    "address": 26752224,
+    "bytes": "5f",
+    "instruction": "pop edi",
+    "strings": []
+  },
+  {
+    "rva": 22557921,
+    "address": 26752225,
+    "bytes": "5e",
+    "instruction": "pop esi",
+    "strings": []
+  },
+  {
+    "rva": 22557922,
+    "address": 26752226,
+    "bytes": "5d",
+    "instruction": "pop ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557923,
+    "address": 26752227,
+    "bytes": "5b",
+    "instruction": "pop ebx",
+    "strings": []
+  },
+  {
+    "rva": 22557924,
+    "address": 26752228,
+    "bytes": "c20800",
+    "instruction": "ret 8",
+    "strings": []
+  },
+  {
+    "rva": 22557927,
+    "address": 26752231,
+    "bytes": "ba30155000",
+    "instruction": "mov edx, 0x501530",
+    "strings": [
+      {
+        "address": 5248304,
+        "text": "均富卡"
+      }
+    ]
+  },
+  {
+    "rva": 22557932,
+    "address": 26752236,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22557937,
+    "address": 26752241,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557939,
+    "address": 26752243,
+    "bytes": "5f",
+    "instruction": "pop edi",
+    "strings": []
+  },
+  {
+    "rva": 22557940,
+    "address": 26752244,
+    "bytes": "5e",
+    "instruction": "pop esi",
+    "strings": []
+  },
+  {
+    "rva": 22557941,
+    "address": 26752245,
+    "bytes": "5d",
+    "instruction": "pop ebp",
+    "strings": []
+  },
+  {
+    "rva": 22557942,
+    "address": 26752246,
+    "bytes": "5b",
+    "instruction": "pop ebx",
+    "strings": []
+  },
+  {
+    "rva": 22557943,
+    "address": 26752247,
+    "bytes": "c20800",
+    "instruction": "ret 8",
+    "strings": []
+  },
+  {
+    "rva": 22557946,
+    "address": 26752250,
+    "bytes": "ba38ae5000",
+    "instruction": "mov edx, 0x50ae38",
+    "strings": [
+      {
+        "address": 5287480,
+        "text": "抢钱卡"
+      }
+    ]
+  }
+]

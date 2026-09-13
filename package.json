@@ -6,6 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "pk32:rebuild": "node tools/build-pk32-reference.js",
     "migrate": "node tools/migrate-to-mysql.js",
     "seed:heroes": "node tools/gen-mysql-seed.js",
     "art": "node tools/gen-hero-art.js"

@@ -195,6 +195,11 @@
       },
       "defeated": {},
       "cleared": {},
+      "visited": {
+        "0": true
+      },
+      "npcFlags": {},
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -218,6 +223,13 @@
       },
       "defeated": {},
       "cleared": {},
+      "visited": {
+        "0": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -243,6 +255,13 @@
       "cleared": {
         "0:82": true
       },
+      "visited": {
+        "0": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -268,6 +287,13 @@
       "cleared": {
         "0:82": true
       },
+      "visited": {
+        "0": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -293,6 +319,14 @@
       "cleared": {
         "0:82": true
       },
+      "visited": {
+        "0": true,
+        "1": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -318,6 +352,14 @@
       "cleared": {
         "0:82": true
       },
+      "visited": {
+        "0": true,
+        "1": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -343,6 +385,14 @@
       "cleared": {
         "0:82": true
       },
+      "visited": {
+        "0": true,
+        "1": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -369,6 +419,14 @@
         "0:82": true,
         "1:101": true
       },
+      "visited": {
+        "0": true,
+        "1": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -395,6 +453,14 @@
         "0:82": true,
         "1:101": true
       },
+      "visited": {
+        "0": true,
+        "1": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     },
@@ -421,6 +487,14 @@
         "0:82": true,
         "1:101": true
       },
+      "visited": {
+        "0": true,
+        "1": true
+      },
+      "npcFlags": {
+        "fairyIntro": true
+      },
+      "gateFlags": {},
       "won": false,
       "lost": false
     }
@@ -449,6 +523,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -474,6 +553,12 @@
           "cleared": {
             "5:0": true
           },
+          "visited": {
+            "1": true,
+            "5": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -499,6 +584,12 @@
           "cleared": {
             "5:0": true
           },
+          "visited": {
+            "1": true,
+            "5": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -526,6 +617,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -551,6 +647,11 @@
           "cleared": {
             "1:22": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -576,6 +677,11 @@
           "cleared": {
             "1:22": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -603,6 +709,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -628,6 +739,11 @@
           "cleared": {
             "1:100": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -653,6 +769,11 @@
           "cleared": {
             "1:100": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -680,6 +801,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -705,6 +831,12 @@
           "cleared": {
             "14:38": true
           },
+          "visited": {
+            "1": true,
+            "14": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -730,6 +862,12 @@
           "cleared": {
             "14:38": true
           },
+          "visited": {
+            "1": true,
+            "14": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -757,6 +895,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -782,6 +925,12 @@
           "cleared": {
             "6:0": true
           },
+          "visited": {
+            "1": true,
+            "6": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -807,6 +956,12 @@
           "cleared": {
             "6:0": true
           },
+          "visited": {
+            "1": true,
+            "6": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -834,6 +989,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -859,6 +1019,12 @@
           "cleared": {
             "13:117": true
           },
+          "visited": {
+            "1": true,
+            "13": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -884,6 +1050,12 @@
           "cleared": {
             "13:117": true
           },
+          "visited": {
+            "1": true,
+            "13": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -911,6 +1083,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -938,6 +1115,11 @@
           "cleared": {
             "1:111": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -965,6 +1147,11 @@
           "cleared": {
             "1:111": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -992,6 +1179,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1019,6 +1211,12 @@
           "cleared": {
             "12:10": true
           },
+          "visited": {
+            "1": true,
+            "12": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1046,6 +1244,12 @@
           "cleared": {
             "12:10": true
           },
+          "visited": {
+            "1": true,
+            "12": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1073,6 +1277,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1100,6 +1309,12 @@
           "cleared": {
             "9:0": true
           },
+          "visited": {
+            "1": true,
+            "9": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1127,6 +1342,12 @@
           "cleared": {
             "9:0": true
           },
+          "visited": {
+            "1": true,
+            "9": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1154,6 +1375,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1181,6 +1407,12 @@
           "cleared": {
             "7:49": true
           },
+          "visited": {
+            "1": true,
+            "7": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1208,6 +1440,12 @@
           "cleared": {
             "7:49": true
           },
+          "visited": {
+            "1": true,
+            "7": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1235,6 +1473,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1260,6 +1503,12 @@
           "cleared": {
             "6:7": true
           },
+          "visited": {
+            "1": true,
+            "6": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1285,6 +1534,12 @@
           "cleared": {
             "6:7": true
           },
+          "visited": {
+            "1": true,
+            "6": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1312,6 +1567,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1337,6 +1597,11 @@
           "cleared": {
             "1:35": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1362,6 +1627,11 @@
           "cleared": {
             "1:35": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1389,6 +1659,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1414,6 +1689,12 @@
           "cleared": {
             "3:0": true
           },
+          "visited": {
+            "1": true,
+            "3": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1439,6 +1720,12 @@
           "cleared": {
             "3:0": true
           },
+          "visited": {
+            "1": true,
+            "3": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1466,6 +1753,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1491,6 +1783,12 @@
           "cleared": {
             "9:110": true
           },
+          "visited": {
+            "1": true,
+            "9": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1516,6 +1814,12 @@
           "cleared": {
             "9:110": true
           },
+          "visited": {
+            "1": true,
+            "9": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1543,6 +1847,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1568,6 +1877,12 @@
           "cleared": {
             "19:79": true
           },
+          "visited": {
+            "1": true,
+            "19": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1593,6 +1908,12 @@
           "cleared": {
             "19:79": true
           },
+          "visited": {
+            "1": true,
+            "19": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1620,6 +1941,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1645,6 +1971,11 @@
           "cleared": {
             "1:66": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1670,6 +2001,11 @@
           "cleared": {
             "1:66": true
           },
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1697,6 +2033,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1722,6 +2063,12 @@
           "cleared": {
             "5:37": true
           },
+          "visited": {
+            "1": true,
+            "5": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1747,6 +2094,12 @@
           "cleared": {
             "5:37": true
           },
+          "visited": {
+            "1": true,
+            "5": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1774,6 +2127,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1799,6 +2157,12 @@
           "cleared": {
             "11:9": true
           },
+          "visited": {
+            "1": true,
+            "11": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1824,6 +2188,12 @@
           "cleared": {
             "11:9": true
           },
+          "visited": {
+            "1": true,
+            "11": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1851,6 +2221,11 @@
           },
           "defeated": {},
           "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1876,6 +2251,12 @@
           "cleared": {
             "19:85": true
           },
+          "visited": {
+            "1": true,
+            "19": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1901,6 +2282,12 @@
           "cleared": {
             "19:85": true
           },
+          "visited": {
+            "1": true,
+            "19": true
+          },
+          "npcFlags": {},
+          "gateFlags": {},
           "won": false,
           "lost": false
         },
@@ -1929,6 +2316,11 @@
       "cleared": {
         "1:4": true
       },
+      "visited": {
+        "1": true
+      },
+      "npcFlags": {},
+      "gateFlags": {},
       "won": false,
       "lost": false
     }

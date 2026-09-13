@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const vm = require('vm');
 const childProcess = require('child_process');
+const os = require('os');
 
 const root = path.resolve(__dirname, '..');
 const defaultOutput = path.join(root, 'output', 'pk32-reference');
@@ -42,7 +43,12 @@ if (!fs.existsSync(ledgerFile)) run(process.execPath, [path.join(root, 'tools', 
 let nativeStatus = { attempted: false, verified: false, error: null };
 if (!skipNative) {
   nativeStatus.attempted = true;
-  const pythonCommands = [process.env.PYTHON, 'python', 'py'].filter(Boolean);
+  const bundledPython = path.resolve(path.dirname(process.execPath), '..', '..', 'python', 'python.exe');
+  const workspacePython = path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', 'python.exe');
+  const pythonCommands = [process.env.PK32_PYTHON, process.env.PYTHON,
+    fs.existsSync(bundledPython) ? bundledPython : null,
+    fs.existsSync(workspacePython) ? workspacePython : null,
+    'python', 'py'].filter(Boolean);
   let lastError = null;
   for (const python of pythonCommands) {
     try {

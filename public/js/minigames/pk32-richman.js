@@ -3,8 +3,9 @@
     'use strict';
     var N = 40, SAVE = 'pk32-richman-save-picform13-v2';
     var BOARD_MAP = '03040203101200100100110122113212232204340304120322123033203011201211032304032404233403230424010400021001200011101312141334243234123202120302240413141213221233321434041402041202322230331030011002010302131214132404222432342022103000200100020113031213211133312333042403041303111320113021313033320020010014340414030412023222303210301110211122212423143404240204000211121011200021203130232224330323';
-    var CELLS = ['开始', '解放路', '运气', '商业间谍', '所得税', '杭州站', '建设路', '机会', '重庆路', '平安路', '坐牢', '民生路', '电热公司', '黄河路', '西安路', '上海站', '河南路', '运气', '中兴路', '唐山路', '免费住宿', '太平路', '机会', '广场路', '环城路', '福州站', '中山路', '湖滨路', '水电站', '黎明路', '进牢', '中东路', '杭州路', '运气', '公园路', '南京站', '机会', '长生南路', '财产税', '长生北路'];
+    var CELLS = ['开始', '解放路', '运气', '商业间谍', '所得税', '杭州站', '建设路', '机会', '重庆路', '平安路', '坐牢', '民主路', '电热公司', '黄河路', '西安路', '上海站', '河南路', '运气', '中兴路', '唐山路', '免费住宿', '太平路', '机会', '广场路', '环城路', '福州站', '中山路', '湖滨路', '水电站', '黎明路', '进牢', '中东路', '杭州路', '运气', '公园路', '南京站', '机会', '长生南路', '财产税', '长生北路'];
     var PRICES = [0, 600, 0, 0, 0, 2000, 1000, 0, 1000, 1200, 0, 1400, 2000, 1400, 1600, 2000, 1800, 0, 1800, 2000, 0, 2200, 0, 2200, 2400, 2000, 2600, 2600, 2000, 2800, 0, 3000, 3000, 0, 3200, 2000, 0, 3500, 0, 4000];
+    var PROPERTY_GROUPS = [[1, 3], [6, 8, 9], [11, 13, 14], [16, 18, 19], [21, 23, 24], [26, 27, 29], [31, 32, 34], [37, 39]];
     var COLORS = ['#008000', '#808000', '#800080', '#800000'];
     var ART = '/img/pk32/original/sheet-de1b36.png';
     // Native RVA 0x1580532: 40px sprites on a 41px track, inside the printed labels.
@@ -25,9 +26,10 @@
     var CARDS = {
         buildHouse: { name: '建房卡', desc: '在自己的地产上建一栋房屋' }, buildFloor: { name: '建楼卡', desc: '在自己的房屋上增加一层' }, buildStreet: { name: '建街卡', desc: '在同色街区上扩建街道' },
         removeHouse: { name: '拆房卡', desc: '拆除目标地产一栋房屋' }, removeFloor: { name: '拆楼卡', desc: '拆除目标地产一层建筑' }, removeStreet: { name: '拆街卡', desc: '拆除目标街区建筑' },
-        steal: { name: '抢夺卡', desc: '抢夺一名玩家的一张卡片' }, buyLand: { name: '购地卡', desc: '购买当前未拥有的土地' }, equalize: { name: '均富卡', desc: '将参与者资金平均分配' }, jailFree: { name: '免罪卡', desc: '进入监狱前自动免罪' }, spy: { name: '间谍卡', desc: '一圈内不能买地和盖房，但仍可收取过路费' }
+        steal: { name: '抢夺卡', desc: '抢夺一名玩家的一张卡片' }, stealMoney: { name: '抢钱卡', desc: '向目标玩家收取资金' }, buyLand: { name: '购地卡', desc: '购买当前未拥有的土地' }, equalize: { name: '均富卡', desc: '将参与者资金平均分配' }, jailFree: { name: '免罪卡', desc: '进入监狱前自动免罪' }, spy: { name: '间谍卡', desc: '一圈内不能买地和盖房，但仍可收取过路费' }
     };
-    var EVENTS = [
+    // Native 0x1583109 and 0x15832d6 dispatch separate fortune and chance tables.
+    var FORTUNE_EVENTS = [
         { text: '今天是您的生日，向每人收取礼金100元', kind: 'collectEach', value: 100 },
         { text: '选美大赛获亚军，得100元', kind: 'gain', value: 100 },
         { text: '当棉被一条，得500元', kind: 'gain', value: 500 },
@@ -44,28 +46,37 @@
         { text: '不小心在房屋旁捡得建房卡一张', kind: 'card', card: 'buildHouse' },
         { text: '不小心在旅馆前捡得建楼卡一张', kind: 'card', card: 'buildFloor' },
         { text: '不小心在马路边捡得建街卡一张', kind: 'card', card: 'buildStreet' },
+        { text: '拘票--立刻坐牢', kind: 'jail' },
         { text: '不小心在房屋的楼顶捡得拆房卡一张', kind: 'card', card: 'removeHouse' },
+        { text: '不小心在旅馆停车场捡得拆楼卡一张', kind: 'card', card: 'removeFloor' },
+        { text: '不小心在马路的中间捡得拆街卡一张', kind: 'card', card: 'removeStreet' },
+    ];
+    var CHANCE_EVENTS = [
         { text: '银行付您利息500元', kind: 'gain', value: 500 },
         { text: '积极缴纳税款得奖金1000元', kind: 'gain', value: 1000 },
         { text: '运动会跳水冠军得奖金1000元', kind: 'gain', value: 1000 },
         { text: '经营小本生意获利1000元', kind: 'gain', value: 1000 },
         { text: '行车超速罚款150元', kind: 'loss', value: 150 },
         { text: '酗酒闹事罚款200元', kind: 'loss', value: 200 },
-        { text: '前进到民主路，如经过开始得2000元', kind: 'unverifiedAdvance' },
+        { text: '付学费1500元', kind: 'loss', value: 1500 },
+        { text: '留学保证金付2400元', kind: 'loss', value: 2400 },
+        { text: '前进到民主路，如经过开始得2000元', kind: 'advance', target: 11 },
         { text: '直达上海站，如经过开始得2000元', kind: 'advance', target: 15 },
         { text: '前进到环城路，如经过开始得2000元', kind: 'advance', target: 24 },
         { text: '付房产税，房屋每栋400元，旅馆每栋1200元', kind: 'propertyTax' },
+        { text: '拘票--立刻坐牢', kind: 'jail' },
         { text: '福神给您均富卡一张', kind: 'card', card: 'equalize' },
-        { text: '财神给您抢钱卡一张', kind: 'card', card: 'steal' },
+        { text: '财神给您抢钱卡一张', kind: 'card', card: 'stealMoney' },
         { text: '从别人那里讨得抢夺卡一张', kind: 'card', card: 'steal' },
         { text: '土地公公给您购地卡一张', kind: 'card', card: 'buyLand' },
         { text: '天上掉下来免罪卡一张', kind: 'card', card: 'jailFree' },
         { text: '007给您间谍卡一张', kind: 'card', card: 'spy' }
     ];
+    var EVENTS = FORTUNE_EVENTS.concat(CHANCE_EVENTS);
     var EVENT_TEXT = EVENTS.map(function (event) { return event.text; });
     function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
     function money(v) { return '￥' + Math.max(0, Math.round(v)); }
-    function initial() { return { round: 1, turn: 0, phase: 'roll', dice: [1, 1], own: Array(N).fill(-1), buildings: Array(N).fill(0), cards: [['buildHouse', 'buildFloor', 'jailFree'], [], [], []], spy: [0, 0, 0, 0], jail: [0, 0, 0, 0], players: COLORS.map(function (color, i) { return { name: ['你', '电脑甲', '电脑乙', '电脑丙'][i], pos: 0, cash: 3000, color: color, out: false }; }), message: '轮到你，掷骰子开始' }; }
+    function initial() { return { round: 1, turn: 0, phase: 'roll', dice: [1, 1], own: Array(N).fill(-1), buildings: Array(N).fill(0), cards: [['buildHouse', 'buildFloor', 'jailFree'], [], [], []], cardUsed: [false, false, false, false], spy: [0, 0, 0, 0], jail: [0, 0, 0, 0], players: COLORS.map(function (color, i) { return { name: ['你', '电脑甲', '电脑乙', '电脑丙'][i], pos: 0, cash: 3000, color: color, out: false }; }), message: '轮到你，掷骰子开始' }; }
     function load() {
         try {
             var s = JSON.parse(localStorage.getItem(SAVE));
@@ -74,6 +85,7 @@
                 !Array.isArray(s.players) || s.players.length !== 4 || s.players.some(function (p) { return !p || !Number.isInteger(p.pos) || p.pos < 0 || p.pos >= N || !Number.isFinite(p.cash) || typeof p.out !== 'boolean'; }) ||
                 !ints(s.dice, 2, 1, 6) || !ints(s.own, N, -1, 3) || !ints(s.buildings, N, 0, 4) ||
                 !Array.isArray(s.cards) || s.cards.length !== 4 || s.cards.some(function (cards) { return !Array.isArray(cards) || cards.some(function (key) { return !CARDS[key]; }); }) ||
+                !Array.isArray(s.cardUsed) || s.cardUsed.length !== 4 || s.cardUsed.some(function (used) { return typeof used !== 'boolean'; }) ||
                 !ints(s.jail, 4, 0, 100) || !ints(s.spy, 4, 0, 100)) return initial();
             return s;
         } catch (e) { return initial(); }
@@ -132,14 +144,15 @@
             return false;
         }
         function note(t) { s.message = t; if (assetStatus === 'ready') status.textContent = t; log.textContent = s.players.map(function (p) { return p.name + ' 位置' + p.pos + ' 现金' + money(p.cash) + (p.out ? ' 破产' : ''); }).join('\n'); }
-        function applyEvent(pi) {
-            var p = s.players[pi], event = EVENTS[Math.floor(Math.random() * EVENTS.length)], amount = event.value || 0;
+        function applyEvent(pi, table) {
+            var p = s.players[pi], events = table === 'chance' ? CHANCE_EVENTS : FORTUNE_EVENTS, event = events[Math.floor(Math.random() * events.length)], amount = event.value || 0;
             if (event.kind === 'collectEach') { s.players.forEach(function (other, oi) { if (oi !== pi && !other.out) { other.cash -= amount; p.cash += amount; } }); }
             else if (event.kind === 'gain') p.cash += amount;
             else if (event.kind === 'loss') p.cash -= amount;
             else if (event.kind === 'repair') s.buildings.forEach(function (level, i) { if (s.own[i] === pi && level) p.cash -= level >= 4 ? 1000 : 250; });
             else if (event.kind === 'propertyTax') s.buildings.forEach(function (level, i) { if (s.own[i] === pi && level) p.cash -= level >= 4 ? 1200 : 400; });
             else if (event.kind === 'card' && event.card) s.cards[pi].push(event.card);
+            else if (event.kind === 'jail') { if (s.cards[pi].indexOf('jailFree') >= 0) { s.cards[pi].splice(s.cards[pi].indexOf('jailFree'), 1); s.message = '免罪卡生效，没有入狱'; } else { p.pos = 10; s.jail[pi] = 1; } }
             else if (event.kind === 'advance') { if (event.target < p.pos) p.cash += 2000; p.pos = event.target; }
             s.message = event.text;
         }
@@ -171,11 +184,14 @@
         }
         function showCell() { var location = actions.querySelector('select'); if (location) location.value = String(selected); var owner = s.own[selected]; log.textContent = CELLS[selected] + (PRICES[selected] ? ' · 地价 ' + money(PRICES[selected]) : '') + (owner >= 0 ? '\n业主：' + s.players[owner].name + ' · 建筑 ' + s.buildings[selected] + ' 级' : '') + '\n' + s.players.filter(function (p) { return p.pos === selected && !p.out; }).map(function (p) { return p.name; }).join('、'); }
         function endBuyPhase() { if (s.turn !== 0 || s.phase !== 'buy') return; s.phase = 'end'; s.message = '放弃购买，结束本回合'; render(); queueAITurns(); }
-        function useCard(index) { if (assetStatus !== 'ready' || s.phase === 'over' || s.turn !== 0 || s.phase === 'roll' && s.spy[0]) return; var key = s.cards[0][index], p = s.players[0], i = p.pos; if (!key) return; if (key === 'jailFree') { s.message = '免罪卡已保留，进入监狱时自动使用'; } else if (key === 'buildHouse' || key === 'buildFloor' || key === 'buildStreet') { if (s.own[i] !== 0) return note('当前地产不属于你'); s.cards[0].splice(index, 1); s.buildings[i] = Math.min(4, s.buildings[i] + 1); s.message = '使用' + CARDS[key].name + '，' + CELLS[i] + '建筑等级提升'; } else if (key === 'spy') { s.cards[0].splice(index, 1); s.spy[0] = 1; s.message = '已进入商业间谍状态，本圈不能买地或盖房'; } else return note(CARDS[key].desc); render(); save(s); }
-        function land(pi) { var p = s.players[pi], i = p.pos; if (PRICES[i] && s.own[i] >= 0 && s.own[i] !== pi) { var rent = 50 + s.buildings[i] * 80; p.cash -= rent; s.players[s.own[i]].cash += rent; if (p.cash <= 0) p.out = true; s.message = p.name + ' 支付 ' + money(rent) + ' 过路费'; } else if (PRICES[i] && s.own[i] < 0 && !s.spy[pi]) { s.phase = 'buy'; s.message = '到达 ' + CELLS[i] + '，可购买 ' + money(PRICES[i]); return; } else if ([2, 7, 17, 22, 33, 36].indexOf(i) >= 0) { applyEvent(pi); } else if (i === 4 || i === 38) { p.cash -= i === 4 ? 2000 : 1000; s.message = p.name + ' 缴纳税款'; } else if (i === 30) { if (s.cards[pi].indexOf('jailFree') >= 0) { s.cards[pi].splice(s.cards[pi].indexOf('jailFree'), 1); s.message = '免罪卡生效，没有入狱'; } else { p.pos = 10; s.jail[pi] = 1; s.message = p.name + ' 进入监狱，暂停行动一回合'; } } else if (i === 3) { s.spy[pi] = 1; s.message = p.name + ' 进入商业间谍状态'; } s.phase = 'end'; }
+        function useCard(index) { if (assetStatus !== 'ready' || s.phase === 'over' || s.turn !== 0 || s.cardUsed[0] || s.phase === 'roll' && s.spy[0]) return; var key = s.cards[0][index], p = s.players[0], i = selected, owner = s.own[i], target = owner >= 0 && owner !== 0 ? s.players[owner] : null; if (!key) return; if (key === 'jailFree') { s.message = '免罪卡已保留，进入监狱时自动使用'; } else if (key === 'buildHouse' || key === 'buildFloor' || key === 'buildStreet') { if (s.own[i] !== 0) return note('当前地产不属于你'); if (!ownsGroup(0, i)) return note('必须拥有同色街区全部地产后才能使用建设卡'); if (s.buildings[i] >= 4) return note('当前地产已经达到最高建筑等级'); s.cards[0].splice(index, 1); s.buildings[i] += 1; s.message = '使用' + CARDS[key].name + '，' + CELLS[i] + '建筑等级提升'; } else if (key === 'removeHouse' || key === 'removeFloor' || key === 'removeStreet') { if (!target || !s.buildings[i]) return note('当前地产没有可拆除的对手建筑'); s.cards[0].splice(index, 1); s.buildings[i] -= 1; s.message = '使用' + CARDS[key].name + '，拆除' + target.name + '在' + CELLS[i] + '的建筑'; } else if (key === 'buyLand') { if (!PRICES[i] || owner >= 0 || p.cash < PRICES[i]) return note('当前地产不能使用购地卡'); s.cards[0].splice(index, 1); p.cash -= PRICES[i]; s.own[i] = 0; s.message = '使用购地卡买下' + CELLS[i]; } else if (key === 'equalize') { var active = s.players.filter(function (x) { return !x.out; }), average = Math.floor(active.reduce(function (sum, x) { return sum + x.cash; }, 0) / active.length); active.forEach(function (x) { x.cash = average; }); s.cards[0].splice(index, 1); s.message = '使用均富卡，参与者现金已平均分配'; } else if (key === 'stealMoney') { if (!target) return note('当前地产没有可使用抢钱卡的目标'); var amount = Math.min(500, target.cash); target.cash -= amount; p.cash += amount; s.cards[0].splice(index, 1); s.message = '使用抢钱卡，从' + target.name + '处取得' + money(amount); } else if (key === 'steal') { if (!target || !s.cards[owner].length) return note('当前地产没有可抢夺的对手卡片'); var stolen = s.cards[owner].shift(); s.cards[0].push(stolen); s.cards[0].splice(index, 1); s.message = '使用抢夺卡，取得' + target.name + '的一张卡片'; } else if (key === 'spy') { s.cards[0].splice(index, 1); s.spy[0] = 1; s.message = '已进入商业间谍状态，本圈不能买地或盖房'; } else return note(CARDS[key].desc); s.cardUsed[0] = true; render(); save(s); }
+        function propertyGroup(i) { return PROPERTY_GROUPS.find(function (group) { return group.indexOf(i) >= 0; }) || null; }
+        function ownsGroup(pi, i) { var group = propertyGroup(i); return !!group && group.every(function (cell) { return s.own[cell] === pi; }); }
+        function rentFor(i, level) { var base = PRICES[i] / 10; return Math.round(base * (level ? level * 2 : (ownsGroup(s.own[i], i) ? 2 : 1))); }
+        function land(pi) { var p = s.players[pi], i = p.pos; if (PRICES[i] && s.own[i] >= 0 && s.own[i] !== pi) { var rent = rentFor(i, s.buildings[i]); p.cash -= rent; s.players[s.own[i]].cash += rent; if (p.cash <= 0) p.out = true; s.message = p.name + ' 支付 ' + money(rent) + ' 过路费'; } else if (PRICES[i] && s.own[i] < 0 && !s.spy[pi]) { s.phase = 'buy'; s.message = '到达 ' + CELLS[i] + '，可购买 ' + money(PRICES[i]); return; } else if ([2, 17, 33].indexOf(i) >= 0) { applyEvent(pi, 'fortune'); } else if ([7, 22, 36].indexOf(i) >= 0) { applyEvent(pi, 'chance'); } else if (i === 4 || i === 38) { p.cash -= i === 4 ? 2000 : 1000; s.message = p.name + ' 缴纳税款'; } else if (i === 30) { if (s.cards[pi].indexOf('jailFree') >= 0) { s.cards[pi].splice(s.cards[pi].indexOf('jailFree'), 1); s.message = '免罪卡生效，没有入狱'; } else { p.pos = 10; s.jail[pi] = 1; s.message = p.name + ' 进入监狱，暂停行动一回合'; } } else if (i === 3) { s.spy[pi] = 1; s.message = p.name + ' 进入商业间谍状态'; } s.phase = 'end'; }
         function movePlayer(pi) { var p = s.players[pi]; if (s.jail[pi] > 0) { s.jail[pi] -= 1; s.phase = 'end'; s.message = p.name + ' 在监狱中，跳过本回合'; render(); if (pi === 0) queueAITurns(); return; } var d1 = 1 + Math.floor(Math.random() * 6), d2 = 1 + Math.floor(Math.random() * 6), d = d1 + d2; s.dice = [d1, d2]; p.pos = (p.pos + d) % N; if (p.pos < d) { p.cash += 2000; if (s.spy[pi] > 0) s.spy[pi] -= 1; } land(pi); if (pi === 0) selected = p.pos; gameOver(); render(); if (pi === 0 && s.phase === 'end') { queueAITurns(); } }
         function buy(pi) { var p = s.players[pi], i = p.pos; if (!PRICES[i] || s.own[i] >= 0 || p.cash < PRICES[i]) return; p.cash -= PRICES[i]; s.own[i] = pi; s.phase = 'end'; s.message = p.name + ' 买下 ' + CELLS[i]; gameOver(); render(); if (pi === 0 && s.phase === 'end') queueAITurns(); }
-        function build(pi) { var p = s.players[pi], i = p.pos; if (s.own[i] === pi && p.cash >= 100 && s.buildings[i] < 4) { p.cash -= 100; s.buildings[i] += 1; s.message = p.name + ' 在 ' + CELLS[i] + ' 建造第 ' + s.buildings[i] + ' 级房屋'; gameOver(); render(); } }
+        function build(pi) { var p = s.players[pi], i = p.pos; if (!ownsGroup(pi, i)) { if (s.own[i] === pi) s.message = '必须拥有同色街区全部地产后才能建设'; return render(); } var cost = Math.max(100, Math.round(PRICES[i] / 10)); if (s.own[i] === pi && p.cash >= cost && s.buildings[i] < 4) { p.cash -= cost; s.buildings[i] += 1; s.message = p.name + ' 在 ' + CELLS[i] + ' 建造第 ' + s.buildings[i] + ' 级房屋'; gameOver(); render(); } }
         function aiTurns() {
             if (stopped || s.phase !== 'end') return;
             for (var pi = 1; pi < s.players.length; pi++) {
@@ -185,10 +201,10 @@
                 if (s.phase === 'end' && s.own[s.players[pi].pos] === pi) build(pi);
                 if (gameOver()) { render(); save(s); return; }
             }
-            s.turn = 0; s.round += 1; s.phase = 'roll'; s.message = '第 ' + s.round + ' 轮，轮到你'; render(); save(s);
+            s.turn = 0; s.round += 1; s.cardUsed = [false, false, false, false]; s.phase = 'roll'; s.message = '第 ' + s.round + ' 轮，轮到你'; render(); save(s);
         }
         render();
         return { getState: function () { return JSON.parse(JSON.stringify(s)); }, stop: function () { stopped = true; cancelAI(); save(s); }, restart: reset, destroy: function () { stopped = true; cancelAI(); save(s); container.innerHTML = ''; } };
     }
-    global.PK32Richman = { start: start, CELLS: CELLS, BOARD_MAP: BOARD_MAP, EVENTS: EVENTS, prices: PRICES, position: position, propertyPosition: propertyPosition };
+    global.PK32Richman = { start: start, CELLS: CELLS, BOARD_MAP: BOARD_MAP, EVENTS: EVENTS, FORTUNE_EVENTS: FORTUNE_EVENTS, CHANCE_EVENTS: CHANCE_EVENTS, prices: PRICES, position: position, propertyPosition: propertyPosition };
 }(window));

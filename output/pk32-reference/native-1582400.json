@@ -1,0 +1,1121 @@
+[
+  {
+    "rva": 22553600,
+    "address": 26747904,
+    "bytes": "6c",
+    "instruction": "insb byte ptr es:[edi], dx",
+    "strings": []
+  },
+  {
+    "rva": 22553601,
+    "address": 26747905,
+    "bytes": "b524",
+    "instruction": "mov ch, 0x24",
+    "strings": []
+  },
+  {
+    "rva": 22553603,
+    "address": 26747907,
+    "bytes": "02ff",
+    "instruction": "add bh, bh",
+    "strings": []
+  },
+  {
+    "rva": 22553605,
+    "address": 26747909,
+    "bytes": "d5a1",
+    "instruction": "aad 0xa1",
+    "strings": []
+  },
+  {
+    "rva": 22553607,
+    "address": 26747911,
+    "bytes": "98",
+    "instruction": "cwde ",
+    "strings": []
+  },
+  {
+    "rva": 22553608,
+    "address": 26747912,
+    "bytes": "b324",
+    "instruction": "mov bl, 0x24",
+    "strings": []
+  },
+  {
+    "rva": 22553610,
+    "address": 26747914,
+    "bytes": "0266c7",
+    "instruction": "add ah, byte ptr [esi - 0x39]",
+    "strings": []
+  },
+  {
+    "rva": 22553613,
+    "address": 26747917,
+    "bytes": "007805",
+    "instruction": "add byte ptr [eax + 5], bh",
+    "strings": []
+  },
+  {
+    "rva": 22553616,
+    "address": 26747920,
+    "bytes": "e973020000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553621,
+    "address": 26747925,
+    "bytes": "ba0c695700",
+    "instruction": "mov edx, 0x57690c",
+    "strings": [
+      {
+        "address": 5728524,
+        "text": "西安路"
+      }
+    ]
+  },
+  {
+    "rva": 22553626,
+    "address": 26747930,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553631,
+    "address": 26747935,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553633,
+    "address": 26747937,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553639,
+    "address": 26747943,
+    "bytes": "66c7014006",
+    "instruction": "mov word ptr [ecx], 0x640",
+    "strings": []
+  },
+  {
+    "rva": 22553644,
+    "address": 26747948,
+    "bytes": "e957020000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553649,
+    "address": 26747953,
+    "bytes": "ba18695700",
+    "instruction": "mov edx, 0x576918",
+    "strings": [
+      {
+        "address": 5728536,
+        "text": "上海站"
+      }
+    ]
+  },
+  {
+    "rva": 22553654,
+    "address": 26747958,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553659,
+    "address": 26747963,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553661,
+    "address": 26747965,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553667,
+    "address": 26747971,
+    "bytes": "668932",
+    "instruction": "mov word ptr [edx], si",
+    "strings": []
+  },
+  {
+    "rva": 22553670,
+    "address": 26747974,
+    "bytes": "e93d020000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553675,
+    "address": 26747979,
+    "bytes": "ba2c675700",
+    "instruction": "mov edx, 0x57672c",
+    "strings": [
+      {
+        "address": 5728044,
+        "text": "河南路"
+      }
+    ]
+  },
+  {
+    "rva": 22553680,
+    "address": 26747984,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553685,
+    "address": 26747989,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553687,
+    "address": 26747991,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553692,
+    "address": 26747996,
+    "bytes": "66c7000807",
+    "instruction": "mov word ptr [eax], 0x708",
+    "strings": []
+  },
+  {
+    "rva": 22553697,
+    "address": 26748001,
+    "bytes": "e922020000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553702,
+    "address": 26748006,
+    "bytes": "ba786c5700",
+    "instruction": "mov edx, 0x576c78",
+    "strings": [
+      {
+        "address": 5729400,
+        "text": "运气"
+      }
+    ]
+  },
+  {
+    "rva": 22553707,
+    "address": 26748011,
+    "bytes": "eb3a",
+    "instruction": "jmp 0x19824a7",
+    "strings": []
+  },
+  {
+    "rva": 22553709,
+    "address": 26748013,
+    "bytes": "ba38675700",
+    "instruction": "mov edx, 0x576738",
+    "strings": [
+      {
+        "address": 5728056,
+        "text": "中兴路"
+      }
+    ]
+  },
+  {
+    "rva": 22553714,
+    "address": 26748018,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553719,
+    "address": 26748023,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553721,
+    "address": 26748025,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553727,
+    "address": 26748031,
+    "bytes": "66c7020807",
+    "instruction": "mov word ptr [edx], 0x708",
+    "strings": []
+  },
+  {
+    "rva": 22553732,
+    "address": 26748036,
+    "bytes": "e9ff010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553737,
+    "address": 26748041,
+    "bytes": "ba44675700",
+    "instruction": "mov edx, 0x576744",
+    "strings": [
+      {
+        "address": 5728068,
+        "text": "唐山路"
+      }
+    ]
+  },
+  {
+    "rva": 22553742,
+    "address": 26748046,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553747,
+    "address": 26748051,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553749,
+    "address": 26748053,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553754,
+    "address": 26748058,
+    "bytes": "668930",
+    "instruction": "mov word ptr [eax], si",
+    "strings": []
+  },
+  {
+    "rva": 22553757,
+    "address": 26748061,
+    "bytes": "e9e6010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553762,
+    "address": 26748066,
+    "bytes": "ba54495100",
+    "instruction": "mov edx, 0x514954",
+    "strings": [
+      {
+        "address": 5327188,
+        "text": "免费住宿"
+      }
+    ]
+  },
+  {
+    "rva": 22553767,
+    "address": 26748071,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553772,
+    "address": 26748076,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553774,
+    "address": 26748078,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553780,
+    "address": 26748084,
+    "bytes": "66c7010000",
+    "instruction": "mov word ptr [ecx], 0",
+    "strings": []
+  },
+  {
+    "rva": 22553785,
+    "address": 26748089,
+    "bytes": "e9ca010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553790,
+    "address": 26748094,
+    "bytes": "ba28375100",
+    "instruction": "mov edx, 0x513728",
+    "strings": [
+      {
+        "address": 5322536,
+        "text": "太平路"
+      }
+    ]
+  },
+  {
+    "rva": 22553795,
+    "address": 26748099,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553800,
+    "address": 26748104,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553802,
+    "address": 26748106,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553808,
+    "address": 26748112,
+    "bytes": "66c7029808",
+    "instruction": "mov word ptr [edx], 0x898",
+    "strings": []
+  },
+  {
+    "rva": 22553813,
+    "address": 26748117,
+    "bytes": "e9ae010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553818,
+    "address": 26748122,
+    "bytes": "ba94705700",
+    "instruction": "mov edx, 0x577094",
+    "strings": [
+      {
+        "address": 5730452,
+        "text": "机会"
+      }
+    ]
+  },
+  {
+    "rva": 22553823,
+    "address": 26748127,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553828,
+    "address": 26748132,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553830,
+    "address": 26748134,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553835,
+    "address": 26748139,
+    "bytes": "66c7000000",
+    "instruction": "mov word ptr [eax], 0",
+    "strings": []
+  },
+  {
+    "rva": 22553840,
+    "address": 26748144,
+    "bytes": "e993010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553845,
+    "address": 26748149,
+    "bytes": "babc205100",
+    "instruction": "mov edx, 0x5120bc",
+    "strings": [
+      {
+        "address": 5316796,
+        "text": "广场路"
+      }
+    ]
+  },
+  {
+    "rva": 22553850,
+    "address": 26748154,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553855,
+    "address": 26748159,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553857,
+    "address": 26748161,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553863,
+    "address": 26748167,
+    "bytes": "66c7019808",
+    "instruction": "mov word ptr [ecx], 0x898",
+    "strings": []
+  },
+  {
+    "rva": 22553868,
+    "address": 26748172,
+    "bytes": "e977010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553873,
+    "address": 26748177,
+    "bytes": "ba84245100",
+    "instruction": "mov edx, 0x512484",
+    "strings": [
+      {
+        "address": 5317764,
+        "text": "环城路"
+      }
+    ]
+  },
+  {
+    "rva": 22553878,
+    "address": 26748182,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553883,
+    "address": 26748187,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553885,
+    "address": 26748189,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553891,
+    "address": 26748195,
+    "bytes": "66c7026009",
+    "instruction": "mov word ptr [edx], 0x960",
+    "strings": []
+  },
+  {
+    "rva": 22553896,
+    "address": 26748200,
+    "bytes": "e95b010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553901,
+    "address": 26748205,
+    "bytes": "bad42d5100",
+    "instruction": "mov edx, 0x512dd4",
+    "strings": [
+      {
+        "address": 5320148,
+        "text": "福州站"
+      }
+    ]
+  },
+  {
+    "rva": 22553906,
+    "address": 26748210,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553911,
+    "address": 26748215,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553913,
+    "address": 26748217,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553918,
+    "address": 26748222,
+    "bytes": "668930",
+    "instruction": "mov word ptr [eax], si",
+    "strings": []
+  },
+  {
+    "rva": 22553921,
+    "address": 26748225,
+    "bytes": "e942010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553926,
+    "address": 26748230,
+    "bytes": "baa0225100",
+    "instruction": "mov edx, 0x5122a0",
+    "strings": [
+      {
+        "address": 5317280,
+        "text": "中山路"
+      }
+    ]
+  },
+  {
+    "rva": 22553931,
+    "address": 26748235,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553936,
+    "address": 26748240,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553938,
+    "address": 26748242,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553944,
+    "address": 26748248,
+    "bytes": "66c701280a",
+    "instruction": "mov word ptr [ecx], 0xa28",
+    "strings": []
+  },
+  {
+    "rva": 22553949,
+    "address": 26748253,
+    "bytes": "e926010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553954,
+    "address": 26748258,
+    "bytes": "baec1e5100",
+    "instruction": "mov edx, 0x511eec",
+    "strings": [
+      {
+        "address": 5316332,
+        "text": "湖滨路"
+      }
+    ]
+  },
+  {
+    "rva": 22553959,
+    "address": 26748263,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553964,
+    "address": 26748268,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553966,
+    "address": 26748270,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553972,
+    "address": 26748276,
+    "bytes": "66c702280a",
+    "instruction": "mov word ptr [edx], 0xa28",
+    "strings": []
+  },
+  {
+    "rva": 22553977,
+    "address": 26748281,
+    "bytes": "e90a010000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22553982,
+    "address": 26748286,
+    "bytes": "ba141d5100",
+    "instruction": "mov edx, 0x511d14",
+    "strings": [
+      {
+        "address": 5315860,
+        "text": "水电站"
+      }
+    ]
+  },
+  {
+    "rva": 22553987,
+    "address": 26748291,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22553992,
+    "address": 26748296,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22553994,
+    "address": 26748298,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22553999,
+    "address": 26748303,
+    "bytes": "668930",
+    "instruction": "mov word ptr [eax], si",
+    "strings": []
+  },
+  {
+    "rva": 22554002,
+    "address": 26748306,
+    "bytes": "e9f1000000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22554007,
+    "address": 26748311,
+    "bytes": "ba64195100",
+    "instruction": "mov edx, 0x511964",
+    "strings": [
+      {
+        "address": 5314916,
+        "text": "黎明路"
+      }
+    ]
+  },
+  {
+    "rva": 22554012,
+    "address": 26748316,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22554017,
+    "address": 26748321,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22554019,
+    "address": 26748323,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22554025,
+    "address": 26748329,
+    "bytes": "66c701f00a",
+    "instruction": "mov word ptr [ecx], 0xaf0",
+    "strings": []
+  },
+  {
+    "rva": 22554030,
+    "address": 26748334,
+    "bytes": "e9d5000000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22554035,
+    "address": 26748339,
+    "bytes": "bac4135100",
+    "instruction": "mov edx, 0x5113c4",
+    "strings": [
+      {
+        "address": 5313476,
+        "text": "进牢"
+      }
+    ]
+  },
+  {
+    "rva": 22554040,
+    "address": 26748344,
+    "bytes": "eb72",
+    "instruction": "jmp 0x198262c",
+    "strings": []
+  },
+  {
+    "rva": 22554042,
+    "address": 26748346,
+    "bytes": "baa4155100",
+    "instruction": "mov edx, 0x5115a4",
+    "strings": [
+      {
+        "address": 5313956,
+        "text": "中东路"
+      }
+    ]
+  },
+  {
+    "rva": 22554047,
+    "address": 26748351,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22554052,
+    "address": 26748356,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22554054,
+    "address": 26748358,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22554059,
+    "address": 26748363,
+    "bytes": "66c700b80b",
+    "instruction": "mov word ptr [eax], 0xbb8",
+    "strings": []
+  },
+  {
+    "rva": 22554064,
+    "address": 26748368,
+    "bytes": "e9b3000000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22554069,
+    "address": 26748373,
+    "bytes": "ba14105100",
+    "instruction": "mov edx, 0x511014",
+    "strings": [
+      {
+        "address": 5312532,
+        "text": "杭州路"
+      }
+    ]
+  },
+  {
+    "rva": 22554074,
+    "address": 26748378,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22554079,
+    "address": 26748383,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22554081,
+    "address": 26748385,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22554087,
+    "address": 26748391,
+    "bytes": "66c701b80b",
+    "instruction": "mov word ptr [ecx], 0xbb8",
+    "strings": []
+  },
+  {
+    "rva": 22554092,
+    "address": 26748396,
+    "bytes": "e997000000",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22554097,
+    "address": 26748401,
+    "bytes": "ba786c5700",
+    "instruction": "mov edx, 0x576c78",
+    "strings": [
+      {
+        "address": 5729400,
+        "text": "运气"
+      }
+    ]
+  },
+  {
+    "rva": 22554102,
+    "address": 26748406,
+    "bytes": "eb34",
+    "instruction": "jmp 0x198262c",
+    "strings": []
+  },
+  {
+    "rva": 22554104,
+    "address": 26748408,
+    "bytes": "ba0c544f00",
+    "instruction": "mov edx, 0x4f540c",
+    "strings": [
+      {
+        "address": 5198860,
+        "text": "公园路"
+      }
+    ]
+  },
+  {
+    "rva": 22554109,
+    "address": 26748413,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22554114,
+    "address": 26748418,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22554116,
+    "address": 26748420,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22554121,
+    "address": 26748425,
+    "bytes": "66c700800c",
+    "instruction": "mov word ptr [eax], 0xc80",
+    "strings": []
+  },
+  {
+    "rva": 22554126,
+    "address": 26748430,
+    "bytes": "eb78",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22554128,
+    "address": 26748432,
+    "bytes": "ba006d4f00",
+    "instruction": "mov edx, 0x4f6d00",
+    "strings": [
+      {
+        "address": 5205248,
+        "text": "南京站"
+      }
+    ]
+  },
+  {
+    "rva": 22554133,
+    "address": 26748437,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22554138,
+    "address": 26748442,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22554140,
+    "address": 26748444,
+    "bytes": "8b0d98b32402",
+    "instruction": "mov ecx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22554146,
+    "address": 26748450,
+    "bytes": "668931",
+    "instruction": "mov word ptr [ecx], si",
+    "strings": []
+  },
+  {
+    "rva": 22554149,
+    "address": 26748453,
+    "bytes": "eb61",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22554151,
+    "address": 26748455,
+    "bytes": "ba94705700",
+    "instruction": "mov edx, 0x577094",
+    "strings": [
+      {
+        "address": 5730452,
+        "text": "机会"
+      }
+    ]
+  },
+  {
+    "rva": 22554156,
+    "address": 26748460,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22554161,
+    "address": 26748465,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22554163,
+    "address": 26748467,
+    "bytes": "8b1598b32402",
+    "instruction": "mov edx, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22554169,
+    "address": 26748473,
+    "bytes": "66c7020000",
+    "instruction": "mov word ptr [edx], 0",
+    "strings": []
+  },
+  {
+    "rva": 22554174,
+    "address": 26748478,
+    "bytes": "eb48",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22554176,
+    "address": 26748480,
+    "bytes": "ba20794f00",
+    "instruction": "mov edx, 0x4f7920",
+    "strings": [
+      {
+        "address": 5208352,
+        "text": "长生南路"
+      }
+    ]
+  },
+  {
+    "rva": 22554181,
+    "address": 26748485,
+    "bytes": "b96cb52402",
+    "instruction": "mov ecx, 0x224b56c",
+    "strings": []
+  },
+  {
+    "rva": 22554186,
+    "address": 26748490,
+    "bytes": "ffd5",
+    "instruction": "call ebp",
+    "strings": []
+  },
+  {
+    "rva": 22554188,
+    "address": 26748492,
+    "bytes": "a198b32402",
+    "instruction": "mov eax, dword ptr [0x224b398]",
+    "strings": []
+  },
+  {
+    "rva": 22554193,
+    "address": 26748497,
+    "bytes": "66c700ac0d",
+    "instruction": "mov word ptr [eax], 0xdac",
+    "strings": []
+  },
+  {
+    "rva": 22554198,
+    "address": 26748502,
+    "bytes": "eb30",
+    "instruction": "jmp 0x1982688",
+    "strings": []
+  },
+  {
+    "rva": 22554200,
+    "address": 26748504,
+    "bytes": "bafcce4f00",
+    "instruction": "mov edx, 0x4fcefc",
+    "strings": [
+      {
+        "address": 5230332,
+        "text": "财产税"
+      }
+    ]
+  }
+]

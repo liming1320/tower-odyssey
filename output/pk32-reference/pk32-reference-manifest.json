@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-13T09:50:16.978Z",
+  "generatedAt": "2026-09-13T10:01:10.506Z",
   "input": {
     "file": "output\\pk32-reference\\module.bin",
     "bytes": 33767424,
@@ -13,8 +13,8 @@
     "catalog": 213,
     "native": {
       "attempted": true,
-      "verified": false,
-      "error": "py E:\\WorkSpace\\tower-odyssey\\tools\\inspect-pk32-native.py failed"
+      "verified": true,
+      "error": null
     },
     "executableLogicRecovered": false
   },

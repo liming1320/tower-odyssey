@@ -52,7 +52,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
   }
   // Native RVA 0x1729e20: PicForm(22), 18 columns, paired 33px rows, 32px SRCCOPY.
   var ORIGINAL_ART = '/img/pk32/original/sheet-915611.png';
-  var ORIGINAL_NAMES = { '00': '地板', '01': '下层入口', '02': '上层入口', '03': '砖墙', '04': '星空', '05': '熔岩', '06': '黄门', '07': '蓝门', '08': '红门', '09': '铁门', '10': '机关门', '11': '下楼梯', '12': '上楼梯', '16': '黄钥匙', '17': '蓝钥匙', '18': '红钥匙', '72': '仙子', '73': '老人', '74': '商人', '75': '杰克' };
+  var ORIGINAL_NAMES = { '00': '地板', '01': '下层入口', '02': '上层入口', '03': '砖墙', '04': '星空', '05': '熔岩', '06': '黄门', '07': '蓝门', '08': '红门', '09': '铁门', '10': '机关门', '11': '下楼梯', '12': '上楼梯', '16': '黄钥匙', '17': '蓝钥匙', '18': '红钥匙', '71': '公主', '72': '仙子', '73': '老人', '74': '商人', '75': '杰克' };
   var ORIGINAL_DOORS = { '06': 'yellow', '07': 'blue', '08': 'red' };
   var ORIGINAL_KEYS = { '16': 'yellow', '17': 'blue', '18': 'red' };
   // Native item cases 0x172e454..0x173085d; fixed bonuses, independent of floor.
@@ -180,7 +180,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
   function cloneState(setName, layerIndex) {
     var set = TOWER_SETS[setName] || TOWER_SETS['魔塔'], layer = set.layers[layerIndex];
     var visited = {}; visited[layerIndex] = true;
-    return { set: set.name, layer: layerIndex, x: layer.start.x, y: layer.start.y, hp: setName === '魔塔' ? 1000 : 100, attack: 10, defense: setName === '魔塔' ? 10 : 5, gold: 0, experience: 0, level: 1, inventory: {}, keys: { red: 0, blue: 0, yellow: setName === '魔塔' ? 1 : 0, green: 0 }, defeated: {}, cleared: {}, visited: visited, npcFlags: {}, gateFlags: {}, won: false, lost: false };
+    return { set: set.name, layer: layerIndex, x: layer.start.x, y: layer.start.y, hp: setName === '魔塔' ? 1000 : 100, attack: 10, defense: setName === '魔塔' ? 10 : 5, gold: 0, experience: 0, level: 1, inventory: {}, keys: { red: 0, blue: 0, yellow: setName === '魔塔' ? 1 : 0, green: 0 }, defeated: {}, cleared: {}, visited: visited, npcFlags: {}, gateFlags: {}, won: false, lost: false, ending: null };
   }
   function Tower(container, opts) {
     opts = opts || {};
@@ -214,7 +214,12 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
   Tower.prototype.interactNpc = function (code) {
     if (this.setName !== '魔塔') return;
     var key = this.state.layer + ':' + this.state.x + ':' + this.state.y, flags = this.state.npcFlags || (this.state.npcFlags = {}), message;
-    if (code === '72') {
+    if (code === '71') {
+      if (this.state.layer !== 21) return this.note('公主：大魔王还没有被打败。');
+      if (!this.state.npcFlags.finalBossDefeated) return this.note('公主：请先打败大魔王，我要亲眼看着他倒下。');
+      this.state.ending = 'hero'; this.state.won = true;
+      return this.note('大魔头被打败了，公主也被救出了塔。勇士和公主一起走出了魔塔。');
+    } else if (code === '72') {
       if (!flags.fairyIntro) { flags.fairyIntro = true; message = '仙子：公主还在里面。先取回剑、盾和十字架，再来找我。'; }
       else if (this.state.inventory.cross && !flags.fairyBlessed) { flags.fairyBlessed = true; this.state.attack += 10; this.state.defense += 10; this.state.hp += 1000; message = '仙子：你做得很好，我已经将你现在的能力提升了。'; }
       else message = '仙子：勇敢地去吧，勇士。';
@@ -226,8 +231,11 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
       else if (!flags.merchantBought && this.state.gold >= 800) { flags.merchantBought = true; this.state.gold -= 800; this.state.defense += 30; message = '商人：好，成交。'; }
       else message = this.state.gold < 800 ? '商人：你还没有800个金币。' : '商人：这是目前能买到的最好的盾牌。';
     } else if (code === '75') {
-      if (this.state.inventory.hammer && !flags.hammerDelivered) { flags.hammerDelivered = true; delete this.state.inventory.hammer; this.state.gateFlags.hiddenFloor18 = true; message = '杰克：太好了，我这就去帮你修好第十八层的路面。'; }
-      else if (!flags.jackIntro) { flags.jackIntro = true; message = '杰克：如果你找到嵌了红宝石的铁榔头，还是来找我。'; }
+      if (this.state.layer === 2 && !flags.jackFreed) {
+        flags.jackFreed = true; this.state.gateFlags.floor2 = true; message = '杰克：谢谢你解开我的定身咒语，我这就去打开第二层的门。';
+      } else if (this.state.inventory.hammer && !flags.hammerDelivered) {
+        flags.hammerDelivered = true; delete this.state.inventory.hammer; this.state.gateFlags.hiddenFloor18 = true; message = '杰克：太好了，我这就去帮你修好第十八层的路面。';
+      } else if (!flags.jackIntro) { flags.jackIntro = true; message = '杰克：如果你找到嵌了红宝石的铁榔头，还是来找我。'; }
       else message = '杰克：你找到嵌了红宝石的铁榔头了吗？';
     }
     if (message) this.note(message);
@@ -242,7 +250,11 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     this.state.cleared = this.state.cleared || {};
     var code = original && this.state.cleared[token] ? '00' : this.layers[this.state.layer].cells[i];
     if (original ? originalKind(code) === 'wall' : isWall(code)) return this.note('墙壁无法通过');
-    if (original && (code === '09' || code === '10')) return this.note('需要触发机关');
+    if (original && (code === '09' || code === '10')) {
+      var gate = this.state.layer + ':' + i;
+      if (!this.state.gateFlags[gate] && !(this.state.layer === 2 && this.state.gateFlags.floor2) && !(this.state.layer === 17 && this.state.gateFlags.hiddenFloor18)) return this.note(code === '10' ? '神秘的门：没有钥匙，不能打开。' : '这扇铁门需要先触发机关。');
+      this.state.gateFlags[gate] = true;
+    }
     if (original ? !!ORIGINAL_DOORS[code] : isDoor(code)) {
       var color = original ? ORIGINAL_DOORS[code] : code === '12' ? 'red' : code === '16' ? 'blue' : code === '17' ? 'yellow' : 'green';
       if (!this.state.keys[color]) return this.note('需要' + ({ red: '红', blue: '蓝', yellow: '黄', green: '绿' }[color]) + '钥匙');
@@ -254,6 +266,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
       if (!battle.allowed) return this.note(battle.reason);
       this.state.hp = battle.hp; this.state.gold += battle.gold; this.state.experience = (this.state.experience || 0) + battle.experience;
       if (battle.enemyHp === 0) this.state.cleared[token] = true;
+      if (this.state.layer === 21 && code === '70' && battle.won) this.state.npcFlags.finalBossDefeated = true;
       if (!battle.won) { this.state.lost = true; this.render(); this.note('战斗失败，请重开'); return; }
     }
     if (original && originalKind(code) === 'npc') this.interactNpc(code);
@@ -305,7 +318,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     this.container.querySelector('[data-role=stats]').textContent = '生命 ' + this.state.hp + '　攻击 ' + this.state.attack + '　防御 ' + this.state.defense + '　金币 ' + this.state.gold + (original ? '　经验 ' + (this.state.experience || 0) : '') + '　钥匙：红 ' + this.state.keys.red + ' 蓝 ' + this.state.keys.blue + ' 黄 ' + this.state.keys.yellow;
     this.on(select, 'change', function () { var next = Number(select.value); if (!self.state.visited[next]) return self.note('只能前往已经走过的楼层'); var entry = self.layers[next].start; self.state.layer = next; self.state.x = entry.x; self.state.y = entry.y; self.render(); self.note('已传送到第' + (next + 1) + '层'); }); this.on(this.container.querySelector('[data-role=restart]'), 'click', function () { self.restart(); }); this.on(this.container.querySelector('[data-role=save]'), 'click', function () { self.save(); }); this.on(this.container.querySelector('[data-role=load]'), 'click', function () { self.load(); });
     [['up', 0, -1], ['left', -1, 0], ['down', 0, 1], ['right', 1, 0]].forEach(function (d) { self.on(self.container.querySelector('[data-dir=' + d[0] + ']'), 'click', function () { self.move(d[1], d[2]); }); });
-    if (!this.keyBound) { this.keyBound = true; this.on(this.container, 'keydown', function (e) { if (e.key === ' ') { e.preventDefault(); self.showMonsterBook(); return; } if (e.key === 'Enter' && self.state.inventory && self.state.inventory.compass) { e.preventDefault(); self.note('请选择上方已访问的楼层'); return; } var k = { ArrowUp: [0, -1], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowRight: [1, 0], w: [0, -1], a: [-1, 0], s: [0, 1], d: [1, 0] }[e.key]; if (k) { e.preventDefault(); self.move(k[0], k[1]); } }); } this.container.tabIndex = 0;
+    if (!this.keyBound) { this.keyBound = true; this.on(this.container, 'keydown', function (e) { if (e.key === ' ') { e.preventDefault(); self.showMonsterBook(); return; } if (e.key === 'Enter' && self.state.inventory && self.state.inventory.compass) { e.preventDefault(); var first = Object.keys(self.state.visited || {}).map(Number).filter(function (n) { return n !== self.state.layer; }).sort(function (a, b) { return a - b; })[0]; if (first == null) return self.note('风之罗盘：还没有其他已经走过的楼层。'); self.state.layer = first; self.state.x = self.layers[first].start.x; self.state.y = self.layers[first].start.y; self.render(); self.note('风之罗盘：已传送到第' + (first + 1) + '层'); return; } var k = { ArrowUp: [0, -1], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowRight: [1, 0], w: [0, -1], a: [-1, 0], s: [0, 1], d: [1, 0] }[e.key]; if (k) { e.preventDefault(); self.move(k[0], k[1]); } }); } this.container.tabIndex = 0;
   };
   Tower.prototype.destroy = function () { this.handlers.forEach(function (h) { h[0].removeEventListener(h[1], h[2]); }); this.container.innerHTML = ''; };
   global.PK32Tower = { maps: MAPS, layers: LAYERS, sets: TOWER_SETS, tileSprite: tileSprite, originalMonsters: ORIGINAL_MONSTERS, originalBattle: originalBattle, originalItems: ORIGINAL_ITEMS, originalPickup: originalPickup, startUI: function (container, opts) { return new Tower(container, opts); }, create: function (opts) { return new Tower(opts.container, opts); } };
