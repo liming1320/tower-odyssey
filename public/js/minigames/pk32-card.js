@@ -173,12 +173,26 @@
       function removePairs(list) { var changed = true; while (changed) { changed = false; for (var i = 0; i < list.length; i++) for (var j = i + 1; j < list.length; j++) if (list[i].r && list[i].r === list[j].r) { list.splice(j, 1); list.splice(i, 1); pairs++; changed = true; break; } if (changed) break; } }
       removePairs(hand); removePairs(computer);
       function drawHand() {
-        selected = []; renderHand(hand, pick, function () { return true; }); controls.innerHTML = '';
-        controls.appendChild(button('抽电脑一张牌', function () { if (ended || !computer.length) return; hand.push(computer.splice(Math.floor(Math.random() * computer.length), 1)[0]); if (hand.length === 1 && hand[0].r === 0) return finish('你留下乌龟，电脑获胜'); drawHand(); say('抽到牌后，选择两张同点数牌配对'); }));
+        if (ended) return;
+        selected = []; renderHand(hand, function () {}, function () { return true; }); controls.innerHTML = '';
+        controls.appendChild(button('抽电脑一张牌', function () {
+          if (ended || !computer.length) return;
+          hand.push(computer.splice(Math.floor(Math.random() * computer.length), 1)[0]); removePairs(hand);
+          if (!hand.length) return finish('全部配对，你获胜');
+          computerTurn();
+        }));
         controls.appendChild(button('结束本局', function () { finish('主动结束'); }));
-        if (computer.length === 1 && computer[0].r === 0) finish('电脑留下乌龟，你获胜'); else say('抽乌龟：点击两张同点数牌配对；电脑剩下乌龟时你获胜');
+        if (!computer.length) finish('电脑手牌已空，你留下乌龟，电脑获胜'); else say('抽乌龟：从电脑手牌抽一张，自动配对');
       }
-      function pick(i) { if (ended) return; if (selected.indexOf(i) < 0) selected.push(i); else selected.splice(selected.indexOf(i), 1); if (board.children[i]) board.children[i].classList.toggle('selected'); if (selected.length === 2) { var a = hand[selected[0]], b = hand[selected[1]]; if (a.r && a.r === b.r) { hand.splice(Math.max(selected[0], selected[1]), 1); hand.splice(Math.min(selected[0], selected[1]), 1); score += 10; pairs++; if (!hand.length) finish('全部配对，你获胜'); else drawHand(); } else { selected = []; say('不是一对，请重新选择'); } } }
+      function computerTurn() {
+        if (ended) return;
+        timers.push(setTimeout(function () {
+          if (ended || !hand.length) return finish('你手牌已空，你获胜');
+          computer.push(hand.splice(Math.floor(Math.random() * hand.length), 1)[0]); removePairs(computer);
+          if (!computer.length) return finish('电脑全部配对，你留下乌龟，电脑获胜');
+          drawHand();
+        }, 300));
+      }
       drawHand();
     }
     function memory() {
@@ -232,7 +246,7 @@
       }
       say('三张牌：比较同花顺、同花、顺子、对子和高牌'); renderHand(mine, function () {}, function () { return true; }); controls.appendChild(button('比较牌型', function () { var a = rank(mine), b = rank(opponent), compared = a.vector.reduce(function (v, x, i) { return v || (x > b.vector[i] ? 1 : x < b.vector[i] ? -1 : 0); }, 0); score = compared > 0 ? 100 : 0; finish(compared === 0 ? '平局' : compared > 0 ? '你赢了' : '电脑赢了'); })); controls.appendChild(button('结束本局', function () { finish('主动结束'); }));
     }
-    function sticks() { var n = 21; say('点击移除 1-3 根，拿到最后一根获胜'); var out = el('div', '剩余纸牌棍：' + n); board.appendChild(out); for (var i = 1; i <= 3; i++) controls.appendChild(button('移除 ' + i, function () { if (ended) return; var amount = Number(this.textContent.slice(-1)); n -= amount; if (n <= 0) return finish('你拿到最后一根'); out.textContent = '剩余纸牌棍：' + n; })); controls.appendChild(button('结束本局', function () { finish('主动结束'); })); }
+    function sticks() { var n = 21; say('点击移除 1-3 根，拿到最后一根获胜'); var out = el('div', '剩余纸牌棍：' + n); board.appendChild(out); for (var i = 1; i <= 3; i++) controls.appendChild(button('移除 ' + i, function () { if (ended) return; var amount = Number(this.textContent.slice(-1)); if (amount > n) return say('剩余不足 ' + amount + ' 根'); n -= amount; if (n === 0) return finish('你拿到最后一根'); out.textContent = '剩余纸牌棍：' + n; })); controls.appendChild(button('结束本局', function () { finish('主动结束'); })); }
     function spot() { var answer = Math.floor(Math.random() * 4), choices = ['♠', '♥', '♣', '♦']; say('找出与目标相同的花色'); board.appendChild(el('div', '目标：' + choices[answer])); choices.forEach(function (v, i) { board.appendChild(button(v, function () { score = i === answer ? 100 : 0; finish(i === answer ? '观察正确' : '选择错误'); })); }); controls.appendChild(button('结束本局', function () { finish('主动结束'); })); }
     function mind() { say('在心里选一个 1 到 10 的数字'); var input = document.createElement('input'); input.type = 'number'; input.min = 1; input.max = 10; board.appendChild(input); controls.appendChild(button('揭示', function () { score = 10; finish('你的数字是 ' + (input.value || '7')); })); controls.appendChild(button('结束本局', function () { finish('主动结束'); })); }
     function quiz() { var q = el('div', '这张牌的点数是否大于 7？'); board.appendChild(q); ['是', '否'].forEach(function (v, i) { board.appendChild(button(v, function () { score = i === 0 ? 10 : 0; finish('答题结束'); })); }); controls.appendChild(button('结束本局', function () { finish('主动结束'); })); }

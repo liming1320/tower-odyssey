@@ -60,7 +60,7 @@
         pieces.forEach((p, i) => { b[p[0]][p[1]] = { side: i < 8 ? 2 : 1, rank: p[2] }; });
         return {
             type: 'animal-chess', rows: 9, cols: 7, board: b, turn: 1, moveCount: 0, phase: 'playing', selected: null,
-            traps: [[0, 2], [0, 4], [8, 2], [8, 4]], dens: [[0, 3], [8, 3]]
+            traps: [[0, 2], [0, 4], [1, 3], [7, 3], [8, 2], [8, 4]], dens: [[0, 3], [8, 3]]
         };
     }
 
@@ -133,7 +133,7 @@
             const r = row + dr, c = col + dc;
             if (inside(r, c, 8, 8) && !state.board[r][c]) moves.push({ from: [row, col], to: [r, c], capture: null });
             const jr = row + dr * 2, jc = col + dc * 2;
-            if (inside(jr, jc, 8, 8) && state.board[r] && state.board[r][c] && state.board[r][c].side !== state.turn && !state.board[jr][jc]) {
+            if (inside(r, c, 8, 8) && inside(jr, jc, 8, 8) && state.board[r][c] && state.board[r][c].side !== state.turn && !state.board[jr][jc]) {
                 moves.push({ from: [row, col], to: [jr, jc], capture: [r, c] });
             }
         }
@@ -172,6 +172,8 @@
         const rank = { rat: 1, cat: 2, dog: 3, wolf: 4, leopard: 5, tiger: 6, lion: 7, elephant: 8 };
         const pRank = isTrap(from[0], from[1]) ? 0 : (rank[p.rank] || 0);
         const targetRank = target && (isDen(to[0], to[1]) || isTrap(to[0], to[1]) ? 0 : (rank[target.rank] || 0));
+        if (p.rank === 'elephant' && target && target.rank === 'rat') return false;
+        if (p.rank === 'rat' && isRiver(from[0], from[1]) && target && (!isRiver(to[0], to[1]) || target.rank !== 'rat')) return false;
         const canCapture = !target || pRank >= targetRank || (p.rank === 'rat' && target.rank === 'elephant');
         if (!canCapture) return false;
         if (p.rank !== 'rat' && isRiver(to[0], to[1])) return false;
@@ -184,6 +186,7 @@
     }
 
     function move(state, action) {
+        action = action || {};
         if (!state || state.phase !== 'playing') return { ok: false, reason: 'game-over' };
         const p = state.turn;
         if (state.type === 'tictactoe' || state.type === 'gomoku') {
@@ -213,6 +216,7 @@
             if (chosen.capture && checkersMoves(continuationState, chosen.to[0], chosen.to[1]).some(x => x.capture)) state.mustContinue = chosen.to;
             else { state.mustContinue = null; state.turn = 3 - p; }
         } else if (state.type === 'animal-chess') {
+            if (!Array.isArray(action.from) || !Array.isArray(action.to) || action.from.length < 2 || action.to.length < 2) return { ok: false, reason: 'illegal-move' };
             if (!animalCanMove(state, action.from, action.to)) return { ok: false, reason: 'illegal-move' };
             const piece = state.board[action.from[0]][action.from[1]]; state.board[action.from[0]][action.from[1]] = 0; state.board[action.to[0]][action.to[1]] = piece;
             state.moveCount++; state.turn = 3 - p;

@@ -22,9 +22,11 @@ if (!catalog || catalog.length !== names.length) throw new Error('PK32 runtime c
 const missing = catalog.filter(record => !record.playable && !record.module && !record.casual &&
     !record.action && !record.strategy && !record.card && !record.puzzle && !record.variant);
 if (missing.length) throw new Error('Unmapped entries: ' + missing.join(', '));
+const launcherMapped = catalog.filter(record => record.playable || record.module || record.casual || record.action || record.strategy || record.card || record.puzzle || record.variant).length;
+const originalComplete = catalog.filter(record => record.originalComplete === true).length;
 
 const dir = path.join(root, 'public', 'js', 'minigames');
 const files = fs.readdirSync(dir).filter(file => /^pk32.*\.js$/.test(file));
 files.forEach(file => execFileSync(process.execPath, ['--check', path.join(dir, file)], { stdio: 'inherit' }));
 
-console.log(JSON.stringify({ total: names.length, unique: unique.size, mapped: names.length, syntaxChecked: files.length }));
+console.log(JSON.stringify({ total: names.length, unique: unique.size, launcherMapped, originalComplete, syntaxChecked: files.length }));

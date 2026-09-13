@@ -62,6 +62,7 @@
             id: 'pk32-' + String(index + 1).padStart(3, '0'),
             name, index: index + 1, group: groupOf(index),
             status: PLAYABLE[name] || MODULE_CONFIG[name] || CASUAL_CONFIG[name] || ACTION_CONFIG[name] || STRATEGY_CONFIG[name] || CARD_CONFIG[name] || PUZZLE_CONFIG[name] || VARIANT_CONFIG[name] ? 'rules-partial' : 'catalogued',
+            originalComplete: false,
             levelText: '原版关数：待核对',
             evidence: EVIDENCE[name] || '已从 PK32 原版菜单识别，等待资源与规则迁移',
             playable: PLAYABLE[name] || null,

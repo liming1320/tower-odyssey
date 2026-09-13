@@ -47,20 +47,21 @@
     var restart = document.createElement('button'); restart.type = 'button'; restart.textContent = '重开';
     var hint = document.createElement('span'); hint.className = 'pk32-action-hint';
     controls.appendChild(restart); controls.appendChild(hint); root.appendChild(title); root.appendChild(canvas); root.appendChild(controls); container.appendChild(root);
-    var ctx = canvas.getContext('2d'); var keys = {}; var raf = 0; var stopped = false; var ended = false; var score = 0; var last = 0; var state;
+    var ctx = canvas.getContext('2d'); var keys = {}; var pressed = {}; var raf = 0; var stopped = false; var ended = false; var score = 0; var last = 0; var state;
     function say(v) { hint.textContent = v; }
-    function reset() { ended = false; score = 0; last = 0; keys = {}; state = makeState(spec.type); say(''); canvas.focus(); }
+    function reset() { ended = false; score = 0; last = 0; keys = {}; pressed = {}; state = makeState(spec.type); say(''); canvas.focus(); }
     function finish(message) { ended = true; say(message + '  得分：' + score + '，点击“重开”再来一次'); }
-    function onKey(e) { keys[e.key.toLowerCase()] = true; if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(e.key.toLowerCase()) >= 0) e.preventDefault(); }
+    function onKey(e) { var key = e.key.toLowerCase(); if (!keys[key]) pressed[key] = true; keys[key] = true; if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(key) >= 0) e.preventDefault(); }
     function offKey(e) { delete keys[e.key.toLowerCase()]; }
+    function consume(key) { var hit = !!pressed[key]; delete pressed[key]; return hit; }
     function moveKey() { return { left: keys.arrowleft || keys.a, right: keys.arrowright || keys.d, up: keys.arrowup || keys.w, down: keys.arrowdown || keys.s }; }
-    window.addEventListener('keydown', onKey); window.addEventListener('keyup', offKey); restart.addEventListener('click', reset);
-    canvas.addEventListener('pointerdown', function (e) { var r = canvas.getBoundingClientRect(); click((e.clientX - r.left) * canvas.width / r.width, (e.clientY - r.top) * canvas.height / r.height); });
+    canvas.addEventListener('keydown', onKey); canvas.addEventListener('keyup', offKey); restart.addEventListener('click', reset);
+    canvas.addEventListener('pointerdown', function (e) { canvas.focus(); var r = canvas.getBoundingClientRect(); click((e.clientX - r.left) * canvas.width / r.width, (e.clientY - r.top) * canvas.height / r.height); });
 
     function makeState(type) {
       if (type === 'whack') return { holes: Array.from({ length: 9 }, function (_, i) { return { x: 90 + (i % 3) * 150, y: 105 + Math.floor(i / 3) * 90, mole: false }; }), timer: 0, miss: 0 };
       if (type === 'snake') return { body: [{ x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }], dir: { x: 1, y: 0 }, food: { x: 15, y: 8 }, timer: 0 };
-      if (type === 'tetris') return { board: Array.from({ length: 20 }, function () { return Array(10).fill(0); }), piece: null, x: 3, y: 0, timer: 0 };
+      if (type === 'tetris') return { board: Array.from({ length: 20 }, function () { return Array(10).fill(0); }), piece: null, x: 3, y: 0, timer: 0, lines: 0 };
       if (type === 'breakout') return { ball: { x: 320, y: 300, vx: 170, vy: -170 }, paddle: 270, bricks: Array.from({ length: 30 }, function (_, i) { return { x: 20 + (i % 10) * 62, y: 35 + Math.floor(i / 10) * 24, alive: true }; }) };
       if (type === 'tank') return { player: { x: 320, y: 370, a: -Math.PI / 2 }, bullets: [], enemies: [{ x: 100, y: 70, a: Math.PI / 2 }, { x: 500, y: 100, a: Math.PI / 2 }], timer: 0 };
       if (type === 'dart') return { x: 260, y: 210, time: 30 };
@@ -83,7 +84,34 @@
       if (spec.type === 'runner') { state.distance += 35 * dt; state.vy += 700 * dt; state.y += state.vy * dt; if (state.y > 280) { state.y = 280; state.vy = 0; } if (m.up && state.y === 280) state.vy = -330; state.obstacles.forEach(function (o) { o.x -= 180 * dt; if (o.x < -20) { o.x = canvas.width + random(180); score += 10; } if (Math.abs(o.x - state.x) < 28 && Math.abs(o.y - state.y) < 35) finish('撞到障碍'); }); if (state.distance >= 100) finish('到达一百米'); }
       if (spec.type === 'dart') { state.time -= dt; if (state.time <= 0) finish('时间到'); }
       if (spec.type === 'pacman') { if (m.up) state.dir = { x: 0, y: -1 }; if (m.down) state.dir = { x: 0, y: 1 }; if (m.left) state.dir = { x: -1, y: 0 }; if (m.right) state.dir = { x: 1, y: 0 }; state.timer += dt; if (state.timer > .16) { state.timer = 0; state.p.x = clamp(state.p.x + state.dir.x, 0, 13); state.p.y = clamp(state.p.y + state.dir.y, 0, 9); state.dots.forEach(function (d) { if (d.alive && d.x === state.p.x && d.y === state.p.y) { d.alive = false; score += 5; } }); if (!state.dots.some(function (d) { return d.alive; })) finish('吃完所有豆子'); } }
-      if (spec.type === 'tetris') { state.timer += dt; if (!state.piece) { state.piece = pieces[random(pieces.length)].map(function (r) { return r.slice(); }); state.x = 3; state.y = 0; } if (m.left) state.x = Math.max(0, state.x - 1); if (m.right) state.x = Math.min(10 - state.piece[0].length, state.x + 1); if (keys[' ']) { state.y += 1; keys[' '] = false; } if (state.timer > .6) { state.timer = 0; state.y += 1; } var blocked = state.y + state.piece.length >= 20 || state.piece.some(function (r, yy) { return r.some(function (v, xx) { return v && state.board[state.y + yy] && state.board[state.y + yy][state.x + xx]; }); }); if (blocked) { state.y = Math.max(0, state.y - 1); state.piece.forEach(function (r, yy) { r.forEach(function (v, xx) { if (v && state.board[state.y + yy]) state.board[state.y + yy][state.x + xx] = 1; }); }); score += 10; state.piece = null; if (state.board[0].some(Boolean)) finish('方块堆满'); } }
+      if (spec.type === 'tetris') {
+        state.timer += dt;
+        if (!state.piece) {
+          state.piece = pieces[random(pieces.length)].map(function (r) { return r.slice(); }); state.x = Math.floor((10 - state.piece[0].length) / 2); state.y = 0;
+          if (collides(state.piece, state.x, state.y)) return finish('方块堆满');
+        }
+        if (m.left && !collides(state.piece, state.x - 1, state.y)) state.x--;
+        if (m.right && !collides(state.piece, state.x + 1, state.y)) state.x++;
+        if (consume('arrowup') || consume('w')) { var turned = rotate(state.piece); if (!collides(turned, state.x, state.y)) state.piece = turned; else if (!collides(turned, state.x - 1, state.y)) { state.piece = turned; state.x--; } else if (!collides(turned, state.x + 1, state.y)) { state.piece = turned; state.x++; } }
+        var drop = consume(' ') || consume('arrowdown') || consume('s');
+        if (drop) while (!collides(state.piece, state.x, state.y + 1)) state.y++;
+        if (drop || state.timer > .6) { if (!drop) state.timer = 0; if (!collides(state.piece, state.x, state.y + 1)) state.y++; else lockTetris(); }
+      }
+    }
+    function collides(shape, x, y) {
+      return shape.some(function (row, yy) { return row.some(function (value, xx) {
+        if (!value) return false;
+        var boardY = y + yy, boardX = x + xx;
+        return boardX < 0 || boardX >= 10 || boardY < 0 || boardY >= 20 || state.board[boardY][boardX];
+      }); });
+    }
+    function lockTetris() {
+      state.piece.forEach(function (row, yy) { row.forEach(function (value, xx) { if (value) state.board[state.y + yy][state.x + xx] = 1; }); });
+      var kept = state.board.filter(function (row) { return row.some(function (value) { return !value; }); });
+      var cleared = 20 - kept.length;
+      while (kept.length < 20) kept.unshift(Array(10).fill(0));
+      state.board = kept; state.lines += cleared; score += 10 + cleared * cleared * 20; state.piece = null;
+      if (cleared) say('消除 ' + cleared + ' 行，得分：' + score);
     }
     function draw() {
       ctx.fillStyle = colors.bg; ctx.fillRect(0, 0, canvas.width, canvas.height); text(ctx, '得分 ' + score, 12, 24, 16); if (spec.type === 'whack') { state.holes.forEach(function (h) { ctx.fillStyle = '#513a2d'; ctx.beginPath(); ctx.ellipse(h.x, h.y + 28, 48, 18, 0, 0, Math.PI * 2); ctx.fill(); if (h.mole) { ctx.fillStyle = '#b87952'; ctx.beginPath(); ctx.arc(h.x, h.y, 30, 0, Math.PI * 2); ctx.fill(); text(ctx, '• •', h.x, h.y - 2, 18, 'center'); } }); }
@@ -98,7 +126,7 @@
     }
     function frame(t) { if (stopped) return; if (!last) last = t; var dt = Math.min(.05, (t - last) / 1000); last = t; if (!ended) update(dt); draw(); if (!stopped) raf = requestAnimationFrame(frame); }
     reset(); raf = requestAnimationFrame(frame);
-    return { canvas: canvas, spec: spec, getScore: function () { return score; }, restart: reset, destroy: function () { if (stopped) return; stopped = true; cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', offKey); container.innerHTML = ''; } };
+    return { canvas: canvas, spec: spec, getScore: function () { return score; }, restart: reset, destroy: function () { if (stopped) return; stopped = true; cancelAnimationFrame(raf); canvas.removeEventListener('keydown', onKey); canvas.removeEventListener('keyup', offKey); container.innerHTML = ''; } };
   }
 
   global.PK32Action = { games: games, startGame: startGame };

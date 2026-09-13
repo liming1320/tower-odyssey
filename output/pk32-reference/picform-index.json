@@ -1,0 +1,266 @@
+{
+  "file": "E:\\WorkSpace\\tower-odyssey\\output\\pk32-reference\\module.bin",
+  "count": 26,
+  "records": [
+    {
+      "headerOffset": 4351840,
+      "bmpOffset": 4351870,
+      "internalId": 27648,
+      "width": 619,
+      "height": 1021,
+      "bits": 8,
+      "size": 634098,
+      "sha256": "9d90efdd64796cde972fab01d1be2516ce8ddb6ad92346080449d7bd7301ba5d"
+    },
+    {
+      "headerOffset": 4986007,
+      "bmpOffset": 4986037,
+      "internalId": 27648,
+      "width": 790,
+      "height": 776,
+      "bits": 8,
+      "size": 615670,
+      "sha256": "ff929ff9e7c4465f42f8e316b988b6e6c7e56deacf70da303cb78c1af75bd82b"
+    },
+    {
+      "headerOffset": 5601746,
+      "bmpOffset": 5601776,
+      "internalId": 27648,
+      "width": 989,
+      "height": 989,
+      "bits": 4,
+      "size": 490662,
+      "sha256": "14c8fc0aeac97a4405df2b77b2a36cdc7b3d919948623ab96107d2bde93260f6"
+    },
+    {
+      "headerOffset": 6092477,
+      "bmpOffset": 6092507,
+      "internalId": 27648,
+      "width": 989,
+      "height": 989,
+      "bits": 8,
+      "size": 982166,
+      "sha256": "e612da9b17ed6fd5b15bae0309e57939a0b0cd07bd974991117a5c696152fb16"
+    },
+    {
+      "headerOffset": 7074712,
+      "bmpOffset": 7074742,
+      "internalId": 27648,
+      "width": 500,
+      "height": 604,
+      "bits": 8,
+      "size": 303078,
+      "sha256": "25a1824e80b1ac7cfa1e6d250f743dce6e1d654d14ef2a17f2a357c2ee94bcf7"
+    },
+    {
+      "headerOffset": 7378638,
+      "bmpOffset": 7378668,
+      "internalId": 27648,
+      "width": 428,
+      "height": 305,
+      "bits": 8,
+      "size": 131618,
+      "sha256": "f000223c5e613caea1b6cc45cabc5ea28d01773bb8b344b8e49400fca34530fe"
+    },
+    {
+      "headerOffset": 7510325,
+      "bmpOffset": 7510355,
+      "internalId": 27648,
+      "width": 757,
+      "height": 500,
+      "bits": 8,
+      "size": 381078,
+      "sha256": "2e6a0af97988cf4f307214ba5ed916308384d06a0b06bb088b6a25e7e86d5701"
+    },
+    {
+      "headerOffset": 7891472,
+      "bmpOffset": 7891502,
+      "internalId": 27648,
+      "width": 1043,
+      "height": 1067,
+      "bits": 1,
+      "size": 140906,
+      "sha256": "2f40713c7748ecda1266c65ad4d4341236c27247e7551c3e6567aa3a8ab8e9f0"
+    },
+    {
+      "headerOffset": 8032447,
+      "bmpOffset": 8032477,
+      "internalId": 27648,
+      "width": 993,
+      "height": 548,
+      "bits": 8,
+      "size": 546886,
+      "sha256": "a3d5bed2bcc379ebc19bf87e21e643ea069a790cb2b2a8c5770aa0a812169ec1"
+    },
+    {
+      "headerOffset": 8579402,
+      "bmpOffset": 8579432,
+      "internalId": 27648,
+      "width": 687,
+      "height": 365,
+      "bits": 8,
+      "size": 252198,
+      "sha256": "65da9c7d58bde09aeedb4c39dff5aaca55a3e46a241292ec1e937f04a93e9d18"
+    },
+    {
+      "headerOffset": 8831669,
+      "bmpOffset": 8831699,
+      "internalId": 27648,
+      "width": 900,
+      "height": 406,
+      "bits": 8,
+      "size": 366478,
+      "sha256": "1804c865c5c5ecd7b3b2fac113a984fc33fd689892be3c3454f8bc7ce591eaa1"
+    },
+    {
+      "headerOffset": 9198216,
+      "bmpOffset": 9198246,
+      "internalId": 27648,
+      "width": 560,
+      "height": 581,
+      "bits": 8,
+      "size": 326438,
+      "sha256": "701a8c19138f3c02a5432f46b322dd47ac9ff1f92adec6e054b6dc89c22f8b7e"
+    },
+    {
+      "headerOffset": 9524723,
+      "bmpOffset": 9524753,
+      "internalId": 27648,
+      "width": 593,
+      "height": 1038,
+      "bits": 8,
+      "size": 619726,
+      "sha256": "d710f1b16fdf9009053e65b4a0eca3d18897b38029155901c587f1ad97dd8e65"
+    },
+    {
+      "headerOffset": 10144518,
+      "bmpOffset": 10144548,
+      "internalId": 27648,
+      "width": 512,
+      "height": 576,
+      "bits": 8,
+      "size": 295990,
+      "sha256": "427b0514658f3a61b0b554038a78f1791c532b04656a22b201e50824af57182c"
+    },
+    {
+      "headerOffset": 10440579,
+      "bmpOffset": 10440609,
+      "internalId": 27648,
+      "width": 780,
+      "height": 810,
+      "bits": 8,
+      "size": 632878,
+      "sha256": "2e3e454b1960358167fb0e4b6acca876f935e2099383f2485bf6b95cc3952bd6"
+    },
+    {
+      "headerOffset": 11073526,
+      "bmpOffset": 11073556,
+      "internalId": 27648,
+      "width": 1144,
+      "height": 500,
+      "bits": 8,
+      "size": 573078,
+      "sha256": "dd874cf394feb86de941de456f7a0da3d7553a5aacd517d6cac217b0932857b9"
+    },
+    {
+      "headerOffset": 11646673,
+      "bmpOffset": 11646703,
+      "internalId": 27648,
+      "width": 1127,
+      "height": 733,
+      "bits": 8,
+      "size": 827902,
+      "sha256": "33fbd06b650b1a92f5e7eef519c5e68b8a2635915085d95868a91696bacca687"
+    },
+    {
+      "headerOffset": 12474644,
+      "bmpOffset": 12474674,
+      "internalId": 27648,
+      "width": 661,
+      "height": 465,
+      "bits": 8,
+      "size": 309838,
+      "sha256": "de764a5dfced055e888fca352fb7abca1cce88472a050f4a74c4bc8db1e46a44"
+    },
+    {
+      "headerOffset": 12784551,
+      "bmpOffset": 12784581,
+      "internalId": 27648,
+      "width": 709,
+      "height": 835,
+      "bits": 8,
+      "size": 595598,
+      "sha256": "9c97606fb28c7efaf95bae7c3e5d5b3eb2f4f788836072d6e8bf46b57a0b893f"
+    },
+    {
+      "headerOffset": 13380218,
+      "bmpOffset": 13380248,
+      "internalId": 27648,
+      "width": 709,
+      "height": 657,
+      "bits": 8,
+      "size": 468862,
+      "sha256": "fb41d46c5fe31e856a97f7b0256c1e80c14ea47b7f0e9be74338216fd0f8e8be"
+    },
+    {
+      "headerOffset": 13849149,
+      "bmpOffset": 13849179,
+      "internalId": 27648,
+      "width": 544,
+      "height": 433,
+      "bits": 24,
+      "size": 706710,
+      "sha256": "4cda66ed3e194ccdaf563ec20be74190867d722b62f6cb0f5515fcecb4f7bb19"
+    },
+    {
+      "headerOffset": 14555928,
+      "bmpOffset": 14555958,
+      "internalId": 27648,
+      "width": 2536,
+      "height": 1173,
+      "bits": 4,
+      "size": 1487482,
+      "sha256": "31d8052139095d6f36676c911d94053d5666d9b6c74eb00e152f82908acd8c35"
+    },
+    {
+      "headerOffset": 16043489,
+      "bmpOffset": 16043519,
+      "internalId": 27648,
+      "width": 550,
+      "height": 285,
+      "bits": 8,
+      "size": 158398,
+      "sha256": "77477a9ddc7fb1546da1ba616fd64f040eb55ec5c3134f82aefb500da93ee530"
+    },
+    {
+      "headerOffset": 16201956,
+      "bmpOffset": 16201986,
+      "internalId": 27648,
+      "width": 504,
+      "height": 115,
+      "bits": 4,
+      "size": 29098,
+      "sha256": "9e302d35292506e551566be35fc142917758cd6b32400a5cbc5eaad42ce6874f"
+    },
+    {
+      "headerOffset": 17293104,
+      "bmpOffset": 17293190,
+      "internalId": 1280,
+      "width": 1024,
+      "height": 4,
+      "bits": 24,
+      "size": 12342,
+      "sha256": "ae04c073fcd7d072ed8100593b9d1e77e9f2ee7a206395234257ae37c3909a30"
+    },
+    {
+      "headerOffset": 17305571,
+      "bmpOffset": 17305601,
+      "internalId": 27648,
+      "width": 238,
+      "height": 291,
+      "bits": 24,
+      "size": 208410,
+      "sha256": "310306b92ad3685e59d9a261fe8a02411fde851f1fd5049fbf246704e8aece2c"
+    }
+  ]
+}

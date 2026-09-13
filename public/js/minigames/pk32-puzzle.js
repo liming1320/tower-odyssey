@@ -38,30 +38,81 @@
     function colorGame(area, status, reset, redraw, mode, gameState) {
         var size = mode === 'line' ? 7 : 8, colors = ['red', 'blue', 'green', 'yellow', 'purple'], board = [], selected = -1;
         gameState = gameState || {};
-        if (!gameState.board || gameState.mode !== mode) { board = Array.from({ length: size * size }, function () { return colors[Math.floor(Math.random() * colors.length)]; }); gameState.mode = mode; gameState.board = board; } else board = gameState.board;
+        if (!Array.isArray(gameState.board) || gameState.board.length !== size * size || gameState.mode !== mode) { board = Array.from({ length: size * size }, function () { return colors[Math.floor(Math.random() * colors.length)]; }); gameState.mode = mode; gameState.board = board; } else board = gameState.board;
+        function groupAt(start, color) {
+            var seen = {}, queue = [start], result = [];
+            while (queue.length) {
+                var current = queue.shift(); if (seen[current] || board[current] !== color) continue;
+                seen[current] = true; result.push(current);
+                var row = Math.floor(current / size), col = current % size;
+                [[row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]].forEach(function (p) { if (p[0] >= 0 && p[0] < size && p[1] >= 0 && p[1] < size) queue.push(p[0] * size + p[1]); });
+            }
+            return result;
+        }
         area.appendChild(btn('重新开始', function () { gameState.board = null; gameState.mode = null; redraw(); }));
         var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(' + size + ',42px)';
         board.forEach(function (c, i) { var b = btn('', function () {
-            if (mode === 'swap' && selected >= 0) { var t = board[selected]; board[selected] = board[i]; board[i] = t; selected = -1; redraw(); return; }
+            if (mode === 'swap' && selected >= 0) { var distance = Math.abs(Math.floor(selected / size) - Math.floor(i / size)) + Math.abs((selected % size) - (i % size)); if (distance === 1) { var t = board[selected]; board[selected] = board[i]; board[i] = t; selected = -1; redraw(); } else { selected = i; redraw(); } return; }
             selected = i; b.classList.add('selected');
             if (mode !== 'line' && c) {
-                var row = Math.floor(i / size), col = i % size;
-                var same = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(function (d) { return [row + d[0], col + d[1]]; }).filter(function (p) { return p[0] >= 0 && p[0] < size && p[1] >= 0 && p[1] < size; }).map(function (p) { return p[0] * size + p[1]; }).filter(function (x) { return board[x] === c; });
-                if (same.length >= 2) { same.concat(i).forEach(function (x) { board[x] = null; }); status(board.every(function (x) { return !x; }) ? '全部清除，完成本局' : '已消除一组同色方块'); redraw(); }
+                var same = groupAt(i, c);
+                if (same.length >= 3) { same.forEach(function (x) { board[x] = null; }); status(board.every(function (x) { return !x; }) ? '全部清除，完成本局' : '已消除一组同色方块'); redraw(); }
             }
         }); b.className = 'tile ' + (c || 'empty'); b.setAttribute('aria-label', c || '空位'); grid.appendChild(b); }); area.appendChild(grid); status('点击方块操作；移彩球先后点击两个位置');
     }
     function sudoku(area, status, reset, redraw) { var answer = [5,3,4,6,7,8,9,1,2,6,7,2,1,9,5,3,4,8,1,9,8,3,4,2,5,6,7,8,5,9,7,6,1,4,2,3,4,2,6,8,5,3,7,9,1,7,1,3,9,2,4,8,5,6,9,6,1,5,3,7,2,8,4,2,8,7,4,1,9,6,3,5,3,4,5,2,8,6,1,7,9,1,9,6,3,7,2,4,5,8]; var given = [0,1,4,5,6,8,9,11,13,15,17,19,22,24,26,27,30,31,33,35,37,40,42,44,45,48,50,52,54,56,57,60,62,64,66,68,70,72,73,75,77,79,80]; var values = answer.map(function (v, i) { return given.indexOf(i) >= 0 ? String(v) : ''; }); area.appendChild(btn('检查', function () { var ok = values.every(function (v, i) { return String(v) === String(answer[i]); }); status(ok ? '完成：当前数独填写正确' : '还有数字需要修正'); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(9,38px)'; answer.forEach(function (v, i) { var input = document.createElement('input'); input.maxLength = 1; input.value = values[i]; input.disabled = given.indexOf(i) >= 0; input.style.width = '38px'; input.style.height = '38px'; input.oninput = function () { values[i] = input.value.replace(/[^1-9]/g, ''); }; grid.appendChild(input); }); area.appendChild(grid); status('填写空格后点击检查'); }
-    function maze(area, status, reset, redraw, state) { var n = 9, goal = 80; state = state || { pos: 0 }; area.appendChild(btn('重新开始', function () { state.pos = 0; redraw(); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(9,34px)'; for (var i = 0; i < 81; i++) { var b = btn(i === state.pos ? '●' : (i === goal ? '★' : ''), function () {}); b.className = 'tile ' + (i === state.pos ? 'filled' : 'empty'); (function (x) { b.onclick = function () { var dx = Math.abs((x % n) - (state.pos % n)), dy = Math.abs(Math.floor(x / n) - Math.floor(state.pos / n)); if (dx + dy === 1) { state.pos = x; if (state.pos === goal) status('迷宫完成'); redraw(); } }; })(i); grid.appendChild(b); } area.appendChild(grid); status('点击相邻格移动，抵达终点'); }
-    function slide(area, status, reset, redraw, state) { state = state || { cells: [1, 2, 3, 4, 5, 6, 7, 8, 0] }; area.appendChild(btn('重新开始', function () { state.cells = [1, 2, 3, 4, 5, 6, 7, 8, 0]; redraw(); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(3,54px)'; state.cells.forEach(function (v, i) { var b = btn(v ? String(v) : '空', function () { var z = state.cells.indexOf(0), dx = Math.abs((i % 3) - (z % 3)), dy = Math.abs(Math.floor(i / 3) - Math.floor(z / 3)); if (dx + dy === 1) { state.cells[z] = v; state.cells[i] = 0; if (state.cells.slice(0, 8).every(function (x, j) { return x === j + 1; })) status('华容道完成'); redraw(); } }); b.className = 'tile ' + (v ? 'filled' : 'empty'); grid.appendChild(b); }); area.appendChild(grid); status('点击空格相邻方块滑动'); }
-    function hanoi(area, status, reset, redraw, state) { state = state || { pegs: [[3,2,1], [], []], selected: null }; function draw() { area.innerHTML = ''; area.appendChild(btn('重新开始', function () { state.pegs = [[3,2,1], [], []]; state.selected = null; redraw(); })); state.pegs.forEach(function (peg, p) { var box = document.createElement('div'); box.style.display = 'inline-flex'; box.style.flexDirection = 'column-reverse'; box.style.verticalAlign = 'top'; box.style.width = '30%'; box.style.minHeight = '150px'; box.style.margin = '1%'; box.style.background = '#20313f'; box.style.alignItems = 'center'; box.onclick = function () { if (state.selected === null && peg.length) state.selected = p; else if (state.selected !== null && state.selected !== p && (!peg.length || peg[peg.length - 1] > state.pegs[state.selected][state.pegs[state.selected].length - 1])) { peg.push(state.pegs[state.selected].pop()); state.selected = null; if (state.pegs[2].length === 3) status('汉诺塔完成'); redraw(); } else state.selected = null; }; peg.forEach(function (v) { var d = document.createElement('div'); d.textContent = '■'.repeat(v + 1); d.style.color = ['#e85b55','#e4c44e','#60bd78'][v - 1]; box.appendChild(d); }); area.appendChild(box); }); status(state.selected === null ? '点击柱子选择顶部圆盘，再点击目标柱' : '请选择目标柱'); } draw(); }
+    function maze(area, status, reset, redraw, state) {
+        var n = 9, start = 10, goal = 70;
+        var map = ['#########', '#       #', '### ### #', '#   #   #', '# # # # #', '# #   # #', '# ##### #', '#       #', '#########'];
+        state = state || { pos: start, done: false };
+        if (!Number.isInteger(state.pos) || state.pos < 0 || state.pos >= n * n || map[Math.floor(state.pos / n)][state.pos % n] === '#') state.pos = start;
+        state.done = state.pos === goal;
+        area.appendChild(btn('重新开始', function () { state.pos = start; state.done = false; redraw(); }));
+        var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(9,34px)';
+        for (var i = 0; i < n * n; i++) {
+            var wall = map[Math.floor(i / n)][i % n] === '#';
+            var b = btn(wall ? '' : (i === state.pos ? '●' : (i === goal ? '★' : '')), function () {});
+            b.className = 'tile ' + (wall ? 'filled' : (i === state.pos ? 'blue' : 'empty'));
+            b.disabled = wall || state.done;
+            (function (x) { b.onclick = function () {
+                if (state.done) return;
+                var row = Math.floor(state.pos / n), col = state.pos % n, nextRow = Math.floor(x / n), nextCol = x % n;
+                if (Math.abs(nextRow - row) + Math.abs(nextCol - col) !== 1 || map[nextRow][nextCol] === '#') return;
+                state.pos = x; if (state.pos === goal) { state.done = true; status('迷宫完成'); } redraw();
+            }; })(i);
+            grid.appendChild(b);
+        }
+        area.appendChild(grid); status(state.done ? '迷宫完成' : '沿通道移动，抵达终点');
+    }
+    function slide(area, status, reset, redraw, state) {
+        var solved = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+        var initial = [1, 2, 3, 4, 5, 6, 0, 7, 8];
+        state = state || { cells: initial.slice(), done: false, moves: 0 };
+        var valid = Array.isArray(state.cells) && state.cells.length === solved.length && state.cells.every(function (v) { return Number.isInteger(v) && v >= 0 && v < solved.length; }) && new Set(state.cells).size === solved.length;
+        if (!valid) state.cells = initial.slice();
+        state.done = state.done === true && state.cells.every(function (v, i) { return v === solved[i]; });
+        state.moves = Number.isInteger(state.moves) && state.moves >= 0 ? state.moves : 0;
+        area.appendChild(btn('重新开始', function () { state.cells = initial.slice(); state.done = false; state.moves = 0; redraw(); }));
+        var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(3,54px)';
+        state.cells.forEach(function (v, i) { var b = btn(v ? String(v) : '空', function () {
+            if (state.done) return;
+            var z = state.cells.indexOf(0), dx = Math.abs((i % 3) - (z % 3)), dy = Math.abs(Math.floor(i / 3) - Math.floor(z / 3));
+            if (dx + dy !== 1) return;
+            state.cells[z] = v; state.cells[i] = 0; state.moves++;
+            if (state.cells.every(function (x, j) { return x === solved[j]; })) { state.done = true; status('拼图完成'); }
+            redraw();
+        }); b.className = 'tile ' + (v ? 'filled' : 'empty'); grid.appendChild(b); });
+        area.appendChild(grid); status(state.done ? '拼图完成' : '点击空格相邻方块滑动，步数：' + state.moves);
+    }
+    function hanoi(area, status, reset, redraw, state) { var solved = [[3, 2, 1], [], []]; state = state || { pegs: solved.map(function (peg) { return peg.slice(); }), selected: null, done: false, moves: 0 }; var disks = []; (state.pegs || []).forEach(function (peg) { if (Array.isArray(peg)) disks = disks.concat(peg); }); var valid = Array.isArray(state.pegs) && state.pegs.length === 3 && state.pegs.every(function (peg) { return Array.isArray(peg) && peg.every(function (v) { return Number.isInteger(v) && v >= 1 && v <= 3; }); }) && disks.length === 3 && new Set(disks).size === 3; if (!valid) state.pegs = solved.map(function (peg) { return peg.slice(); }); state.selected = Number.isInteger(state.selected) && state.selected >= 0 && state.selected < 3 ? state.selected : null; state.done = state.done === true && state.pegs[2].join(',') === '3,2,1'; state.moves = Number.isInteger(state.moves) && state.moves >= 0 ? state.moves : 0; function draw() { area.innerHTML = ''; area.appendChild(btn('重新开始', function () { state.pegs = solved.map(function (peg) { return peg.slice(); }); state.selected = null; state.done = false; state.moves = 0; redraw(); })); state.pegs.forEach(function (peg, p) { var box = document.createElement('div'); box.style.display = 'inline-flex'; box.style.flexDirection = 'column-reverse'; box.style.verticalAlign = 'top'; box.style.width = '30%'; box.style.minHeight = '150px'; box.style.margin = '1%'; box.style.background = '#20313f'; box.style.alignItems = 'center'; box.onclick = function () { if (state.done) return; if (state.selected === null && peg.length) state.selected = p; else if (state.selected !== null && state.selected !== p && state.pegs[state.selected].length && (!peg.length || peg[peg.length - 1] > state.pegs[state.selected][state.pegs[state.selected].length - 1])) { peg.push(state.pegs[state.selected].pop()); state.selected = null; state.moves++; if (state.pegs[2].join(',') === '3,2,1') { state.done = true; status('汉诺塔完成'); } redraw(); } else state.selected = null; }; peg.forEach(function (v) { var d = document.createElement('div'); d.textContent = '■'.repeat(v + 1); d.style.color = ['#e85b55', '#e4c44e', '#60bd78'][v - 1]; box.appendChild(d); }); area.appendChild(box); }); status(state.done ? '汉诺塔完成' : (state.selected === null ? '点击柱子选择顶部圆盘，再点击目标柱' : '请选择目标柱')); } draw(); }
     function findDifferent(area, status, reset, redraw) { var cells = Array(25).fill(0); var target = 12; cells[target] = 1; area.appendChild(btn('重新开始', function () { target = Math.floor(Math.random() * 25); cells = Array(25).fill(0); cells[target] = 1; redraw(); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(5,42px)'; cells.forEach(function (v, i) { var b = btn('●', function () { if (i === target) status('找到了不同点，完成本局'); else status('不是不同点'); }); b.className = 'tile ' + (i === target ? 'blue' : 'green'); grid.appendChild(b); }); area.appendChild(grid); status('找出唯一不同的图案'); }
     function findBall(area, status, reset, redraw) { var target = 7; area.appendChild(btn('重新开始', function () { target = 1 + Math.floor(Math.random() * 15); redraw(); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(5,42px)'; for (var i = 1; i <= 15; i++) { var b = btn('●', function () { if (Number(this.dataset.value) === target) status('找到目标彩球'); else status('继续寻找'); }); b.dataset.value = i; b.className = 'tile ' + ['red','blue','green','yellow','purple'][i % 5]; grid.appendChild(b); } area.appendChild(grid); status('寻找目标彩球：' + target); }
     function tangram(area, status, reset, redraw) { var order = ['三角形', '正方形', '平行四边形', '小三角形', '大三角形']; var selected = []; var target = order.slice().sort(function () { return Math.random() - 0.5; }); area.appendChild(btn('重新开始', function () { selected = []; target = order.slice().sort(function () { return Math.random() - 0.5; }); redraw(); })); var prompt = document.createElement('div'); prompt.textContent = '按目标顺序选择：' + target.join('、'); area.appendChild(prompt); order.forEach(function (piece) { area.appendChild(btn(piece, function () { selected.push(piece); if (selected.length === target.length) status(selected.join('、') === target.join('、') ? '七巧板拼图完成' : '顺序不正确，请重新开始'); })); }); status('选择拼图部件完成目标'); }
     function embroidery(area, status, reset, redraw) { var size = 6, count = 0; area.appendChild(btn('重新开始', function () { redraw(); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(6,38px)'; for (var i = 0; i < size * size; i++) { var b = btn('·', function () { if (this.textContent === '·') { this.textContent = '×'; count++; status('已绣 ' + count + ' / ' + (size * size)); if (count === size * size) status('十字绣图案完成'); } }); b.className = 'tile empty'; grid.appendChild(b); } area.appendChild(grid); status('按图案格位完成十字绣'); }
     function sokoban(area, status, reset, redraw, state) {
         var map = ['#######', '#     #', '# .   #', '# $$  #', '#  @  #', '#  .  #', '#######'];
-        if (!state || !state.player || !state.boxes) state = { player: [3, 4], boxes: [[2, 3], [3, 3]], moves: 0 };
+        if (!state || !Array.isArray(state.player) || state.player.length !== 2 || !Array.isArray(state.boxes) || state.boxes.length !== 2 || state.boxes.some(function (p) { return !Array.isArray(p) || p.length !== 2 || !Number.isInteger(p[0]) || !Number.isInteger(p[1]); })) state = { player: [3, 4], boxes: [[2, 3], [3, 3]], moves: 0 };
+        state.moves = Number.isInteger(state.moves) && state.moves >= 0 ? state.moves : 0;
         var targets = [[2, 2], [3, 5]], dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
         function at(list, x, y) { return list.some(function (p) { return p[0] === x && p[1] === y; }); }
         function draw() {
@@ -77,9 +128,9 @@
         }
         function move(dx, dy) {
             var nx = state.player[0] + dx, ny = state.player[1] + dy;
-            if (map[ny][nx] === '#') return;
+            if (!map[ny] || map[ny][nx] === '#') return;
             var box = state.boxes.findIndex(function (p) { return p[0] === nx && p[1] === ny; });
-            if (box >= 0) { var bx = nx + dx, by = ny + dy; if (map[by][bx] === '#' || at(state.boxes, bx, by)) return; state.boxes[box] = [bx, by]; }
+            if (box >= 0) { var bx = nx + dx, by = ny + dy; if (!map[by] || map[by][bx] === '#' || at(state.boxes, bx, by)) return; state.boxes[box] = [bx, by]; }
             state.player = [nx, ny]; state.moves++; redraw();
         }
         draw();
@@ -90,7 +141,7 @@
         draw();
     }
     function simple(area, status, reset, redraw, title) { var count = 0; var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(5,44px)'; for (var i = 0; i < 25; i++) { var b = btn('', function () { this.classList.toggle('filled'); count += this.classList.contains('filled') ? 1 : -1; status('已完成 ' + count + ' 个格位'); }); b.className = 'tile empty'; grid.appendChild(b); } area.appendChild(btn('重新开始', function () { redraw(); })); area.appendChild(grid); status(title || '点击格位进行操作'); }
-    function dispatch(container, name, opts) { var canonical = ALIASES[name] || name; if (!SPECS[canonical]) throw new Error('未建立 PK32 益智玩法：' + name); var state = null; var factory; if (canonical === '数独') factory = sudoku; else if (canonical === '迷宫') factory = function (a, s, r, d) { state = state || { pos: 0 }; maze(a, s, r, d, state); }; else if (canonical === '华容道' || canonical === '拼图') factory = function (a, s, r, d) { state = state || { cells: [1, 2, 3, 4, 5, 6, 7, 8, 0] }; slide(a, s, r, d, state); }; else if (canonical === '汉诺塔') factory = function (a, s, r, d) { state = state || { pegs: [[3, 2, 1], [], []], selected: null }; hanoi(a, s, r, d, state); }; else if (canonical === '找不同') factory = findDifferent; else if (canonical === '找彩球') factory = findBall; else if (canonical === '七巧板') factory = tangram; else if (canonical === '十字绣') factory = embroidery; else if (canonical === '推箱子变体') factory = function (a, s, r, d) { state = state || {}; sokoban(a, s, r, d, state); }; else if (canonical === '立体魔方') factory = function (a, s, r, d) { state = state || {}; cube(a, s, r, d, state); }; else if (canonical === '同色方块' || canonical === '五彩连珠' || canonical === '七彩宝石' || canonical === '宝石方块' || canonical === '独粒钻石') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'match', state); }; else if (canonical === '移彩球' || canonical === '变化彩球') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'swap', state); }; else if (canonical.indexOf('连结电线') === 0 || canonical === '扩展线路' || canonical === '接水管变体') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'line', state); }; else factory = function (a, s, r, d) { simple(a, s, r, d, canonical + '独立玩法'); }; return mount(container, canonical, factory, function (redraw) { state = null; redraw(); }); }
+    function dispatch(container, name, opts) { var canonical = ALIASES[name] || name; if (!SPECS[canonical]) throw new Error('未建立 PK32 益智玩法：' + name); var state = null; var factory; if (canonical === '数独') factory = sudoku; else if (canonical === '迷宫') factory = function (a, s, r, d) { state = state || { pos: 10, done: false }; maze(a, s, r, d, state); }; else if (canonical === '华容道' || canonical === '拼图') factory = function (a, s, r, d) { state = state || { cells: [1, 2, 3, 4, 5, 6, 0, 7, 8], done: false, moves: 0 }; slide(a, s, r, d, state); }; else if (canonical === '汉诺塔') factory = function (a, s, r, d) { state = state || { pegs: [[3, 2, 1], [], []], selected: null, done: false, moves: 0 }; hanoi(a, s, r, d, state); }; else if (canonical === '找不同') factory = findDifferent; else if (canonical === '找彩球') factory = findBall; else if (canonical === '七巧板') factory = tangram; else if (canonical === '十字绣') factory = embroidery; else if (canonical === '推箱子变体') factory = function (a, s, r, d) { state = state || {}; sokoban(a, s, r, d, state); }; else if (canonical === '立体魔方') factory = function (a, s, r, d) { state = state || {}; cube(a, s, r, d, state); }; else if (canonical === '同色方块' || canonical === '五彩连珠' || canonical === '七彩宝石' || canonical === '宝石方块' || canonical === '独粒钻石') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'match', state); }; else if (canonical === '移彩球' || canonical === '变化彩球') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'swap', state); }; else if (canonical.indexOf('连结电线') === 0 || canonical === '扩展线路' || canonical === '接水管变体') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'line', state); }; else factory = function (a, s, r, d) { simple(a, s, r, d, canonical + '独立玩法'); }; return mount(container, canonical, factory, function (redraw) { state = null; redraw(); }); }
     window.PK32Puzzle.startGame = function (container, name, opts) { return dispatch(container, String(name || NAMES[0]), opts || {}); };
     window.PK32Puzzle.getConfig = function (name) { return SPECS[ALIASES[name] || name] || null; };
     window.PK32Puzzle.names = NAMES.slice();
