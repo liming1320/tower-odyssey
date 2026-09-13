@@ -1,0 +1,10 @@
+const fs = require('fs');
+const path = require('path');
+const strings = require(path.join(__dirname, '..', 'output', 'pk32-reference', 'strings.json'));
+const catalog = require('../public/data/pk32-native-catalog.json').records.find(function (record) { return record.name === '立体魔方二'; });
+const nextTitle = strings.filter(function (item) { return item.text.indexOf('扑克32--') === 0 && item.offset > catalog.titleOffset; }).sort(function (a, b) { return a.offset - b.offset; })[0];
+const lengths = Object.keys(catalog.payloadLengths).map(Number);
+const levels = strings.filter(function (item) { return item.offset > catalog.titleOffset && item.offset < nextTitle.offset && /^[0-9]+$/.test(item.text) && lengths.indexOf(item.text.length) >= 0; }).map(function (item, index) { return { number: index + 1, offset: item.offset, cells: item.text, length: item.text.length }; });
+if (levels.length !== catalog.payloadCount) throw new Error('payload count mismatch: ' + levels.length);
+fs.writeFileSync(path.join(__dirname, '..', 'public', 'data', 'pk32-cube2-levels.json'), JSON.stringify({ name: catalog.name, nativeLevelCount: null, extractedPayloadCount: levels.length, payloadLengths: catalog.payloadLengths, rules: catalog.help, levels: levels }, null, 2) + '\n', 'utf8');
+console.log(JSON.stringify({ payloads: levels.length, lengths: levels.map(function (level) { return level.length; }) }));

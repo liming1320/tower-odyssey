@@ -64,7 +64,7 @@
       if (type === 'tetris') return { board: Array.from({ length: 20 }, function () { return Array(10).fill(0); }), piece: null, x: 3, y: 0, timer: 0, lines: 0 };
       if (type === 'breakout') return { ball: { x: 320, y: 300, vx: 170, vy: -170 }, paddle: 270, bricks: Array.from({ length: 30 }, function (_, i) { return { x: 20 + (i % 10) * 62, y: 35 + Math.floor(i / 10) * 24, alive: true }; }) };
       if (type === 'tank') return { player: { x: 320, y: 370, a: -Math.PI / 2 }, bullets: [], enemies: [{ x: 100, y: 70, a: Math.PI / 2 }, { x: 500, y: 100, a: Math.PI / 2 }], timer: 0 };
-      if (type === 'dart') return { x: 260, y: 210, time: 30 };
+      if (type === 'dart') return { x: 260, y: 210, time: 30, shots: 24, hits: 0 };
       if (type === 'runner') return { x: 60, y: 280, vy: 0, obstacles: [{ x: 600, y: 280 }], distance: 0 };
       if (type === 'pacman') return { p: { x: 1, y: 1 }, dir: { x: 1, y: 0 }, dots: Array.from({ length: 45 }, function (_, i) { return { x: 2 + i % 9, y: 1 + Math.floor(i / 9) * 2, alive: true }; }) };
       return { ship: { x: 70, y: 210 }, bullets: [], enemies: Array.from({ length: 5 }, function (_, i) { return { x: 430 + i * 40, y: 60 + (i % 3) * 100 }; }), timer: 0 };
@@ -72,7 +72,7 @@
     function click(x, y) {
       if (ended) return;
       if (spec.type === 'whack') state.holes.forEach(function (h) { if (h.mole && Math.hypot(x - h.x, y - h.y) < 42) { h.mole = false; score += 10; } });
-      if (spec.type === 'dart') { var d = Math.hypot(x - state.x, y - state.y); score += d < 35 ? 100 : d < 80 ? 50 : d < 150 ? 20 : 5; say('命中！'); }
+      if (spec.type === 'dart') { if (state.shots <= 0) return; state.shots--; var d = Math.hypot(x - state.x, y - state.y); score += d < 35 ? 100 : d < 80 ? 50 : d < 150 ? 20 : 5; state.hits += d < 150 ? 1 : 0; say('命中！剩余投射：' + state.shots); if (state.shots <= 0) finish('投射机会用完。'); }
       if (spec.type === 'rocket') { state.bullets.push({ x: state.ship.x + 25, y: state.ship.y, vx: 360, vy: 0 }); }
     }
     function update(dt) {
@@ -117,7 +117,7 @@
       ctx.fillStyle = colors.bg; ctx.fillRect(0, 0, canvas.width, canvas.height); text(ctx, '得分 ' + score, 12, 24, 16); if (spec.type === 'whack') { state.holes.forEach(function (h) { ctx.fillStyle = '#513a2d'; ctx.beginPath(); ctx.ellipse(h.x, h.y + 28, 48, 18, 0, 0, Math.PI * 2); ctx.fill(); if (h.mole) { ctx.fillStyle = '#b87952'; ctx.beginPath(); ctx.arc(h.x, h.y, 30, 0, Math.PI * 2); ctx.fill(); text(ctx, '• •', h.x, h.y - 2, 18, 'center'); } }); }
       if (spec.type === 'snake') { ctx.fillStyle = colors.good; state.body.forEach(function (p) { ctx.fillRect(p.x * 20, p.y * 20 + 35, 18, 18); }); ctx.fillStyle = colors.danger; ctx.fillRect(state.food.x * 20, state.food.y * 20 + 35, 18, 18); }
       if (spec.type === 'breakout') { ctx.fillStyle = colors.accent; state.bricks.forEach(function (b) { if (b.alive) ctx.fillRect(b.x, b.y, 54, 16); }); ctx.fillStyle = colors.good; ctx.fillRect(state.paddle, 395, 70, 10); ctx.beginPath(); ctx.arc(state.ball.x, state.ball.y, 7, 0, Math.PI * 2); ctx.fill(); }
-      if (spec.type === 'dart') { ctx.strokeStyle = colors.text; ctx.lineWidth = 8; [150, 105, 60, 25].forEach(function (r, i) { ctx.beginPath(); ctx.arc(state.x, state.y, r, 0, Math.PI * 2); ctx.strokeStyle = i % 2 ? colors.danger : colors.text; ctx.stroke(); }); text(ctx, '剩余 ' + Math.ceil(state.time) + ' 秒', 12, 48); }
+       if (spec.type === 'dart') { ctx.strokeStyle = colors.text; ctx.lineWidth = 8; [150, 105, 60, 25].forEach(function (r, i) { ctx.beginPath(); ctx.arc(state.x, state.y, r, 0, Math.PI * 2); ctx.strokeStyle = i % 2 ? colors.danger : colors.text; ctx.stroke(); }); text(ctx, '剩余投射 ' + state.shots + ' 次', 12, 48); }
       if (spec.type === 'runner') { ctx.fillStyle = colors.good; ctx.fillRect(state.x, state.y - 32, 24, 32); ctx.fillStyle = colors.danger; state.obstacles.forEach(function (o) { ctx.fillRect(o.x, o.y - 30, 22, 30); }); text(ctx, Math.floor(state.distance) + ' / 100 米', 12, 48); }
       if (spec.type === 'pacman') { ctx.fillStyle = colors.accent; state.dots.forEach(function (d) { if (d.alive) { ctx.beginPath(); ctx.arc(d.x * 40 + 20, d.y * 40 + 55, 4, 0, Math.PI * 2); ctx.fill(); } }); ctx.fillStyle = '#ffd34e'; ctx.beginPath(); ctx.arc(state.p.x * 40 + 20, state.p.y * 40 + 55, 15, .25, Math.PI * 2 - .25); ctx.lineTo(state.p.x * 40 + 20, state.p.y * 40 + 55); ctx.fill(); }
       if (spec.type === 'tetris') { var bx = 45, by = 35, size = 26; ctx.strokeStyle = '#30415b'; for (var y = 0; y < 20; y++) for (var x = 0; x < 10; x++) { ctx.strokeRect(bx + x * size, by + y * size, size, size); if (state.board[y][x]) { ctx.fillStyle = colors.accent; ctx.fillRect(bx + x * size + 2, by + y * size + 2, size - 4, size - 4); } } if (state.piece) state.piece.forEach(function (r, yy) { r.forEach(function (v, xx) { if (v) { ctx.fillStyle = colors.good; ctx.fillRect(bx + (state.x + xx) * size + 2, by + (state.y + yy) * size + 2, size - 4, size - 4); } }); }); }
