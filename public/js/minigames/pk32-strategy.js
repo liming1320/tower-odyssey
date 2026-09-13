@@ -10,7 +10,7 @@
         '轮盘': { id: 'roulette', flow: '选择下注区域后旋转轮盘，结算赔率' },
         '老虎机': { id: 'slot', flow: '拉动摇杆，三列图案按原版回合结算' },
         '神符': { id: 'rune', flow: '选择神符并翻开结果，累计分数完成流程' },
-        '原子': { id: 'atom', flow: '放置原子使同色相邻链反应，清空棋盘获胜' },
+        '原子': { id: 'atom', flow: '原版 300 关；移动彩色原子，组成 2x2 同色区域即可消除；特殊原子能力仍在反汇编' },
         '开心辞典': { id: 'quiz', flow: '逐题答题，使用道具并累计奖金' },
         '开心灯谜': { id: 'riddle', flow: '逐题猜灯谜，答对推进原版题目流程' },
         '七盏灯': { id: 'lights', flow: '点击灯组切换状态，全部点亮完成关卡' },
@@ -116,8 +116,9 @@
             body.append(grid, el('div', 'meta', '累计神符能量：' + state.score));
         }
         function drawAtom() {
-            body.innerHTML = ''; state.atoms = state.atoms || Array(25).fill(0); const grid = el('div', 'board'); grid.style.gridTemplateColumns = 'repeat(5,1fr)';
-            state.atoms.forEach(function (v, i) { const b = button(v ? '●' : '+', guard(function () { if (!state.atoms[i]) { state.atoms[i] = 1; state.score++; if (state.score >= 10) { state.ended = true; setMessage('原子链反应完成！'); } drawAtom(); } })); b.className = 'cell ' + (v ? 'on' : 'off'); grid.appendChild(b); }); body.append(grid, el('div', 'meta', '已放置：' + state.score + ' / 10')); 
+            body.innerHTML = ''; state.atoms = state.atoms || Array(25).fill(0); const colors = ['红', '蓝', '绿', '黄']; const grid = el('div', 'board'); grid.style.gridTemplateColumns = 'repeat(5,1fr)';
+            function clearGroups() { let cleared = 0; for (let y = 0; y < 4; y += 1) for (let x = 0; x < 4; x += 1) { const v = state.atoms[y * 5 + x]; if (v && state.atoms[y * 5 + x + 1] === v && state.atoms[(y + 1) * 5 + x] === v && state.atoms[(y + 1) * 5 + x + 1] === v) { [y * 5 + x, y * 5 + x + 1, (y + 1) * 5 + x, (y + 1) * 5 + x + 1].forEach(i => { state.atoms[i] = 0; cleared += 1; }); } } return cleared; }
+            state.atoms.forEach(function (v, i) { const b = button(v ? colors[v - 1] : '+', guard(function () { if (!state.atoms[i]) { state.atoms[i] = 1 + Math.floor(Math.random() * colors.length); } else { const empty = state.atoms.findIndex(x => !x); if (empty >= 0) { state.atoms[empty] = state.atoms[i]; state.atoms[i] = 0; } } const cleared = clearGroups(); state.score += cleared; if (state.score >= 20) { state.ended = true; setMessage('原子消除目标完成！'); } drawAtom(); })); b.className = 'cell ' + (v ? 'on' : 'off'); grid.appendChild(b); }); body.append(grid, el('div', 'meta', '原版 300 关 · 已消除：' + state.score + ' · 点击空位生成原子，点击已有原子移动'));
         }
         function drawQuestion(riddle) {
             body.innerHTML = ''; const list = riddle ? RIDDLES : QUESTIONS; const q = list[(state.turn - 1) % list.length]; body.append(el('div', '', q[0]));
@@ -125,8 +126,8 @@
             body.append(el('div', 'meta', '题目：' + state.turn + '　奖金/积分：' + state.score));
         }
         function drawLights() {
-            body.innerHTML = ''; state.lights = state.lights || Array(7).fill(false); const grid = el('div', 'board'); grid.style.gridTemplateColumns = 'repeat(7,1fr)';
-            state.lights.forEach(function (on, i) { const b = button(on ? '亮' : '灭', guard(function () { [i, (i + 1) % 7, (i + 6) % 7].forEach(j => state.lights[j] = !state.lights[j]); if (state.lights.every(Boolean)) { state.ended = true; setMessage('七盏灯全部点亮！'); } drawLights(); })); b.className = 'cell ' + (on ? 'on' : 'off'); grid.appendChild(b); }); body.append(grid, el('div', 'meta', '点击灯及相邻灯切换状态。')); 
+            body.innerHTML = ''; state.lights = state.lights || Array(7).fill(false); state.lightChances = Number.isInteger(state.lightChances) ? state.lightChances : 7; const grid = el('div', 'board'); grid.style.gridTemplateColumns = 'repeat(7,1fr)';
+            state.lights.forEach(function (on, i) { const b = button(on ? '亮' : '灭', guard(function () { if (state.lightChances <= 0 || state.ended) return; state.lightChances--; [i, (i + 1) % 7, (i + 6) % 7].forEach(j => state.lights[j] = !state.lights[j]); if (state.lights.every(Boolean)) { state.ended = true; setMessage('七盏灯全部点亮！'); } else if (state.lightChances === 0) { state.ended = true; setMessage('机会用完，请重新开始。'); } drawLights(); })); b.className = 'cell ' + (on ? 'on' : 'off'); b.disabled = state.lightChances <= 0 || state.ended; grid.appendChild(b); }); body.append(grid, el('div', 'meta', '原版规则：7 次机会内点亮全部灯；剩余机会：' + state.lightChances));
         }
         draw();
         return { restart: reset, end, destroy: function () { cleanup.forEach(fn => fn()); cleanup = []; container.innerHTML = ''; }, getState: function () { return Object.assign({}, state); }, getConfig: function () { return spec; } };

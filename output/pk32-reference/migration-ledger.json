@@ -841,7 +841,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 20
+      "launchVerifiedNodes": 22
     },
     {
       "id": "pk32-057",
@@ -1126,7 +1126,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 20
+      "launchVerifiedNodes": 22
     },
     {
       "id": "pk32-076",
@@ -2506,7 +2506,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 108
+      "launchVerifiedNodes": 6
     },
     {
       "id": "pk32-168",
@@ -3199,5 +3199,5 @@
       "launchVerifiedNodes": 41
     }
   ],
-  "lastLauncherVerification": "2026-09-13T14:12:34.733Z"
+  "lastLauncherVerification": "2026-09-13T15:07:16.338Z"
 }

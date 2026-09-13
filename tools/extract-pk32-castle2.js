@@ -1,0 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const strings = require(path.join(__dirname, '..', 'output', 'pk32-reference', 'strings.json'));
+const catalog = require('../public/data/pk32-native-catalog.json').records.find(x => x.name === '魔法城堡二');
+if (!catalog) throw new Error('catalog record missing');
+const next = strings.filter(x => x.text.indexOf('扑克32--') === 0 && x.offset > catalog.titleOffset).sort((a, b) => a.offset - b.offset)[0];
+const candidates = strings.filter(x => x.offset > catalog.titleOffset && x.offset < next.offset && /^[0-9]+$/.test(x.text));
+const wanted = Object.entries(catalog.payloadLengths).reduce((map, pair) => { map[Number(pair[0])] = Number(pair[1]); return map; }, {});
+const payloads = candidates.filter(x => wanted[x.text.length] > 0 && (wanted[x.text.length]--, true));
+if (payloads.length !== catalog.payloadCount) throw new Error('payload count mismatch: ' + payloads.length);
+const levels = payloads.map((x, i) => ({ number: i + 1, offset: x.offset, cells: x.text }));
+const out = { name: catalog.name, nativeLevelCount: catalog.levelCount, extractedLevelCount: levels.length, encoding: 'native decimal payloads; geometry pending rule decoding', levels };
+fs.writeFileSync(path.join(__dirname, '..', 'public', 'data', 'pk32-castle2-levels.json'), JSON.stringify(out, null, 2) + '\n', 'utf8');
+console.log(JSON.stringify({ levels: levels.length, firstOffset: levels[0].offset, lastOffset: levels[levels.length - 1].offset }));

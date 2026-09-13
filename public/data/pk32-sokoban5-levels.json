@@ -1,0 +1,30 @@
+{
+  "name": "推箱子五",
+  "nativeLevelCount": null,
+  "extractedPayloadCount": 4,
+  "width": 6,
+  "height": 6,
+  "encoding": "six by six decimal cells",
+  "levels": [
+    {
+      "number": 1,
+      "offset": 3063548,
+      "cells": "101004000400504000300000030010000100"
+    },
+    {
+      "number": 2,
+      "offset": 3063628,
+      "cells": "300200010300503004000100003100000200"
+    },
+    {
+      "number": 3,
+      "offset": 3064032,
+      "cells": "420010031004005000200300003010100000"
+    },
+    {
+      "number": 4,
+      "offset": 3064112,
+      "cells": "103010100044450000020000000310100010"
+    }
+  ]
+}

@@ -93,7 +93,7 @@
     function save(s) { try { localStorage.setItem(SAVE, JSON.stringify(s)); } catch (e) {} }
     function cellType(i) { if ([2, 7, 17, 22, 33, 36].indexOf(i) >= 0) return CELLS[i]; if (i === 20) return '休息'; if (i === 10 || i === 30) return '监狱'; if (i === 4 || i === 38) return '税'; return PRICES[i] ? '地产' : '特殊'; }
     function start(container, opts) {
-        opts = opts || {}; var s = load(), stopped = false, aiTimer = null, assetStatus = 'loading', zoomed = false, moveDelay = Number(opts.moveDelay) || 180; container.innerHTML = '';
+        opts = opts || {}; var s = load(), stopped = false, aiTimer = null, assetStatus = 'loading', zoomed = false, moveDelay = Number(opts.moveDelay) || 260; container.innerHTML = '';
         var root = el('section', 'pk32-pk-richman'); var head = el('header', 'pk32-rh-head'); var title = el('h2', '', 'PK32 · 强手棋'); var status = el('div', 'pk32-rh-status'); var boardWrap = el('div', 'pk32-rh-board-wrap'); var board = el('div', 'pk32-rh-board'); board.dataset.assetSource = 'picform-13'; board.dataset.assetStatus = 'native-board-mapping'; board.dataset.rulesStatus = 'incomplete'; boardWrap.appendChild(board); var actions = el('div', 'pk32-rh-actions'); var log = el('div', 'pk32-rh-log');
         var canvas = el('canvas', 'pk32-rh-canvas'); canvas.width = 698; canvas.height = 452; canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', '强手棋棋盘');
         var atlas = document.createElement('img'), selected = s.players[0].pos;
@@ -173,7 +173,7 @@
             controls[1].disabled = assetStatus !== 'ready' || s.phase !== 'buy' || s.turn !== 0 || !!s.spy[0] || current.cash < PRICES[current.pos];
             controls[2].disabled = assetStatus !== 'ready' || s.phase !== 'buy' || s.turn !== 0;
             controls[3].disabled = assetStatus !== 'ready' || s.phase === 'over' || s.turn !== 0 || !!s.spy[0] || s.own[current.pos] !== 0 || s.buildings[current.pos] >= 4 || current.cash < 100;
-            var speedLabel = el('label', '', '移动速度'); var speed = el('select'); speed.setAttribute('aria-label', '移动速度'); [['slow', '慢速', 280], ['normal', '标准', 180], ['fast', '快速', 90]].forEach(function (item) { var option = el('option', '', item[1]); option.value = String(item[2]); speed.appendChild(option); }); speed.value = String(moveDelay); speed.onchange = function () { moveDelay = Number(speed.value) || 180; }; speedLabel.appendChild(speed); actions.appendChild(speedLabel);
+            var speedLabel = el('label', '', '移动速度'); var speed = el('select'); speed.setAttribute('aria-label', '移动速度'); [['slow', '慢速', 360], ['normal', '标准', 260], ['fast', '快速', 120]].forEach(function (item) { var option = el('option', '', item[1]); option.value = String(item[2]); speed.appendChild(option); }); speed.value = String(moveDelay); speed.onchange = function () { moveDelay = Number(speed.value) || 260; }; speedLabel.appendChild(speed); actions.appendChild(speedLabel);
             var zoom = button(zoomed ? '-' : '+', function () { zoomed = !zoomed; render(); });
             zoom.title = zoomed ? '缩小棋盘' : '放大棋盘'; zoom.setAttribute('aria-label', zoom.title); actions.appendChild(zoom);
             var location = el('select'); location.setAttribute('aria-label', '选择地块');
