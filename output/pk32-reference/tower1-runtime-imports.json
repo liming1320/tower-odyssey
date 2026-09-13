@@ -1,0 +1,1767 @@
+{
+  "dllSha256": "f3d0615a422c5ae5cd22aad1e5d22333ec0a38c54eaddcc0a128aaf9f0ee901b",
+  "candidateLoadBase": "0x74020000",
+  "votingMatches": 220,
+  "slots": [
+    {
+      "slot": "0x22563a0",
+      "target": "0x740f3cc3",
+      "dllRva": "0xd3cc3",
+      "names": [
+        "rtcSin"
+      ]
+    },
+    {
+      "slot": "0x22563a4",
+      "target": "0x741224cd",
+      "dllRva": "0x1024cd",
+      "names": [
+        "__vbaVarSub"
+      ]
+    },
+    {
+      "slot": "0x22563a8",
+      "target": "0x74121f8a",
+      "dllRva": "0x101f8a",
+      "names": [
+        "__vbaVarTstGt"
+      ]
+    },
+    {
+      "slot": "0x22563ac",
+      "target": "0x740f3cec",
+      "dllRva": "0xd3cec",
+      "names": [
+        "rtcCos"
+      ]
+    },
+    {
+      "slot": "0x22563b0",
+      "target": "0x740329f8",
+      "dllRva": "0x129f8",
+      "names": [
+        "__vbaStrI2"
+      ]
+    },
+    {
+      "slot": "0x22563b4",
+      "target": "0x740fdf55",
+      "dllRva": "0xddf55",
+      "names": [
+        "__vbaI2Sgn"
+      ]
+    },
+    {
+      "slot": "0x22563b8",
+      "target": "0x740599bc",
+      "dllRva": "0x399bc",
+      "names": [
+        "_CIcos"
+      ]
+    },
+    {
+      "slot": "0x22563bc",
+      "target": "0x74107f94",
+      "dllRva": "0xe7f94",
+      "names": [
+        "_adj_fptan"
+      ]
+    },
+    {
+      "slot": "0x22563c0",
+      "target": "0x740f3d45",
+      "dllRva": "0xd3d45",
+      "names": [
+        "rtcAtn"
+      ]
+    },
+    {
+      "slot": "0x22563c4",
+      "target": "0x74120e23",
+      "dllRva": "0x100e23",
+      "names": [
+        "__vbaVarMove"
+      ]
+    },
+    {
+      "slot": "0x22563c8",
+      "target": "0x7403becf",
+      "dllRva": "0x1becf",
+      "names": [
+        "__vbaStrI4"
+      ]
+    },
+    {
+      "slot": "0x22563cc",
+      "target": "0x74121e51",
+      "dllRva": "0x101e51",
+      "names": [
+        "__vbaVarVargNofree"
+      ]
+    },
+    {
+      "slot": "0x22563d0",
+      "target": "0x7411d0d2",
+      "dllRva": "0xfd0d2",
+      "names": [
+        "__vbaFreeVar"
+      ]
+    },
+    {
+      "slot": "0x22563d4",
+      "target": "0x7402bd80",
+      "dllRva": "0xbd80",
+      "names": [
+        "__vbaLenBstr"
+      ]
+    },
+    {
+      "slot": "0x22563d8",
+      "target": "0x740462a1",
+      "dllRva": "0x262a1",
+      "names": [
+        "__vbaStrVarMove"
+      ]
+    },
+    {
+      "slot": "0x22563dc",
+      "target": "0x74070a8d",
+      "dllRva": "0x50a8d",
+      "names": [
+        "rtcQBColor"
+      ]
+    },
+    {
+      "slot": "0x22563e0",
+      "target": "0x741220eb",
+      "dllRva": "0x1020eb",
+      "names": [
+        "__vbaVarIdiv"
+      ]
+    },
+    {
+      "slot": "0x22563e4",
+      "target": "0x74056232",
+      "dllRva": "0x36232",
+      "names": [
+        "__vbaPut3"
+      ]
+    },
+    {
+      "slot": "0x22563e8",
+      "target": "0x7412182b",
+      "dllRva": "0x10182b",
+      "names": [
+        "__vbaFreeVarList"
+      ]
+    },
+    {
+      "slot": "0x22563ec",
+      "target": "0x7405873e",
+      "dllRva": "0x3873e",
+      "names": [
+        "__vbaEnd"
+      ]
+    },
+    {
+      "slot": "0x22563f0",
+      "target": "0x74107855",
+      "dllRva": "0xe7855",
+      "names": [
+        "_adj_fdiv_m64"
+      ]
+    },
+    {
+      "slot": "0x22563f4",
+      "target": "0x74100a2c",
+      "dllRva": "0xe0a2c",
+      "names": [
+        "rtcStrConvVar"
+      ]
+    },
+    {
+      "slot": "0x22563f8",
+      "target": "0x74044fe8",
+      "dllRva": "0x24fe8",
+      "names": [
+        "__vbaFreeObjList"
+      ]
+    },
+    {
+      "slot": "0x22563fc",
+      "target": "0x7405c89b",
+      "dllRva": "0x3c89b",
+      "names": [
+        "rtcAnsiValueBstr"
+      ]
+    },
+    {
+      "slot": "0x2256400",
+      "target": "0x7405a4d7",
+      "dllRva": "0x3a4d7",
+      "names": [
+        "rtcLowerCaseBstr"
+      ]
+    },
+    {
+      "slot": "0x2256404",
+      "target": "0x740f90ec",
+      "dllRva": "0xd90ec",
+      "names": [
+        "__vbaStrErrVarCopy"
+      ]
+    },
+    {
+      "slot": "0x2256408",
+      "target": "0x74107edc",
+      "dllRva": "0xe7edc",
+      "names": [
+        "_adj_fprem1"
+      ]
+    },
+    {
+      "slot": "0x225640c",
+      "target": "0x740f35e4",
+      "dllRva": "0xd35e4",
+      "names": [
+        "__vbaRecAnsiToUni"
+      ]
+    },
+    {
+      "slot": "0x2256410",
+      "target": "0x740322f0",
+      "dllRva": "0x122f0",
+      "names": [
+        "rtcTrimBstr"
+      ]
+    },
+    {
+      "slot": "0x2256414",
+      "target": "0x740fdf0c",
+      "dllRva": "0xddf0c",
+      "names": [
+        "__vbaI2Abs"
+      ]
+    },
+    {
+      "slot": "0x2256418",
+      "target": "0x740f2d1f",
+      "dllRva": "0xd2d1f",
+      "names": [
+        "__vbaCopyBytes"
+      ]
+    },
+    {
+      "slot": "0x225641c",
+      "target": "0x741220b8",
+      "dllRva": "0x1020b8",
+      "names": [
+        "__vbaVarCmpNe"
+      ]
+    },
+    {
+      "slot": "0x2256420",
+      "target": "0x7402208f",
+      "dllRva": "0x208f",
+      "names": [
+        "__vbaStrCat"
+      ]
+    },
+    {
+      "slot": "0x2256424",
+      "target": "0x7405a5c8",
+      "dllRva": "0x3a5c8",
+      "names": [
+        "__vbaLsetFixstr"
+      ]
+    },
+    {
+      "slot": "0x2256428",
+      "target": "0x740f67e1",
+      "dllRva": "0xd67e1",
+      "names": [
+        "rtcGetYear"
+      ]
+    },
+    {
+      "slot": "0x225642c",
+      "target": "0x740fc025",
+      "dllRva": "0xdc025",
+      "names": [
+        "rtcVarFromFormatVar"
+      ]
+    },
+    {
+      "slot": "0x2256430",
+      "target": "0x7404591e",
+      "dllRva": "0x2591e",
+      "names": [
+        "__vbaRecDestruct"
+      ]
+    },
+    {
+      "slot": "0x2256434",
+      "target": "0x74078dab",
+      "dllRva": "0x58dab",
+      "names": [
+        "__vbaSetSystemError"
+      ]
+    },
+    {
+      "slot": "0x2256438",
+      "target": "0x740f75ad",
+      "dllRva": "0xd75ad",
+      "names": [
+        "rtcDateDiff"
+      ]
+    },
+    {
+      "slot": "0x225643c",
+      "target": "0x7404b4eb",
+      "dllRva": "0x2b4eb",
+      "names": [
+        "__vbaHresultCheckObj"
+      ]
+    },
+    {
+      "slot": "0x2256440",
+      "target": "0x740f3a44",
+      "dllRva": "0xd3a44",
+      "names": [
+        "rtcIsDate"
+      ]
+    },
+    {
+      "slot": "0x2256444",
+      "target": "0x740febf0",
+      "dllRva": "0xdebf0",
+      "names": [
+        "__vbaLenVar"
+      ]
+    },
+    {
+      "slot": "0x2256448",
+      "target": "0x74107809",
+      "dllRva": "0xe7809",
+      "names": [
+        "_adj_fdiv_m32"
+      ]
+    },
+    {
+      "slot": "0x225644c",
+      "target": "0x7412b9d0",
+      "dllRva": "0x10b9d0",
+      "names": [
+        "__vbaVarTstLe"
+      ]
+    },
+    {
+      "slot": "0x2256450",
+      "target": "0x7406288b",
+      "dllRva": "0x4288b",
+      "names": [
+        "rtcEnvironBstr"
+      ]
+    },
+    {
+      "slot": "0x2256454",
+      "target": "0x7412b5ff",
+      "dllRva": "0x10b5ff",
+      "names": [
+        "__vbaVarXor"
+      ]
+    },
+    {
+      "slot": "0x2256458",
+      "target": "0x7412bab5",
+      "dllRva": "0x10bab5",
+      "names": [
+        "__vbaVarCmpGe"
+      ]
+    },
+    {
+      "slot": "0x225645c",
+      "target": "0x7403e5ba",
+      "dllRva": "0x1e5ba",
+      "names": [
+        "__vbaAryDestruct"
+      ]
+    },
+    {
+      "slot": "0x2256460",
+      "target": "0x74032135",
+      "dllRva": "0x12135",
+      "names": [
+        "rtcCommandBstr"
+      ]
+    },
+    {
+      "slot": "0x2256464",
+      "target": "0x7407bd16",
+      "dllRva": "0x5bd16",
+      "names": [
+        "rtcIsMissing"
+      ]
+    },
+    {
+      "slot": "0x2256468",
+      "target": "0x74121fbc",
+      "dllRva": "0x101fbc",
+      "names": [
+        "__vbaVarPow"
+      ]
+    },
+    {
+      "slot": "0x225646c",
+      "target": "0x74123395",
+      "dllRva": "0x103395",
+      "names": [
+        "__vbaVarForInit"
+      ]
+    },
+    {
+      "slot": "0x2256470",
+      "target": "0x74024a95",
+      "dllRva": "0x4a95",
+      "names": [
+        "rtcRandomNext"
+      ]
+    },
+    {
+      "slot": "0x2256474",
+      "target": "0x740fdf29",
+      "dllRva": "0xddf29",
+      "names": [
+        "__vbaI4Abs"
+      ]
+    },
+    {
+      "slot": "0x2256478",
+      "target": "0x7405ae08",
+      "dllRva": "0x3ae08",
+      "names": [
+        "rtcRandomize"
+      ]
+    },
+    {
+      "slot": "0x225647c",
+      "target": "0x7405632e",
+      "dllRva": "0x3632e",
+      "names": [
+        "__vbaFileCloseAll"
+      ]
+    },
+    {
+      "slot": "0x2256480",
+      "target": "0x74100f7e",
+      "dllRva": "0xe0f7e",
+      "names": [
+        "__vbaCyAdd"
+      ]
+    },
+    {
+      "slot": "0x2256484",
+      "target": "0x740f405a",
+      "dllRva": "0xd405a",
+      "names": [
+        "rtcMsgBox"
+      ]
+    },
+    {
+      "slot": "0x2256488",
+      "target": "0x7403e2f2",
+      "dllRva": "0x1e2f2",
+      "names": [
+        "__vbaObjSet"
+      ]
+    },
+    {
+      "slot": "0x225648c",
+      "target": "0x7403f952",
+      "dllRva": "0x1f952",
+      "names": [
+        "__vbaOnError"
+      ]
+    },
+    {
+      "slot": "0x2256490",
+      "target": "0x741078a1",
+      "dllRva": "0xe78a1",
+      "names": [
+        "_adj_fdiv_m16i"
+      ]
+    },
+    {
+      "slot": "0x2256494",
+      "target": "0x74042d5e",
+      "dllRva": "0x22d5e",
+      "names": [
+        "__vbaObjSetAddref"
+      ]
+    },
+    {
+      "slot": "0x2256498",
+      "target": "0x740f3d95",
+      "dllRva": "0xd3d95",
+      "names": [
+        "rtcAppActivate"
+      ]
+    },
+    {
+      "slot": "0x225649c",
+      "target": "0x741079a1",
+      "dllRva": "0xe79a1",
+      "names": [
+        "_adj_fdivr_m16i"
+      ]
+    },
+    {
+      "slot": "0x22564a0",
+      "target": "0x7403efd9",
+      "dllRva": "0x1efd9",
+      "names": [
+        "__vbaVarIndexLoad"
+      ]
+    },
+    {
+      "slot": "0x22564a4",
+      "target": "0x740461b4",
+      "dllRva": "0x261b4",
+      "names": [
+        "rtcDoEvents"
+      ]
+    },
+    {
+      "slot": "0x22564a8",
+      "target": "0x7412a1e3",
+      "dllRva": "0x10a1e3",
+      "names": [
+        "__vbaFpR4"
+      ]
+    },
+    {
+      "slot": "0x22564ac",
+      "target": "0x74100f14",
+      "dllRva": "0xe0f14",
+      "names": [
+        "__vbaStrFixstr"
+      ]
+    },
+    {
+      "slot": "0x22564b0",
+      "target": "0x740ff2b5",
+      "dllRva": "0xdf2b5",
+      "names": [
+        "rtcLeftTrimBstr"
+      ]
+    },
+    {
+      "slot": "0x22564b4",
+      "target": "0x741232b4",
+      "dllRva": "0x1032b4",
+      "names": [
+        "__vbaVarTstLt"
+      ]
+    },
+    {
+      "slot": "0x22564b8",
+      "target": "0x7403ef4a",
+      "dllRva": "0x1ef4a",
+      "names": [
+        "__vbaRefVarAry"
+      ]
+    },
+    {
+      "slot": "0x22564bc",
+      "target": "0x74120a35",
+      "dllRva": "0x100a35",
+      "names": [
+        "__vbaBoolVarNull"
+      ]
+    },
+    {
+      "slot": "0x22564c0",
+      "target": "0x74121fa3",
+      "dllRva": "0x101fa3",
+      "names": [
+        "__vbaFpR8"
+      ]
+    },
+    {
+      "slot": "0x22564c4",
+      "target": "0x740599b2",
+      "dllRva": "0x399b2",
+      "names": [
+        "_CIsin"
+      ]
+    },
+    {
+      "slot": "0x22564c8",
+      "target": "0x7402bcb0",
+      "dllRva": "0xbcb0",
+      "names": [
+        "rtcMidCharBstr"
+      ]
+    },
+    {
+      "slot": "0x22564cc",
+      "target": "0x74129ca3",
+      "dllRva": "0x109ca3",
+      "names": [
+        "__vbaVargVarMove"
+      ]
+    },
+    {
+      "slot": "0x22564d0",
+      "target": "0x7406306e",
+      "dllRva": "0x4306e",
+      "names": [
+        "rtcMidCharVar"
+      ]
+    },
+    {
+      "slot": "0x22564d4",
+      "target": "0x7412baeb",
+      "dllRva": "0x10baeb",
+      "names": [
+        "__vbaVarCmpGt"
+      ]
+    },
+    {
+      "slot": "0x22564d8",
+      "target": "0x740ff81e",
+      "dllRva": "0xdf81e",
+      "names": [
+        "rtcSpaceBstr"
+      ]
+    },
+    {
+      "slot": "0x22564dc",
+      "target": "0x7403f90b",
+      "dllRva": "0x1f90b",
+      "names": [
+        "__vbaChkstk"
+      ]
+    },
+    {
+      "slot": "0x22564e0",
+      "target": "0x7412a21e",
+      "dllRva": "0x10a21e",
+      "names": [
+        "__vbaI2Cy"
+      ]
+    },
+    {
+      "slot": "0x22564e4",
+      "target": "0x740fe016",
+      "dllRva": "0xde016",
+      "names": [
+        "__vbaCyVar"
+      ]
+    },
+    {
+      "slot": "0x22564e8",
+      "target": "0x7403f890",
+      "dllRva": "0x1f890",
+      "names": [
+        "__vbaFileClose"
+      ]
+    },
+    {
+      "slot": "0x22564ec",
+      "target": "0x740ff860",
+      "dllRva": "0xdf860",
+      "names": [
+        "rtcSpaceVar"
+      ]
+    },
+    {
+      "slot": "0x22564f0",
+      "target": "0x7404299d",
+      "dllRva": "0x2299d",
+      "names": [
+        "EVENT_SINK_AddRef"
+      ]
+    },
+    {
+      "slot": "0x22564f4",
+      "target": "0x740ff88e",
+      "dllRva": "0xdf88e",
+      "names": [
+        "rtcUpperCaseBstr"
+      ]
+    },
+    {
+      "slot": "0x22564f8",
+      "target": "0x7412a2e0",
+      "dllRva": "0x10a2e0",
+      "names": [
+        "__vbaVarAbs"
+      ]
+    },
+    {
+      "slot": "0x22564fc",
+      "target": "0x740f39b3",
+      "dllRva": "0xd39b3",
+      "names": [
+        "__vbaGenerateBoundsError"
+      ]
+    },
+    {
+      "slot": "0x2256500",
+      "target": "0x740f904c",
+      "dllRva": "0xd904c",
+      "names": [
+        "__vbaCyI2"
+      ]
+    },
+    {
+      "slot": "0x2256504",
+      "target": "0x7403272a",
+      "dllRva": "0x1272a",
+      "names": [
+        "rtcKillFiles"
+      ]
+    },
+    {
+      "slot": "0x2256508",
+      "target": "0x7403f8f6",
+      "dllRva": "0x1f8f6",
+      "names": [
+        "__vbaStrCmp"
+      ]
+    },
+    {
+      "slot": "0x225650c",
+      "target": "0x740607b8",
+      "dllRva": "0x407b8",
+      "names": [
+        "__vbaPutOwner3"
+      ]
+    },
+    {
+      "slot": "0x2256510",
+      "target": "0x7412b99e",
+      "dllRva": "0x10b99e",
+      "names": [
+        "__vbaVarTstEq"
+      ]
+    },
+    {
+      "slot": "0x2256514",
+      "target": "0x740f905b",
+      "dllRva": "0xd905b",
+      "names": [
+        "__vbaCyI4"
+      ]
+    },
+    {
+      "slot": "0x2256518",
+      "target": "0x740fe37c",
+      "dllRva": "0xde37c",
+      "names": [
+        "__vbaPutOwner4"
+      ]
+    },
+    {
+      "slot": "0x225651c",
+      "target": "0x7406082b",
+      "dllRva": "0x4082b",
+      "names": [
+        "__vbaPrintObj"
+      ]
+    },
+    {
+      "slot": "0x2256520",
+      "target": "0x7405361f",
+      "dllRva": "0x3361f",
+      "names": [
+        "__vbaObjVar"
+      ]
+    },
+    {
+      "slot": "0x2256524",
+      "target": "0x7403bfdd",
+      "dllRva": "0x1bfdd",
+      "names": [
+        "__vbaI2I4"
+      ]
+    },
+    {
+      "slot": "0x2256528",
+      "target": "0x7406f3e0",
+      "dllRva": "0x4f3e0",
+      "names": [
+        "DllFunctionCall"
+      ]
+    },
+    {
+      "slot": "0x225652c",
+      "target": "0x7412b543",
+      "dllRva": "0x10b543",
+      "names": [
+        "__vbaVarOr"
+      ]
+    },
+    {
+      "slot": "0x2256530",
+      "target": "0x74100f93",
+      "dllRva": "0xe0f93",
+      "names": [
+        "__vbaCySub"
+      ]
+    },
+    {
+      "slot": "0x2256534",
+      "target": "0x7412a1c5",
+      "dllRva": "0x10a1c5",
+      "names": [
+        "__vbaFpUI1"
+      ]
+    },
+    {
+      "slot": "0x2256538",
+      "target": "0x74078e7d",
+      "dllRva": "0x58e7d",
+      "names": [
+        "__vbaAryConstruct"
+      ]
+    },
+    {
+      "slot": "0x225653c",
+      "target": "0x740638ce",
+      "dllRva": "0x438ce",
+      "names": [
+        "__vbaStrR4"
+      ]
+    },
+    {
+      "slot": "0x2256540",
+      "target": "0x74107f91",
+      "dllRva": "0xe7f91",
+      "names": [
+        "_adj_fpatan"
+      ]
+    },
+    {
+      "slot": "0x2256544",
+      "target": "0x740556d3",
+      "dllRva": "0x356d3",
+      "names": [
+        "__vbaR4Var"
+      ]
+    },
+    {
+      "slot": "0x2256548",
+      "target": "0x7405a53e",
+      "dllRva": "0x3a53e",
+      "names": [
+        "__vbaFixstrConstruct"
+      ]
+    },
+    {
+      "slot": "0x225654c",
+      "target": "0x7412304b",
+      "dllRva": "0x10304b",
+      "names": [
+        "__vbaLateIdCallLd"
+      ]
+    },
+    {
+      "slot": "0x2256550",
+      "target": "0x7404fb8b",
+      "dllRva": "0x2fb8b",
+      "names": [
+        "__vbaR8Cy"
+      ]
+    },
+    {
+      "slot": "0x2256554",
+      "target": "0x7403c113",
+      "dllRva": "0x1c113",
+      "names": [
+        "__vbaRedim"
+      ]
+    },
+    {
+      "slot": "0x2256558",
+      "target": "0x7406024e",
+      "dllRva": "0x4024e",
+      "names": [
+        "__vbaStrR8"
+      ]
+    },
+    {
+      "slot": "0x225655c",
+      "target": "0x740f35aa",
+      "dllRva": "0xd35aa",
+      "names": [
+        "__vbaRecUniToAnsi"
+      ]
+    },
+    {
+      "slot": "0x2256560",
+      "target": "0x74057fd1",
+      "dllRva": "0x37fd1",
+      "names": [
+        "EVENT_SINK_Release"
+      ]
+    },
+    {
+      "slot": "0x2256564",
+      "target": "0x740607a5",
+      "dllRva": "0x407a5",
+      "names": [
+        "__vbaUI1I2"
+      ]
+    },
+    {
+      "slot": "0x2256568",
+      "target": "0x740542bf",
+      "dllRva": "0x342bf",
+      "names": [
+        "_CIsqrt"
+      ]
+    },
+    {
+      "slot": "0x225656c",
+      "target": "0x74120ab2",
+      "dllRva": "0x100ab2",
+      "names": [
+        "__vbaVarAnd"
+      ]
+    },
+    {
+      "slot": "0x2256570",
+      "target": "0x7405634a",
+      "dllRva": "0x3634a",
+      "names": [
+        "EVENT_SINK_QueryInterface"
+      ]
+    },
+    {
+      "slot": "0x2256574",
+      "target": "0x7412a270",
+      "dllRva": "0x10a270",
+      "names": [
+        "__vbaFpCmpCy"
+      ]
+    },
+    {
+      "slot": "0x2256578",
+      "target": "0x740f8481",
+      "dllRva": "0xd8481",
+      "names": [
+        "__vbaStrUI1"
+      ]
+    },
+    {
+      "slot": "0x225657c",
+      "target": "0x740607d3",
+      "dllRva": "0x407d3",
+      "names": [
+        "__vbaUI1I4"
+      ]
+    },
+    {
+      "slot": "0x2256580",
+      "target": "0x74121986",
+      "dllRva": "0x101986",
+      "names": [
+        "__vbaVarMul"
+      ]
+    },
+    {
+      "slot": "0x2256584",
+      "target": "0x74042b59",
+      "dllRva": "0x22b59",
+      "names": [
+        "__vbaExceptHandler"
+      ]
+    },
+    {
+      "slot": "0x2256588",
+      "target": "0x740efd14",
+      "dllRva": "0xcfd14",
+      "names": [
+        "__vbaStrToUnicode"
+      ]
+    },
+    {
+      "slot": "0x225658c",
+      "target": "0x74107c24",
+      "dllRva": "0xe7c24",
+      "names": [
+        "_adj_fprem"
+      ]
+    },
+    {
+      "slot": "0x2256590",
+      "target": "0x74107955",
+      "dllRva": "0xe7955",
+      "names": [
+        "_adj_fdivr_m64"
+      ]
+    },
+    {
+      "slot": "0x2256594",
+      "target": "0x740708a7",
+      "dllRva": "0x508a7",
+      "names": [
+        "__vbaI2Str"
+      ]
+    },
+    {
+      "slot": "0x2256598",
+      "target": "0x7406ebf6",
+      "dllRva": "0x4ebf6",
+      "names": [
+        "rtcStringVar"
+      ]
+    },
+    {
+      "slot": "0x225659c",
+      "target": "0x740fe02a",
+      "dllRva": "0xde02a",
+      "names": [
+        "__vbaR8ErrVar"
+      ]
+    },
+    {
+      "slot": "0x22565a0",
+      "target": "0x7412137b",
+      "dllRva": "0x10137b",
+      "names": [
+        "__vbaVarDiv"
+      ]
+    },
+    {
+      "slot": "0x22565a4",
+      "target": "0x7412bb21",
+      "dllRva": "0x10bb21",
+      "names": [
+        "__vbaVarCmpLe"
+      ]
+    },
+    {
+      "slot": "0x22565a8",
+      "target": "0x740f7009",
+      "dllRva": "0xd7009",
+      "names": [
+        "rtcGetDateBstr"
+      ]
+    },
+    {
+      "slot": "0x22565ac",
+      "target": "0x7412a1a4",
+      "dllRva": "0x10a1a4",
+      "names": [
+        "__vbaFPException"
+      ]
+    },
+    {
+      "slot": "0x22565b0",
+      "target": "0x74060650",
+      "dllRva": "0x40650",
+      "names": [
+        "__vbaGetOwner3"
+      ]
+    },
+    {
+      "slot": "0x22565b4",
+      "target": "0x7403bd72",
+      "dllRva": "0x1bd72",
+      "names": [
+        "__vbaUbound"
+      ]
+    },
+    {
+      "slot": "0x22565b8",
+      "target": "0x7407a825",
+      "dllRva": "0x5a825",
+      "names": [
+        "__vbaStrVarVal"
+      ]
+    },
+    {
+      "slot": "0x22565bc",
+      "target": "0x74024b24",
+      "dllRva": "0x4b24",
+      "names": [
+        "__vbaVarCat"
+      ]
+    },
+    {
+      "slot": "0x22565c0",
+      "target": "0x740fe35d",
+      "dllRva": "0xde35d",
+      "names": [
+        "__vbaGetOwner4"
+      ]
+    },
+    {
+      "slot": "0x22565c4",
+      "target": "0x74042d75",
+      "dllRva": "0x22d75",
+      "names": [
+        "rtcGetTimer"
+      ]
+    },
+    {
+      "slot": "0x22565c8",
+      "target": "0x74070519",
+      "dllRva": "0x50519",
+      "names": [
+        "rtcStrFromVar"
+      ]
+    },
+    {
+      "slot": "0x22565cc",
+      "target": "0x74100f36",
+      "dllRva": "0xe0f36",
+      "names": [
+        "__vbaLsetFixstrFree"
+      ]
+    },
+    {
+      "slot": "0x22565d0",
+      "target": "0x7403b9da",
+      "dllRva": "0x1b9da",
+      "names": [
+        "__vbaI2Var"
+      ]
+    },
+    {
+      "slot": "0x22565d4",
+      "target": "0x740fe0d8",
+      "dllRva": "0xde0d8",
+      "names": [
+        "__vbaFileSeek"
+      ]
+    },
+    {
+      "slot": "0x22565d8",
+      "target": "0x7403bce6",
+      "dllRva": "0x1bce6",
+      "names": [
+        "rtcBstrFromAnsi"
+      ]
+    },
+    {
+      "slot": "0x22565dc",
+      "target": "0x74060cda",
+      "dllRva": "0x40cda",
+      "names": [
+        "rtcDir"
+      ]
+    },
+    {
+      "slot": "0x22565e0",
+      "target": "0x740542b5",
+      "dllRva": "0x342b5",
+      "names": [
+        "_CIlog"
+      ]
+    },
+    {
+      "slot": "0x22565e4",
+      "target": "0x740f0c7f",
+      "dllRva": "0xd0c7f",
+      "names": [
+        "__vbaErrorOverflow"
+      ]
+    },
+    {
+      "slot": "0x22565e8",
+      "target": "0x740228a1",
+      "dllRva": "0x28a1",
+      "names": [
+        "__vbaFileOpen"
+      ]
+    },
+    {
+      "slot": "0x22565ec",
+      "target": "0x740f8cd4",
+      "dllRva": "0xd8cd4",
+      "names": [
+        "__vbaR8Str"
+      ]
+    },
+    {
+      "slot": "0x22565f0",
+      "target": "0x7403be9c",
+      "dllRva": "0x1be9c",
+      "names": [
+        "__vbaNew2"
+      ]
+    },
+    {
+      "slot": "0x22565f4",
+      "target": "0x7402369c",
+      "dllRva": "0x369c",
+      "names": [
+        "rtcFreeFile"
+      ]
+    },
+    {
+      "slot": "0x22565f8",
+      "target": "0x740fe230",
+      "dllRva": "0xde230",
+      "names": [
+        "rtcFileLength"
+      ]
+    },
+    {
+      "slot": "0x22565fc",
+      "target": "0x7402bd94",
+      "dllRva": "0xbd94",
+      "names": [
+        "__vbaInStr"
+      ]
+    },
+    {
+      "slot": "0x2256600",
+      "target": "0x7412a538",
+      "dllRva": "0x10a538",
+      "names": [
+        "__vbaVarInt"
+      ]
+    },
+    {
+      "slot": "0x2256604",
+      "target": "0x741078d5",
+      "dllRva": "0xe78d5",
+      "names": [
+        "_adj_fdiv_m32i"
+      ]
+    },
+    {
+      "slot": "0x2256608",
+      "target": "0x7407d268",
+      "dllRva": "0x5d268",
+      "names": [
+        "rtcHexBstrFromVar"
+      ]
+    },
+    {
+      "slot": "0x225660c",
+      "target": "0x741079d5",
+      "dllRva": "0xe79d5",
+      "names": [
+        "_adj_fdivr_m32i"
+      ]
+    },
+    {
+      "slot": "0x2256610",
+      "target": "0x7407d22e",
+      "dllRva": "0x5d22e",
+      "names": [
+        "rtcHexVarFromVar"
+      ]
+    },
+    {
+      "slot": "0x2256614",
+      "target": "0x7403f8a3",
+      "dllRva": "0x1f8a3",
+      "names": [
+        "__vbaStrCopy"
+      ]
+    },
+    {
+      "slot": "0x2256618",
+      "target": "0x7406a6a5",
+      "dllRva": "0x4a6a5",
+      "names": [
+        "__vbaI4Str"
+      ]
+    },
+    {
+      "slot": "0x225661c",
+      "target": "0x7412bb57",
+      "dllRva": "0x10bb57",
+      "names": [
+        "__vbaVarCmpLt"
+      ]
+    },
+    {
+      "slot": "0x2256620",
+      "target": "0x7403f9a8",
+      "dllRva": "0x1f9a8",
+      "names": [
+        "__vbaFreeStrList"
+      ]
+    },
+    {
+      "slot": "0x2256624",
+      "target": "0x74074278",
+      "dllRva": "0x54278",
+      "names": [
+        "rtcFileCopy"
+      ]
+    },
+    {
+      "slot": "0x2256628",
+      "target": "0x74107909",
+      "dllRva": "0xe7909",
+      "names": [
+        "_adj_fdivr_m32"
+      ]
+    },
+    {
+      "slot": "0x225662c",
+      "target": "0x7403eff5",
+      "dllRva": "0x1eff5",
+      "names": [
+        "__vbaR8Var"
+      ]
+    },
+    {
+      "slot": "0x2256630",
+      "target": "0x7403f2e7",
+      "dllRva": "0x1f2e7",
+      "names": [
+        "__vbaPowerR8"
+      ]
+    },
+    {
+      "slot": "0x2256634",
+      "target": "0x74107344",
+      "dllRva": "0xe7344",
+      "names": [
+        "_adj_fdiv_r"
+      ]
+    },
+    {
+      "slot": "0x2256638",
+      "target": "0x74056192",
+      "dllRva": "0x36192",
+      "names": [
+        "rtcFileLen"
+      ]
+    },
+    {
+      "slot": "0x225663c",
+      "target": "0x7402d607",
+      "dllRva": "0xd607",
+      "names": [
+        "rtcErrObj"
+      ]
+    },
+    {
+      "slot": "0x2256640",
+      "target": "0x7402a1bf",
+      "dllRva": "0xa1bf",
+      "names": [
+        "ThunRTMain"
+      ]
+    },
+    {
+      "slot": "0x2256644",
+      "target": "0x7412209f",
+      "dllRva": "0x10209f",
+      "names": [
+        "__vbaVarTstNe"
+      ]
+    },
+    {
+      "slot": "0x2256648",
+      "target": "0x7403bdb4",
+      "dllRva": "0x1bdb4",
+      "names": [
+        "__vbaI4Var"
+      ]
+    },
+    {
+      "slot": "0x225664c",
+      "target": "0x7412ba7f",
+      "dllRva": "0x10ba7f",
+      "names": [
+        "__vbaVarCmpEq"
+      ]
+    },
+    {
+      "slot": "0x2256650",
+      "target": "0x7412a1f7",
+      "dllRva": "0x10a1f7",
+      "names": [
+        "__vbaFpCy"
+      ]
+    },
+    {
+      "slot": "0x2256654",
+      "target": "0x7403b62e",
+      "dllRva": "0x1b62e",
+      "names": [
+        "rtcGetDateVar"
+      ]
+    },
+    {
+      "slot": "0x2256658",
+      "target": "0x7407c5ae",
+      "dllRva": "0x5c5ae",
+      "names": [
+        "__vbaAryLock"
+      ]
+    },
+    {
+      "slot": "0x225665c",
+      "target": "0x740f70cd",
+      "dllRva": "0xd70cd",
+      "names": [
+        "rtcGetTimeBstr"
+      ]
+    },
+    {
+      "slot": "0x2256660",
+      "target": "0x7412300a",
+      "dllRva": "0x10300a",
+      "names": [
+        "__vbaLateMemCall"
+      ]
+    },
+    {
+      "slot": "0x2256664",
+      "target": "0x74120ecc",
+      "dllRva": "0x100ecc",
+      "names": [
+        "__vbaVarAdd"
+      ]
+    },
+    {
+      "slot": "0x2256668",
+      "target": "0x740f6fb8",
+      "dllRva": "0xd6fb8",
+      "names": [
+        "rtcGetTimeVar"
+      ]
+    },
+    {
+      "slot": "0x225666c",
+      "target": "0x740efd43",
+      "dllRva": "0xcfd43",
+      "names": [
+        "__vbaStrToAnsi"
+      ]
+    },
+    {
+      "slot": "0x2256670",
+      "target": "0x74120c68",
+      "dllRva": "0x100c68",
+      "names": [
+        "__vbaVarDup"
+      ]
+    },
+    {
+      "slot": "0x2256674",
+      "target": "0x740f3d50",
+      "dllRva": "0xd3d50",
+      "names": [
+        "rtcSqr"
+      ]
+    },
+    {
+      "slot": "0x2256678",
+      "target": "0x741221c9",
+      "dllRva": "0x1021c9",
+      "names": [
+        "__vbaFpI2"
+      ]
+    },
+    {
+      "slot": "0x225667c",
+      "target": "0x74123154",
+      "dllRva": "0x103154",
+      "names": [
+        "__vbaVarMod"
+      ]
+    },
+    {
+      "slot": "0x2256680",
+      "target": "0x74120cfe",
+      "dllRva": "0x100cfe",
+      "names": [
+        "__vbaVarCopy"
+      ]
+    },
+    {
+      "slot": "0x2256684",
+      "target": "0x7412b9b7",
+      "dllRva": "0x10b9b7",
+      "names": [
+        "__vbaVarTstGe"
+      ]
+    },
+    {
+      "slot": "0x2256688",
+      "target": "0x74122fe8",
+      "dllRva": "0x102fe8",
+      "names": [
+        "__vbaFpI4"
+      ]
+    },
+    {
+      "slot": "0x225668c",
+      "target": "0x74032378",
+      "dllRva": "0x12378",
+      "names": [
+        "rtcLeftCharBstr"
+      ]
+    },
+    {
+      "slot": "0x2256690",
+      "target": "0x7402b8c4",
+      "dllRva": "0xb8c4",
+      "names": [
+        "rtcLeftCharVar"
+      ]
+    },
+    {
+      "slot": "0x2256694",
+      "target": "0x740f361e",
+      "dllRva": "0xd361e",
+      "names": [
+        "__vbaRecDestructAnsi"
+      ]
+    },
+    {
+      "slot": "0x2256698",
+      "target": "0x741224a4",
+      "dllRva": "0x1024a4",
+      "names": [
+        "__vbaLateMemCallLd"
+      ]
+    },
+    {
+      "slot": "0x225669c",
+      "target": "0x7410112f",
+      "dllRva": "0xe112f",
+      "names": [
+        "__vbaR8IntI2"
+      ]
+    },
+    {
+      "slot": "0x22566a0",
+      "target": "0x740542ab",
+      "dllRva": "0x342ab",
+      "names": [
+        "_CIatan"
+      ]
+    },
+    {
+      "slot": "0x22566a4",
+      "target": "0x740734bd",
+      "dllRva": "0x534bd",
+      "names": [
+        "__vbaI2ErrVar"
+      ]
+    },
+    {
+      "slot": "0x22566a8",
+      "target": "0x740f901d",
+      "dllRva": "0xd901d",
+      "names": [
+        "__vbaUI1Str"
+      ]
+    },
+    {
+      "slot": "0x22566ac",
+      "target": "0x741203b6",
+      "dllRva": "0x1003b6",
+      "names": [
+        "__vbaCastObj"
+      ]
+    },
+    {
+      "slot": "0x22566b0",
+      "target": "0x7403f8da",
+      "dllRva": "0x1f8da",
+      "names": [
+        "__vbaStrMove"
+      ]
+    },
+    {
+      "slot": "0x22566b4",
+      "target": "0x740fed66",
+      "dllRva": "0xded66",
+      "names": [
+        "rtcRightCharBstr"
+      ]
+    },
+    {
+      "slot": "0x22566b8",
+      "target": "0x7403238b",
+      "dllRva": "0x1238b",
+      "names": [
+        "rtcRightCharVar"
+      ]
+    },
+    {
+      "slot": "0x22566bc",
+      "target": "0x74101152",
+      "dllRva": "0xe1152",
+      "names": [
+        "__vbaR8IntI4"
+      ]
+    },
+    {
+      "slot": "0x22566c0",
+      "target": "0x74122aa9",
+      "dllRva": "0x102aa9",
+      "names": [
+        "__vbaVarNeg"
+      ]
+    },
+    {
+      "slot": "0x22566c4",
+      "target": "0x740f686f",
+      "dllRva": "0xd686f",
+      "names": [
+        "rtcGetDayOfMonth"
+      ]
+    },
+    {
+      "slot": "0x22566c8",
+      "target": "0x740f6931",
+      "dllRva": "0xd6931",
+      "names": [
+        "rtcGetHourOfDay"
+      ]
+    },
+    {
+      "slot": "0x22566cc",
+      "target": "0x74039070",
+      "dllRva": "0x19070",
+      "names": [
+        "rtcBstrFromFormatVar"
+      ]
+    },
+    {
+      "slot": "0x22566d0",
+      "target": "0x7410a765",
+      "dllRva": "0xea765",
+      "names": [
+        "_allmul"
+      ]
+    },
+    {
+      "slot": "0x22566d4",
+      "target": "0x740f6978",
+      "dllRva": "0xd6978",
+      "names": [
+        "rtcGetMinuteOfHour"
+      ]
+    },
+    {
+      "slot": "0x22566d8",
+      "target": "0x740fec7f",
+      "dllRva": "0xdec7f",
+      "names": [
+        "__vbaLenVarB"
+      ]
+    },
+    {
+      "slot": "0x22566dc",
+      "target": "0x740f6828",
+      "dllRva": "0xd6828",
+      "names": [
+        "rtcGetMonthOfYear"
+      ]
+    },
+    {
+      "slot": "0x22566e0",
+      "target": "0x7410a75b",
+      "dllRva": "0xea75b",
+      "names": [
+        "_CItan"
+      ]
+    },
+    {
+      "slot": "0x22566e4",
+      "target": "0x740f69bf",
+      "dllRva": "0xd69bf",
+      "names": [
+        "rtcGetSecondOfMinute"
+      ]
+    },
+    {
+      "slot": "0x22566e8",
+      "target": "0x7407c5ce",
+      "dllRva": "0x5c5ce",
+      "names": [
+        "__vbaAryUnlock"
+      ]
+    },
+    {
+      "slot": "0x22566ec",
+      "target": "0x740fe002",
+      "dllRva": "0xde002",
+      "names": [
+        "__vbaUI1Var"
+      ]
+    },
+    {
+      "slot": "0x22566f0",
+      "target": "0x7410111d",
+      "dllRva": "0xe111d",
+      "names": [
+        "__vbaFPInt"
+      ]
+    },
+    {
+      "slot": "0x22566f4",
+      "target": "0x741234cf",
+      "dllRva": "0x1034cf",
+      "names": [
+        "__vbaVarForNext"
+      ]
+    },
+    {
+      "slot": "0x22566f8",
+      "target": "0x7403f2dd",
+      "dllRva": "0x1f2dd",
+      "names": [
+        "_CIexp"
+      ]
+    },
+    {
+      "slot": "0x22566fc",
+      "target": "0x740ff669",
+      "dllRva": "0xdf669",
+      "names": [
+        "__vbaMidStmtBstr"
+      ]
+    },
+    {
+      "slot": "0x2256700",
+      "target": "0x7407df2c",
+      "dllRva": "0x5df2c",
+      "names": [
+        "__vbaRecAssign"
+      ]
+    },
+    {
+      "slot": "0x2256704",
+      "target": "0x740f5e62",
+      "dllRva": "0xd5e62",
+      "names": [
+        "rtcSetFileAttr"
+      ]
+    },
+    {
+      "slot": "0x2256708",
+      "target": "0x7403dc7f",
+      "dllRva": "0x1dc7f",
+      "names": [
+        "__vbaFreeObj"
+      ]
+    },
+    {
+      "slot": "0x225670c",
+      "target": "0x7403f878",
+      "dllRva": "0x1f878",
+      "names": [
+        "__vbaFreeStr"
+      ]
+    }
+  ]
+}

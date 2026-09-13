@@ -1,0 +1,16 @@
+[
+  {
+    "rva": 22615552,
+    "address": 26809856,
+    "bytes": "0250ff",
+    "instruction": "add dl, byte ptr [eax - 1]",
+    "strings": []
+  },
+  {
+    "rva": 22615555,
+    "address": 26809859,
+    "bytes": "d3898500feff",
+    "instruction": "ror dword ptr [ecx - 0x1ff7b], cl",
+    "strings": []
+  }
+]

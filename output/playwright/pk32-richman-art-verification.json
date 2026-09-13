@@ -1,0 +1,127 @@
+{
+  "pixelChecks": [
+    {
+      "label": "initial",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "purchase-and-four-player-turn",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "load-with-house",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-0",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-1",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-2",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-3",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-4",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-5",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-6",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-7",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-8",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    },
+    {
+      "label": "track-fixture-9",
+      "width": 698,
+      "height": 452,
+      "differentPixels": 0
+    }
+  ],
+  "viewports": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "board": {
+        "width": 308,
+        "height": 199.4375,
+        "overflow": false,
+        "cells": 40,
+        "inside": true
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "board": {
+        "width": 378,
+        "height": 244.765625,
+        "overflow": false,
+        "cells": 40,
+        "inside": true
+      }
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "board": {
+        "width": 698,
+        "height": 452,
+        "overflow": false,
+        "cells": 40,
+        "inside": true
+      }
+    }
+  ],
+  "interactionPassed": true,
+  "rulesComplete": false,
+  "comparison": "native atlas and recovered blit formulas; not a full original-window comparison",
+  "errors": []
+}

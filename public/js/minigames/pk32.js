@@ -8,13 +8,13 @@
     ).split('|');
 
     const EVIDENCE = {
-        '魔塔': '已提取 22 个地图串、剧情、道具和原始图集；编码映射校准中',
-        '强手棋': '已提取规则文字、卡片说明和棋盘图集',
+        '魔塔': '22 层原版地图与美术已还原；剧情、商店和机关仍在迁移',
+        '强手棋': '原版棋盘、四名角色和地产美术已还原；完整规则仍在迁移',
         '木乃伊': '已识别名称与相关资源，规则待核对',
     };
     // 只有明确存在对应实现的项目才提供启动按钮；按钮文案刻意标明适配状态。
     const PLAYABLE = {
-        '魔塔': { gameId: 'tower', label: '魔塔还原版（校准中）', note: '已接入 PK32 提取的 22 张地图；原始图集编码映射仍在校准' },
+        '魔塔': { gameId: 'tower', label: '魔塔原图版', note: '22 层原版地图；剧情和机关尚未全部还原' },
         '强手棋': { gameId: 'pk32-richman', label: 'PK32 强手棋原版迁移', note: '使用 PK32 独立棋盘、资产和存档' },
     };
     const MODULE_CONFIG = {
@@ -63,7 +63,7 @@
             name, index: index + 1, group: groupOf(index),
             status: PLAYABLE[name] || MODULE_CONFIG[name] || CASUAL_CONFIG[name] || ACTION_CONFIG[name] || STRATEGY_CONFIG[name] || CARD_CONFIG[name] || PUZZLE_CONFIG[name] || VARIANT_CONFIG[name] ? 'rules-partial' : 'catalogued',
             originalComplete: false,
-            levelText: '原版关数：待核对',
+            levelText: name === '魔塔' ? '原版地图：22 层' : name === '强手棋' ? '原版棋盘：40 格' : '原版关数：待核对',
             evidence: EVIDENCE[name] || '已从 PK32 原版菜单识别，等待资源与规则迁移',
             playable: PLAYABLE[name] || null,
             module: MODULE_CONFIG[name] || null,

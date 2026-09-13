@@ -50,8 +50,83 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     var kind = tileKind(code);
     return kind === 'wall' ? '' : kind === 'door' ? '门' : kind === 'key' ? '钥' : kind === 'treasure' ? '宝' : kind === 'exit' ? '梯' : kind === 'player' ? '主' : kind === 'enemy' ? '怪' : '';
   }
-  // Map codes are game IDs, not row-major atlas indexes. Do not render guessed art.
-  function tileSprite(code) { return null; }
+  // Native RVA 0x1729e20: PicForm(22), 18 columns, paired 33px rows, 32px SRCCOPY.
+  var ORIGINAL_ART = '/img/pk32/original/sheet-915611.png';
+  var ORIGINAL_NAMES = { '00': '地板', '01': '下层入口', '02': '上层入口', '03': '砖墙', '04': '星空', '05': '熔岩', '06': '黄门', '07': '蓝门', '08': '红门', '09': '铁门', '10': '机关门', '11': '下楼梯', '12': '上楼梯', '16': '黄钥匙', '17': '蓝钥匙', '18': '红钥匙', '72': '仙子', '73': '老人', '74': '商人', '75': '杰克' };
+  var ORIGINAL_DOORS = { '06': 'yellow', '07': 'blue', '08': 'red' };
+  var ORIGINAL_KEYS = { '16': 'yellow', '17': 'blue', '18': 'red' };
+  // Native RVA 0x172b1fe: HP, attack, defense, gold, experience for map codes 38..70.
+  var ORIGINAL_MONSTERS = [
+    [70,15,2,2,1],[50,20,1,1,1],[200,35,10,5,3],[700,250,125,32,25],
+    [100,20,5,3,2],[150,65,30,10,8],[550,170,100,25,20],[110,25,5,5,3],
+    [150,40,20,8,5],[400,90,50,15,12],[2500,900,850,84,70],[300,75,45,13,10],
+    [900,450,330,50,40],[500,115,65,15,15],[125,50,25,10,7],[100,200,110,30,25],
+    [1500,830,730,80,65],[1300,300,150,40,30],[450,150,90,22,19],[1250,500,400,55,45],
+    [1500,560,460,60,50],[2000,680,590,70,55],[250,120,70,20,15],[500,400,260,47,35],
+    [1200,620,520,65,50],[3100,1050,950,92,80],[850,350,200,45,35],[900,750,650,77,60],
+    [1200,980,900,88,75],[15000,1000,1000,100,100],[20000,1333,1333,100,100],
+    [25000,1500,1200,150,120],[37500,2250,1800,150,120]
+  ];
+  function originalBattle(hero, code, percent) {
+    var monster = ORIGINAL_MONSTERS[Number(code) - 38];
+    if (!monster) return null;
+    var bossException = Number(code) === 70 && hero.layer === 21;
+    var baseStrike = hero.attack - monster[2];
+    // Native admission check uses base stats, while damage uses the scaled stats.
+    if (!bossException && baseStrike <= 0) return { allowed: false, reason: '攻击不足，无法战斗' };
+    if (!bossException && Math.ceil(monster[0] / baseStrike) * Math.max(0, monster[1] - hero.defense) > hero.hp) return { allowed: false, reason: '生命不足，无法战斗' };
+    percent = Math.min(110, Math.max(100, percent || 100));
+    var strike = Math.max(0, hero.attack - Math.max(1, Math.floor(monster[2] * percent / 100)));
+    var counter = Math.max(0, Math.max(1, Math.floor(monster[1] * percent / 100)) - hero.defense);
+    var hp = hero.hp, enemyHp = monster[0], rounds = 0;
+    if (strike > 0) {
+      rounds = Math.ceil(enemyHp / strike);
+      if (counter > 0) rounds = Math.min(rounds, Math.ceil(hp / counter));
+      hp = Math.max(0, hp - rounds * counter); enemyHp = Math.max(0, enemyHp - rounds * strike);
+    } else if (counter > 0) { rounds = Math.ceil(hp / counter); hp = 0; }
+    else {
+      // Native RVA 0x1756d1d: both sides lose a decimal-sized amount in a stalemate.
+      while (hp > 0 && enemyHp > 0) {
+        var amount = 1;
+        [10, 100, 1000, 10000].forEach(function (n) { if (hp >= n && enemyHp >= n) amount = n; });
+        hp = Math.max(0, hp - amount); enemyHp = Math.max(0, enemyHp - amount); rounds++;
+      }
+    }
+    var won = hp > 0;
+    if (won) {
+      if (Number(code) === 54) hp = Math.floor(hp * 3 / 4);
+      if (Number(code) === 55) hp = Math.floor(hp * 2 / 3);
+      if (Number(code) === 60) hp -= 100;
+      if (Number(code) === 61) hp -= 300;
+      hp = Math.max(1, hp);
+    }
+    return { allowed: true, hp: hp, enemyHp: enemyHp, rounds: rounds, damage: hero.hp - hp, gold: won ? monster[3] : 0, experience: won ? monster[4] : 0, won: won };
+  }
+  function originalKind(code) {
+    var n = Number(code);
+    if (n >= 3 && n <= 5) return 'wall';
+    if (ORIGINAL_DOORS[code] || code === '09' || code === '10') return 'door';
+    if (ORIGINAL_KEYS[code]) return 'key';
+    if (n === 11 || n === 12) return 'exit';
+    if (n >= 38 && n <= 70) return 'enemy';
+    if (n >= 19 && n <= 37) return 'treasure';
+    if (n >= 71 && n <= 75 || n >= 13 && n <= 15) return 'npc';
+    return 'floor';
+  }
+  function tileSprite(code, frame) {
+    var n = Number(code);
+    if (!Number.isInteger(n) || n < 0 || n > 83) return null;
+    return { x: (n % 18) * 33, y: Math.floor(n / 18) * 66 + (frame === 1 ? 33 : 0), width: 32, height: 32 };
+  }
+  function paintSprite(button, code) {
+    var sprite = tileSprite(code, 0);
+    if (!sprite) return;
+    button.textContent = '';
+    button.dataset.spriteCode = code;
+    button.style.backgroundImage = 'url("' + ORIGINAL_ART + '")';
+    button.style.backgroundSize = (593 / 32 * 100) + '% ' + (1038 / 32 * 100) + '%';
+    button.style.backgroundPosition = (sprite.x / (593 - 32) * 100) + '% ' + (sprite.y / (1038 - 32) * 100) + '%';
+  }
 
   function codeAt(map, x, y) { return map.slice((y * WIDTH + x) * 2, (y * WIDTH + x + 1) * 2); }
   function isWall(code) { return !!WALLS[code] || code === '9'; }
@@ -59,19 +134,19 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
   function isKey(code) { return code === '20' || code === '21' || code === '22' || code === '23'; }
   function isTreasure(code) { return parseInt(code, 10) >= 24 && parseInt(code, 10) < 30; }
   function isEnemy(code) { var n = parseInt(code, 10); return code.length > 1 && n >= 30 && n < 90 && code !== '40' && code !== '66'; }
-  function makeLayer(map, index, width, height, unit) {
+  function makeLayer(map, index, width, height, unit, original) {
     width = width || WIDTH; height = height || HEIGHT; unit = unit || 2;
     var cells = [];
     for (var i = 0; i < width * height; i += 1) cells.push(map.slice(i * unit, i * unit + unit));
-    var start = cells.indexOf('11');
+    var start = cells.indexOf(original ? '01' : '11');
     if (start < 0) start = cells.indexOf('01');
     if (start < 0 && unit === 1) start = width * (height - 2) + 1;
     if (start < 0) start = width * (height - 2) + 1;
     return { index: index, cells: cells, start: { x: start % width, y: Math.floor(start / width) } };
   }
-  var LAYERS = MAPS.map(function (map, index) { return makeLayer(map, index); });
+  var LAYERS = MAPS.map(function (map, index) { return makeLayer(map, index, 11, 11, 2, true); });
   function buildSet(name, maps, width, height, unit) {
-    return { name: name, maps: maps, width: width, height: height, unit: unit, layers: maps.map(function (map, index) { return makeLayer(map, index, width, height, unit); }) };
+    return { name: name, maps: maps, width: width, height: height, unit: unit, layers: maps.map(function (map, index) { return makeLayer(map, index, width, height, unit, name === '魔塔'); }) };
   }
   var TOWER_SETS = {
     '魔塔': buildSet('魔塔', MAPS, 11, 11, 2),
@@ -82,7 +157,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
 
   function cloneState(setName, layerIndex) {
     var set = TOWER_SETS[setName] || TOWER_SETS['魔塔'], layer = set.layers[layerIndex];
-    return { set: set.name, layer: layerIndex, x: layer.start.x, y: layer.start.y, hp: 100, attack: 10, defense: 5, gold: 0, keys: { red: 0, blue: 0, yellow: 0, green: 0 }, defeated: {}, won: false, lost: false };
+    return { set: set.name, layer: layerIndex, x: layer.start.x, y: layer.start.y, hp: setName === '魔塔' ? 1000 : 100, attack: 10, defense: setName === '魔塔' ? 10 : 5, gold: 0, experience: 0, keys: { red: 0, blue: 0, yellow: setName === '魔塔' ? 1 : 0, green: 0 }, defeated: {}, cleared: {}, won: false, lost: false };
   }
   function Tower(container, opts) {
     opts = opts || {};
@@ -98,35 +173,80 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
   }
   Tower.prototype.getState = function () { return JSON.parse(JSON.stringify(this.state)); };
   Tower.prototype.on = function (el, type, fn) { el.addEventListener(type, fn); this.handlers.push([el, type, fn]); };
-  Tower.prototype.save = function () { try { localStorage.setItem(SAVE_KEY, JSON.stringify(this.state)); this.note('已保存当前楼层和状态'); } catch (e) { this.note('存档不可用'); } };
-  Tower.prototype.load = function () { try { var s = JSON.parse(localStorage.getItem(SAVE_KEY)); var set = TOWER_SETS[s && s.set] || TOWER_SETS['魔塔']; if (!s || s.layer < 0 || s.layer >= set.layers.length || s.x < 0 || s.x >= set.width || s.y < 0 || s.y >= set.height || !s.keys || typeof s.keys.red !== 'number' || typeof s.keys.blue !== 'number' || typeof s.keys.yellow !== 'number' || typeof s.keys.green !== 'number' || !s.defeated || typeof s.defeated !== 'object' || !Number.isFinite(s.hp) || !Number.isFinite(s.attack) || !Number.isFinite(s.defense) || !Number.isFinite(s.gold) || typeof s.won !== 'boolean' || typeof s.lost !== 'boolean') throw new Error('invalid save'); this.setName = set.name; this.set = set; this.layers = set.layers; this.width = set.width; this.height = set.height; this.state = s; this.render(); this.note('已读取存档'); } catch (e) { this.note('存档无效或不可用'); } };
+  Tower.prototype.save = function () { try { localStorage.setItem(this.setName === '魔塔' ? SAVE_KEY + '-picform22' : SAVE_KEY, JSON.stringify(this.state)); this.note('已保存当前楼层和状态'); } catch (e) { this.note('存档不可用'); } };
+  Tower.prototype.load = function () { try { var s = JSON.parse(localStorage.getItem(this.setName === '魔塔' ? SAVE_KEY + '-picform22' : SAVE_KEY)); var set = TOWER_SETS[s && s.set] || TOWER_SETS['魔塔']; if (!s || s.layer < 0 || s.layer >= set.layers.length || s.x < 0 || s.x >= set.width || s.y < 0 || s.y >= set.height || !s.keys || typeof s.keys.red !== 'number' || typeof s.keys.blue !== 'number' || typeof s.keys.yellow !== 'number' || typeof s.keys.green !== 'number' || !s.defeated || typeof s.defeated !== 'object' || !Number.isFinite(s.hp) || !Number.isFinite(s.attack) || !Number.isFinite(s.defense) || !Number.isFinite(s.gold) || typeof s.won !== 'boolean' || typeof s.lost !== 'boolean') throw new Error('invalid save'); this.setName = set.name; this.set = set; this.layers = set.layers; this.width = set.width; this.height = set.height; this.state = s; this.render(); this.note('已读取存档'); } catch (e) { this.note('存档无效或不可用'); } };
   Tower.prototype.restart = function () { this.state = cloneState(this.setName, this.state.layer); this.render(); };
   Tower.prototype.note = function (message) { var el = this.container.querySelector('[data-role=message]'); if (el) el.textContent = message; };
   Tower.prototype.move = function (dx, dy) {
     if (this.state.won || this.state.lost) return;
     var nx = this.state.x + dx, ny = this.state.y + dy;
     if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height) return;
-    var i = ny * this.width + nx, code = this.layers[this.state.layer].cells[i];
-    if (isWall(code)) return this.note('墙壁无法通过');
-    if (isDoor(code)) { var color = code === '12' ? 'red' : code === '16' ? 'blue' : code === '17' ? 'yellow' : 'green'; if (!this.state.keys[color]) return this.note('需要' + color + '钥匙'); this.state.keys[color] -= 1; }
-    if (isEnemy(code) && !this.state.defeated[i]) { var power = Math.max(1, parseInt(code, 10) - 25); this.state.hp -= Math.max(1, power - this.state.defense); if (this.state.hp <= 0) { this.state.lost = true; this.note('战斗失败，请重开'); this.render(); return; } this.state.gold += power; this.state.defeated[i] = true; }
-    if (isKey(code)) { var key = code === '20' ? 'red' : code === '21' ? 'blue' : code === '22' ? 'yellow' : 'green'; this.state.keys[key] += 1; this.state.gold += 5; }
+    var i = ny * this.width + nx, original = this.setName === '魔塔', token = this.state.layer + ':' + i;
+    this.state.cleared = this.state.cleared || {};
+    var code = original && this.state.cleared[token] ? '00' : this.layers[this.state.layer].cells[i];
+    if (original ? originalKind(code) === 'wall' : isWall(code)) return this.note('墙壁无法通过');
+    if (original && (code === '09' || code === '10')) return this.note('需要触发机关');
+    if (original ? !!ORIGINAL_DOORS[code] : isDoor(code)) {
+      var color = original ? ORIGINAL_DOORS[code] : code === '12' ? 'red' : code === '16' ? 'blue' : code === '17' ? 'yellow' : 'green';
+      if (!this.state.keys[color]) return this.note('需要' + ({ red: '红', blue: '蓝', yellow: '黄', green: '绿' }[color]) + '钥匙');
+      this.state.keys[color] -= 1;
+      if (original) this.state.cleared[token] = true;
+    }
+    if (original && originalKind(code) === 'enemy') {
+      var battle = originalBattle(this.state, code);
+      if (!battle.allowed) return this.note(battle.reason);
+      this.state.hp = battle.hp; this.state.gold += battle.gold; this.state.experience = (this.state.experience || 0) + battle.experience;
+      if (battle.enemyHp === 0) this.state.cleared[token] = true;
+      if (!battle.won) { this.state.lost = true; this.render(); this.note('战斗失败，请重开'); return; }
+    }
+    if (!original && isEnemy(code) && !this.state.defeated[i]) { var power = Math.max(1, parseInt(code, 10) - 25); this.state.hp -= Math.max(1, power - this.state.defense); if (this.state.hp <= 0) { this.state.lost = true; this.render(); this.note('战斗失败，请重开'); return; } this.state.gold += power; if (original) this.state.cleared[token] = true; else this.state.defeated[i] = true; }
+    if (original ? !!ORIGINAL_KEYS[code] : isKey(code)) {
+      var key = original ? ORIGINAL_KEYS[code] : code === '20' ? 'red' : code === '21' ? 'blue' : code === '22' ? 'yellow' : 'green';
+      this.state.keys[key] += 1;
+      if (original) this.state.cleared[token] = true; else this.state.gold += 5;
+    }
     this.state.x = nx; this.state.y = ny;
-    if (code === '72' || (this.state.layer === this.layers.length - 1 && nx === this.width - 2 && ny === 1)) { if (this.state.layer < this.layers.length - 1) { this.state.layer += 1; var next = this.layers[this.state.layer].start; this.state.x = next.x; this.state.y = next.y; this.note('进入第' + (this.state.layer + 1) + '层'); } else { this.state.won = true; this.note('恭喜通关 PK32 魔塔'); } }
+    if (original && (code === '11' || code === '12')) {
+      var nextFloor = this.state.layer + (code === '12' ? 1 : -1);
+      if (nextFloor >= 0 && nextFloor < this.layers.length) {
+        this.state.layer = nextFloor;
+        var entry = this.layers[nextFloor].cells.indexOf(code === '12' ? '01' : '02');
+        if (entry < 0) entry = this.layers[nextFloor].start.y * this.width + this.layers[nextFloor].start.x;
+        this.state.x = entry % this.width; this.state.y = Math.floor(entry / this.width);
+      }
+    } else if (!original && (code === '72' || (this.state.layer === this.layers.length - 1 && nx === this.width - 2 && ny === 1))) { if (this.state.layer < this.layers.length - 1) { this.state.layer += 1; var next = this.layers[this.state.layer].start; this.state.x = next.x; this.state.y = next.y; } else this.state.won = true; }
     this.render();
   };
   Tower.prototype.render = function () {
     var self = this, layer = this.layers[this.state.layer];
     this.handlers.forEach(function (h) { h[0].removeEventListener(h[1], h[2]); }); this.handlers = []; this.keyBound = false;
     this.container.innerHTML = '<div data-role="pk32-tower" style="font-family:system-ui;max-width:760px;margin:auto;color:#20252b;overflow:hidden"><style>.pk32-tower-tile{position:relative;display:grid;place-items:center;min-width:28px;min-height:28px;aspect-ratio:1;border:1px solid #b9a878;padding:0;font-weight:700;font-family:system-ui;font-size:14px}.pk32-tower-tile[data-kind=floor]{background:#f4ead0;color:#c9bd9c}.pk32-tower-tile[data-kind=wall]{background:#39434f;color:#d7dce0}.pk32-tower-tile[data-kind=door]{background:#a64b37;color:#fff}.pk32-tower-tile[data-kind=key]{background:#e3b341;color:#20252b}.pk32-tower-tile[data-kind=treasure]{background:#c88934;color:#fff}.pk32-tower-tile[data-kind=enemy]{background:#713c74;color:#fff}.pk32-tower-tile[data-kind=player]{background:#2374a8;color:#fff}.pk32-tower-tile[data-kind=exit]{background:#2d8c72;color:#fff}.pk32-tower-grid-wrap{max-width:100%;overflow:auto;overscroll-behavior:contain}.pk32-tower-grid{width:max-content;min-width:100%}@media (max-width:600px){.pk32-tower-tile{min-width:30px;min-height:30px}.pk32-tower-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px}.pk32-tower-stats{line-height:1.6;overflow-wrap:anywhere}}</style><div class="pk32-tower-toolbar"><strong>PK32 ' + this.setName + ' 迁移</strong><label>地图 <select data-role="layer"></select></label><button data-role="restart">重开</button><button data-role="save">存档</button><button data-role="load">读档</button></div><div data-role="message" style="min-height:28px;padding:8px 0">第' + (this.state.layer + 1) + '层</div><div data-role="stats" class="pk32-tower-stats"></div><div class="pk32-tower-grid-wrap"><div data-role="grid" class="pk32-tower-grid" style="display:grid;grid-template-columns:repeat(' + this.width + ',minmax(28px,1fr));gap:1px;touch-action:none"></div></div><div style="display:flex;justify-content:center;gap:8px;margin-top:10px"><button data-dir=up>上</button><button data-dir=left>左</button><button data-dir=down>下</button><button data-dir=right>右</button></div></div>';
-    var root = this.container.querySelector('[data-role=pk32-tower]'); root.dataset.assetSource = 'pk32-tower-sheet'; root.dataset.assetStatus = 'mapping-incomplete';
+    var original = this.setName === '魔塔';
+    var root = this.container.querySelector('[data-role=pk32-tower]'); root.dataset.assetSource = original ? 'picform-22' : 'pk32-tower-sheet'; root.dataset.assetStatus = original ? 'native-tile-mapping' : 'mapping-incomplete'; root.dataset.rulesStatus = 'incomplete';
+    if (original) {
+      var artStyle = document.createElement('style');
+      artStyle.textContent = '[data-asset-source=picform-22]{background:#181b20;color:#f0f1f2!important;padding:8px;box-sizing:border-box}[data-asset-source=picform-22] .pk32-tower-grid{width:352px;max-width:100%;min-width:0;margin:auto}[data-asset-source=picform-22] .pk32-tower-tile{border:0;border-radius:0;min-width:0;min-height:0;width:100%;aspect-ratio:1;box-sizing:border-box;background-repeat:no-repeat;image-rendering:pixelated}[data-asset-source=picform-22] .pk32-tower-tile:focus-visible{outline:2px solid #fff;outline-offset:-2px}[data-asset-source=picform-22] .pk32-tower-toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}[data-asset-source=picform-22] button{min-height:32px}[data-asset-source=picform-22] .pk32-tower-grid button{min-height:0}';
+      root.appendChild(artStyle);
+    }
     var select = this.container.querySelector('[data-role=layer]'); this.layers.forEach(function (_, i) { var o = document.createElement('option'); o.value = i; o.textContent = '第' + (i + 1) + '层'; o.selected = i === self.state.layer; select.appendChild(o); });
-    var grid = this.container.querySelector('[data-role=grid]'); layer.cells.forEach(function (code, i) { var b = document.createElement('button'), x = i % self.width, y = Math.floor(i / self.width), kind = tileKind(code), text = tileGlyph(code); b.type = 'button'; b.className = 'pk32-tower-tile'; b.dataset.code = code; b.dataset.kind = kind; b.title = tileName(code) + '（资源编码 ' + code + '）'; b.setAttribute('aria-label', b.title); if (self.state.x === x && self.state.y === y) { text = '@'; b.dataset.kind = 'player'; } else if (self.state.defeated[i]) text = ''; b.textContent = text; self.on(b, 'click', function () { if (Math.abs(self.state.x - x) + Math.abs(self.state.y - y) === 1) self.move(x - self.state.x, y - self.state.y); }); grid.appendChild(b); });
-    this.container.querySelector('[data-role=stats]').textContent = '资源映射校准中（当前为占位显示）　生命 ' + this.state.hp + '　攻击 ' + this.state.attack + '　防御 ' + this.state.defense + '　金币 ' + this.state.gold + '　钥匙：红 ' + this.state.keys.red + ' 蓝 ' + this.state.keys.blue + ' 黄 ' + this.state.keys.yellow + ' 绿 ' + this.state.keys.green;
+    var grid = this.container.querySelector('[data-role=grid]');
+    if (original) { grid.style.gridTemplateColumns = 'repeat(11,minmax(0,1fr))'; grid.style.gap = '0'; }
+    layer.cells.forEach(function (code, i) {
+      var b = document.createElement('button'), x = i % self.width, y = Math.floor(i / self.width), kind = original ? originalKind(code) : tileKind(code);
+      var player = self.state.x === x && self.state.y === y;
+      var cleared = original ? self.state.cleared && self.state.cleared[self.state.layer + ':' + i] : self.state.defeated[i];
+      b.type = 'button'; b.className = 'pk32-tower-tile'; b.dataset.code = code; b.dataset.kind = player ? 'player' : cleared ? 'floor' : kind;
+      b.title = player ? '主角' : original ? (ORIGINAL_NAMES[code] || (kind === 'enemy' ? '怪物' : kind === 'treasure' ? '道具' : '场景')) : tileName(code);
+      b.setAttribute('aria-label', b.title);
+      if (original) paintSprite(b, player ? '76' : cleared ? '00' : code);
+      else b.textContent = player ? '@' : cleared ? '' : tileGlyph(code);
+      self.on(b, 'click', function () { if (Math.abs(self.state.x - x) + Math.abs(self.state.y - y) === 1) self.move(x - self.state.x, y - self.state.y); }); grid.appendChild(b);
+    });
+    this.container.querySelector('[data-role=stats]').textContent = '生命 ' + this.state.hp + '　攻击 ' + this.state.attack + '　防御 ' + this.state.defense + '　金币 ' + this.state.gold + (original ? '　经验 ' + (this.state.experience || 0) : '') + '　钥匙：红 ' + this.state.keys.red + ' 蓝 ' + this.state.keys.blue + ' 黄 ' + this.state.keys.yellow;
     this.on(select, 'change', function () { self.state = cloneState(self.setName, Number(select.value)); self.render(); }); this.on(this.container.querySelector('[data-role=restart]'), 'click', function () { self.restart(); }); this.on(this.container.querySelector('[data-role=save]'), 'click', function () { self.save(); }); this.on(this.container.querySelector('[data-role=load]'), 'click', function () { self.load(); });
     [['up', 0, -1], ['left', -1, 0], ['down', 0, 1], ['right', 1, 0]].forEach(function (d) { self.on(self.container.querySelector('[data-dir=' + d[0] + ']'), 'click', function () { self.move(d[1], d[2]); }); });
     if (!this.keyBound) { this.keyBound = true; this.on(this.container, 'keydown', function (e) { var k = { ArrowUp: [0, -1], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowRight: [1, 0], w: [0, -1], a: [-1, 0], s: [0, 1], d: [1, 0] }[e.key]; if (k) { e.preventDefault(); self.move(k[0], k[1]); } }); } this.container.tabIndex = 0;
   };
   Tower.prototype.destroy = function () { this.handlers.forEach(function (h) { h[0].removeEventListener(h[1], h[2]); }); this.container.innerHTML = ''; };
-  global.PK32Tower = { maps: MAPS, layers: LAYERS, sets: TOWER_SETS, startUI: function (container, opts) { return new Tower(container, opts); }, create: function (opts) { return new Tower(opts.container, opts); } };
+  global.PK32Tower = { maps: MAPS, layers: LAYERS, sets: TOWER_SETS, tileSprite: tileSprite, originalMonsters: ORIGINAL_MONSTERS, originalBattle: originalBattle, startUI: function (container, opts) { return new Tower(container, opts); }, create: function (opts) { return new Tower(opts.container, opts); } };
 }(window));

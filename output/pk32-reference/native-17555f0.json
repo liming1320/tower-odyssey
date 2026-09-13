@@ -1,0 +1,23 @@
+[
+  {
+    "rva": 24466928,
+    "address": 28661232,
+    "bytes": "88b124028b04",
+    "instruction": "mov byte ptr [ecx + 0x48b0224], dh",
+    "strings": []
+  },
+  {
+    "rva": 24466934,
+    "address": 28661238,
+    "bytes": "b2c7",
+    "instruction": "mov dl, 0xc7",
+    "strings": []
+  },
+  {
+    "rva": 24466936,
+    "address": 28661240,
+    "bytes": "8538",
+    "instruction": "test dword ptr [eax], edi",
+    "strings": []
+  }
+]

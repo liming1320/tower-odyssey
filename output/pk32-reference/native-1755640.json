@@ -1,0 +1,9 @@
+[
+  {
+    "rva": 24467008,
+    "address": 28661312,
+    "bytes": "8528",
+    "instruction": "test dword ptr [eax], ebp",
+    "strings": []
+  }
+]

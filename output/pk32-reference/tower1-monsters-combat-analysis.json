@@ -1,0 +1,2581 @@
+{
+  "scope": "PK32 tower one native monster initialization and combat only; no executable started; no game source edited",
+  "module": {
+    "path": "output/pk32-reference/module.bin",
+    "sha256": "34e1178930a3dcb782666b085b9934af144d6d78e9de2feee3f7ec3f51a17e1d",
+    "imageBase": "0x400000",
+    "size": 33767424,
+    "offsetConvention": "All code references are RVA unless explicitly VA; VA = RVA + 0x400000"
+  },
+  "array": {
+    "pointerSlotVa": "0x224d6cc",
+    "pointerSlotRva": "0x1e4d6cc",
+    "capturedPointerVa": "0x2725410",
+    "recordCount": 33,
+    "recordStrideBytes": 32,
+    "heapContentsCaptured": false,
+    "note": "0x224d6cc is a POINTER SLOT, not record zero. The pointer target lies outside this module-only capture. Static initializer writes were decoded instead.",
+    "initializerFunctionRva": "0x172acb0",
+    "statsWritesStartRva": "0x172b1fe",
+    "statsWritesEndExclusiveRva": "0x172c4fe",
+    "initialValueNullMeaning": "Not assigned/proven by this initializer, NOT zero and NOT a missing record"
+  },
+  "fields": [
+    {
+      "offset": "0x00",
+      "type": "int32",
+      "name": "baseHp",
+      "initialization": "explicit per-record write",
+      "evidence": [
+        "0x17319de",
+        "0x17319e1"
+      ]
+    },
+    {
+      "offset": "0x04",
+      "type": "int32",
+      "name": "baseAttack",
+      "initialization": "explicit per-record write",
+      "evidence": [
+        "0x1756aea",
+        "0x1756b16",
+        "0x1756b28",
+        "0x1756b36",
+        "0x1756bbb"
+      ]
+    },
+    {
+      "offset": "0x08",
+      "type": "int32",
+      "name": "baseDefense",
+      "initialization": "explicit per-record write",
+      "evidence": [
+        "0x175684f",
+        "0x175687b",
+        "0x175688d",
+        "0x175689b",
+        "0x175691a"
+      ]
+    },
+    {
+      "offset": "0x0c",
+      "type": "int32",
+      "name": "goldReward",
+      "initialization": "explicit per-record write",
+      "evidence": [
+        "0x1755690",
+        "0x1755697",
+        "0x17556a4",
+        "0x172f5bb",
+        "0x172f5d2",
+        "0x172f5de"
+      ]
+    },
+    {
+      "offset": "0x10",
+      "type": "int32",
+      "name": "experienceReward",
+      "initialization": "explicit per-record write",
+      "evidence": [
+        "0x1755781",
+        "0x1755788",
+        "0x1755796",
+        "0x17346d0",
+        "0x17346e6"
+      ]
+    },
+    {
+      "offset": "0x14",
+      "type": "int32",
+      "name": "battleHp",
+      "initialization": "not assigned by inspected new-game initializer; battle entry copies baseHp here; initial raw value not proven",
+      "evidence": [
+        "0x17319de",
+        "0x17319e1",
+        "0x17569bc",
+        "0x17569dd"
+      ]
+    },
+    {
+      "offset": "0x18",
+      "type": "int32",
+      "name": "battleMapCellIndex",
+      "initialization": "not assigned by inspected new-game initializer; assigned from interaction argument on battle entry",
+      "evidence": [
+        "0x1731a04",
+        "0x1731a07",
+        "0x175608e",
+        "0x17560a6"
+      ]
+    },
+    {
+      "offset": "0x1c",
+      "type": "int32",
+      "name": "attackDefensePercent",
+      "initialization": "100 for all indices 0..32; separate loop before per-record stats",
+      "evidence": [
+        "0x172b154",
+        "0x172b15e",
+        "0x172b17c",
+        "0x172b191",
+        "0x1756792",
+        "0x175683a"
+      ]
+    }
+  ],
+  "records": [
+    {
+      "index": 0,
+      "mapCode": 38,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 70,
+        "baseAttack": 15,
+        "baseDefense": 2,
+        "goldReward": 2,
+        "experienceReward": 1,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 70,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 0,
+          "offset": 0,
+          "value": 70,
+          "rva": "0x172b20a",
+          "bytes": "c70046000000",
+          "asm": "mov dword ptr [eax], 0x46"
+        },
+        {
+          "index": 0,
+          "offset": 4,
+          "value": 15,
+          "rva": "0x172b228",
+          "bytes": "c7440e040f000000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0xf"
+        },
+        {
+          "index": 0,
+          "offset": 8,
+          "value": 2,
+          "rva": "0x172b248",
+          "bytes": "c744160802000000",
+          "asm": "mov dword ptr [esi + edx + 8], 2"
+        },
+        {
+          "index": 0,
+          "offset": 12,
+          "value": 2,
+          "rva": "0x172b267",
+          "bytes": "c744060c02000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 2"
+        },
+        {
+          "index": 0,
+          "offset": 16,
+          "value": 1,
+          "rva": "0x172b28c",
+          "bytes": "89440e10",
+          "asm": "mov dword ptr [esi + ecx + 0x10], eax"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 1,
+      "mapCode": 39,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 50,
+        "baseAttack": 20,
+        "baseDefense": 1,
+        "goldReward": 1,
+        "experienceReward": 1,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 50,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 1,
+          "offset": 0,
+          "value": 50,
+          "rva": "0x172b299",
+          "bytes": "c7422032000000",
+          "asm": "mov dword ptr [edx + 0x20], 0x32"
+        },
+        {
+          "index": 1,
+          "offset": 4,
+          "value": 20,
+          "rva": "0x172b2bc",
+          "bytes": "895c0604",
+          "asm": "mov dword ptr [esi + eax + 4], ebx"
+        },
+        {
+          "index": 1,
+          "offset": 8,
+          "value": 1,
+          "rva": "0x172b2d8",
+          "bytes": "c7440e0801000000",
+          "asm": "mov dword ptr [esi + ecx + 8], 1"
+        },
+        {
+          "index": 1,
+          "offset": 12,
+          "value": 1,
+          "rva": "0x172b2f8",
+          "bytes": "c744160c01000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 1"
+        },
+        {
+          "index": 1,
+          "offset": 16,
+          "value": 1,
+          "rva": "0x172b317",
+          "bytes": "c744061001000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 1"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 2,
+      "mapCode": 40,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 200,
+        "baseAttack": 35,
+        "baseDefense": 10,
+        "goldReward": 5,
+        "experienceReward": 3,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 200,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 2,
+          "offset": 0,
+          "value": 200,
+          "rva": "0x172b32c",
+          "bytes": "c74140c8000000",
+          "asm": "mov dword ptr [ecx + 0x40], 0xc8"
+        },
+        {
+          "index": 2,
+          "offset": 4,
+          "value": 35,
+          "rva": "0x172b34b",
+          "bytes": "c744160423000000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x23"
+        },
+        {
+          "index": 2,
+          "offset": 8,
+          "value": 10,
+          "rva": "0x172b36a",
+          "bytes": "c74406080a000000",
+          "asm": "mov dword ptr [esi + eax + 8], 0xa"
+        },
+        {
+          "index": 2,
+          "offset": 12,
+          "value": 5,
+          "rva": "0x172b38a",
+          "bytes": "c7440e0c05000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 5"
+        },
+        {
+          "index": 2,
+          "offset": 16,
+          "value": 3,
+          "rva": "0x172b3af",
+          "bytes": "89441610",
+          "asm": "mov dword ptr [esi + edx + 0x10], eax"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 3,
+      "mapCode": 41,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 700,
+        "baseAttack": 250,
+        "baseDefense": 125,
+        "goldReward": 32,
+        "experienceReward": 25,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 700,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 3,
+          "offset": 0,
+          "value": 700,
+          "rva": "0x172b3bb",
+          "bytes": "c74060bc020000",
+          "asm": "mov dword ptr [eax + 0x60], 0x2bc"
+        },
+        {
+          "index": 3,
+          "offset": 4,
+          "value": 250,
+          "rva": "0x172b3da",
+          "bytes": "c7440e04fa000000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0xfa"
+        },
+        {
+          "index": 3,
+          "offset": 8,
+          "value": 125,
+          "rva": "0x172b3fa",
+          "bytes": "c74416087d000000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x7d"
+        },
+        {
+          "index": 3,
+          "offset": 12,
+          "value": 32,
+          "rva": "0x172b419",
+          "bytes": "c744060c20000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0x20"
+        },
+        {
+          "index": 3,
+          "offset": 16,
+          "value": 25,
+          "rva": "0x172b439",
+          "bytes": "c7440e1019000000",
+          "asm": "mov dword ptr [esi + ecx + 0x10], 0x19"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 4,
+      "mapCode": 42,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 100,
+        "baseAttack": 20,
+        "baseDefense": 5,
+        "goldReward": 3,
+        "experienceReward": 2,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 100,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 4,
+          "offset": 0,
+          "value": 100,
+          "rva": "0x172b44e",
+          "bytes": "c7828000000064000000",
+          "asm": "mov dword ptr [edx + 0x80], 0x64"
+        },
+        {
+          "index": 4,
+          "offset": 4,
+          "value": 20,
+          "rva": "0x172b46f",
+          "bytes": "895c0604",
+          "asm": "mov dword ptr [esi + eax + 4], ebx"
+        },
+        {
+          "index": 4,
+          "offset": 8,
+          "value": 5,
+          "rva": "0x172b48b",
+          "bytes": "c7440e0805000000",
+          "asm": "mov dword ptr [esi + ecx + 8], 5"
+        },
+        {
+          "index": 4,
+          "offset": 12,
+          "value": 3,
+          "rva": "0x172b4ab",
+          "bytes": "c744160c03000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 3"
+        },
+        {
+          "index": 4,
+          "offset": 16,
+          "value": 2,
+          "rva": "0x172b4cf",
+          "bytes": "c744061002000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 2"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 5,
+      "mapCode": 43,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 150,
+        "baseAttack": 65,
+        "baseDefense": 30,
+        "goldReward": 10,
+        "experienceReward": 8,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 150,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 5,
+          "offset": 0,
+          "value": 150,
+          "rva": "0x172b4e4",
+          "bytes": "89b9a0000000",
+          "asm": "mov dword ptr [ecx + 0xa0], edi"
+        },
+        {
+          "index": 5,
+          "offset": 4,
+          "value": 65,
+          "rva": "0x172b502",
+          "bytes": "c744160441000000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x41"
+        },
+        {
+          "index": 5,
+          "offset": 8,
+          "value": 30,
+          "rva": "0x172b521",
+          "bytes": "c74406081e000000",
+          "asm": "mov dword ptr [esi + eax + 8], 0x1e"
+        },
+        {
+          "index": 5,
+          "offset": 12,
+          "value": 10,
+          "rva": "0x172b541",
+          "bytes": "c7440e0c0a000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 0xa"
+        },
+        {
+          "index": 5,
+          "offset": 16,
+          "value": 8,
+          "rva": "0x172b561",
+          "bytes": "c744161008000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 8"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 6,
+      "mapCode": 44,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 550,
+        "baseAttack": 170,
+        "baseDefense": 100,
+        "goldReward": 25,
+        "experienceReward": 20,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 550,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 6,
+          "offset": 0,
+          "value": 550,
+          "rva": "0x172b575",
+          "bytes": "c780c000000026020000",
+          "asm": "mov dword ptr [eax + 0xc0], 0x226"
+        },
+        {
+          "index": 6,
+          "offset": 4,
+          "value": 170,
+          "rva": "0x172b597",
+          "bytes": "c7440e04aa000000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0xaa"
+        },
+        {
+          "index": 6,
+          "offset": 8,
+          "value": 100,
+          "rva": "0x172b5b7",
+          "bytes": "c744160864000000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x64"
+        },
+        {
+          "index": 6,
+          "offset": 12,
+          "value": 25,
+          "rva": "0x172b5d6",
+          "bytes": "c744060c19000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0x19"
+        },
+        {
+          "index": 6,
+          "offset": 16,
+          "value": 20,
+          "rva": "0x172b5f6",
+          "bytes": "895c0e10",
+          "asm": "mov dword ptr [esi + ecx + 0x10], ebx"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 7,
+      "mapCode": 45,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 110,
+        "baseAttack": 25,
+        "baseDefense": 5,
+        "goldReward": 5,
+        "experienceReward": 3,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 110,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 7,
+          "offset": 0,
+          "value": 110,
+          "rva": "0x172b607",
+          "bytes": "c782e00000006e000000",
+          "asm": "mov dword ptr [edx + 0xe0], 0x6e"
+        },
+        {
+          "index": 7,
+          "offset": 4,
+          "value": 25,
+          "rva": "0x172b628",
+          "bytes": "c744060419000000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x19"
+        },
+        {
+          "index": 7,
+          "offset": 8,
+          "value": 5,
+          "rva": "0x172b648",
+          "bytes": "c7440e0805000000",
+          "asm": "mov dword ptr [esi + ecx + 8], 5"
+        },
+        {
+          "index": 7,
+          "offset": 12,
+          "value": 5,
+          "rva": "0x172b668",
+          "bytes": "c744160c05000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 5"
+        },
+        {
+          "index": 7,
+          "offset": 16,
+          "value": 3,
+          "rva": "0x172b687",
+          "bytes": "c744061003000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 3"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 8,
+      "mapCode": 46,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 150,
+        "baseAttack": 40,
+        "baseDefense": 20,
+        "goldReward": 8,
+        "experienceReward": 5,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 150,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 8,
+          "offset": 0,
+          "value": 150,
+          "rva": "0x172b69c",
+          "bytes": "89b900010000",
+          "asm": "mov dword ptr [ecx + 0x100], edi"
+        },
+        {
+          "index": 8,
+          "offset": 4,
+          "value": 40,
+          "rva": "0x172b6ba",
+          "bytes": "c744160428000000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x28"
+        },
+        {
+          "index": 8,
+          "offset": 8,
+          "value": 20,
+          "rva": "0x172b6d9",
+          "bytes": "895c0608",
+          "asm": "mov dword ptr [esi + eax + 8], ebx"
+        },
+        {
+          "index": 8,
+          "offset": 12,
+          "value": 8,
+          "rva": "0x172b6f5",
+          "bytes": "c7440e0c08000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 8"
+        },
+        {
+          "index": 8,
+          "offset": 16,
+          "value": 5,
+          "rva": "0x172b715",
+          "bytes": "c744161005000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 5"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 9,
+      "mapCode": 47,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 400,
+        "baseAttack": 90,
+        "baseDefense": 50,
+        "goldReward": 15,
+        "experienceReward": 12,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 400,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 9,
+          "offset": 0,
+          "value": 400,
+          "rva": "0x172b729",
+          "bytes": "c7802001000090010000",
+          "asm": "mov dword ptr [eax + 0x120], 0x190"
+        },
+        {
+          "index": 9,
+          "offset": 4,
+          "value": 90,
+          "rva": "0x172b74b",
+          "bytes": "c7440e045a000000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0x5a"
+        },
+        {
+          "index": 9,
+          "offset": 8,
+          "value": 50,
+          "rva": "0x172b76b",
+          "bytes": "c744160832000000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x32"
+        },
+        {
+          "index": 9,
+          "offset": 12,
+          "value": 15,
+          "rva": "0x172b78a",
+          "bytes": "c744060c0f000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0xf"
+        },
+        {
+          "index": 9,
+          "offset": 16,
+          "value": 12,
+          "rva": "0x172b7af",
+          "bytes": "897c0e10",
+          "asm": "mov dword ptr [esi + ecx + 0x10], edi"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 10,
+      "mapCode": 48,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 2500,
+        "baseAttack": 900,
+        "baseDefense": 850,
+        "goldReward": 84,
+        "experienceReward": 70,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 2500,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 10,
+          "offset": 0,
+          "value": 2500,
+          "rva": "0x172b7c0",
+          "bytes": "c78240010000c4090000",
+          "asm": "mov dword ptr [edx + 0x140], 0x9c4"
+        },
+        {
+          "index": 10,
+          "offset": 4,
+          "value": 900,
+          "rva": "0x172b7e1",
+          "bytes": "c744060484030000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x384"
+        },
+        {
+          "index": 10,
+          "offset": 8,
+          "value": 850,
+          "rva": "0x172b801",
+          "bytes": "c7440e0852030000",
+          "asm": "mov dword ptr [esi + ecx + 8], 0x352"
+        },
+        {
+          "index": 10,
+          "offset": 12,
+          "value": 84,
+          "rva": "0x172b821",
+          "bytes": "c744160c54000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 0x54"
+        },
+        {
+          "index": 10,
+          "offset": 16,
+          "value": 70,
+          "rva": "0x172b840",
+          "bytes": "c744061046000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 0x46"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 11,
+      "mapCode": 49,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 300,
+        "baseAttack": 75,
+        "baseDefense": 45,
+        "goldReward": 13,
+        "experienceReward": 10,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 300,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 11,
+          "offset": 0,
+          "value": 300,
+          "rva": "0x172b855",
+          "bytes": "c781600100002c010000",
+          "asm": "mov dword ptr [ecx + 0x160], 0x12c"
+        },
+        {
+          "index": 11,
+          "offset": 4,
+          "value": 75,
+          "rva": "0x172b877",
+          "bytes": "c74416044b000000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x4b"
+        },
+        {
+          "index": 11,
+          "offset": 8,
+          "value": 45,
+          "rva": "0x172b896",
+          "bytes": "c74406082d000000",
+          "asm": "mov dword ptr [esi + eax + 8], 0x2d"
+        },
+        {
+          "index": 11,
+          "offset": 12,
+          "value": 13,
+          "rva": "0x172b8bb",
+          "bytes": "895c0e0c",
+          "asm": "mov dword ptr [esi + ecx + 0xc], ebx"
+        },
+        {
+          "index": 11,
+          "offset": 16,
+          "value": 10,
+          "rva": "0x172b8d7",
+          "bytes": "c74416100a000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 0xa"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 12,
+      "mapCode": 50,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 900,
+        "baseAttack": 450,
+        "baseDefense": 330,
+        "goldReward": 50,
+        "experienceReward": 40,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 900,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 12,
+          "offset": 0,
+          "value": 900,
+          "rva": "0x172b8e7",
+          "bytes": "c7808001000084030000",
+          "asm": "mov dword ptr [eax + 0x180], 0x384"
+        },
+        {
+          "index": 12,
+          "offset": 4,
+          "value": 450,
+          "rva": "0x172b90e",
+          "bytes": "897c0e04",
+          "asm": "mov dword ptr [esi + ecx + 4], edi"
+        },
+        {
+          "index": 12,
+          "offset": 8,
+          "value": 330,
+          "rva": "0x172b92a",
+          "bytes": "c74416084a010000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x14a"
+        },
+        {
+          "index": 12,
+          "offset": 12,
+          "value": 50,
+          "rva": "0x172b949",
+          "bytes": "c744060c32000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0x32"
+        },
+        {
+          "index": 12,
+          "offset": 16,
+          "value": 40,
+          "rva": "0x172b969",
+          "bytes": "c7440e1028000000",
+          "asm": "mov dword ptr [esi + ecx + 0x10], 0x28"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 13,
+      "mapCode": 51,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 500,
+        "baseAttack": 115,
+        "baseDefense": 65,
+        "goldReward": 15,
+        "experienceReward": 15,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 500,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 13,
+          "offset": 0,
+          "value": 500,
+          "rva": "0x172b97a",
+          "bytes": "c782a0010000f4010000",
+          "asm": "mov dword ptr [edx + 0x1a0], 0x1f4"
+        },
+        {
+          "index": 13,
+          "offset": 4,
+          "value": 115,
+          "rva": "0x172b99b",
+          "bytes": "c744060473000000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x73"
+        },
+        {
+          "index": 13,
+          "offset": 8,
+          "value": 65,
+          "rva": "0x172b9bb",
+          "bytes": "c7440e0841000000",
+          "asm": "mov dword ptr [esi + ecx + 8], 0x41"
+        },
+        {
+          "index": 13,
+          "offset": 12,
+          "value": 15,
+          "rva": "0x172b9db",
+          "bytes": "c744160c0f000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 0xf"
+        },
+        {
+          "index": 13,
+          "offset": 16,
+          "value": 15,
+          "rva": "0x172b9fa",
+          "bytes": "c74406100f000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 0xf"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 14,
+      "mapCode": 52,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 125,
+        "baseAttack": 50,
+        "baseDefense": 25,
+        "goldReward": 10,
+        "experienceReward": 7,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 125,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 14,
+          "offset": 0,
+          "value": 125,
+          "rva": "0x172ba0f",
+          "bytes": "c781c00100007d000000",
+          "asm": "mov dword ptr [ecx + 0x1c0], 0x7d"
+        },
+        {
+          "index": 14,
+          "offset": 4,
+          "value": 50,
+          "rva": "0x172ba31",
+          "bytes": "c744160432000000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x32"
+        },
+        {
+          "index": 14,
+          "offset": 8,
+          "value": 25,
+          "rva": "0x172ba50",
+          "bytes": "c744060819000000",
+          "asm": "mov dword ptr [esi + eax + 8], 0x19"
+        },
+        {
+          "index": 14,
+          "offset": 12,
+          "value": 10,
+          "rva": "0x172ba70",
+          "bytes": "c7440e0c0a000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 0xa"
+        },
+        {
+          "index": 14,
+          "offset": 16,
+          "value": 7,
+          "rva": "0x172ba90",
+          "bytes": "c744161007000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 7"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 15,
+      "mapCode": 53,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 100,
+        "baseAttack": 200,
+        "baseDefense": 110,
+        "goldReward": 30,
+        "experienceReward": 25,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 100,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 15,
+          "offset": 0,
+          "value": 100,
+          "rva": "0x172baa4",
+          "bytes": "c780e001000064000000",
+          "asm": "mov dword ptr [eax + 0x1e0], 0x64"
+        },
+        {
+          "index": 15,
+          "offset": 4,
+          "value": 200,
+          "rva": "0x172bac6",
+          "bytes": "c7440e04c8000000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0xc8"
+        },
+        {
+          "index": 15,
+          "offset": 8,
+          "value": 110,
+          "rva": "0x172bae6",
+          "bytes": "c74416086e000000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x6e"
+        },
+        {
+          "index": 15,
+          "offset": 12,
+          "value": 30,
+          "rva": "0x172bb05",
+          "bytes": "c744060c1e000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0x1e"
+        },
+        {
+          "index": 15,
+          "offset": 16,
+          "value": 25,
+          "rva": "0x172bb25",
+          "bytes": "c7440e1019000000",
+          "asm": "mov dword ptr [esi + ecx + 0x10], 0x19"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 16,
+      "mapCode": 54,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 1500,
+        "baseAttack": 830,
+        "baseDefense": 730,
+        "goldReward": 80,
+        "experienceReward": 65,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 1500,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 16,
+          "offset": 0,
+          "value": 1500,
+          "rva": "0x172bb3a",
+          "bytes": "c78200020000dc050000",
+          "asm": "mov dword ptr [edx + 0x200], 0x5dc"
+        },
+        {
+          "index": 16,
+          "offset": 4,
+          "value": 830,
+          "rva": "0x172bb5b",
+          "bytes": "c74406043e030000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x33e"
+        },
+        {
+          "index": 16,
+          "offset": 8,
+          "value": 730,
+          "rva": "0x172bb7b",
+          "bytes": "c7440e08da020000",
+          "asm": "mov dword ptr [esi + ecx + 8], 0x2da"
+        },
+        {
+          "index": 16,
+          "offset": 12,
+          "value": 80,
+          "rva": "0x172bb9b",
+          "bytes": "c744160c50000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 0x50"
+        },
+        {
+          "index": 16,
+          "offset": 16,
+          "value": 65,
+          "rva": "0x172bbba",
+          "bytes": "c744061041000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 0x41"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 17,
+      "mapCode": 55,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 1300,
+        "baseAttack": 300,
+        "baseDefense": 150,
+        "goldReward": 40,
+        "experienceReward": 30,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 1300,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 17,
+          "offset": 0,
+          "value": 1300,
+          "rva": "0x172bbcf",
+          "bytes": "c7812002000014050000",
+          "asm": "mov dword ptr [ecx + 0x220], 0x514"
+        },
+        {
+          "index": 17,
+          "offset": 4,
+          "value": 300,
+          "rva": "0x172bbf1",
+          "bytes": "c74416042c010000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x12c"
+        },
+        {
+          "index": 17,
+          "offset": 8,
+          "value": 150,
+          "rva": "0x172bc10",
+          "bytes": "c744060896000000",
+          "asm": "mov dword ptr [esi + eax + 8], 0x96"
+        },
+        {
+          "index": 17,
+          "offset": 12,
+          "value": 40,
+          "rva": "0x172bc30",
+          "bytes": "c7440e0c28000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 0x28"
+        },
+        {
+          "index": 17,
+          "offset": 16,
+          "value": 30,
+          "rva": "0x172bc50",
+          "bytes": "c74416101e000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 0x1e"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 18,
+      "mapCode": 56,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 450,
+        "baseAttack": 150,
+        "baseDefense": 90,
+        "goldReward": 22,
+        "experienceReward": 19,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 450,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 18,
+          "offset": 0,
+          "value": 450,
+          "rva": "0x172bc64",
+          "bytes": "89b840020000",
+          "asm": "mov dword ptr [eax + 0x240], edi"
+        },
+        {
+          "index": 18,
+          "offset": 4,
+          "value": 150,
+          "rva": "0x172bc82",
+          "bytes": "c7440e0496000000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0x96"
+        },
+        {
+          "index": 18,
+          "offset": 8,
+          "value": 90,
+          "rva": "0x172bca2",
+          "bytes": "c74416085a000000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x5a"
+        },
+        {
+          "index": 18,
+          "offset": 12,
+          "value": 22,
+          "rva": "0x172bcc6",
+          "bytes": "897c060c",
+          "asm": "mov dword ptr [esi + eax + 0xc], edi"
+        },
+        {
+          "index": 18,
+          "offset": 16,
+          "value": 19,
+          "rva": "0x172bce7",
+          "bytes": "89440e10",
+          "asm": "mov dword ptr [esi + ecx + 0x10], eax"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 19,
+      "mapCode": 57,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 1250,
+        "baseAttack": 500,
+        "baseDefense": 400,
+        "goldReward": 55,
+        "experienceReward": 45,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 1250,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 19,
+          "offset": 0,
+          "value": 1250,
+          "rva": "0x172bcf4",
+          "bytes": "c78260020000e2040000",
+          "asm": "mov dword ptr [edx + 0x260], 0x4e2"
+        },
+        {
+          "index": 19,
+          "offset": 4,
+          "value": 500,
+          "rva": "0x172bd15",
+          "bytes": "c7440604f4010000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x1f4"
+        },
+        {
+          "index": 19,
+          "offset": 8,
+          "value": 400,
+          "rva": "0x172bd35",
+          "bytes": "c7440e0890010000",
+          "asm": "mov dword ptr [esi + ecx + 8], 0x190"
+        },
+        {
+          "index": 19,
+          "offset": 12,
+          "value": 55,
+          "rva": "0x172bd5a",
+          "bytes": "895c160c",
+          "asm": "mov dword ptr [esi + edx + 0xc], ebx"
+        },
+        {
+          "index": 19,
+          "offset": 16,
+          "value": 45,
+          "rva": "0x172bd75",
+          "bytes": "c74406102d000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 0x2d"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 20,
+      "mapCode": 58,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 1500,
+        "baseAttack": 560,
+        "baseDefense": 460,
+        "goldReward": 60,
+        "experienceReward": 50,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 1500,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 20,
+          "offset": 0,
+          "value": 1500,
+          "rva": "0x172bd8a",
+          "bytes": "c78180020000dc050000",
+          "asm": "mov dword ptr [ecx + 0x280], 0x5dc"
+        },
+        {
+          "index": 20,
+          "offset": 4,
+          "value": 560,
+          "rva": "0x172bdac",
+          "bytes": "c744160430020000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x230"
+        },
+        {
+          "index": 20,
+          "offset": 8,
+          "value": 460,
+          "rva": "0x172bdcb",
+          "bytes": "c7440608cc010000",
+          "asm": "mov dword ptr [esi + eax + 8], 0x1cc"
+        },
+        {
+          "index": 20,
+          "offset": 12,
+          "value": 60,
+          "rva": "0x172bdeb",
+          "bytes": "c7440e0c3c000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 0x3c"
+        },
+        {
+          "index": 20,
+          "offset": 16,
+          "value": 50,
+          "rva": "0x172be0b",
+          "bytes": "c744161032000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 0x32"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 21,
+      "mapCode": 59,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 2000,
+        "baseAttack": 680,
+        "baseDefense": 590,
+        "goldReward": 70,
+        "experienceReward": 55,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 2000,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 21,
+          "offset": 0,
+          "value": 2000,
+          "rva": "0x172be1f",
+          "bytes": "c780a0020000d0070000",
+          "asm": "mov dword ptr [eax + 0x2a0], 0x7d0"
+        },
+        {
+          "index": 21,
+          "offset": 4,
+          "value": 680,
+          "rva": "0x172be41",
+          "bytes": "c7440e04a8020000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0x2a8"
+        },
+        {
+          "index": 21,
+          "offset": 8,
+          "value": 590,
+          "rva": "0x172be61",
+          "bytes": "c74416084e020000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x24e"
+        },
+        {
+          "index": 21,
+          "offset": 12,
+          "value": 70,
+          "rva": "0x172be80",
+          "bytes": "c744060c46000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0x46"
+        },
+        {
+          "index": 21,
+          "offset": 16,
+          "value": 55,
+          "rva": "0x172bea0",
+          "bytes": "895c0e10",
+          "asm": "mov dword ptr [esi + ecx + 0x10], ebx"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 22,
+      "mapCode": 60,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 250,
+        "baseAttack": 120,
+        "baseDefense": 70,
+        "goldReward": 20,
+        "experienceReward": 15,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 250,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 22,
+          "offset": 0,
+          "value": 250,
+          "rva": "0x172bead",
+          "bytes": "c782c0020000fa000000",
+          "asm": "mov dword ptr [edx + 0x2c0], 0xfa"
+        },
+        {
+          "index": 22,
+          "offset": 4,
+          "value": 120,
+          "rva": "0x172bece",
+          "bytes": "c744060478000000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x78"
+        },
+        {
+          "index": 22,
+          "offset": 8,
+          "value": 70,
+          "rva": "0x172beee",
+          "bytes": "c7440e0846000000",
+          "asm": "mov dword ptr [esi + ecx + 8], 0x46"
+        },
+        {
+          "index": 22,
+          "offset": 12,
+          "value": 20,
+          "rva": "0x172bf0e",
+          "bytes": "c744160c14000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 0x14"
+        },
+        {
+          "index": 22,
+          "offset": 16,
+          "value": 15,
+          "rva": "0x172bf2d",
+          "bytes": "c74406100f000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 0xf"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 23,
+      "mapCode": 61,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 500,
+        "baseAttack": 400,
+        "baseDefense": 260,
+        "goldReward": 47,
+        "experienceReward": 35,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 500,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 23,
+          "offset": 0,
+          "value": 500,
+          "rva": "0x172bf42",
+          "bytes": "c781e0020000f4010000",
+          "asm": "mov dword ptr [ecx + 0x2e0], 0x1f4"
+        },
+        {
+          "index": 23,
+          "offset": 4,
+          "value": 400,
+          "rva": "0x172bf64",
+          "bytes": "c744160490010000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x190"
+        },
+        {
+          "index": 23,
+          "offset": 8,
+          "value": 260,
+          "rva": "0x172bf83",
+          "bytes": "c744060804010000",
+          "asm": "mov dword ptr [esi + eax + 8], 0x104"
+        },
+        {
+          "index": 23,
+          "offset": 12,
+          "value": 47,
+          "rva": "0x172bfa3",
+          "bytes": "c7440e0c2f000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 0x2f"
+        },
+        {
+          "index": 23,
+          "offset": 16,
+          "value": 35,
+          "rva": "0x172bfc8",
+          "bytes": "c744161023000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 0x23"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 24,
+      "mapCode": 62,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 1200,
+        "baseAttack": 620,
+        "baseDefense": 520,
+        "goldReward": 65,
+        "experienceReward": 50,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 1200,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 24,
+          "offset": 0,
+          "value": 1200,
+          "rva": "0x172bfdc",
+          "bytes": "89b800030000",
+          "asm": "mov dword ptr [eax + 0x300], edi"
+        },
+        {
+          "index": 24,
+          "offset": 4,
+          "value": 620,
+          "rva": "0x172bffa",
+          "bytes": "c7440e046c020000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0x26c"
+        },
+        {
+          "index": 24,
+          "offset": 8,
+          "value": 520,
+          "rva": "0x172c01a",
+          "bytes": "c744160808020000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x208"
+        },
+        {
+          "index": 24,
+          "offset": 12,
+          "value": 65,
+          "rva": "0x172c039",
+          "bytes": "c744060c41000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0x41"
+        },
+        {
+          "index": 24,
+          "offset": 16,
+          "value": 50,
+          "rva": "0x172c059",
+          "bytes": "c7440e1032000000",
+          "asm": "mov dword ptr [esi + ecx + 0x10], 0x32"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 25,
+      "mapCode": 63,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 3100,
+        "baseAttack": 1050,
+        "baseDefense": 950,
+        "goldReward": 92,
+        "experienceReward": 80,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 3100,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 25,
+          "offset": 0,
+          "value": 3100,
+          "rva": "0x172c06e",
+          "bytes": "c782200300001c0c0000",
+          "asm": "mov dword ptr [edx + 0x320], 0xc1c"
+        },
+        {
+          "index": 25,
+          "offset": 4,
+          "value": 1050,
+          "rva": "0x172c08f",
+          "bytes": "c74406041a040000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x41a"
+        },
+        {
+          "index": 25,
+          "offset": 8,
+          "value": 950,
+          "rva": "0x172c0af",
+          "bytes": "c7440e08b6030000",
+          "asm": "mov dword ptr [esi + ecx + 8], 0x3b6"
+        },
+        {
+          "index": 25,
+          "offset": 12,
+          "value": 92,
+          "rva": "0x172c0cf",
+          "bytes": "c744160c5c000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 0x5c"
+        },
+        {
+          "index": 25,
+          "offset": 16,
+          "value": 80,
+          "rva": "0x172c0ee",
+          "bytes": "c744061050000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 0x50"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 26,
+      "mapCode": 64,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 850,
+        "baseAttack": 350,
+        "baseDefense": 200,
+        "goldReward": 45,
+        "experienceReward": 35,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 850,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 26,
+          "offset": 0,
+          "value": 850,
+          "rva": "0x172c103",
+          "bytes": "c7814003000052030000",
+          "asm": "mov dword ptr [ecx + 0x340], 0x352"
+        },
+        {
+          "index": 26,
+          "offset": 4,
+          "value": 350,
+          "rva": "0x172c125",
+          "bytes": "c74416045e010000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x15e"
+        },
+        {
+          "index": 26,
+          "offset": 8,
+          "value": 200,
+          "rva": "0x172c144",
+          "bytes": "c7440608c8000000",
+          "asm": "mov dword ptr [esi + eax + 8], 0xc8"
+        },
+        {
+          "index": 26,
+          "offset": 12,
+          "value": 45,
+          "rva": "0x172c164",
+          "bytes": "c7440e0c2d000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 0x2d"
+        },
+        {
+          "index": 26,
+          "offset": 16,
+          "value": 35,
+          "rva": "0x172c184",
+          "bytes": "c744161023000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 0x23"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 27,
+      "mapCode": 65,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 900,
+        "baseAttack": 750,
+        "baseDefense": 650,
+        "goldReward": 77,
+        "experienceReward": 60,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 900,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 27,
+          "offset": 0,
+          "value": 900,
+          "rva": "0x172c198",
+          "bytes": "c7806003000084030000",
+          "asm": "mov dword ptr [eax + 0x360], 0x384"
+        },
+        {
+          "index": 27,
+          "offset": 4,
+          "value": 750,
+          "rva": "0x172c1ba",
+          "bytes": "c7440e04ee020000",
+          "asm": "mov dword ptr [esi + ecx + 4], 0x2ee"
+        },
+        {
+          "index": 27,
+          "offset": 8,
+          "value": 650,
+          "rva": "0x172c1da",
+          "bytes": "c74416088a020000",
+          "asm": "mov dword ptr [esi + edx + 8], 0x28a"
+        },
+        {
+          "index": 27,
+          "offset": 12,
+          "value": 77,
+          "rva": "0x172c1f9",
+          "bytes": "c744060c4d000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0x4d"
+        },
+        {
+          "index": 27,
+          "offset": 16,
+          "value": 60,
+          "rva": "0x172c219",
+          "bytes": "c7440e103c000000",
+          "asm": "mov dword ptr [esi + ecx + 0x10], 0x3c"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 28,
+      "mapCode": 66,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 1200,
+        "baseAttack": 980,
+        "baseDefense": 900,
+        "goldReward": 88,
+        "experienceReward": 75,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 1200,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 28,
+          "offset": 0,
+          "value": 1200,
+          "rva": "0x172c22e",
+          "bytes": "89ba80030000",
+          "asm": "mov dword ptr [edx + 0x380], edi"
+        },
+        {
+          "index": 28,
+          "offset": 4,
+          "value": 980,
+          "rva": "0x172c24b",
+          "bytes": "c7440604d4030000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x3d4"
+        },
+        {
+          "index": 28,
+          "offset": 8,
+          "value": 900,
+          "rva": "0x172c26b",
+          "bytes": "c7440e0884030000",
+          "asm": "mov dword ptr [esi + ecx + 8], 0x384"
+        },
+        {
+          "index": 28,
+          "offset": 12,
+          "value": 88,
+          "rva": "0x172c28b",
+          "bytes": "c744160c58000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 0x58"
+        },
+        {
+          "index": 28,
+          "offset": 16,
+          "value": 75,
+          "rva": "0x172c2aa",
+          "bytes": "c74406104b000000",
+          "asm": "mov dword ptr [esi + eax + 0x10], 0x4b"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 29,
+      "mapCode": 67,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 15000,
+        "baseAttack": 1000,
+        "baseDefense": 1000,
+        "goldReward": 100,
+        "experienceReward": 100,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 15000,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 29,
+          "offset": 0,
+          "value": 15000,
+          "rva": "0x172c2bf",
+          "bytes": "c781a0030000983a0000",
+          "asm": "mov dword ptr [ecx + 0x3a0], 0x3a98"
+        },
+        {
+          "index": 29,
+          "offset": 4,
+          "value": 1000,
+          "rva": "0x172c2e1",
+          "bytes": "c7441604e8030000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x3e8"
+        },
+        {
+          "index": 29,
+          "offset": 8,
+          "value": 1000,
+          "rva": "0x172c300",
+          "bytes": "c7440608e8030000",
+          "asm": "mov dword ptr [esi + eax + 8], 0x3e8"
+        },
+        {
+          "index": 29,
+          "offset": 12,
+          "value": 100,
+          "rva": "0x172c320",
+          "bytes": "c7440e0c64000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 0x64"
+        },
+        {
+          "index": 29,
+          "offset": 16,
+          "value": 100,
+          "rva": "0x172c340",
+          "bytes": "c744161064000000",
+          "asm": "mov dword ptr [esi + edx + 0x10], 0x64"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 30,
+      "mapCode": 68,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 20000,
+        "baseAttack": 1333,
+        "baseDefense": 1333,
+        "goldReward": 100,
+        "experienceReward": 100,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 20000,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 30,
+          "offset": 0,
+          "value": 20000,
+          "rva": "0x172c354",
+          "bytes": "c780c0030000204e0000",
+          "asm": "mov dword ptr [eax + 0x3c0], 0x4e20"
+        },
+        {
+          "index": 30,
+          "offset": 4,
+          "value": 1333,
+          "rva": "0x172c37b",
+          "bytes": "895c0e04",
+          "asm": "mov dword ptr [esi + ecx + 4], ebx"
+        },
+        {
+          "index": 30,
+          "offset": 8,
+          "value": 1333,
+          "rva": "0x172c397",
+          "bytes": "895c1608",
+          "asm": "mov dword ptr [esi + edx + 8], ebx"
+        },
+        {
+          "index": 30,
+          "offset": 12,
+          "value": 100,
+          "rva": "0x172c3b2",
+          "bytes": "c744060c64000000",
+          "asm": "mov dword ptr [esi + eax + 0xc], 0x64"
+        },
+        {
+          "index": 30,
+          "offset": 16,
+          "value": 100,
+          "rva": "0x172c3d2",
+          "bytes": "c7440e1064000000",
+          "asm": "mov dword ptr [esi + ecx + 0x10], 0x64"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 31,
+      "mapCode": 69,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 25000,
+        "baseAttack": 1500,
+        "baseDefense": 1200,
+        "goldReward": 150,
+        "experienceReward": 120,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 25000,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 31,
+          "offset": 0,
+          "value": 25000,
+          "rva": "0x172c3e7",
+          "bytes": "c782e0030000a8610000",
+          "asm": "mov dword ptr [edx + 0x3e0], 0x61a8"
+        },
+        {
+          "index": 31,
+          "offset": 4,
+          "value": 1500,
+          "rva": "0x172c408",
+          "bytes": "c7440604dc050000",
+          "asm": "mov dword ptr [esi + eax + 4], 0x5dc"
+        },
+        {
+          "index": 31,
+          "offset": 8,
+          "value": 1200,
+          "rva": "0x172c428",
+          "bytes": "897c0e08",
+          "asm": "mov dword ptr [esi + ecx + 8], edi"
+        },
+        {
+          "index": 31,
+          "offset": 12,
+          "value": 150,
+          "rva": "0x172c444",
+          "bytes": "c744160c96000000",
+          "asm": "mov dword ptr [esi + edx + 0xc], 0x96"
+        },
+        {
+          "index": 31,
+          "offset": 16,
+          "value": 120,
+          "rva": "0x172c468",
+          "bytes": "897c0610",
+          "asm": "mov dword ptr [esi + eax + 0x10], edi"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    },
+    {
+      "index": 32,
+      "mapCode": 70,
+      "name": null,
+      "nameStatus": "not recovered; no atlas-based name guesses",
+      "initialFields": {
+        "baseHp": 37500,
+        "baseAttack": 2250,
+        "baseDefense": 1800,
+        "goldReward": 150,
+        "experienceReward": 120,
+        "battleHp": null,
+        "battleMapCellIndex": null,
+        "attackDefensePercent": 100
+      },
+      "onBattleEntry": {
+        "battleHp": 37500,
+        "battleMapCellIndex": "interaction argument, not a fixed constant"
+      },
+      "writeEvidence": [
+        {
+          "index": 32,
+          "offset": 0,
+          "value": 37500,
+          "rva": "0x172c479",
+          "bytes": "c781000400007c920000",
+          "asm": "mov dword ptr [ecx + 0x400], 0x927c"
+        },
+        {
+          "index": 32,
+          "offset": 4,
+          "value": 2250,
+          "rva": "0x172c49b",
+          "bytes": "c7441604ca080000",
+          "asm": "mov dword ptr [esi + edx + 4], 0x8ca"
+        },
+        {
+          "index": 32,
+          "offset": 8,
+          "value": 1800,
+          "rva": "0x172c4ba",
+          "bytes": "c744060808070000",
+          "asm": "mov dword ptr [esi + eax + 8], 0x708"
+        },
+        {
+          "index": 32,
+          "offset": 12,
+          "value": 150,
+          "rva": "0x172c4da",
+          "bytes": "c7440e0c96000000",
+          "asm": "mov dword ptr [esi + ecx + 0xc], 0x96"
+        },
+        {
+          "index": 32,
+          "offset": 16,
+          "value": 120,
+          "rva": "0x172c4fa",
+          "bytes": "897c1610",
+          "asm": "mov dword ptr [esi + edx + 0x10], edi"
+        }
+      ],
+      "percentInitializationRva": "0x172b17c"
+    }
+  ],
+  "tileDispatch": [
+    {
+      "tile": 38,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 0
+    },
+    {
+      "tile": 39,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 1
+    },
+    {
+      "tile": 40,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 2
+    },
+    {
+      "tile": 41,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 3
+    },
+    {
+      "tile": 42,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 4
+    },
+    {
+      "tile": 43,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 5
+    },
+    {
+      "tile": 44,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 6
+    },
+    {
+      "tile": 45,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 7
+    },
+    {
+      "tile": 46,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 8
+    },
+    {
+      "tile": 47,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 9
+    },
+    {
+      "tile": 48,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 10
+    },
+    {
+      "tile": 49,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 11
+    },
+    {
+      "tile": 50,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 12
+    },
+    {
+      "tile": 51,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 13
+    },
+    {
+      "tile": 52,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 14
+    },
+    {
+      "tile": 53,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 15
+    },
+    {
+      "tile": 54,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 16
+    },
+    {
+      "tile": 55,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 17
+    },
+    {
+      "tile": 56,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 18
+    },
+    {
+      "tile": 57,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 19
+    },
+    {
+      "tile": 58,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 20
+    },
+    {
+      "tile": 59,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 21
+    },
+    {
+      "tile": 60,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 22
+    },
+    {
+      "tile": 61,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 23
+    },
+    {
+      "tile": 62,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 24
+    },
+    {
+      "tile": 63,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 25
+    },
+    {
+      "tile": 64,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 26
+    },
+    {
+      "tile": 65,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 27
+    },
+    {
+      "tile": 66,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 28
+    },
+    {
+      "tile": 67,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 29
+    },
+    {
+      "tile": 68,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 30
+    },
+    {
+      "tile": 69,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 31
+    },
+    {
+      "tile": 70,
+      "selector": 10,
+      "targetRva": "0x1730cdf",
+      "monsterIndex": 32
+    }
+  ],
+  "runtimeImportProof": {
+    "artifact": "tower1-runtime-imports.json",
+    "method": "Match captured IAT addresses against named export RVAs of the provided MSVBVM50.dll at one consistent load base. 220 name/slot matches in the scanned region; no DLL loaded or executed.",
+    "candidateLoadBase": "0x74020000",
+    "dllSha256": "f3d0615a422c5ae5cd22aad1e5d22333ec0a38c54eaddcc0a128aaf9f0ee901b",
+    "limitation": "The supplied DLL is packed (.textbss has zero raw bytes). Export metadata is readable, but this analysis does not claim to disassemble its unpacked helper bodies from disk. Export-name matching establishes helper identities; helper implementations themselves are not claimed to have been executed or recovered here."
+  },
+  "combat": {
+    "heroPointerSlotVa": "0x224d6b4",
+    "heroFields": {
+      "0x00": "hp",
+      "0x04": "attack",
+      "0x08": "defense",
+      "0x0c": "gold",
+      "0x10": "experience"
+    },
+    "battleMonsterIndex": "int16([*[0x224b55c] + 8]); initialized to mapCode - 38",
+    "effectiveStats": {
+      "percent": "min(110, max(100, monster.attackDefensePercent))",
+      "attack": "max(1, floor(monster.baseAttack * percent / 100))",
+      "defense": "max(1, floor(monster.baseDefense * percent / 100))",
+      "hp": "baseHp copied without percentage scaling",
+      "evidenceBlocks": [
+        "display_effective_stats",
+        "timer_damage"
+      ],
+      "calls": {
+        "0x2256580": "__vbaVarMul",
+        "0x22565a0": "__vbaVarDiv",
+        "0x2256600": "__vbaVarInt",
+        "0x22566bc": "__vbaR8IntI4"
+      },
+      "rounding": "VB Int/floor, not round-to-nearest. Divisor at VA 0x40cd70 is an IEEE754 double 100.0."
+    },
+    "perTick": [
+      "a = hero.attack - effectiveDefense; b = effectiveAttack - hero.defense",
+      "If a >= 0, monster.battleHp = max(0, monster.battleHp - a); if a < 0, do not heal or damage monster.",
+      "If b >= 0, hero.hp = max(0, hero.hp - b); if b < 0, do not heal or damage hero.",
+      "There is no monster-death branch between these two updates. The lethal player strike still receives the same tick enemy strike.",
+      "If a <= 0 AND b <= 0, apply the stalemate fallback below.",
+      "Only after both updates (and rendering/UI checks) test both remaining HP values; if either is zero, switch to the settlement stage."
+    ],
+    "tickEvidence": {
+      "monsterDamage": "0x17568f2..0x1756a0a",
+      "heroDamage": "0x1756b8d..0x1756c36",
+      "deathCheck": "0x1757212..0x1757275"
+    },
+    "ordinaryClosedForm": {
+      "conditions": "a > 0; stable hero stats and percent; no interruption; apply special settlement effects separately",
+      "rounds": "ceil(monster.baseHp / a)",
+      "totalDamage": "rounds * max(0, b)",
+      "winBeforeSettlementEffects": "hero.initialHp > totalDamage",
+      "notEquivalentTo": "(ceil(Hp/a) - 1) * b",
+      "example": {
+        "monsterIndex": 0,
+        "heroHp": 1000,
+        "heroAttack": 10,
+        "heroDefense": 10,
+        "percent": 100,
+        "a": 8,
+        "b": 5,
+        "rounds": 9,
+        "ordinaryDamage": 45,
+        "remainingHp": 955,
+        "evidenceType": "derived from decoded native operations, not an observed live execution"
+      }
+    },
+    "stalemate": {
+      "condition": "a <= 0 and b <= 0",
+      "perTickDamage": "largest T in {1,10,100,1000,10000} with both CURRENT remaining HP >= T; default T=1",
+      "updates": "Subtract T from both current HP values and clamp each at 0.",
+      "evidenceBlock": "timer_stalemate",
+      "evidenceRvas": [
+        "0x1756d1d",
+        "0x1756d7f",
+        "0x1756d95",
+        "0x1756dcc",
+        "0x1756e22",
+        "0x1756e77",
+        "0x1756ecc",
+        "0x1756f6a",
+        "0x1756fef"
+      ]
+    },
+    "settlement": {
+      "gate": "hero.hp > 0 at 0x175547b/0x175547e; hero death does not enter reward block",
+      "effects": [
+        {
+          "index": 16,
+          "mapCode": 54,
+          "hpAfter": "floor(3 * currentHeroHp / 4)",
+          "rvas": [
+            "0x175548a",
+            "0x1755493",
+            "0x17554bd",
+            "0x17554e0",
+            "0x17554ec"
+          ]
+        },
+        {
+          "index": 17,
+          "mapCode": 55,
+          "hpAfter": "floor(2 * currentHeroHp / 3)",
+          "rvas": [
+            "0x17554f9",
+            "0x1755502",
+            "0x175552c",
+            "0x175554f",
+            "0x175555b"
+          ]
+        },
+        {
+          "index": 22,
+          "mapCode": 60,
+          "hpAfter": "currentHeroHp - 100",
+          "rvas": [
+            "0x1755568",
+            "0x1755571",
+            "0x175557a"
+          ]
+        },
+        {
+          "index": 23,
+          "mapCode": 61,
+          "hpAfter": "currentHeroHp - 300",
+          "rvas": [
+            "0x1755587",
+            "0x1755590",
+            "0x175559c"
+          ]
+        }
+      ],
+      "afterEffects": "hero.hp = max(1, hero.hp), RVA 0x17555a3..0x17555ae; effects do not kill an already-victorious hero",
+      "rewards": "hero.gold += monster.goldReward; hero.experience += monster.experienceReward. No percentage multiplier at these additions.",
+      "tileClear": "If monster.battleHp == 0, clear board[monster.battleMapCellIndex], RVA 0x175604c..0x17560ac.",
+      "simultaneousZero": "Monster tile is cleared when its HP is zero, even if hero HP is also zero; reward gate requires hero HP > 0. See distinct clear and death checks.",
+      "phaseEvidence": [
+        "phase70_gate",
+        "phase360_to_settlement",
+        "settlement_effects"
+      ],
+      "phaseFlow": "Battle begins with counter -5 and interval 70; counter zero selects interval 350; damage ticks use interval 30/300; either HP zero selects 360; phase360 sets counter 1 and interval70; phase70 counter >=5 enters settlement. Interval fields are also acting as stage selectors."
+    },
+    "preflight": {
+      "guard": "Only runs normal attack/HP rejection when int16(board + 0xf4) == 0; semantic name of this mode flag not proven.",
+      "attackRejection": "baseDefense >= hero.attack normally refuses; uses BASE defense, not percent-adjusted defense.",
+      "hpPrediction": "For baseAttack > hero.defense and positive hero.attack-baseDefense: q=baseHp/(hero.attack-baseDefense); n=Int(q); if q>n then n=n+1; predictedDamage=n*(baseAttack-hero.defense).",
+      "hpRejection": "predictedDamage > hero.hp normally refuses; equality is not rejected here.",
+      "exception": "mapCode==70 AND current floor variant [0x224b1d8]==21 bypasses these rejection paths.",
+      "messages": {
+        "0x5cf798": "Monster considers your combat ability too low and refuses battle.",
+        "0x5cf7c4": "Monster considers your HP too low and refuses battle."
+      },
+      "evidenceBlock": "preflight",
+      "limitation": "This admission estimate omits percent scaling and the four settlement effects; it is not the authoritative damage routine."
+    }
+  },
+  "unknowns": [
+    "Monster display names not proven from native text-to-record mapping; null names are intentional.",
+    "BattleHp and battleMapCellIndex raw values immediately after new-game initialization are not proven. Their battle-entry assignments are proven.",
+    "Full UI/mode meaning of board+0xf4 and flag 0x224d728 is outside this analysis; preserve the branch conditions rather than naming a difficulty mode.",
+    "All numeric formulas assume the native signed-32-bit arithmetic stays in range. Native jo branches raise VB overflow; a port must not silently wrap.",
+    "No original executable or DLL was run. Runtime behavior claims above are static control/data-flow derivations, not playthrough verification."
+  ],
+  "evidenceArtifact": "tower1-combat-native-evidence.json",
+  "validation": {
+    "records": 33,
+    "perRecordStatWrites": 5,
+    "statWritesVerifiedAgainstModuleBytes": 165,
+    "fieldCountPerRecord": 8,
+    "tileCasesVerified": 33,
+    "evidenceBlockCount": 18,
+    "instructionsWithMatchingModuleBytes": 2974
+  }
+}

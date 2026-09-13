@@ -1,0 +1,882 @@
+{
+  "module": {
+    "file": "module.bin",
+    "bytes": 33767424,
+    "sha256": "34e1178930a3dcb782666b085b9934af144d6d78e9de2feee3f7ec3f51a17e1d",
+    "vbSignatureOffset": 110716
+  },
+  "coverage": {
+    "extractedBitmaps": 28,
+    "picFormRecords": 26,
+    "candidateStrings": 30342,
+    "catalogRecords": 213,
+    "claimedOriginalComplete": 0,
+    "allResourceTypesVerified": false,
+    "executableLogicRecovered": false
+  },
+  "images": [
+    {
+      "file": "sheet-42677e.bmp",
+      "offset": 4351870,
+      "size": 634098,
+      "width": 619,
+      "height": 1021,
+      "bits": 8,
+      "sha256": "9d90efdd64796cde972fab01d1be2516ce8ddb6ad92346080449d7bd7301ba5d",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-4c14b5.bmp",
+      "offset": 4986037,
+      "size": 615670,
+      "width": 790,
+      "height": 776,
+      "bits": 8,
+      "sha256": "ff929ff9e7c4465f42f8e316b988b6e6c7e56deacf70da303cb78c1af75bd82b",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-5579f0.bmp",
+      "offset": 5601776,
+      "size": 490662,
+      "width": 989,
+      "height": 989,
+      "bits": 4,
+      "sha256": "14c8fc0aeac97a4405df2b77b2a36cdc7b3d919948623ab96107d2bde93260f6",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-5cf6db.bmp",
+      "offset": 6092507,
+      "size": 982166,
+      "width": 989,
+      "height": 989,
+      "bits": 8,
+      "sha256": "e612da9b17ed6fd5b15bae0309e57939a0b0cd07bd974991117a5c696152fb16",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-6bf3b6.bmp",
+      "offset": 7074742,
+      "size": 303078,
+      "width": 500,
+      "height": 604,
+      "bits": 8,
+      "sha256": "25a1824e80b1ac7cfa1e6d250f743dce6e1d654d14ef2a17f2a357c2ee94bcf7",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-7096ec.bmp",
+      "offset": 7378668,
+      "size": 131618,
+      "width": 428,
+      "height": 305,
+      "bits": 8,
+      "sha256": "f000223c5e613caea1b6cc45cabc5ea28d01773bb8b344b8e49400fca34530fe",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-729953.bmp",
+      "offset": 7510355,
+      "size": 381078,
+      "width": 757,
+      "height": 500,
+      "bits": 8,
+      "sha256": "2e6a0af97988cf4f307214ba5ed916308384d06a0b06bb088b6a25e7e86d5701",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-786a2e.bmp",
+      "offset": 7891502,
+      "size": 140906,
+      "width": 1043,
+      "height": 1067,
+      "bits": 1,
+      "sha256": "2f40713c7748ecda1266c65ad4d4341236c27247e7551c3e6567aa3a8ab8e9f0",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-7a90dd.bmp",
+      "offset": 8032477,
+      "size": 546886,
+      "width": 993,
+      "height": 548,
+      "bits": 8,
+      "sha256": "a3d5bed2bcc379ebc19bf87e21e643ea069a790cb2b2a8c5770aa0a812169ec1",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-82e968.bmp",
+      "offset": 8579432,
+      "size": 252198,
+      "width": 687,
+      "height": 365,
+      "bits": 8,
+      "sha256": "65da9c7d58bde09aeedb4c39dff5aaca55a3e46a241292ec1e937f04a93e9d18",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-86c2d3.bmp",
+      "offset": 8831699,
+      "size": 366478,
+      "width": 900,
+      "height": 406,
+      "bits": 8,
+      "sha256": "1804c865c5c5ecd7b3b2fac113a984fc33fd689892be3c3454f8bc7ce591eaa1",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-8c5aa6.bmp",
+      "offset": 9198246,
+      "size": 326438,
+      "width": 560,
+      "height": 581,
+      "bits": 8,
+      "sha256": "701a8c19138f3c02a5432f46b322dd47ac9ff1f92adec6e054b6dc89c22f8b7e",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-915611.bmp",
+      "offset": 9524753,
+      "size": 619726,
+      "width": 593,
+      "height": 1038,
+      "bits": 8,
+      "sha256": "d710f1b16fdf9009053e65b4a0eca3d18897b38029155901c587f1ad97dd8e65",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-9acb24.bmp",
+      "offset": 10144548,
+      "size": 295990,
+      "width": 512,
+      "height": 576,
+      "bits": 8,
+      "sha256": "427b0514658f3a61b0b554038a78f1791c532b04656a22b201e50824af57182c",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-9f4fa1.bmp",
+      "offset": 10440609,
+      "size": 632878,
+      "width": 780,
+      "height": 810,
+      "bits": 8,
+      "sha256": "2e3e454b1960358167fb0e4b6acca876f935e2099383f2485bf6b95cc3952bd6",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-a8f814.bmp",
+      "offset": 11073556,
+      "size": 573078,
+      "width": 1144,
+      "height": 500,
+      "bits": 8,
+      "sha256": "dd874cf394feb86de941de456f7a0da3d7553a5aacd517d6cac217b0932857b9",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-b1b6ef.bmp",
+      "offset": 11646703,
+      "size": 827902,
+      "width": 1127,
+      "height": 733,
+      "bits": 8,
+      "sha256": "33fbd06b650b1a92f5e7eef519c5e68b8a2635915085d95868a91696bacca687",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-be5932.bmp",
+      "offset": 12474674,
+      "size": 309838,
+      "width": 661,
+      "height": 465,
+      "bits": 8,
+      "sha256": "de764a5dfced055e888fca352fb7abca1cce88472a050f4a74c4bc8db1e46a44",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-c313c5.bmp",
+      "offset": 12784581,
+      "size": 595598,
+      "width": 709,
+      "height": 835,
+      "bits": 8,
+      "sha256": "9c97606fb28c7efaf95bae7c3e5d5b3eb2f4f788836072d6e8bf46b57a0b893f",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-cc2a98.bmp",
+      "offset": 13380248,
+      "size": 468862,
+      "width": 709,
+      "height": 657,
+      "bits": 8,
+      "sha256": "fb41d46c5fe31e856a97f7b0256c1e80c14ea47b7f0e9be74338216fd0f8e8be",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-d3525b.bmp",
+      "offset": 13849179,
+      "size": 706710,
+      "width": 544,
+      "height": 433,
+      "bits": 24,
+      "sha256": "4cda66ed3e194ccdaf563ec20be74190867d722b62f6cb0f5515fcecb4f7bb19",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-de1b36.bmp",
+      "offset": 14555958,
+      "size": 1487482,
+      "width": 2536,
+      "height": 1173,
+      "bits": 4,
+      "sha256": "31d8052139095d6f36676c911d94053d5666d9b6c74eb00e152f82908acd8c35",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-f4cdff.bmp",
+      "offset": 16043519,
+      "size": 158398,
+      "width": 550,
+      "height": 285,
+      "bits": 8,
+      "sha256": "77477a9ddc7fb1546da1ba616fd64f040eb55ec5c3134f82aefb500da93ee530",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-f73902.bmp",
+      "offset": 16201986,
+      "size": 29098,
+      "width": 504,
+      "height": 115,
+      "bits": 4,
+      "sha256": "9e302d35292506e551566be35fc142917758cd6b32400a5cbc5eaad42ce6874f",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    },
+    {
+      "file": "sheet-f7aaec.bmp",
+      "offset": 16231148,
+      "size": 818742,
+      "width": 710,
+      "height": 384,
+      "bits": 24,
+      "sha256": "23f1e21a7241ffcb62bbaeff487165f4a39c982bb0b332288e3729a833c0ff45",
+      "sourceBytesVerified": true,
+      "picFormIndexed": false
+    },
+    {
+      "file": "sheet-1042962.bmp",
+      "offset": 17049954,
+      "size": 63190,
+      "width": 426,
+      "height": 292,
+      "bits": 4,
+      "sha256": "cfbbcb6f9cb2620cc607b4f5cbaef7ee5875a44004750955d2761398b4df1a0f",
+      "sourceBytesVerified": true,
+      "picFormIndexed": false
+    },
+    {
+      "file": "sheet-1052078.bmp",
+      "offset": 17113208,
+      "size": 178294,
+      "width": 923,
+      "height": 384,
+      "bits": 4,
+      "sha256": "913fad32e8fed3491c85bee87ddf57a3c8e614c91fca7a1a10ef9bc8efb42a5f",
+      "sourceBytesVerified": true,
+      "picFormIndexed": false
+    },
+    {
+      "file": "sheet-1081001.bmp",
+      "offset": 17305601,
+      "size": 208410,
+      "width": 238,
+      "height": 291,
+      "bits": 24,
+      "sha256": "310306b92ad3685e59d9a261fe8a02411fde851f1fd5049fbf246704e8aece2c",
+      "sourceBytesVerified": true,
+      "picFormIndexed": true
+    }
+  ],
+  "numericPayloads": [
+    {
+      "name": "魔塔",
+      "claimedDimensions": [
+        11,
+        11
+      ],
+      "classificationVerified": false,
+      "payloads": [
+        {
+          "offset": 1919980,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1920484,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1920988,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1921492,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1921996,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1922500,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1923004,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1923508,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1924012,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1924516,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1925020,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1925524,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1926028,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1926532,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1927036,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1927540,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1928044,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1928548,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1929052,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1929556,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1930060,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 1930564,
+          "characters": 242,
+          "sourceBytesVerified": true
+        }
+      ]
+    },
+    {
+      "name": "魔塔二",
+      "claimedDimensions": [
+        11,
+        11
+      ],
+      "classificationVerified": false,
+      "payloads": [
+        {
+          "offset": 2789476,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 2809576,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 2810568,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 2815732,
+          "characters": 242,
+          "sourceBytesVerified": true
+        }
+      ]
+    },
+    {
+      "name": "魔塔三",
+      "claimedDimensions": [
+        11,
+        11
+      ],
+      "classificationVerified": false,
+      "payloads": [
+        {
+          "offset": 2822296,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 2828340,
+          "characters": 242,
+          "sourceBytesVerified": true
+        },
+        {
+          "offset": 2835464,
+          "characters": 242,
+          "sourceBytesVerified": true
+        }
+      ]
+    },
+    {
+      "name": "魔塔四",
+      "claimedDimensions": [
+        30,
+        30
+      ],
+      "classificationVerified": false,
+      "payloads": [
+        {
+          "offset": 3138168,
+          "characters": 900,
+          "sourceBytesVerified": true,
+          "warning": "Possible fixed-width numeric table; do not assume a 30x30 tile map.",
+          "sixDigitWordCount": 150,
+          "firstFourRecordsOfSixWords": [
+            [
+              25,
+              13,
+              2,
+              1,
+              1,
+              0
+            ],
+            [
+              20,
+              12,
+              2,
+              1,
+              1,
+              0
+            ],
+            [
+              30,
+              15,
+              3,
+              1,
+              2,
+              0
+            ],
+            [
+              335,
+              180,
+              85,
+              14,
+              16,
+              0
+            ]
+          ],
+          "largestWord": 1600
+        },
+        {
+          "offset": 3139976,
+          "characters": 900,
+          "sourceBytesVerified": true,
+          "warning": "Possible fixed-width numeric table; do not assume a 30x30 tile map.",
+          "sixDigitWordCount": 150,
+          "firstFourRecordsOfSixWords": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              170,
+              40,
+              12,
+              8,
+              10,
+              0
+            ],
+            [
+              250,
+              60,
+              10,
+              10,
+              11,
+              1600
+            ],
+            [
+              335,
+              85,
+              70,
+              11,
+              13,
+              0
+            ]
+          ],
+          "largestWord": 19200
+        },
+        {
+          "offset": 3141784,
+          "characters": 900,
+          "sourceBytesVerified": true,
+          "warning": "Possible fixed-width numeric table; do not assume a 30x30 tile map.",
+          "sixDigitWordCount": 150,
+          "firstFourRecordsOfSixWords": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "largestWord": 3300
+        },
+        {
+          "offset": 3143592,
+          "characters": 900,
+          "sourceBytesVerified": true,
+          "warning": "Possible fixed-width numeric table; do not assume a 30x30 tile map.",
+          "sixDigitWordCount": 150,
+          "firstFourRecordsOfSixWords": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              10000,
+              2800,
+              1600,
+              112,
+              134,
+              204800
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              20000,
+              2800,
+              1600,
+              0,
+              0,
+              404
+            ]
+          ],
+          "largestWord": 999999
+        },
+        {
+          "offset": 3145400,
+          "characters": 900,
+          "sourceBytesVerified": true,
+          "warning": "Possible fixed-width numeric table; do not assume a 30x30 tile map.",
+          "sixDigitWordCount": 150,
+          "firstFourRecordsOfSixWords": [
+            [
+              70,
+              15,
+              2,
+              2,
+              2,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              50,
+              20,
+              1,
+              1,
+              1,
+              0
+            ]
+          ],
+          "largestWord": 2500
+        },
+        {
+          "offset": 3147208,
+          "characters": 900,
+          "sourceBytesVerified": true,
+          "warning": "Possible fixed-width numeric table; do not assume a 30x30 tile map.",
+          "sixDigitWordCount": 150,
+          "firstFourRecordsOfSixWords": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              300,
+              75,
+              45,
+              8,
+              11,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "largestWord": 25600
+        },
+        {
+          "offset": 3149016,
+          "characters": 900,
+          "sourceBytesVerified": true,
+          "warning": "Possible fixed-width numeric table; do not assume a 30x30 tile map.",
+          "sixDigitWordCount": 150,
+          "firstFourRecordsOfSixWords": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "largestWord": 2612
+        },
+        {
+          "offset": 3150824,
+          "characters": 900,
+          "sourceBytesVerified": true,
+          "warning": "Possible fixed-width numeric table; do not assume a 30x30 tile map.",
+          "sixDigitWordCount": 150,
+          "firstFourRecordsOfSixWords": [
+            [
+              1200,
+              980,
+              900,
+              60,
+              74,
+              0
+            ],
+            [
+              10000,
+              1000,
+              1000,
+              80,
+              84,
+              0
+            ],
+            [
+              13000,
+              1300,
+              1300,
+              104,
+              109,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "largestWord": 999999
+        }
+      ]
+    }
+  ],
+  "visualEvidence": [
+    {
+      "source": "sheet-de1b36.bmp",
+      "region": [
+        0,
+        196,
+        697,
+        451
+      ],
+      "content": "Richman board and preprinted HUD",
+      "basis": "Native-size image inspection",
+      "runtimeMappingVerified": false
+    },
+    {
+      "source": "sheet-915611.bmp",
+      "content": "Tower terrain, actors, text and additional tiles",
+      "basis": "Native-size image inspection",
+      "mapCodeMappingVerified": false
+    },
+    {
+      "source": "sheet-5579f0.bmp",
+      "pairedCandidate": "sheet-5cf6db.bmp",
+      "content": "Silhouette atlas; possible mask/color pair",
+      "compositionVerified": false
+    }
+  ],
+  "requiredNextEvidence": [
+    "Trace game drawing calls to source rectangles and transparency operations.",
+    "Trace numeric payload readers to determine map/table format and dimensions.",
+    "Recover rule handlers and compare observable behavior with the original executable.",
+    "Compare isolated desktop/mobile screenshots; launcher counts do not prove fidelity."
+  ]
+}

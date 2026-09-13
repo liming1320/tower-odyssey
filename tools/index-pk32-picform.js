@@ -15,7 +15,8 @@ for (let p = 0; (p = b.indexOf(Buffer.from('PicForm'), p)) >= 0; p += 1) {
   const size = u32(bmp + 2), width = b.readInt32LE(bmp + 18), height = b.readInt32LE(bmp + 22), bits = u16(bmp + 28);
   if (size < 54 || size > 20000000 || bmp + size > b.length || width <= 0 || height === 0 || bits > 32) continue;
   const block = b.subarray(p, bmp);
-  const id = block.length >= 0x17 ? u16(p + 0x15) : null;
+  // Serialized Index property: tag 2 at +14, UInt16 value at +15.
+  const id = block.length >= 18 && block[14] === 2 && block[17] === 3 ? u16(p + 15) : null;
   rows.push({ headerOffset: p, bmpOffset: bmp, internalId: id, width, height, bits, size, sha256: crypto.createHash('sha256').update(b.subarray(bmp, bmp + size)).digest('hex') });
 }
 const unique = rows.filter((row, i) => rows.findIndex(other => other.bmpOffset === row.bmpOffset) === i);

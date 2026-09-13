@@ -5,7 +5,7 @@
     {
       "headerOffset": 4351840,
       "bmpOffset": 4351870,
-      "internalId": 27648,
+      "internalId": 34,
       "width": 619,
       "height": 1021,
       "bits": 8,
@@ -15,7 +15,7 @@
     {
       "headerOffset": 4986007,
       "bmpOffset": 4986037,
-      "internalId": 27648,
+      "internalId": 33,
       "width": 790,
       "height": 776,
       "bits": 8,
@@ -25,7 +25,7 @@
     {
       "headerOffset": 5601746,
       "bmpOffset": 5601776,
-      "internalId": 27648,
+      "internalId": 32,
       "width": 989,
       "height": 989,
       "bits": 4,
@@ -35,7 +35,7 @@
     {
       "headerOffset": 6092477,
       "bmpOffset": 6092507,
-      "internalId": 27648,
+      "internalId": 31,
       "width": 989,
       "height": 989,
       "bits": 8,
@@ -45,7 +45,7 @@
     {
       "headerOffset": 7074712,
       "bmpOffset": 7074742,
-      "internalId": 27648,
+      "internalId": 30,
       "width": 500,
       "height": 604,
       "bits": 8,
@@ -55,7 +55,7 @@
     {
       "headerOffset": 7378638,
       "bmpOffset": 7378668,
-      "internalId": 27648,
+      "internalId": 29,
       "width": 428,
       "height": 305,
       "bits": 8,
@@ -65,7 +65,7 @@
     {
       "headerOffset": 7510325,
       "bmpOffset": 7510355,
-      "internalId": 27648,
+      "internalId": 28,
       "width": 757,
       "height": 500,
       "bits": 8,
@@ -75,7 +75,7 @@
     {
       "headerOffset": 7891472,
       "bmpOffset": 7891502,
-      "internalId": 27648,
+      "internalId": 27,
       "width": 1043,
       "height": 1067,
       "bits": 1,
@@ -85,7 +85,7 @@
     {
       "headerOffset": 8032447,
       "bmpOffset": 8032477,
-      "internalId": 27648,
+      "internalId": 26,
       "width": 993,
       "height": 548,
       "bits": 8,
@@ -95,7 +95,7 @@
     {
       "headerOffset": 8579402,
       "bmpOffset": 8579432,
-      "internalId": 27648,
+      "internalId": 25,
       "width": 687,
       "height": 365,
       "bits": 8,
@@ -105,7 +105,7 @@
     {
       "headerOffset": 8831669,
       "bmpOffset": 8831699,
-      "internalId": 27648,
+      "internalId": 24,
       "width": 900,
       "height": 406,
       "bits": 8,
@@ -115,7 +115,7 @@
     {
       "headerOffset": 9198216,
       "bmpOffset": 9198246,
-      "internalId": 27648,
+      "internalId": 23,
       "width": 560,
       "height": 581,
       "bits": 8,
@@ -125,7 +125,7 @@
     {
       "headerOffset": 9524723,
       "bmpOffset": 9524753,
-      "internalId": 27648,
+      "internalId": 22,
       "width": 593,
       "height": 1038,
       "bits": 8,
@@ -135,7 +135,7 @@
     {
       "headerOffset": 10144518,
       "bmpOffset": 10144548,
-      "internalId": 27648,
+      "internalId": 21,
       "width": 512,
       "height": 576,
       "bits": 8,
@@ -145,7 +145,7 @@
     {
       "headerOffset": 10440579,
       "bmpOffset": 10440609,
-      "internalId": 27648,
+      "internalId": 20,
       "width": 780,
       "height": 810,
       "bits": 8,
@@ -155,7 +155,7 @@
     {
       "headerOffset": 11073526,
       "bmpOffset": 11073556,
-      "internalId": 27648,
+      "internalId": 19,
       "width": 1144,
       "height": 500,
       "bits": 8,
@@ -165,7 +165,7 @@
     {
       "headerOffset": 11646673,
       "bmpOffset": 11646703,
-      "internalId": 27648,
+      "internalId": 18,
       "width": 1127,
       "height": 733,
       "bits": 8,
@@ -175,7 +175,7 @@
     {
       "headerOffset": 12474644,
       "bmpOffset": 12474674,
-      "internalId": 27648,
+      "internalId": 17,
       "width": 661,
       "height": 465,
       "bits": 8,
@@ -185,7 +185,7 @@
     {
       "headerOffset": 12784551,
       "bmpOffset": 12784581,
-      "internalId": 27648,
+      "internalId": 16,
       "width": 709,
       "height": 835,
       "bits": 8,
@@ -195,7 +195,7 @@
     {
       "headerOffset": 13380218,
       "bmpOffset": 13380248,
-      "internalId": 27648,
+      "internalId": 15,
       "width": 709,
       "height": 657,
       "bits": 8,
@@ -205,7 +205,7 @@
     {
       "headerOffset": 13849149,
       "bmpOffset": 13849179,
-      "internalId": 27648,
+      "internalId": 14,
       "width": 544,
       "height": 433,
       "bits": 24,
@@ -215,7 +215,7 @@
     {
       "headerOffset": 14555928,
       "bmpOffset": 14555958,
-      "internalId": 27648,
+      "internalId": 13,
       "width": 2536,
       "height": 1173,
       "bits": 4,
@@ -225,7 +225,7 @@
     {
       "headerOffset": 16043489,
       "bmpOffset": 16043519,
-      "internalId": 27648,
+      "internalId": 12,
       "width": 550,
       "height": 285,
       "bits": 8,
@@ -235,7 +235,7 @@
     {
       "headerOffset": 16201956,
       "bmpOffset": 16201986,
-      "internalId": 27648,
+      "internalId": 11,
       "width": 504,
       "height": 115,
       "bits": 4,
@@ -245,7 +245,7 @@
     {
       "headerOffset": 17293104,
       "bmpOffset": 17293190,
-      "internalId": 1280,
+      "internalId": null,
       "width": 1024,
       "height": 4,
       "bits": 24,
@@ -255,7 +255,7 @@
     {
       "headerOffset": 17305571,
       "bmpOffset": 17305601,
-      "internalId": 27648,
+      "internalId": 3,
       "width": 238,
       "height": 291,
       "bits": 24,
