@@ -19,10 +19,12 @@
     const BILLIARDS = new Set('花式九球|美式落袋|斯诺克'.split('|'));
     const BUBBLE = new Set('连珠牌|同色方块变体|电磁彩球|魅力之球|弹力连珠|碰撞彩球|彩球迷宫|彩球连线|绿洲|魔力珠宝'.split('|'));
     const MUMMY = new Set(['木乃伊']);
+    const ZEN_GARDEN = new Set(['禅宗花园']);
 
     ['魔塔二', '魔塔三', '魔塔四', '????'].forEach(function (name) { if (NAMES.indexOf(name) < 0) NAMES.push(name); });
 
     function modeFor(name) {
+        if (ZEN_GARDEN.has(name)) return 'zen-garden';
         if (CHINESE_CHESS.has(name)) return 'chinese-chess';
         if (GO.has(name)) return 'go';
         if (CHESS.has(name)) return 'chess';
@@ -262,6 +264,38 @@
             const controls = el('div', { className: 'pk32v-controls' }); [['上', -size], ['下', size], ['左', -1], ['右', 1]].forEach(function (x) { controls.appendChild(button(x[0], function () { move(x[1]); })); });
             body.append(el('p', { className: 'pk32v-prompt' }, '木乃伊迷宫：穿过墙体布局，收集钥匙并躲开逐步追击的木乃伊。'), grid, controls); draw();
         }
+        function renderZenGarden() {
+            const wrap = el('div', { className: 'pk32v-native-zen' });
+            const controls = el('div', { className: 'pk32v-controls' });
+            const board = renderGrid(10, 15, 'zen-garden-board');
+            const info = el('p', { className: 'pk32v-prompt' }, '正在读取原生关卡');
+            let levels = [], level = 0, pos = 0, visited = new Set(), active = false;
+            function dimensions(raw) { const width = 10; return { width: width, height: Math.max(1, Math.ceil(raw.length / width)) }; }
+            function draw() {
+                board.innerHTML = '';
+                const raw = levels[level] && levels[level].cells || '';
+                const shape = dimensions(raw);
+                board.style.gridTemplateColumns = 'repeat(' + shape.width + ', minmax(24px, 1fr))';
+                for (let i = 0; i < shape.width * shape.height; i += 1) {
+                    const value = raw[i] || '0';
+                    const road = value !== '0';
+                    const b = button(road ? (i === pos ? '●' : visited.has(i) ? '·' : '路') : '', function () {
+                        if (!active || !road || visited.has(i)) return;
+                        const px = pos % shape.width, py = Math.floor(pos / shape.width), x = i % shape.width, y = Math.floor(i / shape.width);
+                        if (Math.abs(px - x) + Math.abs(py - y) !== 1) return;
+                        pos = i; visited.add(i); draw();
+                        if (visited.size === [...raw].filter(c => c !== '0').length) { active = false; setScore(score + 20); finish('原生道路全部走过，本关完成。'); }
+                    });
+                    b.dataset.cell = String(i); b.dataset.value = value; b.classList.toggle('road', road); b.classList.toggle('visited', visited.has(i)); board.appendChild(b);
+                }
+                info.textContent = levels.length ? '第 ' + (level + 1) + ' / 64 关；已提取 ' + levels.length + ' 关；已走 ' + visited.size + ' / ' + [...raw].filter(c => c !== '0').length + ' 格' : '正在读取原生关卡';
+            }
+            function load() { fetch('/data/pk32-zen-garden-levels.json').then(r => r.json()).then(d => { levels = d.levels || []; active = levels.length > 0; reset(); }).catch(() => { info.textContent = '原生关卡加载失败'; }); }
+            function reset() { const raw = levels[level] && levels[level].cells || ''; pos = [...raw].findIndex(c => c !== '0'); if (pos < 0) pos = 0; visited = new Set(pos >= 0 ? [pos] : []); active = true; draw(); }
+            controls.append(button('上一关', function () { if (level > 0) { level -= 1; reset(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; reset(); } }), button('重置本关', reset));
+            const keys = el('div', { className: 'pk32v-controls' }); [['上', -10], ['下', 10], ['左', -1], ['右', 1]].forEach(function (x) { keys.appendChild(button(x[0], function () { const raw = levels[level] && levels[level].cells || ''; const next = pos + x[1]; const sameRow = x[1] === -1 ? pos % 10 > 0 : x[1] === 1 ? pos % 10 < 9 : true; if (next >= 0 && next < raw.length && sameRow && raw[next] && raw[next] !== '0') board.children[next].click(); })); });
+            wrap.append(info, controls, board, keys, el('p', { className: 'pk32v-prompt' }, '原版目标：把所有的路都走一遍。当前只显示已从原生程序定位的 23 条布局串，未伪造其余 41 关。')); body.append(wrap); load();
+        }
         function renderShips() {
             const wrap = el('div', { className: 'pk32v-native-ships' });
             const controls = el('div', { className: 'pk32v-controls' });
@@ -271,19 +305,19 @@
                 grid.innerHTML = '';
                 const raw = levels[level] && levels[level].cells || '';
                 const cells = Array.from({ length: 100 }, () => []);
-                for (let i = 0; i + 1 < raw.length; i += 2) { const n = parseInt(raw.slice(i, i + 2), 10); if (n >= 0 && n < 100) cells[n].push(Math.floor(i / 2) % 4); }
+                for (let i = 0, pair = 0; i + 3 < raw.length; i += 4, pair += 1) { const a = parseInt(raw.slice(i, i + 2), 10), b = parseInt(raw.slice(i + 2, i + 4), 10), ax = a % 10, ay = Math.floor(a / 10), bx = b % 10, by = Math.floor(b / 10); if ([ax, ay, bx, by].every(n => n >= 0 && n < 10)) { cells[ay * 10 + ax].push({ pair: pair, end: 0 }); cells[by * 10 + bx].push({ pair: pair, end: 1 }); } }
                 for (let i = 0; i < 100; i += 1) {
-                    const b = button(cells[i].length ? (cells[i].length > 1 ? '●' : (cells[i][0] % 2 ? '海怪' : '船')) : '', function () { if (selected == null) selected = i; else if (selected !== i) { const a = selected, x = i; if (Math.abs(a % 10 - x % 10) + Math.abs(Math.floor(a / 10) - Math.floor(x / 10)) === 1) links.push([a, x]); selected = null; draw(); } });
-                    b.dataset.cell = String(i); if (selected === i) b.classList.add('selected'); if (cells[i].length) b.classList.add(cells[i][0] % 2 ? 'monster' : 'ship'); grid.appendChild(b);
+                    const endpoint = cells[i][0]; const b = button(endpoint ? (endpoint.end ? '海怪' : '船') : '', function () { if (!endpoint) return; if (selected == null) selected = i; else if (selected !== i) { const a = selected, x = i, first = cells[a][0]; if (first && first.pair === endpoint.pair && first.end !== endpoint.end && !links.some(p => p.pair === endpoint.pair)) links.push({ a: a, b: x, pair: endpoint.pair }); selected = null; draw(); } });
+                    b.dataset.cell = String(i); if (selected === i) b.classList.add('selected'); if (endpoint) b.classList.add(endpoint.end ? 'monster' : 'ship'); grid.appendChild(b);
                 }
-                svg.innerHTML = ''; links.forEach(function (p) { const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', p[0] % 10 + .5); line.setAttribute('y1', Math.floor(p[0] / 10) + .5); line.setAttribute('x2', p[1] % 10 + .5); line.setAttribute('y2', Math.floor(p[1] / 10) + .5); line.setAttribute('stroke', '#f4c95d'); line.setAttribute('stroke-width', '.16'); svg.appendChild(line); });
+                svg.innerHTML = ''; links.forEach(function (p) { const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', p.a % 10 + .5); line.setAttribute('y1', Math.floor(p.a / 10) + .5); line.setAttribute('x2', p.b % 10 + .5); line.setAttribute('y2', Math.floor(p.b / 10) + .5); line.setAttribute('stroke', '#f4c95d'); line.setAttribute('stroke-width', '.16'); svg.appendChild(line); });
                 status.textContent = levels.length ? '第 ' + (level + 1) + ' / 52 关；已定位 ' + levels.length + ' 关；路径 ' + links.length + ' 条' : '正在读取原生关卡';
             }
             function load() { fetch('/data/pk32-ships-puzzle-levels.json').then(r => r.json()).then(d => { levels = d.levels || []; draw(); }).catch(() => { status.textContent = '原生关卡加载失败'; }); }
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; draw(); } }), button('清除连线', function () { links = []; selected = null; draw(); }));
-            wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, grid); body.append(wrap); load();
+            wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },
