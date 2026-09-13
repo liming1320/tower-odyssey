@@ -33,6 +33,8 @@
     configs[name] = { id: 'pk32-card-' + name, name: name, mode: modes[name], source: 'pk32',
       levelPolicy: 'original-only', status: 'rules-partial', levelCount: null };
   });
+  configs['跟花二'].levelCount = 28;
+  configs['跟花二'].nativePayloadCount = 28;
 
   function el(tag, text, cls) {
     var node = document.createElement(tag);
@@ -57,7 +59,7 @@
     opts = opts || {};
     container.innerHTML = '';
     var root = el('div', '', 'pk32-card-game');
-    var title = el('div', config.name + ' · PK32 原版流程模式', 'pk32-card-title');
+    var title = el('div', config.name + ' · PK32 原版流程模式' + (config.levelCount ? ' · 原版 ' + config.levelCount + ' 局' : ''), 'pk32-card-title');
     var status = el('div', '准备开始', 'pk32-card-status');
     var board = el('div', '', 'pk32-card-board');
     var controls = el('div', '', 'pk32-card-controls');

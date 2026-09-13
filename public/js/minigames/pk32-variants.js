@@ -19,11 +19,15 @@
     const BILLIARDS = new Set('花式九球|美式落袋|斯诺克'.split('|'));
     const BUBBLE = new Set('连珠牌|同色方块变体|电磁彩球|魅力之球|弹力连珠|碰撞彩球|彩球迷宫|彩球连线|绿洲|魔力珠宝'.split('|'));
     const MUMMY = new Set(['木乃伊']);
+    const ELECTROMAGNETIC = new Set(['电磁彩球']);
+    const PIXEL_ISLAND = new Set(['像素岛']);
     const ZEN_GARDEN = new Set(['禅宗花园']);
 
     ['魔塔二', '魔塔三', '魔塔四', '????'].forEach(function (name) { if (NAMES.indexOf(name) < 0) NAMES.push(name); });
 
     function modeFor(name) {
+        if (ELECTROMAGNETIC.has(name)) return 'electromagnetic';
+        if (PIXEL_ISLAND.has(name)) return 'pixel-island';
         if (ZEN_GARDEN.has(name)) return 'zen-garden';
         if (CHINESE_CHESS.has(name)) return 'chinese-chess';
         if (GO.has(name)) return 'go';
@@ -54,6 +58,10 @@
             status: 'rules-partial'
         };
     });
+    CONFIG['数谜'].levelCount = 140;
+    CONFIG['数谜'].nativePayloadCount = 97;
+    CONFIG['魔法城堡'].levelCount = 100;
+    CONFIG['魔法城堡'].nativePayloadCount = 70;
 
     function el(tag, attrs, text) {
         const node = document.createElement(tag);
@@ -118,7 +126,7 @@
             addCleanup(function () { if (timer) clearTimeout(timer); });
         }
         function renderNumber() {
-            let target = 1 + randomInt(9); const prompt = el('p', { className: 'pk32v-prompt' }, '找出目标数字：' + target); const grid = el('div', { className: 'pk32v-grid' });
+            let target = 1 + randomInt(9); const total = config.levelCount || 1; const prompt = el('p', { className: 'pk32v-prompt' }, (config.name === '数谜' ? '原版关卡：第 1 / ' + total + ' 关；当前已确认原生数据串 ' + config.nativePayloadCount + ' 条。' : '') + '找出目标数字：' + target); const grid = el('div', { className: 'pk32v-grid' });
             for (let i = 1; i <= 9; i += 1) grid.appendChild(button(String(i), function () { if (Number(this.textContent) === target) { setScore(score + 10); target = 1 + randomInt(9); prompt.textContent = '找出目标数字：' + target; } }));
             body.append(prompt, grid);
         }
@@ -246,7 +254,7 @@
             for (let i = 0; i < 24; i += 1) { const target = button(i < balls ? '●' : '○', function () {}); targetButtons.push(target); grid.appendChild(target); }
         }
         function renderBubble() {
-            const size = 8; const colors = ['红', '黄', '蓝', '绿', '紫']; const grid = renderGrid(size, size, 'bubble-board'); const prompt = el('p', { className: 'pk32v-prompt' }, '彩球连锁流程：点击相邻同色球组，至少两个相连才可消除。'); const values = Array.from({ length: size * size }, function () { return colors[randomInt(colors.length)]; });
+            const size = 8; const colors = ['红', '黄', '蓝', '绿', '紫']; const grid = renderGrid(size, size, 'bubble-board'); const prompt = el('p', { className: 'pk32v-prompt' }, config.name === '魔法城堡' ? '原版关卡：第 1 / ' + config.levelCount + ' 关；已定位原生数据串 ' + config.nativePayloadCount + ' 条。规则还原中。' : '彩球连锁流程：点击相邻同色球组，至少两个相连才可消除。'); const values = Array.from({ length: size * size }, function () { return colors[randomInt(colors.length)]; });
             function neighbors(i) { const x = i % size, y = Math.floor(i / size); return [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].filter(function (p) { return p[0] >= 0 && p[0] < size && p[1] >= 0 && p[1] < size; }).map(function (p) { return p[1] * size + p[0]; }); }
             function group(start) { const color = values[start], found = [], seen = new Set([start]), queue = [start]; while (queue.length) { const i = queue.shift(); if (values[i] !== color) continue; found.push(i); neighbors(i).forEach(function (n) { if (values[n] === color && !seen.has(n)) { seen.add(n); queue.push(n); } }); } return found; }
             function collapse() { for (let x = 0; x < size; x += 1) { const column = []; for (let y = size - 1; y >= 0; y -= 1) if (values[y * size + x]) column.push(values[y * size + x]); for (let y = size - 1; y >= 0; y -= 1) values[y * size + x] = column[size - 1 - y] || ''; } }
@@ -263,6 +271,52 @@
             function move(delta) { if (ended) return; const next = step(pos, delta); if (next === pos) return; pos = next; if (keyCells.has(pos)) { keys += 1; keyCells.delete(pos); } if (pos === exit) { if (!keys) { status.textContent = '找到钥匙后才能打开出口'; return; } return finish('木乃伊迷宫通关。'); } chase(); setScore(score + 1); status.textContent = '已收集钥匙 ' + keys + ' 把；继续寻找出口。'; draw(); }
             const controls = el('div', { className: 'pk32v-controls' }); [['上', -size], ['下', size], ['左', -1], ['右', 1]].forEach(function (x) { controls.appendChild(button(x[0], function () { move(x[1]); })); });
             body.append(el('p', { className: 'pk32v-prompt' }, '木乃伊迷宫：穿过墙体布局，收集钥匙并躲开逐步追击的木乃伊。'), grid, controls); draw();
+        }
+        function renderElectromagnetic() {
+            const wrap = el('div', { className: 'pk32v-native-electromagnetic' });
+            const info = el('p', { className: 'pk32v-prompt' }, '正在读取原生盘面');
+            const controls = el('div', { className: 'pk32v-controls' });
+            const grid = renderGrid(16, 16, 'electromagnetic-board');
+            grid.style.overflow = 'auto'; grid.style.maxWidth = '100%';
+            const selector = el('select', { ariaLabel: '选择原版关卡' });
+            let levels = [], level = 0;
+            function draw() {
+                grid.innerHTML = '';
+                const raw = levels[level] && levels[level].cells || '';
+                selector.value = String(level);
+                raw.split('').forEach(function (value, index) {
+                    const b = button(value, function () { b.classList.toggle('selected'); });
+                    b.dataset.cell = String(index); b.dataset.value = value; b.setAttribute('aria-label', '原生格 ' + (index + 1) + '，编码 ' + value); grid.appendChild(b);
+                });
+                info.textContent = levels.length ? '原版关卡：第 ' + (level + 1) + ' / 160 关；原生 16×16 盘面；规则还原中' : '正在读取原生盘面';
+            }
+            function load() { fetch('/data/pk32-electromagnetic-levels.json').then(r => r.json()).then(d => { levels = d.levels || []; draw(); }).catch(() => { info.textContent = '原生盘面加载失败'; }); }
+            selector.addEventListener('change', function () { level = Number(selector.value) || 0; draw(); });
+            controls.append(button('上一关', function () { if (level > 0) { level -= 1; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; draw(); } }), selector, button('清除选择', function () { grid.querySelectorAll('.selected').forEach(function (b) { b.classList.remove('selected'); }); }));
+            wrap.append(info, controls, grid, el('p', { className: 'pk32v-prompt' }, '已保留原生 256 格编码。电磁连接、彩球移动和过关判定待完成规则反汇编后接入。')); body.append(wrap); fetch('/data/pk32-electromagnetic-levels.json').then(r => r.json()).then(d => { levels = d.levels || []; levels.forEach(function (_, i) { const option = el('option', {}, '第 ' + (i + 1) + ' 关'); option.value = String(i); selector.appendChild(option); }); draw(); }).catch(() => { info.textContent = '原生盘面加载失败'; });
+        }
+        function renderPixelIsland() {
+            const wrap = el('div', { className: 'pk32v-native-pixel-island' });
+            const info = el('p', { className: 'pk32v-prompt' }, '正在读取原生盘面');
+            const controls = el('div', { className: 'pk32v-controls' });
+            const grid = renderGrid(5, 5, 'pixel-island-board');
+            const selector = el('select', { ariaLabel: '选择已提取原生盘面' });
+            let records = [], record = 0;
+            function draw() {
+                grid.innerHTML = '';
+                const raw = records[record] && records[record].cells || '';
+                for (let i = 0; i < 25; i += 1) {
+                    const value = raw.slice(i * 4, i * 4 + 4) || '0000';
+                    const b = button(value, function () { b.classList.toggle('selected'); });
+                    b.dataset.cell = String(i); b.dataset.rawState = value; b.setAttribute('aria-label', '原生第 ' + (i + 1) + ' 格，编码 ' + value); grid.appendChild(b);
+                }
+                selector.value = String(record);
+                info.textContent = records.length ? '原版关卡声明：213 关；当前原生盘面记录 ' + (record + 1) + ' / ' + records.length + '；5×5 四字符状态；规则还原中' : '正在读取原生盘面';
+            }
+            function load() { fetch('/data/pk32-pixel-island-levels.json').then(r => r.json()).then(d => { records = (d.levels || []).filter(x => x.length === 100); records.forEach(function (_, i) { const option = el('option', {}, '原生盘面 ' + (i + 1)); option.value = String(i); selector.appendChild(option); }); draw(); }).catch(() => { info.textContent = '原生盘面加载失败'; }); }
+            selector.addEventListener('change', function () { record = Number(selector.value) || 0; draw(); });
+            controls.append(selector, button('清除选择', function () { grid.querySelectorAll('.selected').forEach(function (b) { b.classList.remove('selected'); }); }));
+            wrap.append(info, controls, grid, el('p', { className: 'pk32v-prompt' }, '原生帮助确认：5×5 格子中的彩球会随选择发生变化，目标是让所有彩球消失。当前保留已定位的三条 5×5 状态串，状态转移规则待反汇编确认。')); body.append(wrap); load();
         }
         function renderZenGarden() {
             const wrap = el('div', { className: 'pk32v-native-zen' });
@@ -317,7 +371,7 @@
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; draw(); } }), button('清除连线', function () { links = []; selected = null; draw(); }));
             wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },

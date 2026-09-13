@@ -1,0 +1,10 @@
+const fs = require('fs');
+const path = require('path');
+const strings = require(path.join(__dirname, '..', 'output', 'pk32-reference', 'strings.json'));
+const title = strings.find(x => x.text === '扑克32--电磁彩球');
+const next = strings.filter(x => x.text.indexOf('扑克32--') === 0 && x.offset > title.offset).sort((a, b) => a.offset - b.offset)[0];
+const levels = strings.filter(x => x.offset > title.offset && x.offset < next.offset && /^[0-9]+$/.test(x.text) && x.text.length === 256).map((x, i) => ({ number: i + 1, offset: x.offset, cells: x.text }));
+if (levels.length !== 160) throw new Error('Expected 160 native 16x16 boards, got ' + levels.length);
+const out = { name: '电磁彩球', nativeLevelCount: 160, extractedLevelCount: levels.length, width: 16, height: 16, encoding: 'one decimal character per native cell', levels };
+fs.writeFileSync(path.join(__dirname, '..', 'public', 'data', 'pk32-electromagnetic-levels.json'), JSON.stringify(out, null, 2) + '\n', 'utf8');
+console.log(JSON.stringify({ output: 'public/data/pk32-electromagnetic-levels.json', levels: levels.length, firstOffset: levels[0].offset, lastOffset: levels[levels.length - 1].offset }));

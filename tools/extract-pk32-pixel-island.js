@@ -1,0 +1,11 @@
+const fs = require('fs');
+const path = require('path');
+const strings = require(path.join(__dirname, '..', 'output', 'pk32-reference', 'strings.json'));
+const title = strings.find(x => x.text === '扑克32--像素岛');
+const next = strings.filter(x => x.text.indexOf('扑克32--') === 0 && x.offset > title.offset).sort((a, b) => a.offset - b.offset)[0];
+const payloads = strings.filter(x => x.offset > title.offset && x.offset < next.offset && /^[0-9]+$/.test(x.text));
+const levels = payloads.map((x, i) => ({ record: i + 1, offset: x.offset, length: x.text.length, cells: x.text }));
+if (levels.length !== 6) throw new Error('Expected 6 native records, got ' + levels.length);
+const prompts = strings.filter(x => x.offset > title.offset && x.offset < next.offset && /请输入您想玩的关数|格子里有一些彩球|彩球会显示或消失/.test(x.text)).map(x => ({ offset: x.offset, text: x.text }));
+fs.writeFileSync(path.join(__dirname, '..', 'public', 'data', 'pk32-pixel-island-levels.json'), JSON.stringify({ name: '像素岛', nativeLevelCounts: [213, 50, 4], prompts, payloadCount: levels.length, levels }, null, 2) + '\n', 'utf8');
+console.log(JSON.stringify({ records: levels.length, lengths: levels.map(x => x.length), firstOffset: levels[0].offset, lastOffset: levels[levels.length - 1].offset }));
