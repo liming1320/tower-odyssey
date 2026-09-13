@@ -234,14 +234,23 @@
             var dr = tr - sr, dc = tc - sc;
             var middle = cell(sr + dr / 2, sc + dc / 2), distance = Math.abs(dr) + Math.abs(dc);
             if (distance === 2 && (dr === 0 || dc === 0) && occupied(selected) && middle >= 0 && occupied(middle) && state.board[index] === '6') {
+                state.history = Array.isArray(state.history) ? state.history : [];
+                state.history.push({ board: state.board.slice(), moves: state.moves || 0 });
                 state.board[selected] = '6'; state.board[middle] = '6'; state.board[index] = '1'; state.moves = (state.moves || 0) + 1;
                 selected = -1; state.selected = -1; redraw(); return;
             }
             selected = occupied(index) ? index : -1; state.selected = selected; redraw();
         }
-        area.appendChild(btn('上一关', function () { state.level = Math.max(0, state.level - 1); state.board = null; state.selected = -1; redraw(); }));
-        area.appendChild(btn('下一关', function () { state.level = Math.min(state.payloads.length - 1, state.level + 1); state.board = null; state.selected = -1; redraw(); }));
-        area.appendChild(btn('重置本关', function () { state.board = payload.value.split(''); state.selected = -1; state.moves = 0; redraw(); }));
+        area.appendChild(btn('上一关', function () { state.level = Math.max(0, state.level - 1); state.board = null; state.history = []; state.selected = -1; redraw(); }));
+        area.appendChild(btn('下一关', function () { state.level = Math.min(state.payloads.length - 1, state.level + 1); state.board = null; state.history = []; state.selected = -1; redraw(); }));
+        area.appendChild(btn('重置本关', function () { state.board = payload.value.split(''); state.history = []; state.selected = -1; state.moves = 0; redraw(); }));
+        var undo = btn('撤销一步', function () {
+            var previous = Array.isArray(state.history) && state.history.pop();
+            if (!previous) return;
+            state.board = previous.board; state.moves = previous.moves; state.selected = -1; redraw();
+        });
+        undo.disabled = !Array.isArray(state.history) || state.history.length === 0;
+        area.appendChild(undo);
         var label = document.createElement('span'); label.textContent = '第 ' + (state.level + 1) + ' / ' + state.payloads.length + ' 关'; label.style.marginLeft = '8px'; area.appendChild(label);
         var wrap = document.createElement('div'); wrap.className = 'native-board-wrap'; var grid = document.createElement('div'); grid.className = 'native-grid';
         state.board.forEach(function (code, index) { var b = btn(code === '0' ? '' : code === '6' ? '' : '●', function () { select(index); }); b.className = 'native-cell' + (selected === index ? ' native-selected' : ''); b.dataset.code = code; b.setAttribute('aria-label', code === '0' ? '空白区域' : code === '6' ? '空位' : '棋子'); b.disabled = code === '0'; grid.appendChild(b); }); wrap.appendChild(grid); area.appendChild(wrap);

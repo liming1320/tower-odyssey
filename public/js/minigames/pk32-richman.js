@@ -120,8 +120,10 @@
                 var digits = Math.min(99999999, Math.max(0, Math.floor(player.cash))).toString().padStart(8, ' ');
                 for (var n = 0; n < 8; n++) copy(985 + (digits[n] === ' ' ? 10 : Number(digits[n])) * 8, 360 + id * 13, 8, 13, x + n * 8, y);
             });
-            [[333, 169], [333, 210], [333, 251], [374, 210]].forEach(function (p) { copy(1077, 203, 32, 32, p[0], p[1]); });
-            copy(1077, 203 + s.dice[0] * 32, 32, 32, 333, 210);
+            var avatarPositions = [[333, 169], [333, 210], [333, 251], [374, 210]];
+            avatarPositions.forEach(function (p) { copy(1077, 203, 32, 32, p[0], p[1]); });
+            var dicePosition = avatarPositions[s.turn] || avatarPositions[0];
+            copy(1077, 203 + s.dice[0] * 32, 32, 32, dicePosition[0], dicePosition[1]);
             // Native RVA 0x1580696: four directional columns and four character rows.
             var order = s.players.map(function (_, id) { return id; }).filter(function (id) { return id !== s.turn; }).concat(s.turn);
             order.forEach(function (id) {
@@ -167,10 +169,12 @@
             }
             var oldPanel = root.querySelector('.pk32-rh-panel'); if (oldPanel) oldPanel.remove(); var panel = el('div', 'pk32-rh-panel'); s.players.forEach(function (p, i) { var row = el('div', 'pk32-rh-player', p.name + '（' + (i === 0 ? '玩家' : 'AI') + '）\n' + CELLS[p.pos] + '\n现金 ' + money(p.cash) + (p.out ? '\n破产' : '') + (s.jail[i] ? '\n监狱停留 ' + s.jail[i] + ' 回合' : '') + (s.spy[i] ? '\n间谍状态 ' + s.spy[i] + ' 圈' : '')); row.style.borderColor = COLORS[i]; row.dataset.active = String(i === s.turn); row.dataset.controller = i === 0 ? 'human' : 'ai'; panel.appendChild(row); }); root.appendChild(panel);
             var oldHand = root.querySelector('.pk32-rh-hand'); if (oldHand) oldHand.remove(); var hand = el('div', 'pk32-rh-hand', '你的卡片：'); s.cards[0].forEach(function (key, index) { var card = button(CARDS[key].name, function () { useCard(index); }); card.title = CARDS[key].desc; hand.appendChild(card); }); root.appendChild(hand);
-            actions.innerHTML = ''; actions.appendChild(button('掷骰子', function () { if (assetStatus !== 'ready' || stopped || s.phase !== 'roll' || s.turn !== 0) return; movePlayer(0); })); actions.appendChild(button('购买当前地产', function () { if (s.phase !== 'buy' || s.turn !== 0 || s.spy[0]) return; buy(0); })); actions.appendChild(button('放弃购买', endBuyPhase)); actions.appendChild(button('建造', function () { if (s.turn !== 0 || s.spy[0]) return; build(0); })); actions.appendChild(button('重开', reset)); actions.appendChild(button('存档', function () { save(s); note('PK32 强手棋进度已保存'); }));
+            function canBuyNow(pi) { var player = s.players[pi], cell = player && player.pos; return !!player && s.phase === 'buy' && s.turn === pi && !player.out && !s.spy[pi] && PRICES[cell] > 0 && s.own[cell] < 0 && player.cash >= PRICES[cell]; }
+            actions.innerHTML = ''; actions.appendChild(button('掷骰子', function () { if (assetStatus !== 'ready' || stopped || s.phase !== 'roll' || s.turn !== 0) return; movePlayer(0); })); actions.appendChild(button('购买当前地产', function () { if (!canBuyNow(0)) { render(); return; } buy(0); })); actions.appendChild(button('放弃购买', endBuyPhase)); actions.appendChild(button('建造', function () { if (s.turn !== 0 || s.spy[0]) return; build(0); })); actions.appendChild(button('重开', reset)); actions.appendChild(button('存档', function () { save(s); note('PK32 强手棋进度已保存'); }));
             var controls = actions.children, current = s.players[0];
             controls[0].disabled = assetStatus !== 'ready' || stopped || s.phase !== 'roll' || s.turn !== 0 || current.out;
-            controls[1].disabled = assetStatus !== 'ready' || s.phase !== 'buy' || s.turn !== 0 || !!s.spy[0] || current.cash < PRICES[current.pos];
+            var canBuy = canBuyNow(0);
+            controls[1].disabled = assetStatus !== 'ready' || !canBuy;
             controls[2].disabled = assetStatus !== 'ready' || s.phase !== 'buy' || s.turn !== 0;
             controls[3].disabled = assetStatus !== 'ready' || s.phase === 'over' || s.turn !== 0 || !!s.spy[0] || s.own[current.pos] !== 0 || s.buildings[current.pos] >= 4 || current.cash < 100;
             var speedLabel = el('label', '', '移动速度'); var speed = el('select'); speed.setAttribute('aria-label', '移动速度'); [['slow', '慢速', 360], ['normal', '标准', 260], ['fast', '快速', 120]].forEach(function (item) { var option = el('option', '', item[1]); option.value = String(item[2]); speed.appendChild(option); }); speed.value = String(moveDelay); speed.onchange = function () { moveDelay = Number(speed.value) || 260; }; speedLabel.appendChild(speed); actions.appendChild(speedLabel);

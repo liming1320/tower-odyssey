@@ -135,6 +135,10 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     if (n >= 71 && n <= 75 || n >= 13 && n <= 15) return 'npc';
     return 'floor';
   }
+  function isOriginalNpc(code) {
+    var n = Number(code);
+    return (n >= 71 && n <= 75) || (n >= 13 && n <= 15);
+  }
   function tileSprite(code, frame) {
     var n = Number(code);
     if (!Number.isInteger(n) || n < 0 || n > 83) return null;
@@ -192,21 +196,29 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     this.height = this.set.height;
     this.state = cloneState(this.setName, Math.max(0, Math.min(this.layers.length - 1, Number(opts.layer) || 0)));
     this.state.npcFlags.openingStory = true;
+    this.state.dialog = null;
     this.handlers = [];
     this.render();
     if (this.setName === '魔塔' && !this.state.npcFlags.openingShown) {
       this.state.npcFlags.openingShown = true;
-      this.note('旁白：公主被大魔王抓进了魔塔。勇士，请带上剑与盾，穿过层层机关，救出公主。');
+      this.state.dialog = '旁白：公主被大魔王抓进了魔塔。勇士，请带上剑与盾，穿过层层机关，救出公主。';
+      this.note(this.state.dialog);
       var opening = this.container.querySelector('[data-role=dialog]');
-      if (opening) { opening.textContent = '旁白：公主被大魔王抓进了魔塔。勇士，请带上剑与盾，穿过层层机关，救出公主。'; opening.hidden = false; }
+      if (opening) { opening.textContent = this.state.dialog; opening.hidden = false; }
     }
   }
   Tower.prototype.getState = function () { return JSON.parse(JSON.stringify(this.state)); };
   Tower.prototype.on = function (el, type, fn) { el.addEventListener(type, fn); this.handlers.push([el, type, fn]); };
   Tower.prototype.save = function () { try { localStorage.setItem(this.setName === '魔塔' ? SAVE_KEY + '-picform22' : SAVE_KEY, JSON.stringify(this.state)); this.note('已保存当前楼层和状态'); } catch (e) { this.note('存档不可用'); } };
-  Tower.prototype.load = function () { try { var s = JSON.parse(localStorage.getItem(this.setName === '魔塔' ? SAVE_KEY + '-picform22' : SAVE_KEY)); var set = TOWER_SETS[s && s.set] || TOWER_SETS['魔塔']; if (!s || s.layer < 0 || s.layer >= set.layers.length || s.x < 0 || s.x >= set.width || s.y < 0 || s.y >= set.height || !s.keys || typeof s.keys.red !== 'number' || typeof s.keys.blue !== 'number' || typeof s.keys.yellow !== 'number' || typeof s.keys.green !== 'number' || !s.defeated || typeof s.defeated !== 'object' || !Number.isFinite(s.hp) || !Number.isFinite(s.attack) || !Number.isFinite(s.defense) || !Number.isFinite(s.gold) || typeof s.won !== 'boolean' || typeof s.lost !== 'boolean') throw new Error('invalid save'); s.visited = s.visited && typeof s.visited === 'object' ? s.visited : {}; s.visited[s.layer] = true; s.npcFlags = s.npcFlags && typeof s.npcFlags === 'object' ? s.npcFlags : {}; s.gateFlags = s.gateFlags && typeof s.gateFlags === 'object' ? s.gateFlags : {}; this.setName = set.name; this.set = set; this.layers = set.layers; this.width = set.width; this.height = set.height; this.state = s; this.render(); this.note('已读取存档'); } catch (e) { this.note('存档无效或不可用'); } };
-  Tower.prototype.restart = function () { this.state = cloneState(this.setName, this.state.layer); this.render(); };
+  Tower.prototype.load = function () { try { var s = JSON.parse(localStorage.getItem(this.setName === '魔塔' ? SAVE_KEY + '-picform22' : SAVE_KEY)); var set = TOWER_SETS[s && s.set] || TOWER_SETS['魔塔']; if (!s || s.layer < 0 || s.layer >= set.layers.length || s.x < 0 || s.x >= set.width || s.y < 0 || s.y >= set.height || !s.keys || typeof s.keys.red !== 'number' || typeof s.keys.blue !== 'number' || typeof s.keys.yellow !== 'number' || typeof s.keys.green !== 'number' || !s.defeated || typeof s.defeated !== 'object' || !Number.isFinite(s.hp) || !Number.isFinite(s.attack) || !Number.isFinite(s.defense) || !Number.isFinite(s.gold) || typeof s.won !== 'boolean' || typeof s.lost !== 'boolean') throw new Error('invalid save'); s.visited = s.visited && typeof s.visited === 'object' ? s.visited : {}; s.visited[s.layer] = true; s.npcFlags = s.npcFlags && typeof s.npcFlags === 'object' ? s.npcFlags : {}; s.gateFlags = s.gateFlags && typeof s.gateFlags === 'object' ? s.gateFlags : {}; s.dialog = typeof s.dialog === 'string' ? s.dialog : null; this.setName = set.name; this.set = set; this.layers = set.layers; this.width = set.width; this.height = set.height; this.state = s; this.render(); this.note('已读取存档'); } catch (e) { this.note('存档无效或不可用'); } };
+  Tower.prototype.restart = function () { this.state = cloneState(this.setName, this.state.layer); this.render(); if (this.setName === '魔塔') { this.state.npcFlags.openingShown = true; this.showDialog('旁白：公主被大魔王抓进了魔塔。勇士，请带上剑与盾，穿过层层机关，救出公主。'); } };
   Tower.prototype.note = function (message) { var el = this.container.querySelector('[data-role=message]'); if (el) el.textContent = message; };
+  Tower.prototype.showDialog = function (message) {
+    this.state.dialog = message;
+    this.note(message);
+    var box = this.container.querySelector('[data-role=dialog]');
+    if (box) { box.textContent = message; box.hidden = false; }
+  };
   Tower.prototype.showMonsterBook = function () {
     if (this.setName !== '魔塔' || !this.state.inventory || !this.state.inventory.book) return this.note('当前没有怪物手册');
     var layer = this.layers[this.state.layer], rows = [];
@@ -222,11 +234,11 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     if (this.setName !== '魔塔') return;
     var key = this.state.layer + ':' + this.state.x + ':' + this.state.y, flags = this.state.npcFlags || (this.state.npcFlags = {}), message;
     if (code === '71') {
-      if (this.state.layer !== 21) return this.note('公主：大魔王还没有被打败。');
-      if (!this.state.npcFlags.finalBossDefeated) return this.note('公主：请先打败大魔王，我要亲眼看着他倒下。');
+      if (this.state.layer !== 21) return this.showDialog('公主：大魔王还没有被打败。');
+      if (!this.state.npcFlags.finalBossDefeated) return this.showDialog('公主：请先打败大魔王，我要亲眼看着他倒下。');
       this.state.ending = 'hero'; this.state.won = true;
-      return this.note('大魔头被打败了，公主也被救出了塔。勇士和公主一起走出了魔塔。');
-    } else if (code === '72') {
+      return this.showDialog('大魔头被打败了，公主也被救出了塔。勇士和公主一起走出了魔塔。');
+    } else if (code === '72' || code === '13' || code === '14' || code === '15') {
       if (!flags.fairyIntro) { flags.fairyIntro = true; message = '仙子：公主还在里面。先取回剑、盾和十字架，再来找我。'; }
       else if (this.state.inventory.cross && !flags.fairyBlessed) { flags.fairyBlessed = true; this.state.attack += 10; this.state.defense += 10; this.state.hp += 1000; message = '仙子：你做得很好，我已经将你现在的能力提升了。'; }
       else message = '仙子：勇敢地去吧，勇士。';
@@ -246,9 +258,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
       else message = '杰克：你找到嵌了红宝石的铁榔头了吗？';
     }
     if (message) {
-      this.note(message);
-      var box = this.container.querySelector('[data-role=dialog]');
-      if (box) { box.textContent = message; box.hidden = false; }
+      this.showDialog(message);
     }
     return key;
   };
@@ -288,8 +298,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
       if (original) this.state.cleared[token] = true; else this.state.gold += 5;
     }
     if (original && originalPickup(this.state, code)) this.state.cleared[token] = true;
-    this.state.x = nx; this.state.y = ny;
-    if (original && originalKind(code) === 'npc') this.interactNpc(code);
+    this.state.x = nx; this.state.y = ny; if (!original || !isOriginalNpc(code)) this.state.dialog = null;
     if (original && (code === '11' || code === '12')) {
       var nextFloor = this.state.layer + (code === '12' ? 1 : -1);
       if (nextFloor >= 0 && nextFloor < this.layers.length) {
@@ -301,6 +310,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
       }
     } else if (!original && (code === '72' || (this.state.layer === this.layers.length - 1 && nx === this.width - 2 && ny === 1))) { if (this.state.layer < this.layers.length - 1) { this.state.layer += 1; var next = this.layers[this.state.layer].start; this.state.x = next.x; this.state.y = next.y; } else this.state.won = true; }
     this.render();
+    if (original && isOriginalNpc(code)) this.interactNpc(code);
   };
   Tower.prototype.render = function () {
     var self = this, layer = this.layers[this.state.layer];
@@ -308,6 +318,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     this.container.innerHTML = '<div data-role="pk32-tower" style="font-family:system-ui;max-width:760px;margin:auto;color:#20252b;overflow:hidden"><style>.pk32-tower-tile{position:relative;display:grid;place-items:center;min-width:28px;min-height:28px;aspect-ratio:1;border:1px solid #b9a878;padding:0;font-weight:700;font-family:system-ui;font-size:14px}.pk32-tower-tile[data-kind=floor]{background:#f4ead0;color:#c9bd9c}.pk32-tower-tile[data-kind=wall]{background:#39434f;color:#d7dce0}.pk32-tower-tile[data-kind=door]{background:#a64b37;color:#fff}.pk32-tower-tile[data-kind=key]{background:#e3b341;color:#20252b}.pk32-tower-tile[data-kind=treasure]{background:#c88934;color:#fff}.pk32-tower-tile[data-kind=enemy]{background:#713c74;color:#fff}.pk32-tower-tile[data-kind=player]{background:#2374a8;color:#fff}.pk32-tower-tile[data-kind=exit]{background:#2d8c72;color:#fff}.pk32-tower-grid-wrap{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-tower-grid{width:max-content;min-width:100%;touch-action:auto}.pk32-dialog{padding:10px;margin:6px 0;background:#fff4cf;border:2px solid #9d6b2b;box-shadow:2px 2px 0 #6b4a25}.pk32-dpad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,48px);gap:4px;justify-content:center;margin-top:10px}.pk32-dpad button{min-width:48px;min-height:44px}.pk32-dpad [data-dir=up]{grid-column:2}.pk32-dpad [data-dir=left]{grid-column:1;grid-row:2}.pk32-dpad [data-dir=down]{grid-column:2;grid-row:3}.pk32-dpad [data-dir=right]{grid-column:3;grid-row:2}@media (max-width:600px){.pk32-tower-tile{min-width:30px;min-height:30px}.pk32-tower-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px}.pk32-tower-stats{line-height:1.6;overflow-wrap:anywhere}}</style><div class="pk32-tower-toolbar"><strong>PK32 ' + this.setName + ' 迁移</strong><label>地图 <select data-role="layer"></select></label><button data-role="restart">重开</button><button data-role="save">存档</button><button data-role="load">读档</button></div><div data-role="message" style="min-height:28px;padding:8px 0">第' + (this.state.layer + 1) + '层</div><div data-role="dialog" class="pk32-dialog" hidden></div><div data-role="battle" class="pk32-dialog" hidden></div><div data-role="stats" class="pk32-tower-stats"></div><div class="pk32-tower-grid-wrap"><div data-role="grid" class="pk32-tower-grid" style="display:grid;grid-template-columns:repeat(' + this.width + ',minmax(28px,1fr));gap:1px"></div></div><div class="pk32-dpad"><button data-dir=up>上</button><button data-dir=left>左</button><button data-dir=down>下</button><button data-dir=right>右</button></div></div>';
     var original = this.setName === '魔塔';
     var root = this.container.querySelector('[data-role=pk32-tower]'); root.dataset.assetSource = original ? 'picform-22' : 'pk32-tower-sheet'; root.dataset.assetStatus = original ? 'native-tile-mapping' : 'mapping-incomplete'; root.dataset.rulesStatus = 'incomplete';
+    var dialog = this.container.querySelector('[data-role=dialog]'); if (this.state.dialog) { dialog.textContent = this.state.dialog; dialog.hidden = false; }
     if (original) {
       var artStyle = document.createElement('style');
       artStyle.textContent = '[data-asset-source=picform-22]{background:#181b20;color:#f0f1f2!important;padding:8px;box-sizing:border-box}[data-asset-source=picform-22] .pk32-tower-grid{width:352px;max-width:100%;min-width:0;margin:auto}[data-asset-source=picform-22] .pk32-tower-tile{border:0;border-radius:0;min-width:0;min-height:0;width:100%;aspect-ratio:1;box-sizing:border-box;background-repeat:no-repeat;image-rendering:pixelated}[data-asset-source=picform-22] .pk32-tower-tile:focus-visible{outline:2px solid #fff;outline-offset:-2px}[data-asset-source=picform-22] .pk32-tower-toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}[data-asset-source=picform-22] button:not(.pk32-tower-tile){min-height:44px;min-width:44px;padding:6px 10px;border:1px solid #888;border-radius:2px;background:#eee;color:#111}[data-asset-source=picform-22] .pk32-tower-grid button{min-height:0}';
