@@ -819,6 +819,7 @@ body.in-battle .avatar-btn { display: none; }
     flex: 1; position: relative; overflow: hidden;
     display: flex; align-items: center; justify-content: center;
 }
+#pk32-mask .mini-stage { overflow: auto; align-items: flex-start; justify-content: flex-start; }
 .mini-stage canvas, .mini-stage > div:not(.mg-dom) { display: block; }
 /* 2026-09-10 升级：mini-stage 用机柜风格外壳（和 MG.gfx.scene 配套）
    canvas 类游戏的背景由 MG.gfx.scene 预渲染（带网格+暗角+顶亮底暗），此兜底

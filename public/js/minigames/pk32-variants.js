@@ -262,7 +262,28 @@
             const controls = el('div', { className: 'pk32v-controls' }); [['上', -size], ['下', size], ['左', -1], ['右', 1]].forEach(function (x) { controls.appendChild(button(x[0], function () { move(x[1]); })); });
             body.append(el('p', { className: 'pk32v-prompt' }, '木乃伊迷宫：穿过墙体布局，收集钥匙并躲开逐步追击的木乃伊。'), grid, controls); draw();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = { action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction; renderer(); }
+        function renderShips() {
+            const wrap = el('div', { className: 'pk32v-native-ships' });
+            const controls = el('div', { className: 'pk32v-controls' });
+            const board = el('div', { className: 'pk32v-ships-board' }); const grid = renderGrid(10, 10, 'ships-board'); const svg = el('svg', { className: 'pk32v-ships-lines' }); svg.setAttribute('viewBox', '0 0 10 10'); svg.setAttribute('aria-hidden', 'true'); board.append(svg, grid);
+            let levels = [], level = 0, selected = null, links = [];
+            function draw() {
+                grid.innerHTML = '';
+                const raw = levels[level] && levels[level].cells || '';
+                const cells = Array.from({ length: 100 }, () => []);
+                for (let i = 0; i + 1 < raw.length; i += 2) { const n = parseInt(raw.slice(i, i + 2), 10); if (n >= 0 && n < 100) cells[n].push(Math.floor(i / 2) % 4); }
+                for (let i = 0; i < 100; i += 1) {
+                    const b = button(cells[i].length ? (cells[i].length > 1 ? '●' : (cells[i][0] % 2 ? '海怪' : '船')) : '', function () { if (selected == null) selected = i; else if (selected !== i) { const a = selected, x = i; if (Math.abs(a % 10 - x % 10) + Math.abs(Math.floor(a / 10) - Math.floor(x / 10)) === 1) links.push([a, x]); selected = null; draw(); } });
+                    b.dataset.cell = String(i); if (selected === i) b.classList.add('selected'); if (cells[i].length) b.classList.add(cells[i][0] % 2 ? 'monster' : 'ship'); grid.appendChild(b);
+                }
+                svg.innerHTML = ''; links.forEach(function (p) { const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', p[0] % 10 + .5); line.setAttribute('y1', Math.floor(p[0] / 10) + .5); line.setAttribute('x2', p[1] % 10 + .5); line.setAttribute('y2', Math.floor(p[1] / 10) + .5); line.setAttribute('stroke', '#f4c95d'); line.setAttribute('stroke-width', '.16'); svg.appendChild(line); });
+                status.textContent = levels.length ? '第 ' + (level + 1) + ' / 52 关；已定位 ' + levels.length + ' 关；路径 ' + links.length + ' 条' : '正在读取原生关卡';
+            }
+            function load() { fetch('/data/pk32-ships-puzzle-levels.json').then(r => r.json()).then(d => { levels = d.levels || []; draw(); }).catch(() => { status.textContent = '原生关卡加载失败'; }); }
+            controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; draw(); } }), button('清除连线', function () { links = []; selected = null; draw(); }));
+            wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, grid); body.append(wrap); load();
+        }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },
