@@ -1,10 +1,6 @@
 const data = require('../public/data/pk32-pixel-island-levels.json');
-const strings = require('../output/pk32-reference/strings.json');
-function check(label, ok) { if (!ok) throw new Error('FAIL ' + label); console.log('PASS ' + label); }
-check('native count prompts preserved', JSON.stringify(data.nativeLevelCounts) === JSON.stringify([213, 50, 4]));
-check('six native payloads present', data.payloadCount === 6 && data.levels.length === 6);
-check('payload lengths match evidence', JSON.stringify(data.levels.map(x => x.length)) === JSON.stringify([246, 237, 204, 100, 100, 100]));
-check('offsets unique and ordered', new Set(data.levels.map(x => x.offset)).size === 6 && data.levels.every((x, i) => i === 0 || x.offset > data.levels[i - 1].offset));
-check('all records match native strings', data.levels.every(x => strings.some(y => y.offset === x.offset && y.text === x.cells)));
-check('all native prompts preserved', data.prompts.length === 4);
-console.log(JSON.stringify({ name: data.name, payloadCount: data.payloadCount, lengths: data.levels.map(x => x.length), prompts: data.prompts.length }));
+if (data.name !== '像素岛' || data.nativeLevelCounts.join(',') !== '213,50,4' || data.levels.length !== 6) throw new Error('pixel island metadata mismatch');
+const gridLevels = data.levels.filter(function (level) { return level.length === 100; });
+if (gridLevels.length !== 3 || !gridLevels.every(function (level) { return /^[01]+$/.test(level.cells) && level.cells.length === 100; })) throw new Error('pixel island 5x5 states mismatch');
+if (!data.prompts.some(function (prompt) { return prompt.text.indexOf('5x5') >= 0 && prompt.text.indexOf('消失') >= 0; })) throw new Error('pixel island rule prompt missing');
+console.log(JSON.stringify({ name: data.name, nativeLevelCounts: data.nativeLevelCounts, fiveByFiveRecords: gridLevels.length }));

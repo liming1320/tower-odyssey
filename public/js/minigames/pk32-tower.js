@@ -191,8 +191,15 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     this.width = this.set.width;
     this.height = this.set.height;
     this.state = cloneState(this.setName, Math.max(0, Math.min(this.layers.length - 1, Number(opts.layer) || 0)));
+    this.state.npcFlags.openingStory = true;
     this.handlers = [];
     this.render();
+    if (this.setName === '魔塔' && !this.state.npcFlags.openingShown) {
+      this.state.npcFlags.openingShown = true;
+      this.note('旁白：公主被大魔王抓进了魔塔。勇士，请带上剑与盾，穿过层层机关，救出公主。');
+      var opening = this.container.querySelector('[data-role=dialog]');
+      if (opening) { opening.textContent = '旁白：公主被大魔王抓进了魔塔。勇士，请带上剑与盾，穿过层层机关，救出公主。'; opening.hidden = false; }
+    }
   }
   Tower.prototype.getState = function () { return JSON.parse(JSON.stringify(this.state)); };
   Tower.prototype.on = function (el, type, fn) { el.addEventListener(type, fn); this.handlers.push([el, type, fn]); };
@@ -274,7 +281,6 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
       if (this.state.layer === 21 && code === '70' && battle.won) this.state.npcFlags.finalBossDefeated = true;
       if (!battle.won) { this.state.lost = true; this.render(); this.note('战斗失败，请重开'); return; }
     }
-    if (original && originalKind(code) === 'npc') this.interactNpc(code);
     if (!original && isEnemy(code) && !this.state.defeated[i]) { var power = Math.max(1, parseInt(code, 10) - 25); this.state.hp -= Math.max(1, power - this.state.defense); if (this.state.hp <= 0) { this.state.lost = true; this.render(); this.note('战斗失败，请重开'); return; } this.state.gold += power; if (original) this.state.cleared[token] = true; else this.state.defeated[i] = true; }
     if (original ? !!ORIGINAL_KEYS[code] : isKey(code)) {
       var key = original ? ORIGINAL_KEYS[code] : code === '20' ? 'red' : code === '21' ? 'blue' : code === '22' ? 'yellow' : 'green';
@@ -283,6 +289,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     }
     if (original && originalPickup(this.state, code)) this.state.cleared[token] = true;
     this.state.x = nx; this.state.y = ny;
+    if (original && originalKind(code) === 'npc') this.interactNpc(code);
     if (original && (code === '11' || code === '12')) {
       var nextFloor = this.state.layer + (code === '12' ? 1 : -1);
       if (nextFloor >= 0 && nextFloor < this.layers.length) {

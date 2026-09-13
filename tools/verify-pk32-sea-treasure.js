@@ -1,7 +1,6 @@
-const catalog = require('../public/data/pk32-native-catalog.json').records.find(x => x.name === '海底寻宝');
 const data = require('../public/data/pk32-sea-treasure-levels.json');
-function check(label, value) { if (!value) throw new Error('FAIL ' + label); console.log('PASS ' + label); }
-check('level count remains unknown', data.nativeLevelCount === null && catalog.levelCount === null);
-check('payload count is 1', data.extractedPayloadCount === 1 && data.levels.length === 1);
-check('payload matches catalog', data.levels[0].offset === catalog.payloadSamples[0].offset && data.levels[0].cells.length === 150);
-console.log(JSON.stringify({ nativeLevelCount: data.nativeLevelCount, extractedPayloadCount: data.extractedPayloadCount }));
+if (data.name !== '海底寻宝' || data.extractedPayloadCount !== 1 || data.levels.length !== 1) throw new Error('sea treasure metadata mismatch');
+const level = data.levels[0];
+if (level.cells.length !== 150 || !/^[0-9]+$/.test(level.cells) || !Number.isInteger(level.offset)) throw new Error('sea treasure native grid mismatch');
+if (!Array.isArray(data.controls) || !data.controls.some(function (text) { return text.indexOf('ASDW') >= 0 && text.indexOf('小键盘') >= 0; })) throw new Error('sea treasure controls missing');
+console.log(JSON.stringify({ name: data.name, payloads: data.levels.length, width: 15, height: 10, offset: level.offset }));

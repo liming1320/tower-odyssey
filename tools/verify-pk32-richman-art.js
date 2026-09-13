@@ -5,7 +5,7 @@ const path = require('path');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'output/playwright');
-const saveKey = 'pk32-richman-save-picform13-v2';
+const saveKey = 'pk32-richman-save-picform13-v3';
 
 (async () => {
     const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -77,7 +77,7 @@ const saveKey = 'pk32-richman-save-picform13-v2';
         await page.getByRole('button', { name: '购买当前地产', exact: true }).click();
         await page.waitForFunction(() => game.getState().round === 2);
         s = await page.evaluate(() => game.getState());
-        assert.equal(s.own[5], 0); assert.equal(s.players[0].cash, 700); // Three birthday events each collect 100.
+        assert.equal(s.own[5], 0); assert.equal(s.players[0].cash, 40700); // 50000 initial cash minus the 10000 station price plus three 100 birthday events.
         assert.equal(s.turn, 0); assert.equal(s.phase, 'roll');
         assert(s.players.slice(1).every(p => p.pos === 2));
         pixelChecks.push(await pixelCheck('purchase-and-four-player-turn'));
