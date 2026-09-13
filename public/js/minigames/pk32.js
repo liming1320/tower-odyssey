@@ -87,6 +87,7 @@
             container.innerHTML = '';
             const wrap = document.createElement('div');
             wrap.className = 'emu-wrap';
+            wrap.style.maxWidth = '1000px';
             wrap.innerHTML =
                 '<div class="emu-note"><b>PK32 原版迁移馆</b><br>' +
                 '这里独立维护 PK32 的原版流程、关卡数量、资源和存档，不套用当前小游戏的 50 关模板。' +

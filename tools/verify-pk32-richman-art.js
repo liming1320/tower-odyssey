@@ -68,6 +68,7 @@ const saveKey = 'pk32-richman-save-picform13-v2';
             return { label, ...result };
         }
         const pixelChecks = [await pixelCheck('initial')];
+        await page.screenshot({ path: path.join(output, 'pk32-richman-native-start.png'), fullPage: true });
         // Roll 1+4 to a real station, then buy through the visible controls.
         await page.evaluate(() => { const values = [0, 0.5]; Math.random = () => values.length ? values.shift() : 0; });
         await page.getByRole('button', { name: '掷骰子', exact: true }).click();
@@ -123,11 +124,15 @@ const saveKey = 'pk32-richman-save-picform13-v2';
         await page.getByRole('combobox', { name: '选择地块' }).selectOption('1');
         assert.match(await page.locator('.pk32-rh-log').textContent(), /解放路.*600/);
         await page.getByRole('button', { name: '缩小棋盘', exact: true }).click();
+        await page.locator('[data-cell="5"]').click();
+        assert.equal(await page.getByRole('combobox', { name: '选择地块' }).inputValue(), '5');
         async function fixture(change) {
             await page.evaluate(({ initial, saveKey, change }) => {
                 game.destroy(); const s = structuredClone(initial);
                 if (change === 'bankrupt') { s.players[0].pos = 7; s.players[0].cash = 1; s.own[9] = 1; }
                 if (change === 'jail') { s.players[0].pos = 28; s.cards[0] = []; }
+                if (change === 'build-zero') { s.players[0].pos = 9; s.players[0].cash = 100; s.own[9] = 0; }
+                if (change === 'buy-zero') { s.players[0].pos = 9; s.players[0].cash = 1200; s.phase = 'buy'; }
                 if (change === 'invalid') delete s.dice;
                 localStorage.setItem(saveKey, JSON.stringify(s)); Math.random = () => 0;
                 game = PK32Richman.start(document.querySelector('#host'));
@@ -146,6 +151,13 @@ const saveKey = 'pk32-richman-save-picform13-v2';
         assert.match(await page.locator('.pk32-rh-log').textContent(), /^坐牢/);
         await fixture('invalid');
         assert.deepEqual(await page.evaluate(() => game.getState().dice), [1, 1]);
+        await fixture('build-zero');
+        await page.getByRole('button', { name: '建造', exact: true }).click();
+        assert.equal(await page.evaluate(() => game.getState().phase), 'over');
+        await fixture('buy-zero');
+        await page.getByRole('button', { name: '购买当前地产', exact: true }).click();
+        assert.equal(await page.evaluate(() => game.getState().phase), 'over');
+        await page.getByRole('button', { name: '重开', exact: true }).click();
         await page.route('**/img/pk32/original/sheet-de1b36.png', route => route.abort());
         await page.evaluate(() => { game.destroy(); game = PK32Richman.start(document.querySelector('#host')); });
         await page.getByRole('button', { name: '重试加载', exact: true }).waitFor();

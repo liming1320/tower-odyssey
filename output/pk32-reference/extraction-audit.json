@@ -852,19 +852,21 @@
       "source": "sheet-de1b36.bmp",
       "region": [
         0,
-        196,
-        697,
-        451
+        195,
+        698,
+        452
       ],
-      "content": "Richman board and preprinted HUD",
-      "basis": "Native-size image inspection",
-      "runtimeMappingVerified": false
+      "content": "Richman board, HUD, four directional actors and property sprites",
+      "basis": "Native PicForm(13) selection and blit instructions; see native-index.json",
+      "runtimeMappingVerified": true,
+      "fullRulesVerified": false
     },
     {
       "source": "sheet-915611.bmp",
-      "content": "Tower terrain, actors, text and additional tiles",
-      "basis": "Native-size image inspection",
-      "mapCodeMappingVerified": false
+      "content": "Tower one terrain and actors",
+      "basis": "Native PicForm(22), 22 map dispatch cases, 32px blits on 33px stride",
+      "mapCodeMappingVerified": true,
+      "fullUiVerified": false
     },
     {
       "source": "sheet-5579f0.bmp",
@@ -874,8 +876,8 @@
     }
   ],
   "requiredNextEvidence": [
-    "Trace game drawing calls to source rectangles and transparency operations.",
-    "Trace numeric payload readers to determine map/table format and dimensions.",
+    "Trace remaining games drawing calls and transparency operations; tower one and Richman basic blits are verified.",
+    "Classify remaining numeric payloads; only tower one has 22 proven native floor dispatch cases.",
     "Recover rule handlers and compare observable behavior with the original executable.",
     "Compare isolated desktop/mobile screenshots; launcher counts do not prove fidelity."
   ]

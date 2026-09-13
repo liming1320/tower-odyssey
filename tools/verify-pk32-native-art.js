@@ -91,6 +91,41 @@ const evidence = require('../output/pk32-reference/native-index.json');
         assert.equal(interaction.picked.keys.yellow, interaction.beforeKey.keys.yellow + 1);
         assert.equal(interaction.revisited.keys.yellow, interaction.picked.keys.yellow);
         assert.deepEqual(interaction.loaded, interaction.revisited);
+        const pickups = await page.evaluate(() => {
+            const result = [];
+            for (let code = 19; code <= 37; code++) {
+                game.destroy(); game = PK32Tower.startUI(document.querySelector('#host'), { layer: 1 });
+                const text = String(code), layer = game.layers.findIndex(l => l.cells.includes(text));
+                if (layer < 0) throw new Error('No native item: ' + text);
+                const index = game.layers[layer].cells.indexOf(text), x = index % 11, y = Math.floor(index / 11);
+                game.state.layer = layer; game.state.x = x ? x - 1 : x + 1; game.state.y = y;
+                const origin = { x: game.state.x, y: game.state.y }, before = game.getState();
+                game.move(x - origin.x, 0); const after = game.getState();
+                // Re-enter the same native item from the fixture origin to test consumption.
+                game.state.x = origin.x; game.state.y = origin.y; game.move(x - origin.x, 0);
+                result.push({ code, before, after, revisit: game.getState(), sprite: document.querySelector('[data-code="' + text + '"]')?.dataset.spriteCode });
+            }
+            game.destroy(); game = PK32Tower.startUI(document.querySelector('#host'), { layer: 1 });
+            const index = game.layers[1].cells.indexOf('38');
+            game.state.x = index % 11 + 1; game.state.y = Math.floor(index / 11);
+            game.move(-1, 0); const battle = game.getState();
+            return { items: result, battle };
+        });
+        for (const item of pickups.items) {
+            assert.deepEqual(item.revisit, item.after, 'Repeated item ' + item.code);
+            const s = item.after;
+            if (item.code === 19) assert.deepEqual(s.keys, { yellow: 2, blue: 1, red: 1, green: 0 });
+            if (item.code === 20) assert.equal(s.hp, 1200);
+            if (item.code === 21) assert.equal(s.hp, 1500);
+            if (item.code === 22) assert.equal(s.hp, 2000);
+            if (item.code === 23) assert.deepEqual([s.hp, s.attack, s.defense, s.level], [2000, 17, 17, 2]);
+            if (item.code === 24) assert.deepEqual([s.hp, s.attack, s.defense, s.level], [4000, 31, 31, 4]);
+            if (item.code >= 25 && item.code <= 28) assert.equal(Object.values(s.inventory)[0], true);
+            if (item.code === 29) assert.equal(s.gold, 300);
+            if (item.code >= 30 && item.code <= 33) assert.equal(s.attack, [13, 20, 50, 160][item.code - 30]);
+            if (item.code >= 34) assert.equal(s.defense, [13, 20, 40, 200][item.code - 34]);
+        }
+        assert.deepEqual([pickups.battle.hp, pickups.battle.gold, pickups.battle.experience], [955, 2, 1]);
         const viewports = [];
         for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }, { width: 844, height: 390 }]) {
             await page.setViewportSize(viewport);
@@ -107,7 +142,7 @@ const evidence = require('../output/pk32-reference/native-index.json');
             await page.screenshot({ path: path.join(output, `pk32-tower-native-${viewport.width}.png`), fullPage: true });
         }
         assert.deepEqual(failures, []);
-        const report = { pixelChecks, viewports, interaction, rulesComplete: false, errors: failures };
+        const report = { pixelChecks, viewports, interaction, pickups, rulesComplete: false, errors: failures };
         fs.writeFileSync(path.join(output, 'pk32-native-art-verification.json'), JSON.stringify(report, null, 2));
         console.log(JSON.stringify({ pixelVerifiedFloors: pixelChecks.length, pixelMismatches: 0, viewports, interactionPassed: true, rulesComplete: false }));
     } finally { await browser.close(); }

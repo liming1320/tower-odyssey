@@ -131,7 +131,7 @@
             }
             return false;
         }
-        function note(t) { s.message = t; status.textContent = t; log.textContent = s.players.map(function (p) { return p.name + ' 位置' + p.pos + ' 现金' + money(p.cash) + (p.out ? ' 破产' : ''); }).join('\n'); }
+        function note(t) { s.message = t; if (assetStatus === 'ready') status.textContent = t; log.textContent = s.players.map(function (p) { return p.name + ' 位置' + p.pos + ' 现金' + money(p.cash) + (p.out ? ' 破产' : ''); }).join('\n'); }
         function applyEvent(pi) {
             var p = s.players[pi], event = EVENTS[Math.floor(Math.random() * EVENTS.length)], amount = event.value || 0;
             if (event.kind === 'collectEach') { s.players.forEach(function (other, oi) { if (oi !== pi && !other.out) { other.cash -= amount; p.cash += amount; } }); }
@@ -169,14 +169,24 @@
             showCell();
             if (opts.onScore) opts.onScore('PK32 强手棋 · 第 ' + s.round + ' 轮');
         }
-        function showCell() { var owner = s.own[selected]; log.textContent = CELLS[selected] + (PRICES[selected] ? ' · 地价 ' + money(PRICES[selected]) : '') + (owner >= 0 ? '\n业主：' + s.players[owner].name + ' · 建筑 ' + s.buildings[selected] + ' 级' : '') + '\n' + s.players.filter(function (p) { return p.pos === selected && !p.out; }).map(function (p) { return p.name; }).join('、'); }
+        function showCell() { var location = actions.querySelector('select'); if (location) location.value = String(selected); var owner = s.own[selected]; log.textContent = CELLS[selected] + (PRICES[selected] ? ' · 地价 ' + money(PRICES[selected]) : '') + (owner >= 0 ? '\n业主：' + s.players[owner].name + ' · 建筑 ' + s.buildings[selected] + ' 级' : '') + '\n' + s.players.filter(function (p) { return p.pos === selected && !p.out; }).map(function (p) { return p.name; }).join('、'); }
         function endBuyPhase() { if (s.turn !== 0 || s.phase !== 'buy') return; s.phase = 'end'; s.message = '放弃购买，结束本回合'; render(); queueAITurns(); }
         function useCard(index) { if (assetStatus !== 'ready' || s.phase === 'over' || s.turn !== 0 || s.phase === 'roll' && s.spy[0]) return; var key = s.cards[0][index], p = s.players[0], i = p.pos; if (!key) return; if (key === 'jailFree') { s.message = '免罪卡已保留，进入监狱时自动使用'; } else if (key === 'buildHouse' || key === 'buildFloor' || key === 'buildStreet') { if (s.own[i] !== 0) return note('当前地产不属于你'); s.cards[0].splice(index, 1); s.buildings[i] = Math.min(4, s.buildings[i] + 1); s.message = '使用' + CARDS[key].name + '，' + CELLS[i] + '建筑等级提升'; } else if (key === 'spy') { s.cards[0].splice(index, 1); s.spy[0] = 1; s.message = '已进入商业间谍状态，本圈不能买地或盖房'; } else return note(CARDS[key].desc); render(); save(s); }
         function land(pi) { var p = s.players[pi], i = p.pos; if (PRICES[i] && s.own[i] >= 0 && s.own[i] !== pi) { var rent = 50 + s.buildings[i] * 80; p.cash -= rent; s.players[s.own[i]].cash += rent; if (p.cash <= 0) p.out = true; s.message = p.name + ' 支付 ' + money(rent) + ' 过路费'; } else if (PRICES[i] && s.own[i] < 0 && !s.spy[pi]) { s.phase = 'buy'; s.message = '到达 ' + CELLS[i] + '，可购买 ' + money(PRICES[i]); return; } else if ([2, 7, 17, 22, 33, 36].indexOf(i) >= 0) { applyEvent(pi); } else if (i === 4 || i === 38) { p.cash -= i === 4 ? 2000 : 1000; s.message = p.name + ' 缴纳税款'; } else if (i === 30) { if (s.cards[pi].indexOf('jailFree') >= 0) { s.cards[pi].splice(s.cards[pi].indexOf('jailFree'), 1); s.message = '免罪卡生效，没有入狱'; } else { p.pos = 10; s.jail[pi] = 1; s.message = p.name + ' 进入监狱，暂停行动一回合'; } } else if (i === 3) { s.spy[pi] = 1; s.message = p.name + ' 进入商业间谍状态'; } s.phase = 'end'; }
         function movePlayer(pi) { var p = s.players[pi]; if (s.jail[pi] > 0) { s.jail[pi] -= 1; s.phase = 'end'; s.message = p.name + ' 在监狱中，跳过本回合'; render(); if (pi === 0) queueAITurns(); return; } var d1 = 1 + Math.floor(Math.random() * 6), d2 = 1 + Math.floor(Math.random() * 6), d = d1 + d2; s.dice = [d1, d2]; p.pos = (p.pos + d) % N; if (p.pos < d) { p.cash += 2000; if (s.spy[pi] > 0) s.spy[pi] -= 1; } land(pi); if (pi === 0) selected = p.pos; gameOver(); render(); if (pi === 0 && s.phase === 'end') { queueAITurns(); } }
-        function buy(pi) { var p = s.players[pi], i = p.pos; if (!PRICES[i] || s.own[i] >= 0 || p.cash < PRICES[i]) return; p.cash -= PRICES[i]; s.own[i] = pi; s.phase = 'end'; s.message = p.name + ' 买下 ' + CELLS[i]; render(); if (pi === 0) queueAITurns(); }
-        function build(pi) { var p = s.players[pi], i = p.pos; if (s.own[i] === pi && p.cash >= 100 && s.buildings[i] < 4) { p.cash -= 100; s.buildings[i] += 1; s.message = p.name + ' 在 ' + CELLS[i] + ' 建造第 ' + s.buildings[i] + ' 级房屋'; render(); } }
-        function aiTurns() { if (stopped || s.phase !== 'end') return; for (var pi = 1; pi < s.players.length; pi += 1) { if (!s.players[pi].out) { s.turn = pi; s.phase = 'roll'; movePlayer(pi); if (gameOver()) { render(); save(s); return; } if (s.phase === 'buy') { buy(pi); s.phase = 'end'; } if (s.phase === 'end' && s.own[s.players[pi].pos] === pi) build(pi); } } s.turn = 0; s.round += 1; s.phase = 'roll'; s.message = '第 ' + s.round + ' 轮，轮到你'; render(); save(s); }
+        function buy(pi) { var p = s.players[pi], i = p.pos; if (!PRICES[i] || s.own[i] >= 0 || p.cash < PRICES[i]) return; p.cash -= PRICES[i]; s.own[i] = pi; s.phase = 'end'; s.message = p.name + ' 买下 ' + CELLS[i]; gameOver(); render(); if (pi === 0 && s.phase === 'end') queueAITurns(); }
+        function build(pi) { var p = s.players[pi], i = p.pos; if (s.own[i] === pi && p.cash >= 100 && s.buildings[i] < 4) { p.cash -= 100; s.buildings[i] += 1; s.message = p.name + ' 在 ' + CELLS[i] + ' 建造第 ' + s.buildings[i] + ' 级房屋'; gameOver(); render(); } }
+        function aiTurns() {
+            if (stopped || s.phase !== 'end') return;
+            for (var pi = 1; pi < s.players.length; pi++) {
+                if (s.players[pi].out) continue;
+                s.turn = pi; s.phase = 'roll'; movePlayer(pi);
+                if (s.phase === 'buy') { buy(pi); if (s.phase !== 'over') s.phase = 'end'; }
+                if (s.phase === 'end' && s.own[s.players[pi].pos] === pi) build(pi);
+                if (gameOver()) { render(); save(s); return; }
+            }
+            s.turn = 0; s.round += 1; s.phase = 'roll'; s.message = '第 ' + s.round + ' 轮，轮到你'; render(); save(s);
+        }
         render();
         return { getState: function () { return JSON.parse(JSON.stringify(s)); }, stop: function () { stopped = true; cancelAI(); save(s); }, restart: reset, destroy: function () { stopped = true; cancelAI(); save(s); container.innerHTML = ''; } };
     }

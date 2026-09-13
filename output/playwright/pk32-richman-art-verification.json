@@ -120,7 +120,13 @@
       }
     }
   ],
+  "zoom": {
+    "target": 80,
+    "overflow": false,
+    "localScroll": true
+  },
   "interactionPassed": true,
+  "failureRecoveryPassed": true,
   "rulesComplete": false,
   "comparison": "native atlas and recovered blit formulas; not a full original-window comparison",
   "errors": []

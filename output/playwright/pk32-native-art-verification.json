@@ -135,25 +135,43 @@
   ],
   "viewports": [
     {
-      "width": 304,
-      "height": 304.046875,
-      "overflow": false,
-      "squareTiles": true,
-      "sprites": 121
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "grid": {
+        "width": 304,
+        "height": 304.046875,
+        "overflow": false,
+        "squareTiles": true,
+        "sprites": 121
+      }
     },
     {
-      "width": 352,
-      "height": 352,
-      "overflow": false,
-      "squareTiles": true,
-      "sprites": 121
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "grid": {
+        "width": 352,
+        "height": 352,
+        "overflow": false,
+        "squareTiles": true,
+        "sprites": 121
+      }
     },
     {
-      "width": 352,
-      "height": 352,
-      "overflow": false,
-      "squareTiles": true,
-      "sprites": 121
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "grid": {
+        "width": 352,
+        "height": 352,
+        "overflow": false,
+        "squareTiles": true,
+        "sprites": 121
+      }
     }
   ],
   "interaction": {
@@ -166,6 +184,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -186,6 +207,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -206,6 +230,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -228,6 +255,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -250,6 +280,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -272,6 +305,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -294,6 +330,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -316,6 +355,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -339,6 +381,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -362,6 +407,9 @@
       "attack": 10,
       "defense": 10,
       "gold": 0,
+      "experience": 0,
+      "level": 1,
+      "inventory": {},
       "keys": {
         "red": 0,
         "blue": 0,
@@ -372,6 +420,1514 @@
       "cleared": {
         "0:82": true,
         "1:101": true
+      },
+      "won": false,
+      "lost": false
+    }
+  },
+  "pickups": {
+    "items": [
+      {
+        "code": 19,
+        "before": {
+          "set": "魔塔",
+          "layer": 5,
+          "x": 1,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 5,
+          "x": 0,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 1,
+            "blue": 1,
+            "yellow": 2,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "5:0": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 5,
+          "x": 0,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 1,
+            "blue": 1,
+            "yellow": 2,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "5:0": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 20,
+        "before": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 1,
+          "y": 2,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 0,
+          "y": 2,
+          "hp": 1200,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:22": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 0,
+          "y": 2,
+          "hp": 1200,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:22": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 21,
+        "before": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 0,
+          "y": 9,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 1,
+          "y": 9,
+          "hp": 1500,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:100": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 1,
+          "y": 9,
+          "hp": 1500,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:100": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 22,
+        "before": {
+          "set": "魔塔",
+          "layer": 14,
+          "x": 4,
+          "y": 3,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 14,
+          "x": 5,
+          "y": 3,
+          "hp": 2000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "14:38": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 14,
+          "x": 5,
+          "y": 3,
+          "hp": 2000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "14:38": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 23,
+        "before": {
+          "set": "魔塔",
+          "layer": 6,
+          "x": 1,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 6,
+          "x": 0,
+          "y": 0,
+          "hp": 2000,
+          "attack": 17,
+          "defense": 17,
+          "gold": 0,
+          "experience": 0,
+          "level": 2,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "6:0": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 6,
+          "x": 0,
+          "y": 0,
+          "hp": 2000,
+          "attack": 17,
+          "defense": 17,
+          "gold": 0,
+          "experience": 0,
+          "level": 2,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "6:0": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 24,
+        "before": {
+          "set": "魔塔",
+          "layer": 13,
+          "x": 6,
+          "y": 10,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 13,
+          "x": 7,
+          "y": 10,
+          "hp": 4000,
+          "attack": 31,
+          "defense": 31,
+          "gold": 0,
+          "experience": 0,
+          "level": 4,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "13:117": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 13,
+          "x": 7,
+          "y": 10,
+          "hp": 4000,
+          "attack": 31,
+          "defense": 31,
+          "gold": 0,
+          "experience": 0,
+          "level": 4,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "13:117": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 25,
+        "before": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 0,
+          "y": 10,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 1,
+          "y": 10,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {
+            "book": true
+          },
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:111": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 1,
+          "y": 10,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {
+            "book": true
+          },
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:111": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 26,
+        "before": {
+          "set": "魔塔",
+          "layer": 12,
+          "x": 9,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 12,
+          "x": 10,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {
+            "hammer": true
+          },
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "12:10": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 12,
+          "x": 10,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {
+            "hammer": true
+          },
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "12:10": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 27,
+        "before": {
+          "set": "魔塔",
+          "layer": 9,
+          "x": 1,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 9,
+          "x": 0,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {
+            "compass": true
+          },
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "9:0": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 9,
+          "x": 0,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {
+            "compass": true
+          },
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "9:0": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 28,
+        "before": {
+          "set": "魔塔",
+          "layer": 7,
+          "x": 4,
+          "y": 4,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 7,
+          "x": 5,
+          "y": 4,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {
+            "cross": true
+          },
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "7:49": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 7,
+          "x": 5,
+          "y": 4,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {
+            "cross": true
+          },
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "7:49": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 29,
+        "before": {
+          "set": "魔塔",
+          "layer": 6,
+          "x": 6,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 6,
+          "x": 7,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 300,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "6:7": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 6,
+          "x": 7,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 300,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "6:7": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 30,
+        "before": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 1,
+          "y": 3,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 2,
+          "y": 3,
+          "hp": 1000,
+          "attack": 13,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:35": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 2,
+          "y": 3,
+          "hp": 1000,
+          "attack": 13,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:35": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 31,
+        "before": {
+          "set": "魔塔",
+          "layer": 3,
+          "x": 1,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 3,
+          "x": 0,
+          "y": 0,
+          "hp": 1000,
+          "attack": 20,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "3:0": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 3,
+          "x": 0,
+          "y": 0,
+          "hp": 1000,
+          "attack": 20,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "3:0": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 32,
+        "before": {
+          "set": "魔塔",
+          "layer": 9,
+          "x": 1,
+          "y": 10,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 9,
+          "x": 0,
+          "y": 10,
+          "hp": 1000,
+          "attack": 50,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "9:110": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 9,
+          "x": 0,
+          "y": 10,
+          "hp": 1000,
+          "attack": 50,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "9:110": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 33,
+        "before": {
+          "set": "魔塔",
+          "layer": 19,
+          "x": 1,
+          "y": 7,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 19,
+          "x": 2,
+          "y": 7,
+          "hp": 1000,
+          "attack": 160,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "19:79": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 19,
+          "x": 2,
+          "y": 7,
+          "hp": 1000,
+          "attack": 160,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "19:79": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 34,
+        "before": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 1,
+          "y": 6,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 0,
+          "y": 6,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 13,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:66": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 0,
+          "y": 6,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 13,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "1:66": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 35,
+        "before": {
+          "set": "魔塔",
+          "layer": 5,
+          "x": 3,
+          "y": 3,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 5,
+          "x": 4,
+          "y": 3,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 20,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "5:37": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 5,
+          "x": 4,
+          "y": 3,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 20,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "5:37": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 36,
+        "before": {
+          "set": "魔塔",
+          "layer": 11,
+          "x": 8,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 11,
+          "x": 9,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 40,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "11:9": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 11,
+          "x": 9,
+          "y": 0,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 40,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "11:9": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      },
+      {
+        "code": 37,
+        "before": {
+          "set": "魔塔",
+          "layer": 19,
+          "x": 7,
+          "y": 7,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "won": false,
+          "lost": false
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 19,
+          "x": 8,
+          "y": 7,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 200,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "19:85": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "revisit": {
+          "set": "魔塔",
+          "layer": 19,
+          "x": 8,
+          "y": 7,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 200,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 0,
+            "blue": 0,
+            "yellow": 1,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {
+            "19:85": true
+          },
+          "won": false,
+          "lost": false
+        },
+        "sprite": "76"
+      }
+    ],
+    "battle": {
+      "set": "魔塔",
+      "layer": 1,
+      "x": 4,
+      "y": 0,
+      "hp": 955,
+      "attack": 10,
+      "defense": 10,
+      "gold": 2,
+      "experience": 1,
+      "level": 1,
+      "inventory": {},
+      "keys": {
+        "red": 0,
+        "blue": 0,
+        "yellow": 1,
+        "green": 0
+      },
+      "defeated": {},
+      "cleared": {
+        "1:4": true
       },
       "won": false,
       "lost": false
