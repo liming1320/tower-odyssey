@@ -20,7 +20,7 @@
     function css() {
         if (document.getElementById('pk32-puzzle-style')) return;
         var s = document.createElement('style'); s.id = 'pk32-puzzle-style';
-        s.textContent = '.pk32p{max-width:820px;margin:auto;padding:18px;color:#eaf1f8;background:#17212b;border-radius:8px;font-family:system-ui}.pk32p h2{margin:0 0 5px}.pk32p .meta,.pk32p .msg{color:#b8c7d6;margin:8px 0;min-height:24px}.pk32p .bar{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.pk32p button{border:1px solid #60758a;border-radius:4px;background:#263b4c;color:#fff;padding:7px 10px;cursor:pointer}.pk32p button:hover{background:#35566e}.pk32p .grid{display:grid;gap:4px;margin:12px 0}.pk32p .tile{width:42px;height:42px;padding:0;font-size:18px}.pk32p .board{display:grid;place-items:center;gap:3px;background:#0d151c;padding:12px;max-width:max-content}.pk32p input{box-sizing:border-box;background:#0d151c;color:#fff;border:1px solid #60758a;border-radius:3px;padding:7px;text-align:center}.pk32p .selected{outline:3px solid #f3c45b}.pk32p .filled{background:#d08d35}.pk32p .empty{background:#20313f}.pk32p .swatch{width:32px;height:32px;border:2px solid #60758a;border-radius:50%;padding:0}.pk32p .red{background:#e85b55}.pk32p .blue{background:#4e9de8}.pk32p .green{background:#60bd78}.pk32p .yellow{background:#e4c44e}.pk32p .purple{background:#ad78d3}';
+        s.textContent = '.pk32p{max-width:820px;margin:auto;padding:18px;color:#eaf1f8;background:#17212b;border-radius:8px;font-family:system-ui}.pk32p h2{margin:0 0 5px}.pk32p .meta,.pk32p .msg{color:#b8c7d6;margin:8px 0;min-height:24px}.pk32p .bar{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.pk32p button{border:1px solid #60758a;border-radius:4px;background:#263b4c;color:#fff;padding:7px 10px;cursor:pointer}.pk32p button:hover{background:#35566e}.pk32p .grid{display:grid;gap:4px;margin:12px 0}.pk32p .tile{width:42px;height:42px;padding:0;font-size:18px}.pk32p .board{display:grid;place-items:center;gap:3px;background:#0d151c;padding:12px;max-width:max-content}.pk32p input{box-sizing:border-box;background:#0d151c;color:#fff;border:1px solid #60758a;border-radius:3px;padding:7px;text-align:center}.pk32p .selected{outline:3px solid #f3c45b}.pk32p .filled{background:#d08d35}.pk32p .empty{background:#20313f}.pk32p .swatch{width:32px;height:32px;border:2px solid #60758a;border-radius:50%;padding:0}.pk32p .red{background:#e85b55}.pk32p .blue{background:#4e9de8}.pk32p .green{background:#60bd78}.pk32p .yellow{background:#e4c44e}.pk32p .purple{background:#ad78d3}.pk32p .native-board-wrap{max-width:100%;overflow:auto;background:#0d151c;padding:10px}.pk32p .native-grid{display:grid;grid-template-columns:repeat(20,24px);gap:1px;width:max-content;margin:auto}.pk32p .native-cell{width:24px;height:24px;padding:0;border-radius:0;font-size:11px}.pk32p .native-cell[data-code="0"]{visibility:hidden}.pk32p .native-cell[data-code="6"]{background:#20313f}.pk32p .native-cell:not([data-code="0"]):not([data-code="6"]){background:#d08d35;border-color:#e9b866}.pk32p .native-cell.native-selected{outline:2px solid #f3c45b;outline-offset:0}';
         document.head.appendChild(s);
     }
     function btn(text, fn) { var b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.onclick = fn; return b; }
@@ -135,13 +135,125 @@
         }
         draw();
     }
+    function lineGame(area, status, reset, redraw, state) {
+        var size = 9, colors = ['red', 'blue', 'green', 'yellow', 'purple'], dirs = [[1, 0], [0, 1], [1, 1], [1, -1]];
+        state = state || {};
+        if (!Array.isArray(state.board) || state.board.length !== size * size) {
+            state.board = Array(size * size).fill(null);
+            [4, 13, 22, 58, 67].forEach(function (index, i) { state.board[index] = colors[i % colors.length]; });
+            state.selected = -1; state.done = false; state.moves = 0;
+        }
+        state.selected = Number.isInteger(state.selected) ? state.selected : -1;
+        state.moves = Number.isInteger(state.moves) && state.moves >= 0 ? state.moves : 0;
+        function index(row, col) { return row < 0 || row >= size || col < 0 || col >= size ? -1 : row * size + col; }
+        function hasPath(from, to) {
+            if (from === to || state.board[to]) return false;
+            var queue = [from], seen = {}; seen[from] = true;
+            while (queue.length) {
+                var current = queue.shift(), row = Math.floor(current / size), col = current % size;
+                if (current === to) return true;
+                [[row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]].forEach(function (point) {
+                    var next = index(point[0], point[1]);
+                    if (next >= 0 && !seen[next] && (!state.board[next] || next === to)) { seen[next] = true; queue.push(next); }
+                });
+            }
+            return false;
+        }
+        function lineFrom(start, dr, dc, color) {
+            var result = [start], row = Math.floor(start / size) + dr, col = start % size + dc, next;
+            while ((next = index(row, col)) >= 0 && state.board[next] === color) { result.push(next); row += dr; col += dc; }
+            row = Math.floor(start / size) - dr; col = start % size - dc;
+            while ((next = index(row, col)) >= 0 && state.board[next] === color) { result.push(next); row -= dr; col -= dc; }
+            return result;
+        }
+        function clearLines(indexMoved) {
+            var color = state.board[indexMoved], cleared = {};
+            if (!color) return 0;
+            dirs.forEach(function (direction) {
+                var line = lineFrom(indexMoved, direction[0], direction[1], color);
+                if (line.length >= 5) line.forEach(function (indexInLine) { cleared[indexInLine] = true; });
+            });
+            Object.keys(cleared).forEach(function (key) { state.board[Number(key)] = null; });
+            return Object.keys(cleared).length;
+        }
+        function addBalls(count) {
+            var empty = state.board.map(function (value, indexInBoard) { return value ? -1 : indexInBoard; }).filter(function (value) { return value >= 0; });
+            for (var i = empty.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), swap = empty[i]; empty[i] = empty[j]; empty[j] = swap; }
+            var added = Math.min(count, empty.length);
+            for (var k = 0; k < added; k++) state.board[empty[k]] = colors[Math.floor(Math.random() * colors.length)];
+            return added;
+        }
+        function choose(indexClicked) {
+            if (state.done) return;
+            if (state.selected < 0) { if (state.board[indexClicked]) { state.selected = indexClicked; redraw(); } return; }
+            if (indexClicked === state.selected) { state.selected = -1; redraw(); return; }
+            if (state.board[indexClicked]) { state.selected = indexClicked; redraw(); return; }
+            if (!hasPath(state.selected, indexClicked)) { status('彩球不能穿过其他彩球'); return; }
+            var color = state.board[state.selected]; state.board[state.selected] = null; state.board[indexClicked] = color; state.selected = -1; state.moves++;
+            var cleared = clearLines(indexClicked);
+            if (cleared) status('消除 ' + cleared + ' 个彩球');
+            else status('没有连成五个，增加 ' + addBalls(3) + ' 个彩球');
+            state.done = state.board.every(function (value) { return value !== null; });
+            redraw();
+        }
+        area.appendChild(btn('重新开始', function () { state.board = null; state.selected = -1; state.done = false; state.moves = 0; redraw(); }));
+        var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(9,34px)';
+        state.board.forEach(function (color, indexInBoard) {
+            var cell = btn(color ? '' : '·', function () { choose(indexInBoard); });
+            cell.className = 'tile ' + (color || 'empty') + (state.selected === indexInBoard ? ' selected' : ''); cell.setAttribute('aria-label', color ? '彩球' : '空位'); grid.appendChild(cell);
+        });
+        area.appendChild(grid); status(state.done ? '棋盘已填满，本局结束' : '选择彩球，再选择可到达的空位；横竖斜连续五个或以上消除');
+    }
+    function nativePeg(area, status, reset, redraw, state) {
+        state = state || {};
+        if (!state.payloads) {
+            area.textContent = '正在读取原生棋盘数据';
+            if (!state.loading) {
+                state.loading = true;
+                fetch('/data/pk32-native-catalog.json').then(function (response) { return response.json(); }).then(function (data) {
+                    var record = (data.records || []).find(function (row) { return row.name === '独粒钻石'; });
+                    state.payloads = record && record.payloads ? record.payloads.filter(function (row) { return row.length === 280 && row.value; }) : [];
+                    state.level = 0;
+                    state.board = null;
+                    state.loading = false;
+                    redraw();
+                }).catch(function () { state.loading = false; status('原生棋盘数据读取失败'); });
+            }
+            return;
+        }
+        var payload = state.payloads[state.level] || state.payloads[0];
+        if (!payload) { status('没有找到原生棋盘数据'); return; }
+        if (!Array.isArray(state.board) || state.board.length !== 280) state.board = payload.value.split('');
+        var selected = Number.isInteger(state.selected) ? state.selected : -1;
+        function occupied(index) { return state.board[index] !== '0' && state.board[index] !== '6'; }
+        function cell(row, col) { return row < 0 || row >= 14 || col < 0 || col >= 20 ? -1 : row * 20 + col; }
+        function select(index) {
+            if (state.board[index] === '0') return;
+            if (selected < 0) { if (occupied(index)) { selected = index; state.selected = index; redraw(); } return; }
+            var sr = Math.floor(selected / 20), sc = selected % 20, tr = Math.floor(index / 20), tc = index % 20;
+            var dr = tr - sr, dc = tc - sc;
+            var middle = cell(sr + dr / 2, sc + dc / 2), distance = Math.abs(dr) + Math.abs(dc);
+            if (distance === 2 && (dr === 0 || dc === 0) && occupied(selected) && middle >= 0 && occupied(middle) && state.board[index] === '6') {
+                state.board[selected] = '6'; state.board[middle] = '6'; state.board[index] = '1'; state.moves = (state.moves || 0) + 1;
+                selected = -1; state.selected = -1; redraw(); return;
+            }
+            selected = occupied(index) ? index : -1; state.selected = selected; redraw();
+        }
+        area.appendChild(btn('上一关', function () { state.level = Math.max(0, state.level - 1); state.board = null; state.selected = -1; redraw(); }));
+        area.appendChild(btn('下一关', function () { state.level = Math.min(state.payloads.length - 1, state.level + 1); state.board = null; state.selected = -1; redraw(); }));
+        area.appendChild(btn('重置本关', function () { state.board = payload.value.split(''); state.selected = -1; state.moves = 0; redraw(); }));
+        var label = document.createElement('span'); label.textContent = '第 ' + (state.level + 1) + ' / ' + state.payloads.length + ' 关'; label.style.marginLeft = '8px'; area.appendChild(label);
+        var wrap = document.createElement('div'); wrap.className = 'native-board-wrap'; var grid = document.createElement('div'); grid.className = 'native-grid';
+        state.board.forEach(function (code, index) { var b = btn(code === '0' ? '' : code === '6' ? '' : '●', function () { select(index); }); b.className = 'native-cell' + (selected === index ? ' native-selected' : ''); b.dataset.code = code; b.setAttribute('aria-label', code === '0' ? '空白区域' : code === '6' ? '空位' : '棋子'); b.disabled = code === '0'; grid.appendChild(b); }); wrap.appendChild(grid); area.appendChild(wrap);
+        var pieces = state.board.filter(occupied).length; status(pieces <= 1 ? '本关完成；剩余棋子：' + pieces : '逐格读取原生棋盘；剩余棋子：' + pieces + '，移动：' + (state.moves || 0));
+    }
     function cube(area, status, reset, redraw, state) {
         if (!state || !state.cells) state = { cells: Array(9).fill(false), moves: 0 };
         function draw() { area.innerHTML = ''; area.appendChild(btn('重新开始', function () { state.cells = Array(9).fill(false); state.moves = 0; redraw(); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(3,48px)'; state.cells.forEach(function (on, i) { var b = btn(on ? '■' : '□', function () { [i, i - 1, i + 1, i - 3, i + 3].forEach(function (x) { if (x >= 0 && x < 9 && (x === i || Math.floor(x / 3) === Math.floor(i / 3) || x === i - 3 || x === i + 3)) state.cells[x] = !state.cells[x]; }); state.moves++; redraw(); }); b.className = 'tile ' + (on ? 'filled' : 'empty'); grid.appendChild(b); }); area.appendChild(grid); status(state.cells.every(Boolean) ? '立体魔方完成' : '点击方块和相邻面，使九面全部点亮'); }
         draw();
     }
     function simple(area, status, reset, redraw, title) { var count = 0; var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(5,44px)'; for (var i = 0; i < 25; i++) { var b = btn('', function () { this.classList.toggle('filled'); count += this.classList.contains('filled') ? 1 : -1; status('已完成 ' + count + ' 个格位'); }); b.className = 'tile empty'; grid.appendChild(b); } area.appendChild(btn('重新开始', function () { redraw(); })); area.appendChild(grid); status(title || '点击格位进行操作'); }
-    function dispatch(container, name, opts) { var canonical = ALIASES[name] || name; if (!SPECS[canonical]) throw new Error('未建立 PK32 益智玩法：' + name); var state = null; var factory; if (canonical === '数独') factory = sudoku; else if (canonical === '迷宫') factory = function (a, s, r, d) { state = state || { pos: 10, done: false }; maze(a, s, r, d, state); }; else if (canonical === '华容道' || canonical === '拼图') factory = function (a, s, r, d) { state = state || { cells: [1, 2, 3, 4, 5, 6, 0, 7, 8], done: false, moves: 0 }; slide(a, s, r, d, state); }; else if (canonical === '汉诺塔') factory = function (a, s, r, d) { state = state || { pegs: [[3, 2, 1], [], []], selected: null, done: false, moves: 0 }; hanoi(a, s, r, d, state); }; else if (canonical === '找不同') factory = findDifferent; else if (canonical === '找彩球') factory = findBall; else if (canonical === '七巧板') factory = tangram; else if (canonical === '十字绣') factory = embroidery; else if (canonical === '推箱子变体') factory = function (a, s, r, d) { state = state || {}; sokoban(a, s, r, d, state); }; else if (canonical === '立体魔方') factory = function (a, s, r, d) { state = state || {}; cube(a, s, r, d, state); }; else if (canonical === '同色方块' || canonical === '五彩连珠' || canonical === '七彩宝石' || canonical === '宝石方块' || canonical === '独粒钻石') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'match', state); }; else if (canonical === '移彩球' || canonical === '变化彩球') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'swap', state); }; else if (canonical.indexOf('连结电线') === 0 || canonical === '扩展线路' || canonical === '接水管变体') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'line', state); }; else factory = function (a, s, r, d) { simple(a, s, r, d, canonical + '独立玩法'); }; return mount(container, canonical, factory, function (redraw) { state = null; redraw(); }); }
+    function dispatch(container, name, opts) { var canonical = ALIASES[name] || name; if (!SPECS[canonical]) throw new Error('未建立 PK32 益智玩法：' + name); var state = null; var factory; if (canonical === '数独') factory = sudoku; else if (canonical === '迷宫') factory = function (a, s, r, d) { state = state || { pos: 10, done: false }; maze(a, s, r, d, state); }; else if (canonical === '华容道' || canonical === '拼图') factory = function (a, s, r, d) { state = state || { cells: [1, 2, 3, 4, 5, 6, 0, 7, 8], done: false, moves: 0 }; slide(a, s, r, d, state); }; else if (canonical === '汉诺塔') factory = function (a, s, r, d) { state = state || { pegs: [[3, 2, 1], [], []], selected: null, done: false, moves: 0 }; hanoi(a, s, r, d, state); }; else if (canonical === '找不同') factory = findDifferent; else if (canonical === '找彩球') factory = findBall; else if (canonical === '七巧板') factory = tangram; else if (canonical === '十字绣') factory = embroidery; else if (canonical === '推箱子变体') factory = function (a, s, r, d) { state = state || {}; sokoban(a, s, r, d, state); }; else if (canonical === '独粒钻石') factory = function (a, s, r, d) { state = state || {}; nativePeg(a, s, r, d, state); }; else if (canonical === '立体魔方') factory = function (a, s, r, d) { state = state || {}; cube(a, s, r, d, state); }; else if (canonical === '五彩连珠') factory = function (a, s, r, d) { state = state || {}; lineGame(a, s, r, d, state); }; else if (canonical === '同色方块' || canonical === '七彩宝石' || canonical === '宝石方块') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'match', state); }; else if (canonical === '移彩球' || canonical === '变化彩球') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'swap', state); }; else if (canonical.indexOf('连结电线') === 0 || canonical === '扩展线路' || canonical === '接水管变体') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'line', state); }; else factory = function (a, s, r, d) { simple(a, s, r, d, canonical + '独立玩法'); }; return mount(container, canonical, factory, function (redraw) { state = null; redraw(); }); }
     window.PK32Puzzle.startGame = function (container, name, opts) { return dispatch(container, String(name || NAMES[0]), opts || {}); };
     window.PK32Puzzle.getConfig = function (name) { return SPECS[ALIASES[name] || name] || null; };
     window.PK32Puzzle.names = NAMES.slice();

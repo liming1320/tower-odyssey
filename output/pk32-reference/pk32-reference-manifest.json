@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-13T10:01:10.506Z",
+  "generatedAt": "2026-09-13T11:04:03.765Z",
   "input": {
     "file": "output\\pk32-reference\\module.bin",
     "bytes": 33767424,
@@ -16,7 +16,8 @@
       "verified": true,
       "error": null
     },
-    "executableLogicRecovered": false
+    "executableLogicRecovered": false,
+    "nativeGameCatalog": "native-game-catalog.json"
   },
   "completionRule": "originalComplete is true only when the same game has verified assets, original level/round data, and observable rules.",
   "records": [
@@ -288,7 +289,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 22,
+      "launchVerifiedNodes": 20,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -1920,7 +1921,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 22,
+      "launchVerifiedNodes": 24,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2022,7 +2023,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 22,
+      "launchVerifiedNodes": 24,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2566,7 +2567,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 20,
+      "launchVerifiedNodes": 22,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },

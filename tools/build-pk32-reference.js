@@ -63,6 +63,7 @@ if (!skipNative) {
   if (lastError) nativeStatus.error = lastError.message;
 }
 run(process.execPath, [path.join(root, 'tools', 'audit-pk32-extraction.js')]);
+run(process.execPath, [path.join(root, 'tools', 'build-pk32-native-catalog.js')]);
 if (!skipLauncher) run(process.execPath, [path.join(root, 'tools', 'verify-pk32-startup.js')]);
 
 const runtime = { window: { MiniGames: {} } };
@@ -73,6 +74,7 @@ const ledger = readJson('migration-ledger.json');
 const picform = readJson('picform-index.json');
 const extraction = readJson('extraction-audit.json');
 const native = fs.existsSync(path.join(output, 'native-index.json')) ? readJson('native-index.json') : null;
+const nativeCatalog = fs.existsSync(path.join(output, 'native-game-catalog.json')) ? readJson('native-game-catalog.json') : null;
 const byIndex = new Map(ledger.records.map(record => [record.index, record]));
 
 function launcher(record) {
@@ -142,7 +144,8 @@ const manifest = {
     picForms: picform.count,
     catalog: catalog.length,
     native: nativeStatus,
-    executableLogicRecovered: extraction.coverage.executableLogicRecovered
+    executableLogicRecovered: extraction.coverage.executableLogicRecovered,
+    nativeGameCatalog: nativeCatalog ? 'native-game-catalog.json' : null
   },
   completionRule: 'originalComplete is true only when the same game has verified assets, original level/round data, and observable rules.',
   records,

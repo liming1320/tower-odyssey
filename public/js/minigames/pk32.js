@@ -77,6 +77,19 @@
     }
 
     const CATALOG = records();
+    function applyNativeCatalog(data) {
+        const rows = data && Array.isArray(data.records) ? data.records : [];
+        CATALOG.forEach(record => {
+            const native = rows.find(row => row.id === record.id);
+            if (!native) return;
+            record.native = native;
+            if (native.levelCount != null) record.levelText = '原版关数：' + native.levelCount;
+            else if (native.payloadCount) record.levelText = '原版数据串：' + native.payloadCount + ' 条，关数待核对';
+            if (native.help && native.help.length && record.name !== '魔塔' && record.name !== '强手棋') {
+                record.evidence = native.help[0];
+            }
+        });
+    }
     const api = {
         CATALOG,
         LEVELS: [],
@@ -210,6 +223,12 @@
             render();
             opts.onScore && opts.onScore(all.length + ' 项');
             if (window.__MG_TEST) window.__pk32Dbg = { catalog: all, records, groupOf };
+            fetch('/data/pk32-native-catalog.json').then(response => response.ok ? response.json() : null).then(data => {
+                if (!data || !alive) return;
+                applyNativeCatalog(data);
+                render();
+                if (window.__MG_TEST) window.__pk32Dbg = { catalog: all, records, groupOf };
+            }).catch(() => {});
             return { stop() { alive = false; } };
         },
     };
