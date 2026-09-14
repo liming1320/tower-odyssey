@@ -3,7 +3,7 @@ const vm = require('vm');
 const Stub = require('./mg-dom-stub');
 
 const S = Stub.install();
-const files = ['pk32.js', 'pk32-board.js', 'pk32-casual.js', 'pk32-action.js', 'pk32-strategy.js', 'pk32-tower.js', 'pk32-richman.js', 'pk32-card.js', 'pk32-puzzle.js', 'pk32-variants.js', 'richman.js'];
+const files = ['pk32.js', 'pk32-board.js', 'pk32-sokoban4.js', 'pk32-casual.js', 'pk32-action.js', 'pk32-strategy.js', 'pk32-tower.js', 'pk32-richman.js', 'pk32-card.js', 'pk32-puzzle.js', 'pk32-variants.js', 'richman.js'];
 files.forEach(file => S.loadGameFile(file));
 const catalog = global.PK32Catalog;
 const failures = [];

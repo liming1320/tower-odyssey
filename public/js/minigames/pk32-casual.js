@@ -29,7 +29,7 @@
             saveKey: 'pk32.casual.' + spec.id + '.' + name,
             renderer: 'canvas-2d',
             input: ['pointer', 'keyboard', 'touch'],
-            note: name === '推箱子四' ? '原生提示确认 1-23 关；已提取 19 张地图，仍有 4 关待定位' : spec.id === 'pipe-connect' ? '原生提示确认 1-5 关；布局编码还原中' : '独立启动配置；原版关卡与流程核对后接入',
+            note: name === '推箱子四' ? '原生分派表确认 23 关；同色箱子相邻规则已接入，完整流程待验收' : spec.id === 'pipe-connect' ? '原生提示确认 1-5 关；布局编码还原中' : '独立启动配置；原版关卡与流程核对后接入',
         };
     }
 
@@ -147,29 +147,9 @@
 
     function sokoban(host, title, session) { const map = ['#####','# . #','# $ #','# @ #']; let p, box, over; const key = function (e) { if (session.stopped || over || ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(e.key) < 0) return; const d = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0] }[e.key]; move(d[0], d[1]); }; document.addEventListener('keydown', key); session.cleanup = session.cleanup || []; session.cleanup.push(function () { document.removeEventListener('keydown', key); }); function draw() { const area = shell(host, title, button('重置', 'reset'), over ? '本局已完成，点击重置再来一局' : '方向键或点击方向移动，把箱子推到目标'); const dirs = [[0,-1,'上'],[0,1,'下'],[-1,0,'左'],[1,0,'右']]; area.innerHTML += '<div id="soko-board" style="font-size:32px;line-height:1.1;margin:12px 0"></div>' + dirs.map(function (d) { return button(d[2], 'd' + d[2]); }).join(''); const b = area.querySelector('#soko-board'); b.textContent = map.map(function (r, y) { return r.split('').map(function (c, x) { if (x === p[0] && y === p[1]) return '🙂'; if (x === box[0] && y === box[1]) return (x === 2 && y === 1) ? '◎' : '□'; return c === '#' ? '墙' : (c === '.' ? '◎' : '　'); }).join(''); }).join('\n'); area.querySelector('[data-action="reset"]').onclick = init; dirs.forEach(function (d) { const btn = area.querySelector('[data-action="d' + d[2] + '"]'); btn.disabled = over; btn.onclick = function () { move(d[0], d[1]); }; }); } function move(dx, dy) { if (session.stopped || over) return; const nx = p[0] + dx, ny = p[1] + dy; if (!map[ny] || map[ny][nx] === '#') return; if (nx === box[0] && ny === box[1]) { const bx = nx + dx, by = ny + dy; if (!map[by] || map[by][bx] === '#' || (bx === p[0] && by === p[1])) return; box = [bx, by]; } p = [nx, ny]; if (box[0] === 2 && box[1] === 1) { over = true; } draw(); } function init() { p = [2, 3]; box = [2, 2]; over = false; draw(); } init(); }
     function sokobanNative4(host, title, session) {
-        let levels = [], level = Number.isInteger(session.options.levelIdx) ? session.options.levelIdx : 0, board = [], player = null, boxes = [], targets = [], over = false;
-        const dirs = [[0, -1, '上'], [0, 1, '下'], [-1, 0, '左'], [1, 0, '右']];
-        function decode(cells, width, height) {
-            board = cells.split('').map(Number); player = null; boxes = []; targets = [];
-            board.forEach(function (code, i) { const x = i % width, y = Math.floor(i / width); if (code === 1 || code === 6) player = [x, y]; if (code === 2 || code === 4) boxes.push([x, y]); if (code === 3 || code === 4 || code === 6) targets.push([x, y]); });
-            over = false;
-        }
-        function at(list, x, y) { return list.some(function (p) { return p[0] === x && p[1] === y; }); }
-        function codeAt(x, y) { return board[y * levels[level].width + x]; }
-        function draw() {
-            const map = levels[level], area = shell(host, title, button('重置', 'reset'), over ? '第' + (level + 1) + ' 关完成' : '第' + (level + 1) + ' / 23 关：把同色箱子推到目标位置');
-            area.innerHTML += '<div class="pk32-soko-levels">' + levels.map(function (_, i) { return button('第' + (i + 1) + '关', 'level' + i, i === level ? 'primary' : 'ghost'); }).join('') + '<span>已提取 ' + levels.length + ' / 23 关</span></div>';
-            const grid = document.createElement('div'); grid.className = 'pk32-soko-grid'; grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + map.width + ',minmax(30px,1fr));gap:1px;max-width:100%;overflow:auto;margin:10px 0;';
-            for (let i = 0; i < board.length; i += 1) { const x = i % map.width, y = Math.floor(i / map.width), code = board[i], cell = document.createElement('button'); cell.type = 'button'; cell.style.cssText = 'width:30px;height:30px;padding:0;border:1px solid #60758a;background:' + (code === 5 ? '#293746' : '#17212b') + ';color:#fff;font-size:18px'; const isPlayer = player && player[0] === x && player[1] === y, isBox = at(boxes, x, y), isTarget = at(targets, x, y); cell.textContent = isBox ? (isTarget ? '◆' : '■') : isPlayer ? (isTarget ? '◎' : '●') : isTarget ? '·' : code === 5 ? '' : ''; cell.setAttribute('aria-label', isBox ? (isTarget ? '箱子目标' : '箱子') : isPlayer ? '玩家' : isTarget ? '目标' : code === 5 ? '墙' : '地面'); grid.appendChild(cell); }
-            area.appendChild(grid); area.innerHTML += dirs.map(function (d) { return button(d[2], 'move' + d[2], 'ghost'); }).join('');
-            area.querySelector('[data-action="reset"]').onclick = function () { decode(levels[level].cells, levels[level].width, levels[level].height); draw(); };
-            levels.forEach(function (_, i) { area.querySelector('[data-action="level' + i + '"]').onclick = function () { level = i; decode(levels[level].cells, levels[level].width, levels[level].height); draw(); }; });
-            dirs.forEach(function (d) { area.querySelector('[data-action="move' + d[2] + '"]').onclick = function () { move(d[0], d[1]); }; });
-        }
-        function move(dx, dy) { if (over || !player) return; const map = levels[level], nx = player[0] + dx, ny = player[1] + dy; if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height || codeAt(nx, ny) === 5) return; const bi = boxes.findIndex(function (p) { return p[0] === nx && p[1] === ny; }); if (bi >= 0) { const bx = nx + dx, by = ny + dy; if (bx < 0 || by < 0 || bx >= map.width || by >= map.height || codeAt(bx, by) === 5 || at(boxes, bx, by)) return; boxes[bi] = [bx, by]; } player = [nx, ny]; over = boxes.length > 0 && boxes.every(function (p) { return at(targets, p[0], p[1]); }); draw(); }
-        const onKey = function (e) { if (session.stopped || ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) < 0) return; e.preventDefault(); const d = dirs.find(function (x) { return ('Arrow' + ({ '上': 'Up', '下': 'Down', '左': 'Left', '右': 'Right' }[x[2]])) === e.key; }); if (d) move(d[0], d[1]); };
-        document.addEventListener('keydown', onKey); session.cleanup = session.cleanup || []; session.cleanup.push(function () { document.removeEventListener('keydown', onKey); });
-        fetch('/data/pk32-sokoban4-levels.json').then(function (r) { return r.json(); }).then(function (data) { levels = data.levels || []; if (!levels.length) throw new Error('没有提取到推箱子四地图'); level = Math.max(0, Math.min(levels.length - 1, level)); decode(levels[level].cells, levels[level].width, levels[level].height); draw(); }).catch(function () { host.innerHTML = title + '<div class="emu-note">原生地图加载失败，未使用随机占位地图。</div>'; });
+        const game = window.PK32Sokoban4.start(host, session.options);
+        session.getState = game.getState;
+        session.cleanup.push(function () { game.stop(); });
     }
 
     function pipes(host, title, session) { let grid, over, level = 0; const size = 4; const levels = [[1,0,3,1,2,3,1,0,0,1,2,3,1,0,3,3],[1,1,0,3,2,3,1,0,0,2,2,3,1,0,3,3],[1,0,0,3,2,3,1,0,0,1,3,3,1,0,2,3],[1,0,3,3,2,3,1,0,0,1,2,3,1,3,3,3],[1,1,0,3,2,3,1,0,0,2,2,3,1,3,2,3]]; function hasBoundaryLeak() { return grid.some(function (r, i) { const x = i % size, y = Math.floor(i / size), out = links(i); return (x === 0 && out.indexOf('L') >= 0) || (x === size - 1 && out.indexOf('R') >= 0) || (y === 0 && out.indexOf('U') >= 0) || (y === size - 1 && out.indexOf('D') >= 0); }); } function init(nextLevel) { level = Number.isInteger(nextLevel) ? Math.max(0, Math.min(levels.length - 1, nextLevel)) : level; grid = levels[level].map(function (r) { return (r + level + 1) % 4; }); over = false; draw(); } function links(i) { const r = grid[i], out = []; if (r === 0 || r === 1) out.push('D'); if (r === 1 || r === 2) out.push('R'); if (r === 2 || r === 3) out.push('U'); if (r === 3 || r === 0) out.push('L'); return out; } function connected() { const seen = new Set([0]), queue = [0]; while (queue.length) { const i = queue.shift(), x = i % size, y = Math.floor(i / size); links(i).forEach(function (dir) { const nx = x + (dir === 'R' ? 1 : dir === 'L' ? -1 : 0), ny = y + (dir === 'D' ? 1 : dir === 'U' ? -1 : 0); if (nx < 0 || ny < 0 || nx >= size || ny >= size) return; const n = ny * size + nx, opposite = { R: 'L', L: 'R', U: 'D', D: 'U' }[dir]; if (links(n).indexOf(opposite) >= 0 && !seen.has(n)) { seen.add(n); queue.push(n); } }); } return seen.has(size * size - 1); } function draw() { const area = shell(host, title, button('重置', 'reset'), over ? '第' + (level + 1) + '关已接通' : '第' + (level + 1) + ' / 5 关：旋转管道，令左上角连接到右下角'); area.innerHTML += '<div class="pk32-pipe-levels">' + levels.map(function (_, i) { return '<button class="btn ghost" data-level="' + i + '"' + (i === level ? ' disabled' : '') + '>第' + (i + 1) + '关</button>'; }).join('') + '</div><div style="display:grid;grid-template-columns:repeat(4,48px);gap:3px;margin-top:10px">' + grid.map(function (r, i) { return '<button class="btn ghost" style="width:48px;height:48px;font-size:24px" data-p="' + i + '">' + ['└','┌','┐','┘'][r] + '</button>'; }).join('') + '</div>'; area.querySelector('[data-action="reset"]').onclick = function () { init(level); }; area.querySelectorAll('[data-level]').forEach(function (b) { b.onclick = function () { init(Number(b.dataset.level)); }; }); area.querySelectorAll('[data-p]').forEach(function (b) { b.disabled = over; b.onclick = function () { if (over) return; grid[+b.dataset.p] = (grid[+b.dataset.p] + 1) % 4; if (connected() && !hasBoundaryLeak()) over = true; draw(); }; }); } init(session && Number.isInteger(session.options.levelIdx) ? session.options.levelIdx : 0); }
@@ -181,7 +161,7 @@
         const session = opts && opts.session ? opts.session : { config: config, host: host, options: opts || {}, stopped: false };
         session.config = config;
         session.host = host;
-        session.options = opts || {};
+        session.options = opts && opts.session ? session.options : opts || {};
         session.stopped = false;
         session.cleanup = session.cleanup || [];
         session.stop = function () {
@@ -213,6 +193,12 @@
         start(container, opts) {
             opts = opts || {};
             let active = true;
+            let activeSession = null;
+            function stopSession() {
+                if (!activeSession) return;
+                const session = activeSession; activeSession = null;
+                session.stop();
+            }
             const names = Object.keys(CONFIGS);
             container.innerHTML = '<div class="emu-note"><b>PK32 纸牌与益智</b><br>' +
                 '独立维护纸牌和益智玩法；不套用当前小游戏的 50 关、星级或无尽模式。</div>' +
@@ -223,6 +209,7 @@
             const count = container.querySelector('#pk32-casual-count');
             function render() {
                 if (!active) return;
+                stopSession();
                 const q = query.value.trim().toLowerCase();
                 const visible = names.filter(function (name) { return !q || name.toLowerCase().indexOf(q) >= 0; });
                 count.textContent = visible.length + ' / ' + names.length + ' 项';
@@ -238,11 +225,12 @@
                 });
             }
             function launch(config) {
+                stopSession();
                 list.innerHTML = '';
                 const host = document.createElement('div');
                 host.style.minHeight = '360px';
                 list.appendChild(host);
-                createSession(host, config, opts);
+                activeSession = createSession(host, config, opts);
                 const back = document.createElement('button');
                 back.className = 'btn ghost';
                 back.textContent = '返回 PK32 纸牌与益智';
@@ -254,7 +242,7 @@
             query.oninput = render;
             render();
             opts.onScore && opts.onScore(names.length + ' 项独立配置');
-            return { stop() { active = false; container.innerHTML = ''; } };
+            return { stop() { active = false; stopSession(); container.innerHTML = ''; } };
         },
     };
 

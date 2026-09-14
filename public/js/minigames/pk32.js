@@ -17,6 +17,7 @@
     const PLAYABLE = {
         '魔塔': { gameId: 'tower', label: '魔塔原图版', note: '22 层原版地图；剧情和机关尚未全部还原' },
         '强手棋': { gameId: 'pk32-richman', label: 'PK32 强手棋原版迁移', note: '使用 PK32 独立棋盘、资产和存档' },
+        '推箱子四': { gameId: 'pk32-sokoban4', label: 'PK32 推箱子四原版迁移', note: '使用原生 23 关、原始图块和演示' },
     };
     const MODULE_CONFIG = {
         '五子棋': { family: 'board', id: 'gomoku' }, '四子棋': { family: 'board', id: 'connect4' },
@@ -27,15 +28,15 @@
         '接龙': 'solitaire', '接龙二': 'solitaire', '空当接龙': 'freecell', '蜘蛛纸牌': 'spider',
         '21点': 'blackjack', '21点二': 'blackjack', '比大小': 'highlow', '扫雷': 'minesweeper',
         '扫雷二': 'minesweeper', '扑克扫雷': 'minesweeper', '连连看': 'mahjong-connect',
-        '推箱子': 'sokoban', '推箱子二': 'sokoban', '推箱子三': 'sokoban', '推箱子四': 'sokoban',
+        '推箱子': 'sokoban', '推箱子二': 'sokoban', '推箱子三': 'sokoban', '推箱子四': '推箱子四',
         '推箱子五': 'sokoban', '推箱子六': 'sokoban', '接水管': 'pipe-connect',
-        '泡泡彩球': 'bubble-match', '多彩泡泡': 'bubble-match', '爆破彩球': 'bubble-match',
+        '泡泡彩球': 'bubble-match', '多彩泡泡': 'bubble-match',
         '爆破彩球二': 'bubble-match', '变色彩球': 'bubble-match', '交换彩球': 'bubble-match',
     };
     const ACTION_CONFIG = {
-        '打地鼠': 'whackMole', '俄罗斯方块': 'tetris', '贪吃蛇': 'snake', '坦克大战': 'tankBattle',
-        '打砖块': 'breakout', '飞镖王': 'dartKing', '飞一百米': 'hundredMeters', '吃豆子': 'pacMan',
-        '火箭大战': 'rocketBattle', '绝妙飞行': 'rocketBattle',
+        '打地鼠': 'whackMole', '俄罗斯方块': 'tetris', '贪吃蛇': 'snake',
+        '飞镖王': 'dartKing', '飞一百米': 'hundredMeters', '吃豆子': 'pacMan',
+        '火箭大战': 'rocketBattle', '绝妙飞行': 'flight',
     };
     const STRATEGY_CONFIG = {};
     ['飞行棋', '前进棋', '赛马', '轮盘', '老虎机', '神符', '原子', '开心辞典', '开心灯谜', '七盏灯', '上一百层', '下一百层'].forEach(name => { STRATEGY_CONFIG[name] = name; });
@@ -46,7 +47,9 @@
     const PUZZLE_CONFIG = {};
     '同色方块|五彩连珠|七彩宝石|宝石方块|找不同|找彩球|变化彩球|连结电线|连结电线二|移彩球|数独|迷宫|华容道|推箱子二|推箱子三|推箱子四|推箱子五|推箱子六|扩展线路|立体魔方|七巧板|汉诺塔|十字绣|拼图|独粒钻石'.split('|').forEach(name => { PUZZLE_CONFIG[name] = name; });
     const VARIANT_CONFIG = {};
-    '锄大地|追逐|记数|转换|配对|连击|连珠牌|憋七|FF9卡片|7鬼523|读心术二|24点二|排数字|变色龙|超级99|重合|幸运数字|40点|数字魔方|同色方块变体|同步移动|摘花朵|平面魔方|激光坦克|中国象棋|围棋|象棋-暗棋|国际象棋|军棋|正方形棋|军棋-暗棋|麻将|极品飞车|六子连珠|天地棋|冒泡大战|剪刀石头布|海盗船|木乃伊|记忆考验|反应测试|海豚骰|魔力珠宝|智商测试|五连板|白手起家|跳跃棋|像素岛|捡棋子|成语填字|邻居|麻将王|麻将王二|麻将王三|过河|电磁彩球|绿洲|魅力之球|圈地|智慧之光|禅宗花园|骰子王|数谜|航海迷题|魔法城堡|弹力连珠|魔法城堡二|潜艇大战|跳棋二|拼疑犯|禅宗迷宫|马跳棋盘|花式九球|美式落袋|斯诺克|宇宙黑洞|飞一百米|打砖块|海底寻宝|碰撞彩球|彩球迷宫|反射镜|企鹅|立体魔方二|彩球连线|建筑制造|上一百层|下一百层|魔塔二|魔塔三|魔塔四|????'.split('|').forEach(name => { VARIANT_CONFIG[name] = name; });
+    delete PUZZLE_CONFIG['推箱子四'];
+    '锄大地|追逐|记数|转换|配对|连击|连珠牌|憋七|FF9卡片|7鬼523|读心术二|24点二|排数字|变色龙|超级99|重合|幸运数字|40点|数字魔方|同色方块变体|同步移动|摘花朵|平面魔方|激光坦克|中国象棋|围棋|象棋-暗棋|国际象棋|军棋|正方形棋|军棋-暗棋|麻将|极品飞车|六子连珠|天地棋|冒泡大战|剪刀石头布|海盗船|木乃伊|记忆考验|反应测试|海豚骰|魔力珠宝|智商测试|五连板|白手起家|跳跃棋|像素岛|捡棋子|成语填字|邻居|麻将王|麻将王二|麻将王三|过河|电磁彩球|爆破彩球|绿洲|魅力之球|圈地|智慧之光|禅宗花园|骰子王|数谜|航海迷题|魔法城堡|弹力连珠|魔法城堡二|潜艇大战|跳棋二|拼疑犯|禅宗迷宫|马跳棋盘|花式九球|美式落袋|斯诺克|宇宙黑洞|飞一百米|打砖块|海底寻宝|碰撞彩球|彩球迷宫|反射镜|企鹅|立体魔方二|彩球连线|建筑制造|上一百层|下一百层|魔塔二|魔塔三|魔塔四|????'.split('|').forEach(name => { VARIANT_CONFIG[name] = name; });
+    VARIANT_CONFIG['坦克大战'] = '坦克大战';
     const GROUPS = [
         [0, 80, '扑克与纸牌'], [80, 147, '棋类与益智'], [147, 196, '休闲与解谜'], [196, NAMES.length, '其他原版游戏'],
     ];
@@ -97,6 +100,7 @@
         start(container, opts) {
             opts = opts || {};
             let alive = true;
+            let activeSession = null;
             const all = CATALOG;
             container.innerHTML = '';
             const wrap = document.createElement('div');
@@ -117,8 +121,19 @@
             const list = wrap.querySelector('#pk32-list');
             const count = wrap.querySelector('#pk32-count');
 
+            function stopActiveSession() {
+                if (!activeSession) return;
+                const current = activeSession;
+                activeSession = null;
+                try {
+                    if (current.session && typeof current.session.destroy === 'function') current.session.destroy();
+                    else if (current.session && typeof current.session.stop === 'function') current.session.stop();
+                } catch (e) {}
+                if (current.host) current.host.innerHTML = '';
+            }
+
             function render() {
-                if (!alive) return;
+                if (!alive || activeSession) return;
                 const keyword = q.value.trim().toLowerCase();
                 const filtered = all.filter(x => (!keyword || x.name.toLowerCase().includes(keyword)) && (!group.value || x.group === group.value));
                 count.textContent = filtered.length + ' / ' + all.length + ' 项';
@@ -146,12 +161,16 @@
                 list.querySelectorAll('[data-pk32-puzzle]').forEach(btn => btn.onclick = () => launchPuzzle(all.find(x => x.id === btn.dataset.pk32Puzzle)));
                 list.querySelectorAll('[data-pk32-variant]').forEach(btn => btn.onclick = () => launchVariant(all.find(x => x.id === btn.dataset.pk32Variant)));
             }
-            function mount(record, title, start) {
+            function mount(record, title, start, note) {
+                stopActiveSession();
                 let session = null;
-                list.innerHTML = '<div class="emu-note"><b>' + esc(record.name) + ' · ' + esc(title) + '</b><br>独立 PK32 迁移玩法；不使用 50 关模板。</div>';
+                list.innerHTML = '<div class="emu-note"><b>' + esc(record.name) + ' · ' + esc(title) + '</b><br>' + esc(note || '独立 PK32 迁移玩法；不使用 50 关模板。') + '</div>';
                 const host = document.createElement('div'); host.style.cssText = 'min-height:420px;margin-top:12px;'; list.appendChild(host);
-                const back = document.createElement('button'); back.className = 'btn ghost'; back.textContent = '返回 PK32 目录'; back.style.marginTop = '10px'; back.onclick = () => { try { session && (session.stop ? session.stop() : session.destroy && session.destroy()); } catch (e) {} render(); }; list.appendChild(back);
-                try { session = start(host); } catch (e) { host.innerHTML = '<div style="padding:20px;color:#ff7a8b">启动失败：' + esc(e.message) + '</div>'; }
+                const back = document.createElement('button'); back.className = 'btn ghost'; back.textContent = '返回 PK32 目录'; back.style.marginTop = '10px'; back.onclick = () => { stopActiveSession(); render(); }; list.appendChild(back);
+                try {
+                    session = start(host);
+                    activeSession = { session: session, host: host };
+                } catch (e) { host.innerHTML = '<div style="padding:20px;color:#ff7a8b">启动失败：' + esc(e.message) + '</div>'; }
             }
             function launchModule(record) {
                 const mod = window.PK32Board, spec = record && record.module;
@@ -196,28 +215,16 @@
                     mount(record, '强手棋原版独立版', host => window.PK32Richman.start(host, { onScore: opts.onScore }));
                     return;
                 }
+                if (spec && spec.gameId === 'pk32-sokoban4' && window.PK32Sokoban4) {
+                    mount(record, '推箱子四原版独立版', host => window.PK32Sokoban4.start(host, { levelIdx: 0 }));
+                    return;
+                }
                 const game = spec && window.MiniGames && window.MiniGames[spec.gameId];
                 if (!game) {
                     opts.onScore && opts.onScore('该适配模块尚未加载');
                     return;
                 }
-                list.innerHTML = '<div class="emu-note"><b>' + esc(record.name) + ' · ' + esc(spec.label) + '</b><br>' + esc(spec.note) + '</div>';
-                const host = document.createElement('div');
-                host.style.cssText = 'min-height:420px;margin-top:12px;';
-                list.appendChild(host);
-                const back = document.createElement('button');
-                back.className = 'btn ghost'; back.textContent = '返回 PK32 目录'; back.style.marginTop = '10px';
-                back.onclick = render;
-                list.appendChild(back);
-                try {
-                    const inst = game.start(host, { onScore: opts.onScore, levelIdx: 0, level: game.LEVELS && game.LEVELS[0] });
-                    if (inst && inst.stop) {
-                        const oldStop = inst.stop;
-                        inst.stop = () => { try { oldStop.call(inst); } catch (e) {} };
-                    }
-                } catch (e) {
-                    host.innerHTML = '<div style="padding:20px;color:#ff7a8b">启动失败：' + esc(e.message) + '</div>';
-                }
+                mount(record, spec.label, host => game.start(host, { onScore: opts.onScore, levelIdx: 0, level: game.LEVELS && game.LEVELS[0] }), spec.note);
             }
             q.oninput = render;
             group.onchange = render;
@@ -227,10 +234,10 @@
             fetch('/data/pk32-native-catalog.json').then(response => response.ok ? response.json() : null).then(data => {
                 if (!data || !alive) return;
                 applyNativeCatalog(data);
-                render();
+                if (!activeSession) render();
                 if (window.__MG_TEST) window.__pk32Dbg = { catalog: all, records, groupOf };
             }).catch(() => {});
-            return { stop() { alive = false; } };
+            return { stop() { alive = false; stopActiveSession(); } };
         },
     };
     window.MiniGames.pk32 = api;

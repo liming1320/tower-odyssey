@@ -1,0 +1,1613 @@
+{
+  "scope": "native-gold-and-experience-shop-fixtures-through-production-gallery",
+  "naturalEquipmentWalkthroughVerified": false,
+  "fullGameRulesVerified": false,
+  "nativeOffers": {
+    "3": {
+      "cost": 25,
+      "hp": 800,
+      "attack": 4,
+      "defense": 4
+    },
+    "11": {
+      "cost": 100,
+      "hp": 4000,
+      "attack": 20,
+      "defense": 20
+    }
+  },
+  "nativeExperience": {
+    "5": {
+      "levelCost": 100,
+      "level": 1,
+      "hp": 1000,
+      "attack": 7,
+      "defense": 7,
+      "abilityCost": 30,
+      "ability": 5
+    },
+    "13": {
+      "levelCost": 270,
+      "level": 3,
+      "hp": 3000,
+      "attack": 21,
+      "defense": 21,
+      "abilityCost": 95,
+      "ability": 17
+    }
+  },
+  "guards": {
+    "1743089": "81c2e8030000",
+    "1743167": "83c207",
+    "1743243": "83c207",
+    "1743713": "83fa1e",
+    "1743879": "83c205",
+    "1743952": "83f95f",
+    "1745102": "83ea19",
+    "1745856": "83c214",
+    "174509b": "83f919",
+    "17451fc": "81c220030000",
+    "174562a": "83c204",
+    "17456fd": "83790c64",
+    "174542a": "81c2a00f0000",
+    "172de1c": "c78558ffffff03000000",
+    "172df96": "c78558ffffff0b000000",
+    "1742f2e": "83f964",
+    "174333a": "81f90e010000",
+    "17433a8": "83c203",
+    "17434a0": "81c2b80b0000",
+    "174357e": "83c215",
+    "174365a": "83c215",
+    "1743aae": "83c111"
+  },
+  "results": [
+    {
+      "name": "320:3:shop opens from adjacent native statue",
+      "passed": true
+    },
+    {
+      "name": "320:3:movement blocked during shop",
+      "passed": true
+    },
+    {
+      "name": "320:3:insufficient funds disable all purchases",
+      "passed": true
+    },
+    {
+      "name": "320:3:direct purchase also checks funds",
+      "passed": true
+    },
+    {
+      "name": "320:3:leaving does not charge or move",
+      "passed": true
+    },
+    {
+      "name": "320:3:hp exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:3:hp other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "320:3:hp no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "320:3:hp cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "320:3:attack exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:3:attack other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "320:3:attack no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "320:3:attack cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "320:3:defense exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:3:defense other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "320:3:defense no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "320:3:defense cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "320:3:repeat price stays fixed",
+      "passed": true
+    },
+    {
+      "name": "320:3:save-load preserves open shop and transaction",
+      "passed": true
+    },
+    {
+      "name": "320:3:shop fits map and phone viewport",
+      "passed": true,
+      "detail": {
+        "fitsMap": true,
+        "visible": true,
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "320:3:Escape closes shop",
+      "passed": true
+    },
+    {
+      "name": "320:3:close retains bought stats",
+      "passed": true
+    },
+    {
+      "name": "320:11:shop opens from adjacent native statue",
+      "passed": true
+    },
+    {
+      "name": "320:11:movement blocked during shop",
+      "passed": true
+    },
+    {
+      "name": "320:11:insufficient funds disable all purchases",
+      "passed": true
+    },
+    {
+      "name": "320:11:direct purchase also checks funds",
+      "passed": true
+    },
+    {
+      "name": "320:11:leaving does not charge or move",
+      "passed": true
+    },
+    {
+      "name": "320:11:hp exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:11:hp other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "320:11:hp no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "320:11:hp cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "320:11:attack exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:11:attack other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "320:11:attack no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "320:11:attack cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "320:11:defense exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:11:defense other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "320:11:defense no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "320:11:defense cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "320:11:repeat price stays fixed",
+      "passed": true
+    },
+    {
+      "name": "320:11:save-load preserves open shop and transaction",
+      "passed": true
+    },
+    {
+      "name": "320:11:shop fits map and phone viewport",
+      "passed": true,
+      "detail": {
+        "fitsMap": true,
+        "visible": true,
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "320:11:Escape closes shop",
+      "passed": true
+    },
+    {
+      "name": "320:11:close retains bought stats",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:level elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:level exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:level:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:level:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:level:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:level:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:level insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:level elder remains available",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:attack elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:attack exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:attack:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:attack:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:attack:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:attack:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:attack insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:attack elder remains available",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:defense elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:defense exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:defense:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:defense:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:defense:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:defense:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:defense insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "320:experience:5:defense elder remains available",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:level elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:level exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:level:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:level:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:level:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:level:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:level insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:level elder remains available",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:attack elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:attack exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:attack:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:attack:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:attack:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:attack:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:attack insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:attack elder remains available",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:defense elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:defense exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:defense:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:defense:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:defense:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:defense:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:defense insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "320:experience:13:defense elder remains available",
+      "passed": true
+    },
+    {
+      "name": "320: exit cleans up listeners",
+      "passed": true
+    },
+    {
+      "name": "320: no runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "390:3:shop opens from adjacent native statue",
+      "passed": true
+    },
+    {
+      "name": "390:3:movement blocked during shop",
+      "passed": true
+    },
+    {
+      "name": "390:3:insufficient funds disable all purchases",
+      "passed": true
+    },
+    {
+      "name": "390:3:direct purchase also checks funds",
+      "passed": true
+    },
+    {
+      "name": "390:3:leaving does not charge or move",
+      "passed": true
+    },
+    {
+      "name": "390:3:hp exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:3:hp other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "390:3:hp no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "390:3:hp cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "390:3:attack exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:3:attack other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "390:3:attack no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "390:3:attack cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "390:3:defense exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:3:defense other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "390:3:defense no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "390:3:defense cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "390:3:repeat price stays fixed",
+      "passed": true
+    },
+    {
+      "name": "390:3:save-load preserves open shop and transaction",
+      "passed": true
+    },
+    {
+      "name": "390:3:shop fits map and phone viewport",
+      "passed": true,
+      "detail": {
+        "fitsMap": true,
+        "visible": true,
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "390:3:Escape closes shop",
+      "passed": true
+    },
+    {
+      "name": "390:3:close retains bought stats",
+      "passed": true
+    },
+    {
+      "name": "390:11:shop opens from adjacent native statue",
+      "passed": true
+    },
+    {
+      "name": "390:11:movement blocked during shop",
+      "passed": true
+    },
+    {
+      "name": "390:11:insufficient funds disable all purchases",
+      "passed": true
+    },
+    {
+      "name": "390:11:direct purchase also checks funds",
+      "passed": true
+    },
+    {
+      "name": "390:11:leaving does not charge or move",
+      "passed": true
+    },
+    {
+      "name": "390:11:hp exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:11:hp other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "390:11:hp no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "390:11:hp cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "390:11:attack exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:11:attack other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "390:11:attack no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "390:11:attack cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "390:11:defense exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:11:defense other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "390:11:defense no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "390:11:defense cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "390:11:repeat price stays fixed",
+      "passed": true
+    },
+    {
+      "name": "390:11:save-load preserves open shop and transaction",
+      "passed": true
+    },
+    {
+      "name": "390:11:shop fits map and phone viewport",
+      "passed": true,
+      "detail": {
+        "fitsMap": true,
+        "visible": true,
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "390:11:Escape closes shop",
+      "passed": true
+    },
+    {
+      "name": "390:11:close retains bought stats",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:level elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:level exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:level:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:level:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:level:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:level:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:level insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:level elder remains available",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:attack elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:attack exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:attack:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:attack:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:attack:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:attack:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:attack insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:attack elder remains available",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:defense elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:defense exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:defense:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:defense:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:defense:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:defense:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:defense insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "390:experience:5:defense elder remains available",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:level elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:level exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:level:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:level:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:level:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:level:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:level insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:level elder remains available",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:attack elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:attack exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:attack:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:attack:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:attack:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:attack:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:attack insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:attack elder remains available",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:defense elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:defense exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:defense:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:defense:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:defense:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:defense:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:defense insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "390:experience:13:defense elder remains available",
+      "passed": true
+    },
+    {
+      "name": "390: exit cleans up listeners",
+      "passed": true
+    },
+    {
+      "name": "390: no runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "768:3:shop opens from adjacent native statue",
+      "passed": true
+    },
+    {
+      "name": "768:3:movement blocked during shop",
+      "passed": true
+    },
+    {
+      "name": "768:3:insufficient funds disable all purchases",
+      "passed": true
+    },
+    {
+      "name": "768:3:direct purchase also checks funds",
+      "passed": true
+    },
+    {
+      "name": "768:3:leaving does not charge or move",
+      "passed": true
+    },
+    {
+      "name": "768:3:hp exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:3:hp other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "768:3:hp no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "768:3:hp cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "768:3:attack exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:3:attack other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "768:3:attack no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "768:3:attack cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "768:3:defense exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:3:defense other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "768:3:defense no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "768:3:defense cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "768:3:repeat price stays fixed",
+      "passed": true
+    },
+    {
+      "name": "768:3:save-load preserves open shop and transaction",
+      "passed": true
+    },
+    {
+      "name": "768:3:shop fits map and phone viewport",
+      "passed": true,
+      "detail": {
+        "fitsMap": true,
+        "visible": true,
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "768:3:Escape closes shop",
+      "passed": true
+    },
+    {
+      "name": "768:3:close retains bought stats",
+      "passed": true
+    },
+    {
+      "name": "768:11:shop opens from adjacent native statue",
+      "passed": true
+    },
+    {
+      "name": "768:11:movement blocked during shop",
+      "passed": true
+    },
+    {
+      "name": "768:11:insufficient funds disable all purchases",
+      "passed": true
+    },
+    {
+      "name": "768:11:direct purchase also checks funds",
+      "passed": true
+    },
+    {
+      "name": "768:11:leaving does not charge or move",
+      "passed": true
+    },
+    {
+      "name": "768:11:hp exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:11:hp other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "768:11:hp no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "768:11:hp cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "768:11:attack exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:11:attack other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "768:11:attack no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "768:11:attack cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "768:11:defense exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:11:defense other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "768:11:defense no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "768:11:defense cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "768:11:repeat price stays fixed",
+      "passed": true
+    },
+    {
+      "name": "768:11:save-load preserves open shop and transaction",
+      "passed": true
+    },
+    {
+      "name": "768:11:shop fits map and phone viewport",
+      "passed": true,
+      "detail": {
+        "fitsMap": true,
+        "visible": true,
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "768:11:Escape closes shop",
+      "passed": true
+    },
+    {
+      "name": "768:11:close retains bought stats",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:level elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:level exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:level:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:level:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:level:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:level:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:level insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:level elder remains available",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:attack elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:attack exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:attack:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:attack:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:attack:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:attack:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:attack insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:attack elder remains available",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:defense elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:defense exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:defense:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:defense:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:defense:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:defense:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:defense insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "768:experience:5:defense elder remains available",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:level elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:level exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:level:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:level:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:level:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:level:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:level insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:level elder remains available",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:attack elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:attack exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:attack:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:attack:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:attack:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:attack:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:attack insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:attack elder remains available",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:defense elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:defense exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:defense:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:defense:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:defense:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:defense:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:defense insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "768:experience:13:defense elder remains available",
+      "passed": true
+    },
+    {
+      "name": "768: exit cleans up listeners",
+      "passed": true
+    },
+    {
+      "name": "768: no runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "1280:3:shop opens from adjacent native statue",
+      "passed": true
+    },
+    {
+      "name": "1280:3:movement blocked during shop",
+      "passed": true
+    },
+    {
+      "name": "1280:3:insufficient funds disable all purchases",
+      "passed": true
+    },
+    {
+      "name": "1280:3:direct purchase also checks funds",
+      "passed": true
+    },
+    {
+      "name": "1280:3:leaving does not charge or move",
+      "passed": true
+    },
+    {
+      "name": "1280:3:hp exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:3:hp other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "1280:3:hp no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "1280:3:hp cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "1280:3:attack exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:3:attack other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "1280:3:attack no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "1280:3:attack cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "1280:3:defense exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:3:defense other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "1280:3:defense no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "1280:3:defense cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "1280:3:repeat price stays fixed",
+      "passed": true
+    },
+    {
+      "name": "1280:3:save-load preserves open shop and transaction",
+      "passed": true
+    },
+    {
+      "name": "1280:3:shop fits map and phone viewport",
+      "passed": true,
+      "detail": {
+        "fitsMap": true,
+        "visible": true,
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "1280:3:Escape closes shop",
+      "passed": true
+    },
+    {
+      "name": "1280:3:close retains bought stats",
+      "passed": true
+    },
+    {
+      "name": "1280:11:shop opens from adjacent native statue",
+      "passed": true
+    },
+    {
+      "name": "1280:11:movement blocked during shop",
+      "passed": true
+    },
+    {
+      "name": "1280:11:insufficient funds disable all purchases",
+      "passed": true
+    },
+    {
+      "name": "1280:11:direct purchase also checks funds",
+      "passed": true
+    },
+    {
+      "name": "1280:11:leaving does not charge or move",
+      "passed": true
+    },
+    {
+      "name": "1280:11:hp exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:11:hp other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "1280:11:hp no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "1280:11:hp cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "1280:11:attack exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:11:attack other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "1280:11:attack no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "1280:11:attack cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "1280:11:defense exact-cost native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:11:defense other stats unchanged",
+      "passed": true
+    },
+    {
+      "name": "1280:11:defense no equipment invented",
+      "passed": true
+    },
+    {
+      "name": "1280:11:defense cannot overspend",
+      "passed": true
+    },
+    {
+      "name": "1280:11:repeat price stays fixed",
+      "passed": true
+    },
+    {
+      "name": "1280:11:save-load preserves open shop and transaction",
+      "passed": true
+    },
+    {
+      "name": "1280:11:shop fits map and phone viewport",
+      "passed": true,
+      "detail": {
+        "fitsMap": true,
+        "visible": true,
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "1280:11:Escape closes shop",
+      "passed": true
+    },
+    {
+      "name": "1280:11:close retains bought stats",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:level elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:level exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:level:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:level:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:level:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:level:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:level insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:level elder remains available",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:attack elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:attack exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:attack:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:attack:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:attack:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:attack:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:attack insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:attack elder remains available",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:defense elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:defense exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:defense:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:defense:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:defense:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:defense:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:defense insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:5:defense elder remains available",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:level elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:level exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:level:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:level:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:level:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:level:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:level insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:level elder remains available",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:attack elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:attack exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:attack:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:attack:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:attack:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:attack:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:attack insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:attack elder remains available",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:defense elder opens experience shop",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:defense exact experience charge without gold",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:defense:level native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:defense:hp native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:defense:attack native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:defense:defense native bonus",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:defense insufficient experience cannot repeat",
+      "passed": true
+    },
+    {
+      "name": "1280:experience:13:defense elder remains available",
+      "passed": true
+    },
+    {
+      "name": "1280: exit cleans up listeners",
+      "passed": true
+    },
+    {
+      "name": "1280: no runtime errors",
+      "passed": true,
+      "detail": []
+    }
+  ]
+}

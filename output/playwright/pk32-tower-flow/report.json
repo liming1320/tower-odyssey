@@ -1,0 +1,2636 @@
+{
+  "scope": "production-pk32-gallery-tower-opening-and-first-floor-flow",
+  "authenticationFlowVerified": false,
+  "equipmentFullWalkthroughVerified": false,
+  "fullGameRulesVerified": false,
+  "results": [
+    {
+      "name": "320: production gallery mounts tower in full-screen stage",
+      "passed": true
+    },
+    {
+      "name": "320: 121 tiles and one hero",
+      "passed": true
+    },
+    {
+      "name": "320: native opening",
+      "passed": true,
+      "detail": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。"
+    },
+    {
+      "name": "320: all five opening pages match native call order",
+      "passed": true
+    },
+    {
+      "name": "320: opening inside map",
+      "passed": true,
+      "detail": {
+        "within": true,
+        "playerVisible": true,
+        "fairyVisible": false,
+        "width": 276,
+        "overflow": false
+      }
+    },
+    {
+      "name": "320: fairy conversation opens",
+      "passed": true
+    },
+    {
+      "name": "320: hero does not cover fairy",
+      "passed": true
+    },
+    {
+      "name": "320: keys start at zero and are not granted mid-dialogue",
+      "passed": true
+    },
+    {
+      "name": "320: fairy balloon visible and in bounds",
+      "passed": true,
+      "detail": {
+        "within": true,
+        "playerVisible": true,
+        "fairyVisible": true,
+        "width": 276,
+        "overflow": false
+      }
+    },
+    {
+      "name": "320: fairy conversation actually inside visible phone viewport",
+      "passed": true,
+      "detail": {
+        "top": 122.28125,
+        "bottom": 219.28125,
+        "stageTop": 44,
+        "viewportHeight": 568
+      }
+    },
+    {
+      "name": "320: mid-dialogue save preserves pages and pending event",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 0",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 0",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 1",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 1",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 2",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 2",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 3",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 3",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 4",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 4",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 5",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 5",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 6",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 6",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 7",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 7",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 8",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 8",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 9",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 9",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 10",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 10",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 11",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 11",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 12",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 12",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 13",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 13",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 14",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 14",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 15",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 15",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page fits 16",
+      "passed": true
+    },
+    {
+      "name": "320: dialogue page visible without searching by scrolling 16",
+      "passed": true
+    },
+    {
+      "name": "320: original equipment directions",
+      "passed": true,
+      "detail": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ]
+    },
+    {
+      "name": "320: all 18 fairy lines match native call order",
+      "passed": true,
+      "detail": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ]
+    },
+    {
+      "name": "320: native dialogue completion does not move the hero",
+      "passed": true
+    },
+    {
+      "name": "320: one of each key after completed dialogue",
+      "passed": true,
+      "detail": {
+        "red": 1,
+        "blue": 1,
+        "yellow": 1,
+        "green": 0
+      }
+    },
+    {
+      "name": "320: fairy steps left and leaves passage open",
+      "passed": true
+    },
+    {
+      "name": "320: entrance to floor one without state injection",
+      "passed": true
+    },
+    {
+      "name": "320: floor-one red door is passable",
+      "passed": true
+    },
+    {
+      "name": "320: reachable first-floor combat resolves correctly",
+      "passed": true,
+      "detail": {
+        "set": "魔塔",
+        "layer": 1,
+        "x": 6,
+        "y": 0,
+        "hp": 940,
+        "attack": 10,
+        "defense": 10,
+        "gold": 1,
+        "experience": 1,
+        "level": 1,
+        "inventory": {},
+        "keys": {
+          "red": 0,
+          "blue": 1,
+          "yellow": 0,
+          "green": 0
+        },
+        "defeated": {},
+        "cleared": {
+          "0:82": true,
+          "1:93": true,
+          "1:5": true
+        },
+        "visited": {
+          "0": true,
+          "1": true
+        },
+        "npcFlags": {
+          "openingStory": true,
+          "openingShown": true,
+          "fairyIntro": true,
+          "fairyKeysReceived": true
+        },
+        "gateFlags": {},
+        "won": false,
+        "lost": false,
+        "ending": null,
+        "dialog": null,
+        "dialogPages": null,
+        "dialogIndex": 0,
+        "dialogAnchor": null,
+        "dialogEvent": null,
+        "dialogMove": null,
+        "battle": {
+          "code": "39",
+          "rounds": 6,
+          "damage": 60,
+          "enemyHp": 0,
+          "shown": 0,
+          "heroHpStart": 1000,
+          "enemyHpStart": 50,
+          "animating": true
+        }
+      }
+    },
+    {
+      "name": "320: new game starts at entrance",
+      "passed": true
+    },
+    {
+      "name": "320: save and load preserve inventory and position",
+      "passed": true
+    },
+    {
+      "name": "320: downstairs returns to entrance",
+      "passed": true
+    },
+    {
+      "name": "320: ordinary fairy revisit matches native two-page dialogue",
+      "passed": true
+    },
+    {
+      "name": "320: revisiting fairy cannot duplicate keys",
+      "passed": true
+    },
+    {
+      "name": "320: revisiting fairy keeps the hero beside her",
+      "passed": true
+    },
+    {
+      "name": "320: gems do not invent equipment",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "320: sword pickup and sprite",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "320: sword pickup cannot duplicate",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "320: legacy save restores equipment from cleared cells",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "320: shield pickup and sprite",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "320: native sword floor 3 and shield floor 5",
+      "passed": true,
+      "detail": [
+        {
+          "layer": 3,
+          "sword": 0,
+          "shield": -1
+        },
+        {
+          "layer": 5,
+          "sword": -1,
+          "shield": 37
+        }
+      ]
+    },
+    {
+      "name": "320: native art loaded and sprite pixels are nonblank",
+      "passed": true,
+      "detail": [
+        {
+          "code": "31",
+          "colors": 33,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "35",
+          "colors": 41,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "72",
+          "colors": 47,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "76",
+          "colors": 19,
+          "width": 593,
+          "height": 1038
+        }
+      ]
+    },
+    {
+      "name": "320: dialogue clamped at all corners and map edges",
+      "passed": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "320: open dialogue repositions on resize",
+      "passed": true
+    },
+    {
+      "name": "320: no runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "320: closing production gallery destroys tower",
+      "passed": true
+    },
+    {
+      "name": "390: production gallery mounts tower in full-screen stage",
+      "passed": true
+    },
+    {
+      "name": "390: 121 tiles and one hero",
+      "passed": true
+    },
+    {
+      "name": "390: native opening",
+      "passed": true,
+      "detail": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。"
+    },
+    {
+      "name": "390: all five opening pages match native call order",
+      "passed": true
+    },
+    {
+      "name": "390: opening inside map",
+      "passed": true,
+      "detail": {
+        "within": true,
+        "playerVisible": true,
+        "fairyVisible": false,
+        "width": 346,
+        "overflow": false
+      }
+    },
+    {
+      "name": "390: fairy conversation opens",
+      "passed": true
+    },
+    {
+      "name": "390: hero does not cover fairy",
+      "passed": true
+    },
+    {
+      "name": "390: keys start at zero and are not granted mid-dialogue",
+      "passed": true
+    },
+    {
+      "name": "390: fairy balloon visible and in bounds",
+      "passed": true,
+      "detail": {
+        "within": true,
+        "playerVisible": true,
+        "fairyVisible": true,
+        "width": 346,
+        "overflow": false
+      }
+    },
+    {
+      "name": "390: fairy conversation actually inside visible phone viewport",
+      "passed": true,
+      "detail": {
+        "top": 380.03125,
+        "bottom": 477.03125,
+        "stageTop": 44,
+        "viewportHeight": 844
+      }
+    },
+    {
+      "name": "390: mid-dialogue save preserves pages and pending event",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 0",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 0",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 1",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 1",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 2",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 2",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 3",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 3",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 4",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 4",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 5",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 5",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 6",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 6",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 7",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 7",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 8",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 8",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 9",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 9",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 10",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 10",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 11",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 11",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 12",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 12",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 13",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 13",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 14",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 14",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 15",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 15",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page fits 16",
+      "passed": true
+    },
+    {
+      "name": "390: dialogue page visible without searching by scrolling 16",
+      "passed": true
+    },
+    {
+      "name": "390: original equipment directions",
+      "passed": true,
+      "detail": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ]
+    },
+    {
+      "name": "390: all 18 fairy lines match native call order",
+      "passed": true,
+      "detail": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ]
+    },
+    {
+      "name": "390: native dialogue completion does not move the hero",
+      "passed": true
+    },
+    {
+      "name": "390: one of each key after completed dialogue",
+      "passed": true,
+      "detail": {
+        "red": 1,
+        "blue": 1,
+        "yellow": 1,
+        "green": 0
+      }
+    },
+    {
+      "name": "390: fairy steps left and leaves passage open",
+      "passed": true
+    },
+    {
+      "name": "390: entrance to floor one without state injection",
+      "passed": true
+    },
+    {
+      "name": "390: floor-one red door is passable",
+      "passed": true
+    },
+    {
+      "name": "390: reachable first-floor combat resolves correctly",
+      "passed": true,
+      "detail": {
+        "set": "魔塔",
+        "layer": 1,
+        "x": 6,
+        "y": 0,
+        "hp": 940,
+        "attack": 10,
+        "defense": 10,
+        "gold": 1,
+        "experience": 1,
+        "level": 1,
+        "inventory": {},
+        "keys": {
+          "red": 0,
+          "blue": 1,
+          "yellow": 0,
+          "green": 0
+        },
+        "defeated": {},
+        "cleared": {
+          "0:82": true,
+          "1:93": true,
+          "1:5": true
+        },
+        "visited": {
+          "0": true,
+          "1": true
+        },
+        "npcFlags": {
+          "openingStory": true,
+          "openingShown": true,
+          "fairyIntro": true,
+          "fairyKeysReceived": true
+        },
+        "gateFlags": {},
+        "won": false,
+        "lost": false,
+        "ending": null,
+        "dialog": null,
+        "dialogPages": null,
+        "dialogIndex": 0,
+        "dialogAnchor": null,
+        "dialogEvent": null,
+        "dialogMove": null,
+        "battle": {
+          "code": "39",
+          "rounds": 6,
+          "damage": 60,
+          "enemyHp": 0,
+          "shown": 0,
+          "heroHpStart": 1000,
+          "enemyHpStart": 50,
+          "animating": true
+        }
+      }
+    },
+    {
+      "name": "390: new game starts at entrance",
+      "passed": true
+    },
+    {
+      "name": "390: save and load preserve inventory and position",
+      "passed": true
+    },
+    {
+      "name": "390: downstairs returns to entrance",
+      "passed": true
+    },
+    {
+      "name": "390: ordinary fairy revisit matches native two-page dialogue",
+      "passed": true
+    },
+    {
+      "name": "390: revisiting fairy cannot duplicate keys",
+      "passed": true
+    },
+    {
+      "name": "390: revisiting fairy keeps the hero beside her",
+      "passed": true
+    },
+    {
+      "name": "390: gems do not invent equipment",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "390: sword pickup and sprite",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "390: sword pickup cannot duplicate",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "390: legacy save restores equipment from cleared cells",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "390: shield pickup and sprite",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "390: native sword floor 3 and shield floor 5",
+      "passed": true,
+      "detail": [
+        {
+          "layer": 3,
+          "sword": 0,
+          "shield": -1
+        },
+        {
+          "layer": 5,
+          "sword": -1,
+          "shield": 37
+        }
+      ]
+    },
+    {
+      "name": "390: native art loaded and sprite pixels are nonblank",
+      "passed": true,
+      "detail": [
+        {
+          "code": "31",
+          "colors": 33,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "35",
+          "colors": 41,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "72",
+          "colors": 47,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "76",
+          "colors": 19,
+          "width": 593,
+          "height": 1038
+        }
+      ]
+    },
+    {
+      "name": "390: dialogue clamped at all corners and map edges",
+      "passed": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "390: open dialogue repositions on resize",
+      "passed": true
+    },
+    {
+      "name": "390: no runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "390: closing production gallery destroys tower",
+      "passed": true
+    },
+    {
+      "name": "768: production gallery mounts tower in full-screen stage",
+      "passed": true
+    },
+    {
+      "name": "768: 121 tiles and one hero",
+      "passed": true
+    },
+    {
+      "name": "768: native opening",
+      "passed": true,
+      "detail": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。"
+    },
+    {
+      "name": "768: all five opening pages match native call order",
+      "passed": true
+    },
+    {
+      "name": "768: opening inside map",
+      "passed": true,
+      "detail": {
+        "within": true,
+        "playerVisible": true,
+        "fairyVisible": false,
+        "width": 352,
+        "overflow": false
+      }
+    },
+    {
+      "name": "768: fairy conversation opens",
+      "passed": true
+    },
+    {
+      "name": "768: hero does not cover fairy",
+      "passed": true
+    },
+    {
+      "name": "768: keys start at zero and are not granted mid-dialogue",
+      "passed": true
+    },
+    {
+      "name": "768: fairy balloon visible and in bounds",
+      "passed": true,
+      "detail": {
+        "within": true,
+        "playerVisible": true,
+        "fairyVisible": true,
+        "width": 352,
+        "overflow": false
+      }
+    },
+    {
+      "name": "768: fairy conversation actually inside visible phone viewport",
+      "passed": true,
+      "detail": {
+        "top": 494.25,
+        "bottom": 591.25,
+        "stageTop": 44,
+        "viewportHeight": 960
+      }
+    },
+    {
+      "name": "768: mid-dialogue save preserves pages and pending event",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 0",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 0",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 1",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 1",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 2",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 2",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 3",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 3",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 4",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 4",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 5",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 5",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 6",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 6",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 7",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 7",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 8",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 8",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 9",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 9",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 10",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 10",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 11",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 11",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 12",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 12",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 13",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 13",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 14",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 14",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 15",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 15",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page fits 16",
+      "passed": true
+    },
+    {
+      "name": "768: dialogue page visible without searching by scrolling 16",
+      "passed": true
+    },
+    {
+      "name": "768: original equipment directions",
+      "passed": true,
+      "detail": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ]
+    },
+    {
+      "name": "768: all 18 fairy lines match native call order",
+      "passed": true,
+      "detail": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ]
+    },
+    {
+      "name": "768: native dialogue completion does not move the hero",
+      "passed": true
+    },
+    {
+      "name": "768: one of each key after completed dialogue",
+      "passed": true,
+      "detail": {
+        "red": 1,
+        "blue": 1,
+        "yellow": 1,
+        "green": 0
+      }
+    },
+    {
+      "name": "768: fairy steps left and leaves passage open",
+      "passed": true
+    },
+    {
+      "name": "768: entrance to floor one without state injection",
+      "passed": true
+    },
+    {
+      "name": "768: floor-one red door is passable",
+      "passed": true
+    },
+    {
+      "name": "768: reachable first-floor combat resolves correctly",
+      "passed": true,
+      "detail": {
+        "set": "魔塔",
+        "layer": 1,
+        "x": 6,
+        "y": 0,
+        "hp": 940,
+        "attack": 10,
+        "defense": 10,
+        "gold": 1,
+        "experience": 1,
+        "level": 1,
+        "inventory": {},
+        "keys": {
+          "red": 0,
+          "blue": 1,
+          "yellow": 0,
+          "green": 0
+        },
+        "defeated": {},
+        "cleared": {
+          "0:82": true,
+          "1:93": true,
+          "1:5": true
+        },
+        "visited": {
+          "0": true,
+          "1": true
+        },
+        "npcFlags": {
+          "openingStory": true,
+          "openingShown": true,
+          "fairyIntro": true,
+          "fairyKeysReceived": true
+        },
+        "gateFlags": {},
+        "won": false,
+        "lost": false,
+        "ending": null,
+        "dialog": null,
+        "dialogPages": null,
+        "dialogIndex": 0,
+        "dialogAnchor": null,
+        "dialogEvent": null,
+        "dialogMove": null,
+        "battle": {
+          "code": "39",
+          "rounds": 6,
+          "damage": 60,
+          "enemyHp": 0,
+          "shown": 0,
+          "heroHpStart": 1000,
+          "enemyHpStart": 50,
+          "animating": true
+        }
+      }
+    },
+    {
+      "name": "768: new game starts at entrance",
+      "passed": true
+    },
+    {
+      "name": "768: save and load preserve inventory and position",
+      "passed": true
+    },
+    {
+      "name": "768: downstairs returns to entrance",
+      "passed": true
+    },
+    {
+      "name": "768: ordinary fairy revisit matches native two-page dialogue",
+      "passed": true
+    },
+    {
+      "name": "768: revisiting fairy cannot duplicate keys",
+      "passed": true
+    },
+    {
+      "name": "768: revisiting fairy keeps the hero beside her",
+      "passed": true
+    },
+    {
+      "name": "768: gems do not invent equipment",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "768: sword pickup and sprite",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "768: sword pickup cannot duplicate",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "768: legacy save restores equipment from cleared cells",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "768: shield pickup and sprite",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "768: native sword floor 3 and shield floor 5",
+      "passed": true,
+      "detail": [
+        {
+          "layer": 3,
+          "sword": 0,
+          "shield": -1
+        },
+        {
+          "layer": 5,
+          "sword": -1,
+          "shield": 37
+        }
+      ]
+    },
+    {
+      "name": "768: native art loaded and sprite pixels are nonblank",
+      "passed": true,
+      "detail": [
+        {
+          "code": "31",
+          "colors": 33,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "35",
+          "colors": 41,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "72",
+          "colors": 47,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "76",
+          "colors": 19,
+          "width": 593,
+          "height": 1038
+        }
+      ]
+    },
+    {
+      "name": "768: dialogue clamped at all corners and map edges",
+      "passed": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "768: open dialogue repositions on resize",
+      "passed": true
+    },
+    {
+      "name": "768: no runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "768: closing production gallery destroys tower",
+      "passed": true
+    },
+    {
+      "name": "1280: production gallery mounts tower in full-screen stage",
+      "passed": true
+    },
+    {
+      "name": "1280: 121 tiles and one hero",
+      "passed": true
+    },
+    {
+      "name": "1280: native opening",
+      "passed": true,
+      "detail": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。"
+    },
+    {
+      "name": "1280: all five opening pages match native call order",
+      "passed": true
+    },
+    {
+      "name": "1280: opening inside map",
+      "passed": true,
+      "detail": {
+        "within": true,
+        "playerVisible": true,
+        "fairyVisible": false,
+        "width": 352,
+        "overflow": false
+      }
+    },
+    {
+      "name": "1280: fairy conversation opens",
+      "passed": true
+    },
+    {
+      "name": "1280: hero does not cover fairy",
+      "passed": true
+    },
+    {
+      "name": "1280: keys start at zero and are not granted mid-dialogue",
+      "passed": true
+    },
+    {
+      "name": "1280: fairy balloon visible and in bounds",
+      "passed": true,
+      "detail": {
+        "within": true,
+        "playerVisible": true,
+        "fairyVisible": true,
+        "width": 352,
+        "overflow": false
+      }
+    },
+    {
+      "name": "1280: fairy conversation actually inside visible phone viewport",
+      "passed": true,
+      "detail": {
+        "top": 494.25,
+        "bottom": 591.25,
+        "stageTop": 44,
+        "viewportHeight": 960
+      }
+    },
+    {
+      "name": "1280: mid-dialogue save preserves pages and pending event",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 0",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 0",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 1",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 1",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 2",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 2",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 3",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 3",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 4",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 4",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 5",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 5",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 6",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 6",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 7",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 7",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 8",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 8",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 9",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 9",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 10",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 10",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 11",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 11",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 12",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 12",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 13",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 13",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 14",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 14",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 15",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 15",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page fits 16",
+      "passed": true
+    },
+    {
+      "name": "1280: dialogue page visible without searching by scrolling 16",
+      "passed": true
+    },
+    {
+      "name": "1280: original equipment directions",
+      "passed": true,
+      "detail": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ]
+    },
+    {
+      "name": "1280: all 18 fairy lines match native call order",
+      "passed": true,
+      "detail": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ]
+    },
+    {
+      "name": "1280: native dialogue completion does not move the hero",
+      "passed": true
+    },
+    {
+      "name": "1280: one of each key after completed dialogue",
+      "passed": true,
+      "detail": {
+        "red": 1,
+        "blue": 1,
+        "yellow": 1,
+        "green": 0
+      }
+    },
+    {
+      "name": "1280: fairy steps left and leaves passage open",
+      "passed": true
+    },
+    {
+      "name": "1280: entrance to floor one without state injection",
+      "passed": true
+    },
+    {
+      "name": "1280: floor-one red door is passable",
+      "passed": true
+    },
+    {
+      "name": "1280: reachable first-floor combat resolves correctly",
+      "passed": true,
+      "detail": {
+        "set": "魔塔",
+        "layer": 1,
+        "x": 6,
+        "y": 0,
+        "hp": 940,
+        "attack": 10,
+        "defense": 10,
+        "gold": 1,
+        "experience": 1,
+        "level": 1,
+        "inventory": {},
+        "keys": {
+          "red": 0,
+          "blue": 1,
+          "yellow": 0,
+          "green": 0
+        },
+        "defeated": {},
+        "cleared": {
+          "0:82": true,
+          "1:93": true,
+          "1:5": true
+        },
+        "visited": {
+          "0": true,
+          "1": true
+        },
+        "npcFlags": {
+          "openingStory": true,
+          "openingShown": true,
+          "fairyIntro": true,
+          "fairyKeysReceived": true
+        },
+        "gateFlags": {},
+        "won": false,
+        "lost": false,
+        "ending": null,
+        "dialog": null,
+        "dialogPages": null,
+        "dialogIndex": 0,
+        "dialogAnchor": null,
+        "dialogEvent": null,
+        "dialogMove": null,
+        "battle": {
+          "code": "39",
+          "rounds": 6,
+          "damage": 60,
+          "enemyHp": 0,
+          "shown": 0,
+          "heroHpStart": 1000,
+          "enemyHpStart": 50,
+          "animating": true
+        }
+      }
+    },
+    {
+      "name": "1280: new game starts at entrance",
+      "passed": true
+    },
+    {
+      "name": "1280: save and load preserve inventory and position",
+      "passed": true
+    },
+    {
+      "name": "1280: downstairs returns to entrance",
+      "passed": true
+    },
+    {
+      "name": "1280: ordinary fairy revisit matches native two-page dialogue",
+      "passed": true
+    },
+    {
+      "name": "1280: revisiting fairy cannot duplicate keys",
+      "passed": true
+    },
+    {
+      "name": "1280: revisiting fairy keeps the hero beside her",
+      "passed": true
+    },
+    {
+      "name": "1280: gems do not invent equipment",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "1280: sword pickup and sprite",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "1280: sword pickup cannot duplicate",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "1280: legacy save restores equipment from cleared cells",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "1280: shield pickup and sprite",
+      "passed": true,
+      "detail": {
+        "result": [
+          {
+            "kind": "gem",
+            "attack": 13,
+            "label": "未获得剑"
+          },
+          {
+            "kind": "sword",
+            "attack": 20,
+            "slot": "31",
+            "sprite": "31"
+          },
+          {
+            "kind": "sword-once",
+            "attack": 20
+          },
+          {
+            "kind": "legacy-sword",
+            "sprite": "31"
+          },
+          {
+            "kind": "shield",
+            "defense": 20,
+            "slot": "35",
+            "sprite": "35"
+          }
+        ],
+        "source": [
+          {
+            "layer": 3,
+            "sword": 0,
+            "shield": -1
+          },
+          {
+            "layer": 5,
+            "sword": -1,
+            "shield": 37
+          }
+        ]
+      }
+    },
+    {
+      "name": "1280: native sword floor 3 and shield floor 5",
+      "passed": true,
+      "detail": [
+        {
+          "layer": 3,
+          "sword": 0,
+          "shield": -1
+        },
+        {
+          "layer": 5,
+          "sword": -1,
+          "shield": 37
+        }
+      ]
+    },
+    {
+      "name": "1280: native art loaded and sprite pixels are nonblank",
+      "passed": true,
+      "detail": [
+        {
+          "code": "31",
+          "colors": 33,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "35",
+          "colors": 41,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "72",
+          "colors": 47,
+          "width": 593,
+          "height": 1038
+        },
+        {
+          "code": "76",
+          "colors": 19,
+          "width": 593,
+          "height": 1038
+        }
+      ]
+    },
+    {
+      "name": "1280: dialogue clamped at all corners and map edges",
+      "passed": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "1280: open dialogue repositions on resize",
+      "passed": true
+    },
+    {
+      "name": "1280: no runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "1280: closing production gallery destroys tower",
+      "passed": true
+    }
+  ]
+}

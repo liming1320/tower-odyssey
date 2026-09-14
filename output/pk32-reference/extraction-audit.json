@@ -866,6 +866,7 @@
       "content": "Tower one terrain and actors",
       "basis": "Native PicForm(22), 22 map dispatch cases, 32px blits on 33px stride",
       "mapCodeMappingVerified": true,
+      "mapSemanticsVerified": false,
       "fullUiVerified": false
     },
     {

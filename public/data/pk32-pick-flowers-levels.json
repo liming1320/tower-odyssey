@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "source": "PK32 native module.bin",
+  "count": 12,
+  "fullGameRulesVerified": false,
+  "levels": [
+    {
+      "number": 1,
+      "encoding": "native-command-string",
+      "cells": "222222222221222222222222112121121222121121211222422222222122222222522212121212121212121212122222212222222222212222221212221212121212221212222221222222222221222221211222112101211222112122222122222622222122222212122212121212122212122222212222222222212222221212121212121212121212225222222221222222224222112121121222121121211222222222222122222222222"
+    },
+    {
+      "number": 2,
+      "encoding": "native-command-string",
+      "cells": "1100001213000014030505040301020415010215"
+    },
+    {
+      "number": 3,
+      "encoding": "native-command-string",
+      "cells": "1100001213000014060607070808090915050515"
+    },
+    {
+      "number": 4,
+      "encoding": "native-command-string",
+      "cells": "0100000201000002111213140305050403151504"
+    },
+    {
+      "number": 5,
+      "encoding": "native-command-string",
+      "cells": "0100000201000002150304151103041213050514"
+    },
+    {
+      "number": 6,
+      "encoding": "native-command-string",
+      "cells": "0100000201000002110505120313140403151504"
+    },
+    {
+      "number": 7,
+      "encoding": "native-command-string",
+      "cells": "0201000002010000111205051314040315150403"
+    },
+    {
+      "number": 8,
+      "encoding": "native-command-string",
+      "cells": "1100001201000002010505020313140403151504"
+    },
+    {
+      "number": 9,
+      "encoding": "native-command-string",
+      "cells": "1100000112000001070708080909050513151514"
+    },
+    {
+      "number": 10,
+      "encoding": "native-command-string",
+      "cells": "0100000201000002030505040311120413151514"
+    },
+    {
+      "number": 11,
+      "encoding": "native-command-string",
+      "cells": "0100000201000002080809091105051213151514"
+    },
+    {
+      "number": 12,
+      "encoding": "native-command-string",
+      "cells": "1101020312010203090913140505000015150000"
+    }
+  ]
+}

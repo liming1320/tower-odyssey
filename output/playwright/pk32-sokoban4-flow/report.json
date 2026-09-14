@@ -1,0 +1,54 @@
+{
+  "scope": "sokoban4-gallery-native-data-first-level-and-lifecycle",
+  "fullGameRulesVerified": false,
+  "results": [
+    {
+      "width": 320,
+      "nativePixelTiles": 99,
+      "levelsLoaded": 23,
+      "nativeFirstLevelDemo": "123",
+      "nativeDemoReplays": 3,
+      "victoryFreezesAnimation": true,
+      "wrapsLastLevel": true,
+      "standaloneMenuCleanedUp": true,
+      "won": true,
+      "stoppedFetchAndTimer": true
+    },
+    {
+      "width": 390,
+      "nativePixelTiles": 99,
+      "levelsLoaded": 23,
+      "nativeFirstLevelDemo": "123",
+      "nativeDemoReplays": 3,
+      "victoryFreezesAnimation": true,
+      "wrapsLastLevel": true,
+      "standaloneMenuCleanedUp": true,
+      "won": true,
+      "stoppedFetchAndTimer": true
+    },
+    {
+      "width": 768,
+      "nativePixelTiles": 99,
+      "levelsLoaded": 23,
+      "nativeFirstLevelDemo": "123",
+      "nativeDemoReplays": 3,
+      "victoryFreezesAnimation": true,
+      "wrapsLastLevel": true,
+      "standaloneMenuCleanedUp": true,
+      "won": true,
+      "stoppedFetchAndTimer": true
+    },
+    {
+      "width": 1280,
+      "nativePixelTiles": 99,
+      "levelsLoaded": 23,
+      "nativeFirstLevelDemo": "123",
+      "nativeDemoReplays": 3,
+      "victoryFreezesAnimation": true,
+      "wrapsLastLevel": true,
+      "standaloneMenuCleanedUp": true,
+      "won": true,
+      "stoppedFetchAndTimer": true
+    }
+  ]
+}

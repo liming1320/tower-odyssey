@@ -1,0 +1,16 @@
+[
+  {
+    "rva": 29311488,
+    "address": 33505792,
+    "bytes": "9d",
+    "instruction": "popfd ",
+    "strings": []
+  },
+  {
+    "rva": 29311489,
+    "address": 33505793,
+    "bytes": "54",
+    "instruction": "push esp",
+    "strings": []
+  }
+]

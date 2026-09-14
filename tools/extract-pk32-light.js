@@ -1,11 +1,17 @@
 const fs = require('fs');
 const path = require('path');
-const strings = require(path.join(__dirname, '..', 'output', 'pk32-reference', 'strings.json'));
-const catalog = require('../public/data/pk32-native-catalog.json').records.find(x => x.name === '智慧之光');
-const next = strings.filter(x => x.text.indexOf('扑克32--') === 0 && x.offset > catalog.titleOffset).sort((a, b) => a.offset - b.offset)[0];
-const candidates = strings.filter(x => x.offset > catalog.titleOffset && x.offset < next.offset && /^[0-9]+$/.test(x.text));
-const wanted = Object.entries(catalog.payloadLengths).reduce((m, p) => (m[Number(p[0])] = Number(p[1]), m), {});
-const levels = candidates.filter(x => wanted[x.text.length] > 0 && (wanted[x.text.length]--, true)).map((x, i) => ({ number: i + 1, offset: x.offset, cells: x.text }));
-if (levels.length !== catalog.payloadCount) throw new Error('payload count mismatch: ' + levels.length);
-fs.writeFileSync(path.join(__dirname, '..', 'public', 'data', 'pk32-light-levels.json'), JSON.stringify({ name: catalog.name, nativeLevelCount: null, extractedPayloadCount: levels.length, objective: 'light all lightable objects', levels }, null, 2) + '\n', 'utf8');
-console.log(JSON.stringify({ payloads: levels.length, firstOffset: levels[0].offset, lastOffset: levels[levels.length - 1].offset }));
+const image = fs.readFileSync(path.join(__dirname, '..', 'output', 'pk32-reference', 'module.bin'));
+const base = 0x400000, table = 0x1c30240;
+const levels = [];
+for (let i = 0; i < 140; i += 1) {
+  const target = image.readUInt32LE(table + i * 4) - base;
+  if (image[target] !== 0xba) throw new Error('invalid native board case ' + i);
+  const pointer = image.readUInt32LE(target + 1) - base;
+  const bytes = image.readUInt32LE(pointer - 4);
+  const cells = image.subarray(pointer, pointer + bytes).toString('utf16le');
+  const width = Number(cells.slice(0, 2)), height = Number(cells.slice(2, 4));
+  if (!width || !height || cells.length !== 4 + width * height * 2) throw new Error('invalid board ' + i);
+  levels.push({ number: i + 1, offset: pointer, width, height, cells });
+}
+fs.writeFileSync(path.join(__dirname, '..', 'public', 'data', 'pk32-light-levels.json'), JSON.stringify({ name: '智慧之光', nativeLevelCount: 140, extractedPayloadCount: 140, objective: 'light all lightable objects', levels }, null, 2) + '\n', 'utf8');
+console.log(JSON.stringify({ levels: levels.length, firstOffset: levels[0].offset, lastOffset: levels[levels.length - 1].offset }));

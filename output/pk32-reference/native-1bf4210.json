@@ -1,0 +1,37 @@
+[
+  {
+    "rva": 29311504,
+    "address": 33505808,
+    "bytes": "ff899d24ffff",
+    "instruction": "dec dword ptr [ecx - 0xdb63]",
+    "strings": []
+  },
+  {
+    "rva": 29311510,
+    "address": 33505814,
+    "bytes": "ff899d14ffff",
+    "instruction": "dec dword ptr [ecx - 0xeb63]",
+    "strings": []
+  },
+  {
+    "rva": 29311516,
+    "address": 33505820,
+    "bytes": "ff899d04ffff",
+    "instruction": "dec dword ptr [ecx - 0xfb63]",
+    "strings": []
+  },
+  {
+    "rva": 29311522,
+    "address": 33505826,
+    "bytes": "ff899df4feff",
+    "instruction": "dec dword ptr [ecx - 0x10b63]",
+    "strings": []
+  },
+  {
+    "rva": 29311528,
+    "address": 33505832,
+    "bytes": "ff899de4feff",
+    "instruction": "dec dword ptr [ecx - 0x11b63]",
+    "strings": []
+  }
+]

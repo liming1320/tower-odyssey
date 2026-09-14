@@ -54,8 +54,8 @@
     function animalState() {
         const b = board(9, 7);
         const pieces = [
-            [0, 6, 'elephant'], [0, 0, 'lion'], [0, 2, 'tiger'], [1, 5, 'dog'], [1, 1, 'cat'], [2, 6, 'leopard'], [2, 4, 'wolf'], [2, 0, 'rat'],
-            [8, 0, 'elephant'], [8, 6, 'lion'], [8, 4, 'tiger'], [7, 1, 'dog'], [7, 5, 'cat'], [6, 0, 'leopard'], [6, 2, 'wolf'], [6, 6, 'rat']
+            [0, 0, 'lion'], [0, 6, 'tiger'], [1, 1, 'cat'], [1, 5, 'dog'], [2, 0, 'rat'], [2, 2, 'leopard'], [2, 4, 'wolf'], [2, 6, 'elephant'],
+            [8, 6, 'lion'], [8, 0, 'tiger'], [7, 5, 'cat'], [7, 1, 'dog'], [6, 6, 'rat'], [6, 4, 'leopard'], [6, 2, 'wolf'], [6, 0, 'elephant']
         ];
         pieces.forEach((p, i) => { b[p[0]][p[1]] = { side: i < 8 ? 2 : 1, rank: p[2] }; });
         return {
@@ -167,11 +167,12 @@
         const isRiver = (r, c) => r >= 3 && r <= 5 && (c === 1 || c === 2 || c === 4 || c === 5);
         const isDen = (r, c) => state.dens.some(d => d[0] === r && d[1] === c);
         const isTrap = (r, c) => state.traps.some(t => t[0] === r && t[1] === c);
+        const enemyTrap = (r, c, side) => isTrap(r, c) && ((r < 4 && side === 1) || (r > 4 && side === 2));
         const ownDen = isDen(to[0], to[1]) && ((to[0] === 0 && p.side === 2) || (to[0] === 8 && p.side === 1));
         if (ownDen) return false;
         const rank = { rat: 1, cat: 2, dog: 3, wolf: 4, leopard: 5, tiger: 6, lion: 7, elephant: 8 };
-        const pRank = isTrap(from[0], from[1]) ? 0 : (rank[p.rank] || 0);
-        const targetRank = target && (isDen(to[0], to[1]) || isTrap(to[0], to[1]) ? 0 : (rank[target.rank] || 0));
+        const pRank = enemyTrap(from[0], from[1], p.side) ? 0 : (rank[p.rank] || 0);
+        const targetRank = target && (enemyTrap(to[0], to[1], target.side) ? 0 : (rank[target.rank] || 0));
         if (p.rank === 'elephant' && target && target.rank === 'rat') return false;
         if (p.rank === 'rat' && isRiver(from[0], from[1]) && target && (!isRiver(to[0], to[1]) || target.rank !== 'rat')) return false;
         const canCapture = !target || pRank >= targetRank || (p.rank === 'rat' && target.rank === 'elephant');
@@ -285,7 +286,7 @@
         boardShell.className = 'pk32-board-scroll';
         boardShell.appendChild(boardEl);
         const style = document.createElement('style');
-        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:42px;min-height:42px;padding:2px;touch-action:manipulation}.pk32-animal-cell{position:relative}.pk32-animal-piece{display:block;width:32px;height:32px;margin:auto;background-image:url("/img/pk32/jungle-pieces.png");background-repeat:no-repeat;background-size:32px 256px;image-rendering:pixelated}.pk32-animal-piece[data-side="2"]{filter:invert(1)}';
+        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:42px;min-height:42px;padding:2px;touch-action:manipulation}.pk32-animal-cell{position:relative}.pk32-animal-cell[data-terrain="river"]{background:#74b9dc;color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:#d9a441;color:#5b3810}.pk32-animal-cell[data-terrain="den"]{background:#9b6bd3;color:#fff}.pk32-animal-piece{display:block;width:32px;height:32px;margin:auto;background-image:url("/img/pk32/jungle-pieces.png");background-repeat:no-repeat;background-size:32px 256px;image-rendering:pixelated}.pk32-animal-piece[data-side="2"]{filter:invert(1)}';
         rootEl.appendChild(style);
         restart.type = 'button';
         restart.textContent = '重开';
@@ -346,8 +347,15 @@
                 const value = session.state.board[row][col];
                 button.type = 'button';
                 const text = cellText(value, row, col);
-                if (typeof value === 'object' && session.state.type === 'animal-chess') {
+                if (session.state.type === 'animal-chess') {
+                    const river = row >= 3 && row <= 5 && [1, 2, 4, 5].includes(col);
+                    const trap = session.state.traps.some(point => point[0] === row && point[1] === col);
+                    const den = session.state.dens.some(point => point[0] === row && point[1] === col);
                     button.className = 'pk32-animal-cell';
+                    button.dataset.terrain = den ? 'den' : trap ? 'trap' : river ? 'river' : 'land';
+                    if (!value) button.setAttribute('aria-label', den ? '兽穴' : trap ? '陷阱' : river ? '河流' : '空地');
+                }
+                if (typeof value === 'object' && session.state.type === 'animal-chess') {
                     const piece = document.createElement('span');
                     piece.className = 'pk32-animal-piece';
                     piece.dataset.side = String(value.side);

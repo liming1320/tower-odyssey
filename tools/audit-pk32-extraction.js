@@ -70,7 +70,7 @@ const report = {
     numericPayloads,
     visualEvidence: [
         { source: 'sheet-de1b36.bmp', region: native.richmanAtlas.board.source, content: 'Richman board, HUD, four directional actors and property sprites', basis: 'Native PicForm(13) selection and blit instructions; see native-index.json', runtimeMappingVerified: true, fullRulesVerified: false },
-        { source: 'sheet-915611.bmp', content: 'Tower one terrain and actors', basis: 'Native PicForm(22), 22 map dispatch cases, 32px blits on 33px stride', mapCodeMappingVerified: true, fullUiVerified: false },
+        { source: 'sheet-915611.bmp', content: 'Tower one terrain and actors', basis: 'Native PicForm(22), 22 map dispatch cases, 32px blits on 33px stride', mapCodeMappingVerified: true, mapSemanticsVerified: false, fullUiVerified: false },
         { source: 'sheet-5579f0.bmp', pairedCandidate: 'sheet-5cf6db.bmp', content: 'Silhouette atlas; possible mask/color pair', compositionVerified: false }
     ],
     requiredNextEvidence: [

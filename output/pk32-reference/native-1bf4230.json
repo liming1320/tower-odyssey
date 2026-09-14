@@ -1,0 +1,44 @@
+[
+  {
+    "rva": 29311536,
+    "address": 33505840,
+    "bytes": "d6",
+    "instruction": "salc ",
+    "strings": []
+  },
+  {
+    "rva": 29311537,
+    "address": 33505841,
+    "bytes": "8b4508",
+    "instruction": "mov eax, dword ptr [ebp + 8]",
+    "strings": []
+  },
+  {
+    "rva": 29311540,
+    "address": 33505844,
+    "bytes": "0fbf00",
+    "instruction": "movsx eax, word ptr [eax]",
+    "strings": []
+  },
+  {
+    "rva": 29311543,
+    "address": 33505847,
+    "bytes": "83f816",
+    "instruction": "cmp eax, 0x16",
+    "strings": []
+  },
+  {
+    "rva": 29311546,
+    "address": 33505850,
+    "bytes": "0f87b9000000",
+    "instruction": "ja 0x1ff42f9",
+    "strings": []
+  },
+  {
+    "rva": 29311552,
+    "address": 33505856,
+    "bytes": "ff2485604aff01",
+    "instruction": "jmp dword ptr [eax*4 + 0x1ff4a60]",
+    "strings": []
+  }
+]

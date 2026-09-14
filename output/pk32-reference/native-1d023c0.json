@@ -1,0 +1,16 @@
+[
+  {
+    "rva": 30417856,
+    "address": 34612160,
+    "bytes": "ff89bd28ffff",
+    "instruction": "dec dword ptr [ecx - 0xd743]",
+    "strings": []
+  },
+  {
+    "rva": 30417862,
+    "address": 34612166,
+    "bytes": "ff89bd18ffff",
+    "instruction": "dec dword ptr [ecx - 0xe743]",
+    "strings": []
+  }
+]

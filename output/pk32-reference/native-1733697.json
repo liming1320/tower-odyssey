@@ -1,0 +1,978 @@
+[
+  {
+    "rva": 24327831,
+    "address": 28522135,
+    "bytes": "8b4858",
+    "instruction": "mov ecx, dword ptr [eax + 0x58]",
+    "strings": []
+  },
+  {
+    "rva": 24327834,
+    "address": 28522138,
+    "bytes": "85c9",
+    "instruction": "test ecx, ecx",
+    "strings": []
+  },
+  {
+    "rva": 24327836,
+    "address": 28522140,
+    "bytes": "0f8590040000",
+    "instruction": "jne 0x1b33b32",
+    "strings": []
+  },
+  {
+    "rva": 24327842,
+    "address": 28522146,
+    "bytes": "66833d28d7240200",
+    "instruction": "cmp word ptr [0x224d728], 0",
+    "strings": []
+  },
+  {
+    "rva": 24327850,
+    "address": 28522154,
+    "bytes": "0f85db010000",
+    "instruction": "jne 0x1b3388b",
+    "strings": []
+  },
+  {
+    "rva": 24327856,
+    "address": 28522160,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327861,
+    "address": 28522165,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327866,
+    "address": 28522170,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327871,
+    "address": 28522175,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327876,
+    "address": 28522180,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327881,
+    "address": 28522185,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24327886,
+    "address": 28522190,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24327891,
+    "address": 28522195,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24327893,
+    "address": 28522197,
+    "bytes": "682c045d00",
+    "instruction": "push 0x5d042c",
+    "strings": [
+      {
+        "address": 6095916,
+        "text": "勇士：你已经得救了。"
+      }
+    ]
+  },
+  {
+    "rva": 24327898,
+    "address": 28522202,
+    "bytes": "e851529dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24327903,
+    "address": 28522207,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327908,
+    "address": 28522212,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327913,
+    "address": 28522217,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327918,
+    "address": 28522222,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327923,
+    "address": 28522227,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327928,
+    "address": 28522232,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24327933,
+    "address": 28522237,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24327938,
+    "address": 28522242,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24327940,
+    "address": 28522244,
+    "bytes": "6848045d00",
+    "instruction": "push 0x5d0448",
+    "strings": [
+      {
+        "address": 6095944,
+        "text": "杰克：啊，那真是太好了，我又可以在这里面寻宝了。哦，还没有自我介绍，我叫杰克，是这附近有名的寻宝猎人，什么金银财宝我样样都得到过。不过这次运气可不是太好，刚进来就被抓了，现在你帮我打开了门，那我就帮你做一件事吧。"
+      }
+    ]
+  },
+  {
+    "rva": 24327945,
+    "address": 28522249,
+    "bytes": "e822529dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24327950,
+    "address": 28522254,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327955,
+    "address": 28522259,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327960,
+    "address": 28522264,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327965,
+    "address": 28522269,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327970,
+    "address": 28522274,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24327975,
+    "address": 28522279,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24327980,
+    "address": 28522284,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24327985,
+    "address": 28522289,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24327987,
+    "address": 28522291,
+    "bytes": "6824055d00",
+    "instruction": "push 0x5d0524",
+    "strings": [
+      {
+        "address": 6096164,
+        "text": "勇士：快走吧，外面还有很多的怪物，我可能顾不上你。"
+      }
+    ]
+  },
+  {
+    "rva": 24327992,
+    "address": 28522296,
+    "bytes": "e8f3519dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24327997,
+    "address": 28522301,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328002,
+    "address": 28522306,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328007,
+    "address": 28522311,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328012,
+    "address": 28522316,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328017,
+    "address": 28522321,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328022,
+    "address": 28522326,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24328027,
+    "address": 28522331,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24328032,
+    "address": 28522336,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24328034,
+    "address": 28522338,
+    "bytes": "685c055d00",
+    "instruction": "push 0x5d055c",
+    "strings": [
+      {
+        "address": 6096220,
+        "text": "杰克：不，不，不会有事的。快说吧，叫我做什么？"
+      }
+    ]
+  },
+  {
+    "rva": 24328039,
+    "address": 28522343,
+    "bytes": "e8c4519dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24328044,
+    "address": 28522348,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328049,
+    "address": 28522353,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328054,
+    "address": 28522358,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328059,
+    "address": 28522363,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328064,
+    "address": 28522368,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328069,
+    "address": 28522373,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24328074,
+    "address": 28522378,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24328079,
+    "address": 28522383,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24328081,
+    "address": 28522385,
+    "bytes": "6890055d00",
+    "instruction": "push 0x5d0590",
+    "strings": [
+      {
+        "address": 6096272,
+        "text": "勇士：你会开门吗？"
+      }
+    ]
+  },
+  {
+    "rva": 24328086,
+    "address": 28522390,
+    "bytes": "e895519dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24328091,
+    "address": 28522395,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328096,
+    "address": 28522400,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328101,
+    "address": 28522405,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328106,
+    "address": 28522410,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328111,
+    "address": 28522415,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328116,
+    "address": 28522420,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24328121,
+    "address": 28522425,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24328126,
+    "address": 28522430,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24328128,
+    "address": 28522432,
+    "bytes": "6888035d00",
+    "instruction": "push 0x5d0388",
+    "strings": [
+      {
+        "address": 6095752,
+        "text": "杰克：那当然。"
+      }
+    ]
+  },
+  {
+    "rva": 24328133,
+    "address": 28522437,
+    "bytes": "e866519dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24328138,
+    "address": 28522442,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328143,
+    "address": 28522447,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328148,
+    "address": 28522452,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328153,
+    "address": 28522457,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328158,
+    "address": 28522462,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328163,
+    "address": 28522467,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24328168,
+    "address": 28522472,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24328173,
+    "address": 28522477,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24328175,
+    "address": 28522479,
+    "bytes": "68a8055d00",
+    "instruction": "push 0x5d05a8",
+    "strings": [
+      {
+        "address": 6096296,
+        "text": "勇士：那就请你帮我打开第二层的门吧。"
+      }
+    ]
+  },
+  {
+    "rva": 24328180,
+    "address": 28522484,
+    "bytes": "e837519dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24328185,
+    "address": 28522489,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328190,
+    "address": 28522494,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328195,
+    "address": 28522499,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328200,
+    "address": 28522504,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328205,
+    "address": 28522509,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328210,
+    "address": 28522514,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24328215,
+    "address": 28522519,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24328220,
+    "address": 28522524,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24328222,
+    "address": 28522526,
+    "bytes": "68d4055d00",
+    "instruction": "push 0x5d05d4",
+    "strings": [
+      {
+        "address": 6096340,
+        "text": "杰克：那个简单，不过，如果你能帮我找到一把嵌了红宝石的铁榔头的话，我还帮你打通第十八层的路。"
+      }
+    ]
+  },
+  {
+    "rva": 24328227,
+    "address": 28522531,
+    "bytes": "e808519dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24328232,
+    "address": 28522536,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328237,
+    "address": 28522541,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328242,
+    "address": 28522546,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328247,
+    "address": 28522551,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328252,
+    "address": 28522556,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328257,
+    "address": 28522561,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24328262,
+    "address": 28522566,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24328267,
+    "address": 28522571,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24328269,
+    "address": 28522573,
+    "bytes": "6838065d00",
+    "instruction": "push 0x5d0638",
+    "strings": [
+      {
+        "address": 6096440,
+        "text": "勇士：嵌了红宝石的铁榔头？好吧，我帮你找找。"
+      }
+    ]
+  },
+  {
+    "rva": 24328274,
+    "address": 28522578,
+    "bytes": "e8d9509dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24328279,
+    "address": 28522583,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328284,
+    "address": 28522588,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328289,
+    "address": 28522593,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328294,
+    "address": 28522598,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328299,
+    "address": 28522603,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 24328304,
+    "address": 28522608,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 24328309,
+    "address": 28522613,
+    "bytes": "6880ed5c00",
+    "instruction": "push 0x5ced80",
+    "strings": [
+      {
+        "address": 6090112,
+        "text": "扑克32--魔塔"
+      }
+    ]
+  },
+  {
+    "rva": 24328314,
+    "address": 28522618,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 24328316,
+    "address": 28522620,
+    "bytes": "686c065d00",
+    "instruction": "push 0x5d066c",
+    "strings": [
+      {
+        "address": 6096492,
+        "text": "杰克：非常地感谢。一会我便会将第二层的门打开。如果你找到那个铁榔头的话，还是来这里找我。"
+      }
+    ]
+  },
+  {
+    "rva": 24328321,
+    "address": 28522625,
+    "bytes": "e8aa509dff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 24328326,
+    "address": 28522630,
+    "bytes": "a1b4d62402",
+    "instruction": "mov eax, dword ptr [0x224d6b4]",
+    "strings": []
+  },
+  {
+    "rva": 24328331,
+    "address": 28522635,
+    "bytes": "b901000000",
+    "instruction": "mov ecx, 1",
+    "strings": []
+  },
+  {
+    "rva": 24328336,
+    "address": 28522640,
+    "bytes": "8d9540ffffff",
+    "instruction": "lea edx, [ebp - 0xc0]",
+    "strings": []
+  },
+  {
+    "rva": 24328342,
+    "address": 28522646,
+    "bytes": "894858",
+    "instruction": "mov dword ptr [eax + 0x58], ecx",
+    "strings": []
+  },
+  {
+    "rva": 24328345,
+    "address": 28522649,
+    "bytes": "898d58ffffff",
+    "instruction": "mov dword ptr [ebp - 0xa8], ecx",
+    "strings": []
+  },
+  {
+    "rva": 24328351,
+    "address": 28522655,
+    "bytes": "8d8d50ffffff",
+    "instruction": "lea ecx, [ebp - 0xb0]",
+    "strings": []
+  },
+  {
+    "rva": 24328357,
+    "address": 28522661,
+    "bytes": "8d8530ffffff",
+    "instruction": "lea eax, [ebp - 0xd0]",
+    "strings": []
+  },
+  {
+    "rva": 24328363,
+    "address": 28522667,
+    "bytes": "51",
+    "instruction": "push ecx",
+    "strings": []
+  },
+  {
+    "rva": 24328364,
+    "address": 28522668,
+    "bytes": "52",
+    "instruction": "push edx",
+    "strings": []
+  },
+  {
+    "rva": 24328365,
+    "address": 28522669,
+    "bytes": "8d8d70feffff",
+    "instruction": "lea ecx, [ebp - 0x190]",
+    "strings": []
+  },
+  {
+    "rva": 24328371,
+    "address": 28522675,
+    "bytes": "50",
+    "instruction": "push eax",
+    "strings": []
+  },
+  {
+    "rva": 24328372,
+    "address": 28522676,
+    "bytes": "8d9580feffff",
+    "instruction": "lea edx, [ebp - 0x180]",
+    "strings": []
+  },
+  {
+    "rva": 24328378,
+    "address": 28522682,
+    "bytes": "51",
+    "instruction": "push ecx",
+    "strings": []
+  }
+]

@@ -1,0 +1,78 @@
+[
+  {
+    "rva": 29554323,
+    "address": 33748627,
+    "bytes": "ba24ac6e00",
+    "instruction": "mov edx, 0x6eac24",
+    "strings": [
+      {
+        "address": 7253028,
+        "text": "1103990099999900999999009900000099000000990000009900999999009999990099"
+      }
+    ]
+  },
+  {
+    "rva": 29554328,
+    "address": 33748632,
+    "bytes": "e933050000",
+    "instruction": "jmp 0x202fbd0",
+    "strings": []
+  },
+  {
+    "rva": 29554333,
+    "address": 33748637,
+    "bytes": "ba2caa6e00",
+    "instruction": "mov edx, 0x6eaa2c",
+    "strings": [
+      {
+        "address": 7252524,
+        "text": "0806999999999999019999990101990001019999000100000099010000000100999999010001999999999999990199999999"
+      }
+    ]
+  },
+  {
+    "rva": 29554338,
+    "address": 33748642,
+    "bytes": "e929050000",
+    "instruction": "jmp 0x202fbd0",
+    "strings": []
+  },
+  {
+    "rva": 29554343,
+    "address": 33748647,
+    "bytes": "baecae7500",
+    "instruction": "mov edx, 0x75aeec",
+    "strings": [
+      {
+        "address": 7712492,
+        "text": "0403000099999900009999990000"
+      }
+    ]
+  },
+  {
+    "rva": 29554348,
+    "address": 33748652,
+    "bytes": "e91f050000",
+    "instruction": "jmp 0x202fbd0",
+    "strings": []
+  },
+  {
+    "rva": 29554353,
+    "address": 33748657,
+    "bytes": "ba50a86e00",
+    "instruction": "mov edx, 0x6ea850",
+    "strings": [
+      {
+        "address": 7252048,
+        "text": "0706999999999900999999009900000099000000000099990000000000990000009900999999009999999999"
+      }
+    ]
+  },
+  {
+    "rva": 29554358,
+    "address": 33748662,
+    "bytes": "e915050000",
+    "instruction": "jmp 0x202fbd0",
+    "strings": []
+  }
+]

@@ -1,0 +1,1095 @@
+[
+  {
+    "rva": 21749904,
+    "address": 25944208,
+    "bytes": "88df",
+    "instruction": "mov bh, bl",
+    "strings": []
+  },
+  {
+    "rva": 21749906,
+    "address": 25944210,
+    "bytes": "8b01",
+    "instruction": "mov eax, dword ptr [ecx]",
+    "strings": []
+  },
+  {
+    "rva": 21749908,
+    "address": 25944212,
+    "bytes": "98",
+    "instruction": "cwde ",
+    "strings": []
+  },
+  {
+    "rva": 21749909,
+    "address": 25944213,
+    "bytes": "df8b01a8df8b",
+    "instruction": "fisttp word ptr [ebx - 0x742057ff]",
+    "strings": []
+  },
+  {
+    "rva": 21749915,
+    "address": 25944219,
+    "bytes": "01b8df8b01c8",
+    "instruction": "add dword ptr [eax - 0x37fe7421], edi",
+    "strings": []
+  },
+  {
+    "rva": 21749921,
+    "address": 25944225,
+    "bytes": "df8b01d8df8b",
+    "instruction": "fisttp word ptr [ebx - 0x742027ff]",
+    "strings": []
+  },
+  {
+    "rva": 21749927,
+    "address": 25944231,
+    "bytes": "01e8",
+    "instruction": "add eax, ebp",
+    "strings": []
+  },
+  {
+    "rva": 21749929,
+    "address": 25944233,
+    "bytes": "df8b01f8df8b",
+    "instruction": "fisttp word ptr [ebx - 0x742007ff]",
+    "strings": []
+  },
+  {
+    "rva": 21749935,
+    "address": 25944239,
+    "bytes": "0108",
+    "instruction": "add dword ptr [eax], ecx",
+    "strings": []
+  },
+  {
+    "rva": 21749937,
+    "address": 25944241,
+    "bytes": "e08b",
+    "instruction": "loopne 0x18be03e",
+    "strings": []
+  },
+  {
+    "rva": 21749939,
+    "address": 25944243,
+    "bytes": "0118",
+    "instruction": "add dword ptr [eax], ebx",
+    "strings": []
+  },
+  {
+    "rva": 21749941,
+    "address": 25944245,
+    "bytes": "e08b",
+    "instruction": "loopne 0x18be042",
+    "strings": []
+  },
+  {
+    "rva": 21749943,
+    "address": 25944247,
+    "bytes": "0128",
+    "instruction": "add dword ptr [eax], ebp",
+    "strings": []
+  },
+  {
+    "rva": 21749945,
+    "address": 25944249,
+    "bytes": "e08b",
+    "instruction": "loopne 0x18be046",
+    "strings": []
+  },
+  {
+    "rva": 21749947,
+    "address": 25944251,
+    "bytes": "0138",
+    "instruction": "add dword ptr [eax], edi",
+    "strings": []
+  },
+  {
+    "rva": 21749949,
+    "address": 25944253,
+    "bytes": "e08b",
+    "instruction": "loopne 0x18be04a",
+    "strings": []
+  },
+  {
+    "rva": 21749951,
+    "address": 25944255,
+    "bytes": "0148e0",
+    "instruction": "add dword ptr [eax - 0x20], ecx",
+    "strings": []
+  },
+  {
+    "rva": 21749954,
+    "address": 25944258,
+    "bytes": "8b01",
+    "instruction": "mov eax, dword ptr [ecx]",
+    "strings": []
+  },
+  {
+    "rva": 21749956,
+    "address": 25944260,
+    "bytes": "58",
+    "instruction": "pop eax",
+    "strings": []
+  },
+  {
+    "rva": 21749957,
+    "address": 25944261,
+    "bytes": "e08b",
+    "instruction": "loopne 0x18be052",
+    "strings": []
+  },
+  {
+    "rva": 21749959,
+    "address": 25944263,
+    "bytes": "0168e0",
+    "instruction": "add dword ptr [eax - 0x20], ebp",
+    "strings": []
+  },
+  {
+    "rva": 21749962,
+    "address": 25944266,
+    "bytes": "8b01",
+    "instruction": "mov eax, dword ptr [ecx]",
+    "strings": []
+  },
+  {
+    "rva": 21749964,
+    "address": 25944268,
+    "bytes": "78e0",
+    "instruction": "js 0x18be0ae",
+    "strings": []
+  },
+  {
+    "rva": 21749966,
+    "address": 25944270,
+    "bytes": "8b01",
+    "instruction": "mov eax, dword ptr [ecx]",
+    "strings": []
+  },
+  {
+    "rva": 21749968,
+    "address": 25944272,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21749973,
+    "address": 25944277,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21749978,
+    "address": 25944282,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21749983,
+    "address": 25944287,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21749988,
+    "address": 25944292,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21749993,
+    "address": 25944297,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 21749998,
+    "address": 25944302,
+    "bytes": "68c0e94c00",
+    "instruction": "push 0x4ce9c0",
+    "strings": [
+      {
+        "address": 5040576,
+        "text": "扑克32--独粒钻石"
+      }
+    ]
+  },
+  {
+    "rva": 21750003,
+    "address": 25944307,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 21750005,
+    "address": 25944309,
+    "bytes": "6890e94c00",
+    "instruction": "push 0x4ce990",
+    "strings": [
+      {
+        "address": 5040528,
+        "text": "独粒钻石棋类似于跳棋，但不能走步，只能跳。"
+      }
+    ]
+  },
+  {
+    "rva": 21750010,
+    "address": 25944314,
+    "bytes": "e831a8c4ff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 21750015,
+    "address": 25944319,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750020,
+    "address": 25944324,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750025,
+    "address": 25944329,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750030,
+    "address": 25944334,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750035,
+    "address": 25944339,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750040,
+    "address": 25944344,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 21750045,
+    "address": 25944349,
+    "bytes": "68c0e94c00",
+    "instruction": "push 0x4ce9c0",
+    "strings": [
+      {
+        "address": 5040576,
+        "text": "扑克32--独粒钻石"
+      }
+    ]
+  },
+  {
+    "rva": 21750050,
+    "address": 25944354,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 21750052,
+    "address": 25944356,
+    "bytes": "68dce94c00",
+    "instruction": "push 0x4ce9dc",
+    "strings": [
+      {
+        "address": 5040604,
+        "text": "走棋时棋子跳过相邻的棋子到空位上，并把跳过的棋子吃掉。"
+      }
+    ]
+  },
+  {
+    "rva": 21750057,
+    "address": 25944361,
+    "bytes": "e802a8c4ff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 21750062,
+    "address": 25944366,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750067,
+    "address": 25944371,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750072,
+    "address": 25944376,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750077,
+    "address": 25944381,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750082,
+    "address": 25944386,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750087,
+    "address": 25944391,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 21750092,
+    "address": 25944396,
+    "bytes": "68c0e94c00",
+    "instruction": "push 0x4ce9c0",
+    "strings": [
+      {
+        "address": 5040576,
+        "text": "扑克32--独粒钻石"
+      }
+    ]
+  },
+  {
+    "rva": 21750097,
+    "address": 25944401,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 21750099,
+    "address": 25944403,
+    "bytes": "6818ea4c00",
+    "instruction": "push 0x4cea18",
+    "strings": [
+      {
+        "address": 5040664,
+        "text": "棋子可以沿棋盘的格线横跳、纵跳，但不能斜跳。"
+      }
+    ]
+  },
+  {
+    "rva": 21750104,
+    "address": 25944408,
+    "bytes": "e8d3a7c4ff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 21750109,
+    "address": 25944413,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750114,
+    "address": 25944418,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750119,
+    "address": 25944423,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750124,
+    "address": 25944428,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750129,
+    "address": 25944433,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750134,
+    "address": 25944438,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 21750139,
+    "address": 25944443,
+    "bytes": "68c0e94c00",
+    "instruction": "push 0x4ce9c0",
+    "strings": [
+      {
+        "address": 5040576,
+        "text": "扑克32--独粒钻石"
+      }
+    ]
+  },
+  {
+    "rva": 21750144,
+    "address": 25944448,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 21750146,
+    "address": 25944450,
+    "bytes": "68c4e74c00",
+    "instruction": "push 0x4ce7c4",
+    "strings": [
+      {
+        "address": 5040068,
+        "text": "棋子可以连续跳，移动一枚棋子，不论连续跳多少次，都算跳一步。"
+      }
+    ]
+  },
+  {
+    "rva": 21750151,
+    "address": 25944455,
+    "bytes": "e8a4a7c4ff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 21750156,
+    "address": 25944460,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750161,
+    "address": 25944465,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750166,
+    "address": 25944470,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750171,
+    "address": 25944475,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750176,
+    "address": 25944480,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750181,
+    "address": 25944485,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 21750186,
+    "address": 25944490,
+    "bytes": "68c0e94c00",
+    "instruction": "push 0x4ce9c0",
+    "strings": [
+      {
+        "address": 5040576,
+        "text": "扑克32--独粒钻石"
+      }
+    ]
+  },
+  {
+    "rva": 21750191,
+    "address": 25944495,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 21750193,
+    "address": 25944497,
+    "bytes": "6808e84c00",
+    "instruction": "push 0x4ce808",
+    "strings": [
+      {
+        "address": 5040136,
+        "text": "独粒钻石棋要求玩到最后剩的棋子越少越好，最好是剩下一颗棋子并且在棋盘的中心。"
+      }
+    ]
+  },
+  {
+    "rva": 21750198,
+    "address": 25944502,
+    "bytes": "e875a7c4ff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 21750203,
+    "address": 25944507,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750208,
+    "address": 25944512,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750213,
+    "address": 25944517,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750218,
+    "address": 25944522,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750223,
+    "address": 25944527,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750228,
+    "address": 25944532,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 21750233,
+    "address": 25944537,
+    "bytes": "68c0e94c00",
+    "instruction": "push 0x4ce9c0",
+    "strings": [
+      {
+        "address": 5040576,
+        "text": "扑克32--独粒钻石"
+      }
+    ]
+  },
+  {
+    "rva": 21750238,
+    "address": 25944542,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 21750240,
+    "address": 25944544,
+    "bytes": "6860ec4c00",
+    "instruction": "push 0x4cec60",
+    "strings": [
+      {
+        "address": 5041248,
+        "text": "评分标准：多于5颗棋子－不及格；剩5颗棋子－及格；剩4颗棋子－良好；剩3颗棋子－优秀；剩2颗棋子－高手；剩1颗棋子－大师；剩1颗棋子位于棋盘中心－超级大师；剩0颗棋子－修改高手；"
+      }
+    ]
+  },
+  {
+    "rva": 21750245,
+    "address": 25944549,
+    "bytes": "e846a7c4ff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 21750250,
+    "address": 25944554,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750255,
+    "address": 25944559,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750260,
+    "address": 25944564,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750265,
+    "address": 25944569,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750270,
+    "address": 25944574,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750275,
+    "address": 25944579,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 21750280,
+    "address": 25944584,
+    "bytes": "68c0e94c00",
+    "instruction": "push 0x4ce9c0",
+    "strings": [
+      {
+        "address": 5040576,
+        "text": "扑克32--独粒钻石"
+      }
+    ]
+  },
+  {
+    "rva": 21750285,
+    "address": 25944589,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 21750287,
+    "address": 25944591,
+    "bytes": "6818ed4c00",
+    "instruction": "push 0x4ced18",
+    "strings": [
+      {
+        "address": 5041432,
+        "text": "如果您不会玩，请看一下演示，如果您有比演示更好的走法，请告诉我。"
+      }
+    ]
+  },
+  {
+    "rva": 21750292,
+    "address": 25944596,
+    "bytes": "e817a7c4ff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 21750297,
+    "address": 25944601,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750302,
+    "address": 25944606,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750307,
+    "address": 25944611,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750312,
+    "address": 25944616,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750317,
+    "address": 25944621,
+    "bytes": "6894354200",
+    "instruction": "push 0x423594",
+    "strings": []
+  },
+  {
+    "rva": 21750322,
+    "address": 25944626,
+    "bytes": "68ac354200",
+    "instruction": "push 0x4235ac",
+    "strings": [
+      {
+        "address": 4339116,
+        "text": "0"
+      }
+    ]
+  },
+  {
+    "rva": 21750327,
+    "address": 25944631,
+    "bytes": "68c0e94c00",
+    "instruction": "push 0x4ce9c0",
+    "strings": [
+      {
+        "address": 5040576,
+        "text": "扑克32--独粒钻石"
+      }
+    ]
+  },
+  {
+    "rva": 21750332,
+    "address": 25944636,
+    "bytes": "6a00",
+    "instruction": "push 0",
+    "strings": []
+  },
+  {
+    "rva": 21750334,
+    "address": 25944638,
+    "bytes": "6860ed4c00",
+    "instruction": "push 0x4ced60",
+    "strings": [
+      {
+        "address": 5041504,
+        "text": "如果您发现走错了，请按<空格键>返回上一步。"
+      }
+    ]
+  },
+  {
+    "rva": 21750339,
+    "address": 25944643,
+    "bytes": "e8e8a6c4ff",
+    "instruction": "call 0x1508930",
+    "strings": []
+  },
+  {
+    "rva": 21750344,
+    "address": 25944648,
+    "bytes": "c3",
+    "instruction": "ret ",
+    "strings": []
+  },
+  {
+    "rva": 21750345,
+    "address": 25944649,
+    "bytes": "90",
+    "instruction": "nop ",
+    "strings": []
+  },
+  {
+    "rva": 21750346,
+    "address": 25944650,
+    "bytes": "90",
+    "instruction": "nop ",
+    "strings": []
+  },
+  {
+    "rva": 21750347,
+    "address": 25944651,
+    "bytes": "90",
+    "instruction": "nop ",
+    "strings": []
+  },
+  {
+    "rva": 21750348,
+    "address": 25944652,
+    "bytes": "90",
+    "instruction": "nop ",
+    "strings": []
+  },
+  {
+    "rva": 21750349,
+    "address": 25944653,
+    "bytes": "90",
+    "instruction": "nop ",
+    "strings": []
+  },
+  {
+    "rva": 21750350,
+    "address": 25944654,
+    "bytes": "90",
+    "instruction": "nop ",
+    "strings": []
+  },
+  {
+    "rva": 21750351,
+    "address": 25944655,
+    "bytes": "90",
+    "instruction": "nop ",
+    "strings": []
+  },
+  {
+    "rva": 21750352,
+    "address": 25944656,
+    "bytes": "55",
+    "instruction": "push ebp",
+    "strings": []
+  },
+  {
+    "rva": 21750353,
+    "address": 25944657,
+    "bytes": "8bec",
+    "instruction": "mov ebp, esp",
+    "strings": []
+  },
+  {
+    "rva": 21750355,
+    "address": 25944659,
+    "bytes": "83ec08",
+    "instruction": "sub esp, 8",
+    "strings": []
+  },
+  {
+    "rva": 21750358,
+    "address": 25944662,
+    "bytes": "68f67b4100",
+    "instruction": "push 0x417bf6",
+    "strings": []
+  },
+  {
+    "rva": 21750363,
+    "address": 25944667,
+    "bytes": "64a100000000",
+    "instruction": "mov eax, dword ptr fs:[0]",
+    "strings": []
+  },
+  {
+    "rva": 21750369,
+    "address": 25944673,
+    "bytes": "50",
+    "instruction": "push eax",
+    "strings": []
+  },
+  {
+    "rva": 21750370,
+    "address": 25944674,
+    "bytes": "64892500000000",
+    "instruction": "mov dword ptr fs:[0], esp",
+    "strings": []
+  },
+  {
+    "rva": 21750377,
+    "address": 25944681,
+    "bytes": "83ec1c",
+    "instruction": "sub esp, 0x1c",
+    "strings": []
+  },
+  {
+    "rva": 21750380,
+    "address": 25944684,
+    "bytes": "a110b02402",
+    "instruction": "mov eax, dword ptr [0x224b010]",
+    "strings": []
+  },
+  {
+    "rva": 21750385,
+    "address": 25944689,
+    "bytes": "53",
+    "instruction": "push ebx",
+    "strings": []
+  },
+  {
+    "rva": 21750386,
+    "address": 25944690,
+    "bytes": "56",
+    "instruction": "push esi",
+    "strings": []
+  },
+  {
+    "rva": 21750387,
+    "address": 25944691,
+    "bytes": "57",
+    "instruction": "push edi",
+    "strings": []
+  },
+  {
+    "rva": 21750388,
+    "address": 25944692,
+    "bytes": "33ff",
+    "instruction": "xor edi, edi",
+    "strings": []
+  },
+  {
+    "rva": 21750390,
+    "address": 25944694,
+    "bytes": "8965f8",
+    "instruction": "mov dword ptr [ebp - 8], esp",
+    "strings": []
+  },
+  {
+    "rva": 21750393,
+    "address": 25944697,
+    "bytes": "3bc7",
+    "instruction": "cmp eax, edi",
+    "strings": []
+  },
+  {
+    "rva": 21750395,
+    "address": 25944699,
+    "bytes": "c745fc60a14000",
+    "instruction": "mov dword ptr [ebp - 4], 0x40a160",
+    "strings": []
+  },
+  {
+    "rva": 21750402,
+    "address": 25944706,
+    "bytes": "897dec",
+    "instruction": "mov dword ptr [ebp - 0x14], edi",
+    "strings": []
+  },
+  {
+    "rva": 21750405,
+    "address": 25944709,
+    "bytes": "897de8",
+    "instruction": "mov dword ptr [ebp - 0x18], edi",
+    "strings": []
+  },
+  {
+    "rva": 21750408,
+    "address": 25944712,
+    "bytes": "7515",
+    "instruction": "jne 0x18be29f",
+    "strings": []
+  },
+  {
+    "rva": 21750410,
+    "address": 25944714,
+    "bytes": "6810b02402",
+    "instruction": "push 0x224b010",
+    "strings": []
+  },
+  {
+    "rva": 21750415,
+    "address": 25944719,
+    "bytes": "6854e24100",
+    "instruction": "push 0x41e254",
+    "strings": []
+  },
+  {
+    "rva": 21750420,
+    "address": 25944724,
+    "bytes": "ff15f0652502",
+    "instruction": "call dword ptr [0x22565f0]",
+    "strings": []
+  },
+  {
+    "rva": 21750426,
+    "address": 25944730,
+    "bytes": "a110b02402",
+    "instruction": "mov eax, dword ptr [0x224b010]",
+    "strings": []
+  },
+  {
+    "rva": 21750431,
+    "address": 25944735,
+    "bytes": "8b08",
+    "instruction": "mov ecx, dword ptr [eax]",
+    "strings": []
+  },
+  {
+    "rva": 21750433,
+    "address": 25944737,
+    "bytes": "50",
+    "instruction": "push eax",
+    "strings": []
+  },
+  {
+    "rva": 21750434,
+    "address": 25944738,
+    "bytes": "ff9118030000",
+    "instruction": "call dword ptr [ecx + 0x318]",
+    "strings": []
+  },
+  {
+    "rva": 21750440,
+    "address": 25944744,
+    "bytes": "8b1d88642502",
+    "instruction": "mov ebx, dword ptr [0x2256488]",
+    "strings": []
+  }
+]

@@ -225,36 +225,51 @@
         if (!payload) { status('没有找到原生棋盘数据'); return; }
         if (!Array.isArray(state.board) || state.board.length !== 280) state.board = payload.value.split('');
         var selected = Number.isInteger(state.selected) ? state.selected : -1;
+        state.ended = state.ended === true;
         function occupied(index) { return state.board[index] !== '0' && state.board[index] !== '6'; }
         function cell(row, col) { return row < 0 || row >= 14 || col < 0 || col >= 20 ? -1 : row * 20 + col; }
+        function hasLegalMove() {
+            var directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+            for (var index = 0; index < state.board.length; index++) {
+                if (!occupied(index)) continue;
+                var row = Math.floor(index / 20), col = index % 20;
+                for (var d = 0; d < directions.length; d++) {
+                    var middle = cell(row + directions[d][0], col + directions[d][1]);
+                    var target = cell(row + directions[d][0] * 2, col + directions[d][1] * 2);
+                    if (middle >= 0 && target >= 0 && occupied(middle) && state.board[target] === '6') return true;
+                }
+            }
+            return false;
+        }
         function select(index) {
-            if (state.board[index] === '0') return;
+            if (state.ended || state.board[index] === '0') return;
             if (selected < 0) { if (occupied(index)) { selected = index; state.selected = index; redraw(); } return; }
             var sr = Math.floor(selected / 20), sc = selected % 20, tr = Math.floor(index / 20), tc = index % 20;
             var dr = tr - sr, dc = tc - sc;
             var middle = cell(sr + dr / 2, sc + dc / 2), distance = Math.abs(dr) + Math.abs(dc);
             if (distance === 2 && (dr === 0 || dc === 0) && occupied(selected) && middle >= 0 && occupied(middle) && state.board[index] === '6') {
                 state.history = Array.isArray(state.history) ? state.history : [];
-                state.history.push({ board: state.board.slice(), moves: state.moves || 0 });
-                state.board[selected] = '6'; state.board[middle] = '6'; state.board[index] = '1'; state.moves = (state.moves || 0) + 1;
-                selected = -1; state.selected = -1; redraw(); return;
+                state.history.push({ board: state.board.slice(), moves: state.moves || 0, ended: state.ended });
+                var sourceCode = state.board[selected];
+                state.board[selected] = '6'; state.board[middle] = '6'; state.board[index] = sourceCode; state.moves = (state.moves || 0) + 1;
+                selected = -1; state.selected = -1; state.ended = !hasLegalMove(); redraw(); return;
             }
             selected = occupied(index) ? index : -1; state.selected = selected; redraw();
         }
-        area.appendChild(btn('上一关', function () { state.level = Math.max(0, state.level - 1); state.board = null; state.history = []; state.selected = -1; redraw(); }));
-        area.appendChild(btn('下一关', function () { state.level = Math.min(state.payloads.length - 1, state.level + 1); state.board = null; state.history = []; state.selected = -1; redraw(); }));
-        area.appendChild(btn('重置本关', function () { state.board = payload.value.split(''); state.history = []; state.selected = -1; state.moves = 0; redraw(); }));
+        area.appendChild(btn('上一关', function () { state.level = Math.max(0, state.level - 1); state.board = null; state.history = []; state.selected = -1; state.ended = false; state.moves = 0; redraw(); }));
+        area.appendChild(btn('下一关', function () { state.level = Math.min(state.payloads.length - 1, state.level + 1); state.board = null; state.history = []; state.selected = -1; state.ended = false; state.moves = 0; redraw(); }));
+        area.appendChild(btn('重置本关', function () { state.board = payload.value.split(''); state.history = []; state.selected = -1; state.ended = false; state.moves = 0; redraw(); }));
         var undo = btn('撤销一步', function () {
             var previous = Array.isArray(state.history) && state.history.pop();
             if (!previous) return;
-            state.board = previous.board; state.moves = previous.moves; state.selected = -1; redraw();
+            state.board = previous.board; state.moves = previous.moves; state.ended = previous.ended === true; state.selected = -1; redraw();
         });
         undo.disabled = !Array.isArray(state.history) || state.history.length === 0;
         area.appendChild(undo);
         var label = document.createElement('span'); label.textContent = '第 ' + (state.level + 1) + ' / ' + state.payloads.length + ' 关'; label.style.marginLeft = '8px'; area.appendChild(label);
         var wrap = document.createElement('div'); wrap.className = 'native-board-wrap'; var grid = document.createElement('div'); grid.className = 'native-grid';
         state.board.forEach(function (code, index) { var b = btn(code === '0' ? '' : code === '6' ? '' : '●', function () { select(index); }); b.className = 'native-cell' + (selected === index ? ' native-selected' : ''); b.dataset.code = code; b.setAttribute('aria-label', code === '0' ? '空白区域' : code === '6' ? '空位' : '棋子'); b.disabled = code === '0'; grid.appendChild(b); }); wrap.appendChild(grid); area.appendChild(wrap);
-        var pieces = state.board.filter(occupied).length; status(pieces <= 1 ? '本关完成；剩余棋子：' + pieces : '逐格读取原生棋盘；剩余棋子：' + pieces + '，移动：' + (state.moves || 0));
+        var pieces = state.board.filter(occupied).length; status(state.ended ? '本局结束；剩余棋子：' + pieces + '。评分：' + (pieces > 5 ? '不及格' : pieces === 5 ? '及格' : pieces === 4 ? '良好' : pieces === 3 ? '优秀' : pieces === 2 ? '高手' : pieces === 1 ? '大师' : '修改高手') : '逐格读取原生棋盘；剩余棋子：' + pieces + '，移动：' + (state.moves || 0));
     }
     function cube(area, status, reset, redraw, state) {
         if (!state || !state.cells) state = { cells: Array(9).fill(false), moves: 0 };
