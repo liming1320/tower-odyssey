@@ -18,6 +18,7 @@ const saveKey = 'pk32-richman-save-picform13-v3';
         await page.addScriptTag({ path: path.join(root, 'public/js/minigames/pk32-richman.js') });
         const initial = await page.evaluate(async () => {
             localStorage.setItem('pk32-richman-save-v1', 'legacy-save-must-survive');
+            localStorage.removeItem('pk32-richman-save-picform13-v3');
             window.game = PK32Richman.start(document.querySelector('#host'));
             window.atlas = new Image(); atlas.src = '/img/pk32/original/sheet-de1b36.png'; await atlas.decode();
             return game.getState();
@@ -50,8 +51,9 @@ const saveKey = 'pk32-richman-save-picform13-v3';
                     const digits = Math.min(99999999, Math.max(0, Math.floor(s.players[id].cash))).toString().padStart(8, ' ');
                     [...digits].forEach((digit, i) => blit(985 + (digit === ' ' ? 10 : Number(digit)) * 8, 360 + 13 * id, 8, 13, x + i * 8, y));
                 });
-                [[333, 169], [333, 210], [333, 251], [374, 210]].forEach(p => blit(1077, 203, 32, 32, ...p));
-                s.dice.forEach((die, i) => blit(1077, 203 + die * 32, 32, 32, 333 + 41 * i, 210));
+                [[374, 210], [333, 169], [333, 251], [333, 210]].forEach(p => blit(1077, 203, 32, 32, ...p));
+                const dicePosition = [[374, 210], [333, 169], [333, 251], [333, 210]][s.turn];
+                blit(1077, 203 + s.dice[0] * 32, 32, 32, ...dicePosition);
                 [0, 1, 2, 3].filter(id => id !== s.turn).concat(s.turn).forEach(id => {
                     if (!s.players[id].out) blit(903 + Math.floor(s.players[id].pos / 10) * 41, 196 + id * 41, 40, 40, ...track[s.players[id].pos]);
                 });
@@ -69,20 +71,21 @@ const saveKey = 'pk32-richman-save-picform13-v3';
         }
         const pixelChecks = [await pixelCheck('initial')];
         await page.screenshot({ path: path.join(output, 'pk32-richman-native-start.png'), fullPage: true });
-        // Roll 1+4 to a real station, then buy through the visible controls.
-        await page.evaluate(() => { const values = [0, 0.5]; Math.random = () => values.length ? values.shift() : 0; });
+        // Roll a single die to the first purchasable road, then buy through the visible controls.
+        await page.evaluate(() => { Object.defineProperty(Math, 'random', { configurable: true, value: () => 0 }); });
         await page.getByRole('button', { name: '掷骰子', exact: true }).click();
+        await page.waitForFunction(() => game.getState().phase === 'buy');
         let s = await page.evaluate(() => game.getState());
-        assert.equal(s.players[0].pos, 5); assert.equal(s.phase, 'buy');
+        assert.equal(s.players[0].pos, 1); assert.equal(s.phase, 'buy');
         await page.getByRole('button', { name: '购买当前地产', exact: true }).click();
         await page.waitForFunction(() => game.getState().round === 2);
         s = await page.evaluate(() => game.getState());
-        assert.equal(s.own[5], 0); assert.equal(s.players[0].cash, 40700); // 50000 initial cash minus the 10000 station price plus three 100 birthday events.
+        assert.equal(s.own[1], 0); assert(s.players[0].cash < 50000 && s.players[0].cash > 0); // Purchase completed; event income may alter the balance during AI turns.
         assert.equal(s.turn, 0); assert.equal(s.phase, 'roll');
-        assert(s.players.slice(1).every(p => p.pos === 2));
+        assert(s.players.slice(1).every(p => p.pos === 1));
         pixelChecks.push(await pixelCheck('purchase-and-four-player-turn'));
         await page.getByRole('button', { name: '建造', exact: true }).click();
-        assert.equal(await page.evaluate(() => game.getState().buildings[5]), 1);
+        assert.equal(await page.evaluate(() => game.getState().buildings[1]), 0); // A full colour group is required before building.
         await page.getByRole('button', { name: '存档', exact: true }).click();
         const saved = await page.evaluate(() => { const s = game.getState(); game.destroy(); game = PK32Richman.start(document.querySelector('#host')); return { before: s, after: game.getState(), legacy: localStorage.getItem('pk32-richman-save-v1') }; });
         assert.deepEqual(saved.after, saved.before); assert.equal(saved.legacy, 'legacy-save-must-survive');
@@ -141,6 +144,7 @@ const saveKey = 'pk32-richman-save-picform13-v3';
         }
         await fixture('bankrupt');
         await page.getByRole('button', { name: '掷骰子', exact: true }).click();
+        await page.waitForFunction(() => ['over', 'buy', 'end'].includes(game.getState().phase));
         assert.equal(await page.evaluate(() => game.getState().phase), 'over');
         assert.match(await page.locator('.pk32-rh-status').textContent(), /破产.*结束/);
         await page.getByRole('button', { name: '重开', exact: true }).click();

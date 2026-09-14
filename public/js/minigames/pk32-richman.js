@@ -120,10 +120,10 @@
                 var digits = Math.min(99999999, Math.max(0, Math.floor(player.cash))).toString().padStart(8, ' ');
                 for (var n = 0; n < 8; n++) copy(985 + (digits[n] === ' ' ? 10 : Number(digits[n])) * 8, 360 + id * 13, 8, 13, x + n * 8, y);
             });
-            var avatarPositions = [[333, 169], [333, 210], [333, 251], [374, 210]];
+            // The native portrait layout is computer A, computer C, computer B, player;
+            // player ids remain green, yellow, purple, red in the game state.
+            var avatarPositions = [[374, 210], [333, 169], [333, 251], [333, 210]];
             avatarPositions.forEach(function (p) { copy(1077, 203, 32, 32, p[0], p[1]); });
-            var dicePosition = avatarPositions[s.turn] || avatarPositions[0];
-            copy(1077, 203 + s.dice[0] * 32, 32, 32, dicePosition[0], dicePosition[1]);
             // Native RVA 0x1580696: four directional columns and four character rows.
             var order = s.players.map(function (_, id) { return id; }).filter(function (id) { return id !== s.turn; }).concat(s.turn);
             order.forEach(function (id) {
@@ -131,6 +131,12 @@
                 var p = position(player.pos);
                 copy(903 + Math.floor(player.pos / 10) * 41, 196 + id * 41, 40, 40, p.x, p.y);
             });
+            // Draw the active player's die last so the moving piece cannot cover it.
+            var activePlayer = Math.max(0, Math.min(avatarPositions.length - 1, Number(s.turn) || 0));
+            var dicePosition = avatarPositions[activePlayer];
+            copy(1077, 203 + s.dice[0] * 32, 32, 32, dicePosition[0], dicePosition[1]);
+            canvas.dataset.dicePlayer = String(activePlayer);
+            canvas.dataset.dicePosition = dicePosition[0] + ',' + dicePosition[1];
             canvas.dataset.ready = 'true';
         }
         function button(label, fn) { var b = el('button', '', label); b.type = 'button'; b.onclick = fn; return b; }

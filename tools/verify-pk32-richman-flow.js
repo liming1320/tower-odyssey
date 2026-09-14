@@ -61,7 +61,7 @@ function check(name, passed, detail) {
           const image = new Image(); image.src = '/img/pk32/original/sheet-de1b36.png'; await image.decode();
           const expected = document.createElement('canvas'); expected.width = 32; expected.height = 32;
           const ctx = expected.getContext('2d'); ctx.drawImage(image, 1077, 203 + state.dice[0] * 32, 32, 32, 0, 0, 32, 32);
-          const [x, y] = [[333, 169], [333, 210], [333, 251], [374, 210]][turn];
+          const [x, y] = [[374, 210], [333, 169], [333, 251], [333, 210]][turn];
           const actualPixels = canvas.getContext('2d').getImageData(x, y, 32, 32).data;
           const expectedPixels = ctx.getImageData(0, 0, 32, 32).data;
           return { turn: state.turn, matches: actualPixels.every((value, index) => value === expectedPixels[index]) };
