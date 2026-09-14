@@ -1,4 +1,4 @@
-# 依赖
+﻿# 依赖
 node_modules/
 output/pk32-reference/python-deps/
 
@@ -52,3 +52,5 @@ data/tavern-env.json
 
 # 部署日志
 deploy/logs/
+# Windows reserved-device-name junk file that blocks 'git add -A'
+nul

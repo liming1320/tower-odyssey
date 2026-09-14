@@ -81,7 +81,7 @@
         }));
     }
 
-    const CATALOG = records();
+    let CATALOG = records();
     function applyNativeCatalog(data) {
         const rows = data && Array.isArray(data.records) ? data.records : [];
         CATALOG.forEach(record => {
@@ -94,6 +94,18 @@
                 record.evidence = native.help[0];
             }
         });
+    }
+    // 按后台保存的顺序重排目录（顺序以 id 数组给定；未出现的排末尾）
+    function applyOrder(ids) {
+        if (!Array.isArray(ids) || !ids.length) return;
+        const rank = new Map();
+        ids.forEach((id, i) => rank.set(id, i));
+        CATALOG.sort((a, b) => {
+            const ra = rank.has(a.id) ? rank.get(a.id) : 1e9;
+            const rb = rank.has(b.id) ? rank.get(b.id) : 1e9;
+            return ra - rb;
+        });
+        CATALOG.forEach((rec, i) => { rec.index = i + 1; });
     }
     const api = {
         CATALOG,
@@ -238,6 +250,17 @@
                 if (!activeSession) render();
                 if (window.__MG_TEST) window.__pk32Dbg = { catalog: all, records, groupOf };
             }).catch(() => {});
+            // 后台 PK32 排序：拉到顺序后重排目录，玩家端展示顺序与后台一致
+            if (typeof fetch === 'function') {
+                fetch('/api/pk32/order').then(r => r.ok ? r.json() : null).then(d => {
+                    if (!d || !alive) return;
+                    const ids = (d.full || d.order || []).slice();
+                    if (!ids.length) return;
+                    applyOrder(ids);
+                    if (!activeSession) render();
+                    if (window.__MG_TEST) window.__pk32Dbg = { catalog: all, records, groupOf };
+                }).catch(() => {});
+            }
             return { stop() { alive = false; stopActiveSession(); } };
         },
     };

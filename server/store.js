@@ -24,6 +24,8 @@ const META_KEYS = [
     '_meta', 'tokens',
     // 小游戏：积分排行榜（{gameId: [entry]}）+ 后台排序（string[]）
     'minigameScores', 'minigameOrder',
+    // PK32 原版迁移馆：后台排序（string[]），与小游戏排序同级持久化
+    'pk32Order',
     // 模拟器 ROM 元数据（bin 文件在磁盘 data/roms/，元数据必须持久化，
     // 否则 MySQL 模式下重启即丢——线上 80+ ROM 列表清空事故的根因）
     'roms',

@@ -44,6 +44,8 @@ const AdminAPI = (() => {
         giftDelete: (code) => call('POST', '/api/admin/gift/delete', { code }),
         minigameOrder: () => call('GET', '/api/admin/minigame/order'),
         minigameOrderSave: (order) => call('POST', '/api/admin/minigame/order', { order }),
+        pk32Order: () => call('GET', '/api/admin/pk32/order'),
+        pk32OrderSave: (order) => call('POST', '/api/admin/pk32/order', { order }),
         // ROM 库（列表/删除走通用 call；上传是原始二进制，单独实现）
         romList: () => call('GET', '/api/roms'),
         romDelete: (id) => call('POST', '/api/roms/delete', { id }),
@@ -183,6 +185,7 @@ const AdminApp = {
             sms: () => this.renderSms(body),
             gift: () => this.renderGift(body),
             order: () => this.renderOrder(body),
+            pk32order: () => this.renderPk32Order(body),
             roms: () => this.renderRoms(body),
             tavern: () => this.renderTavern(body),
         }[this.tab];
@@ -849,24 +852,25 @@ const AdminApp = {
         return (await this._localGameList()).map(o => o.id);
     },
 
-    async renderOrder(body) {
+    // 通用排序页：小游戏排序 / PK32 排序 共用同一套交互（搜索、拖动、序号、上下移、置顶置底、保存、恢复默认）
+    async _renderOrderPage(body, cfg) {
         body.innerHTML = `<div class="card">加载中...</div>`;
         let r = null;
-        try { r = await AdminAPI.minigameOrder(); } catch (e) { r = null; }
-        if (!r) { try { r = await AdminAPI.api('/api/minigame/order', 'GET'); } catch (e) { r = null; } }
+        try { r = await cfg.getOrder(); } catch (e) { r = null; }
+        if (!r) { try { r = await AdminAPI.api(cfg.publicGet, 'GET'); } catch (e) { r = null; } }
         // 优先 r.full（后端把「已保存顺序 + 未排序的新游戏」拼好的完整序列），
         // 避免 r.order 是局部子集时被截短。r.all / r.order 兜底。
         let list = ((r && (r.full || r.all || r.order)) || []).slice();
-        // 关键：服务端进程可能是旧的（git pull 后没重启 → 清单停在 103 个），
-        // 这里用前端 minigames.js 解析结果补齐，保证新增游戏一定出现在排序页。
-        const localList = await this._localGameList();
+        // 关键：服务端进程可能是旧的（git pull 后没重启 → 清单停在旧数量），
+        // 这里用前端清单文件解析结果补齐，保证新增项一定出现在排序页。
+        const localList = await cfg.localList();
         const missing = [];
         for (const o of localList) {
             if (list.indexOf(o.id) < 0) { list.push(o.id); missing.push(o.id); }
         }
         if (!list.length) list = localList.map(o => o.id);
         if (!list.length) {
-            body.innerHTML = `<div class="card" style="color:#ff7a8b">取不到小游戏清单：接口没有返回数据，且无法解析 /js/views/minigames.js。请确认服务已重启加载最新代码。</div>`;
+            body.innerHTML = `<div class="card" style="color:#ff7a8b">${cfg.emptyMsg}</div>`;
             return;
         }
         let all = ((r && (r.all || r.full)) || list.slice()).slice();
@@ -880,12 +884,11 @@ const AdminApp = {
         const renum = () => items.sort((a, b) => a.n - b.n).forEach((o, i) => o.n = i + 1);
         body.innerHTML = `
             <div class="admin-note">
-                调整玩家端小游戏排序。<b>拖动</b>或输入<b>序号</b>（数字越小越靠前）→ 1=最前。点击「💾 保存」后立即生效。<br>
-                序号留空=未设（自动按当前位置）。未保存的更改显示「⚠ 未保存」。
-                ${missing.length ? `<div style="margin-top:6px;color:#ffd56b">⚠ 本机清单里有 ${missing.length} 个游戏服务端还没识别（${this.esc(missing.join('、'))}）—— 已临时补进列表。若保存后仍不生效，请重启一次游戏服务（服务端现在按文件时间自动刷新，一般重启一次即可）。</div>` : ''}
+                ${cfg.tip}
+                ${missing.length ? `<div style="margin-top:6px;color:#ffd56b">⚠ 本机清单里有 ${missing.length} 个服务端还没识别（${this.esc(missing.join('、'))}）—— 已临时补进列表。若保存后仍不生效，请重启一次游戏服务（服务端现在按文件时间自动刷新，一般重启一次即可）。</div>` : ''}
             </div>
             <div class="card">
-                <h3>当前排序（${items.length} 个）</h3>
+                <h3>${cfg.title}（${items.length} 个）</h3>
                 <input id="ord-kw" placeholder="🔍 搜索游戏名 / id" style="margin:8px 0;width:100%;max-width:260px">
                 <div id="order-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px"></div>
                 <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
@@ -912,7 +915,7 @@ const AdminApp = {
                     <button class="btn ghost small" data-act="top" title="置顶">⤒</button>
                     <button class="btn ghost small" data-act="bot" title="置底">⤓</button>
                 </div>
-            `).join('') || '<div style="color:#888;padding:12px">没有匹配的小游戏</div>';
+            `).join('') || '<div style="color:#888;padding:12px">没有匹配的游戏</div>';
             ol.querySelectorAll('.ord-row').forEach(el => {
                 const id = el.dataset.id;
                 const item = items.find(x => x.id === id);
@@ -961,16 +964,55 @@ const AdminApp = {
             try {
                 renum();
                 const order = items.slice().sort((a, b) => a.n - b.n).map(o => o.id);
-                await AdminAPI.minigameOrderSave(order);
-                clean(); U.toast('排序已保存，玩家端立即生效');
+                await cfg.saveOrder(order);
+                clean(); U.toast(cfg.saveToast);
             } catch (e) { U.toast('保存失败：' + e.message); }
         };
         body.querySelector('#ord-reset').onclick = () => {
-            // 恢复默认：按服务端小游戏清单的原始顺序（清空保存值后玩家端也走默认顺序）
+            // 恢复默认：按清单的原始顺序（清空保存值后玩家端也走默认顺序）
             items.length = 0;
             all.forEach((id, i) => items.push({ id, n: i + 1 }));
             render(); dirty();
         };
+    },
+
+    async renderOrder(body) {
+        return this._renderOrderPage(body, {
+            title: '当前排序',
+            tip: '调整玩家端小游戏排序。<b>拖动</b>或输入<b>序号</b>（数字越小越靠前）→ 1=最前。点击「💾 保存」后立即生效。<br>序号留空=未设（自动按当前位置）。未保存的更改显示「⚠ 未保存」。',
+            emptyMsg: '取不到小游戏清单：接口没有返回数据，且无法解析 /js/views/minigames.js。请确认服务已重启加载最新代码。',
+            getOrder: AdminAPI.minigameOrder,
+            saveOrder: AdminAPI.minigameOrderSave,
+            publicGet: '/api/minigame/order',
+            localList: () => this._localGameList(),
+            saveToast: '排序已保存，玩家端立即生效',
+        });
+    },
+
+    async renderPk32Order(body) {
+        return this._renderOrderPage(body, {
+            title: 'PK32 馆内排序',
+            tip: '调整 <b>PK32 原版迁移馆</b> 内游戏的顺序。<b>拖动</b>或输入<b>序号</b>（数字越小越靠前）→ 1=最前。点击「💾 保存」后玩家端立即按此顺序展示。<br>序号留空=未设（自动按当前位置）。未保存的更改显示「⚠ 未保存」。',
+            emptyMsg: '取不到 PK32 清单：接口没有返回数据，且无法解析 /js/minigames/pk32.js。请确认服务已重启加载最新代码。',
+            getOrder: AdminAPI.pk32Order,
+            saveOrder: AdminAPI.pk32OrderSave,
+            publicGet: '/api/pk32/order',
+            localList: () => this._localPk32List(),
+            saveToast: 'PK32 排序已保存，玩家端立即生效',
+        });
+    },
+
+    // 兜底：pk32 清单解析（服务端进程旧/没重启时用它补齐排序页）
+    async _localPk32List() {
+        try {
+            const txt = await (await fetch('/js/minigames/pk32.js?t=' + Date.now())).text();
+            const m = txt.match(/const NAMES\s*=\s*\(([\s\S]*?)\)\s*\.split\(['"]\|['"]\)/);
+            if (!m) return [];
+            const inner = m[1].trim();
+            const body = (inner.length >= 2 && (inner[0] === "'" || inner[0] === '"')) ? inner.slice(1, -1) : inner;
+            const names = body.split('|').map(s => s.trim()).filter(Boolean);
+            return names.map((name, i) => ({ id: 'pk32-' + String(i + 1).padStart(3, '0'), name }));
+        } catch (e) { return []; }
     },
 
     async renderGift(body) {

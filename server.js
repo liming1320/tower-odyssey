@@ -2712,6 +2712,77 @@ api['GET /api/admin/minigame/order'] = (req, res) => {
     sendJson(res, 200, { order, all, full, names: mgNames(), saved: savedOrder.length > 0, count: all.length });
 };
 
+// ---- PK32 原版迁移馆排序：玩家 GET 当前顺序 / 后台 POST 调整 ----
+// 馆内 200+ 款游戏清单定义在 public/js/minigames/pk32.js 的 NAMES 数组，
+// 同样用「按文件 mtime 失效缓存」的方式解析，避免 git pull 新游戏后服务不重启看不到。
+const PK32_FILE = path.join(__dirname, 'public', 'js', 'minigames', 'pk32.js');
+let _pk32Reg = null;
+function pk32Registry() {
+    let mtime = 0;
+    try { mtime = fs.statSync(PK32_FILE).mtimeMs; } catch (e) { mtime = 0; }
+    if (_pk32Reg && _pk32Reg.mtime === mtime) return _pk32Reg;
+    const ids = [], names = {};
+    try {
+        const txt = fs.readFileSync(PK32_FILE, 'utf8');
+        const start = txt.indexOf('const NAMES');
+        const seg = start < 0 ? txt : txt.slice(start);
+        const m = seg.match(/const NAMES\s*=\s*\(([\s\S]*?)\)\s*\.split\(['"]\|['"]\)/);
+        if (m) {
+            const inner = m[1].trim();
+            const body = (inner.length >= 2 && (inner[0] === "'" || inner[0] === '"')) ? inner.slice(1, -1) : inner;
+            const arr = body.split('|').map(s => s.trim()).filter(Boolean);
+            arr.forEach((name, i) => {
+                const id = 'pk32-' + String(i + 1).padStart(3, '0');
+                ids.push(id); names[id] = name;
+            });
+        }
+    } catch (e) { /* 读不到就用空清单兜底 */ }
+    _pk32Reg = { mtime, ids, set: new Set(ids), names };
+    return _pk32Reg;
+}
+const pk32Ids = () => pk32Registry().ids;
+const pk32Set = () => pk32Registry().set;
+const pk32Names = () => pk32Registry().names;
+// 玩家端读取：馆内目录展示顺序（与后台保存顺序一致）
+api['GET /api/pk32/order'] = (req, res) => {
+    const all = pk32Ids();
+    const saved = Array.isArray(DB.pk32Order) ? DB.pk32Order.filter(x => pk32Set().has(x)) : [];
+    const seen = new Set(saved);
+    sendJson(res, 200, {
+        order: DB.pk32Order || [],
+        all,
+        full: saved.concat(all.filter(id => !seen.has(id))),
+        names: pk32Names(),
+    });
+};
+api['POST /api/admin/pk32/order'] = (req, res, body) => {
+    if (!isAdminToken(req)) return sendJson(res, 401, { error: '需要管理员' });
+    const all = pk32Ids();
+    if (!all.length) return sendJson(res, 400, { error: 'PK32 清单不可用' });
+    if (!Array.isArray(body.order)) return sendJson(res, 400, { error: 'order 不合法' });
+    const seen = new Set();
+    const ordered = [];
+    for (const x of body.order) {
+        if (typeof x === 'string' && pk32Set().has(x) && !seen.has(x)) { ordered.push(x); seen.add(x); }
+    }
+    // 兜底：只提交部分 → 把剩余的按原始顺序补到末尾，避免馆内只剩被拖动的几项
+    for (const id of all) if (!seen.has(id)) { ordered.push(id); seen.add(id); }
+    if (ordered.length !== all.length) return sendJson(res, 400, { error: 'order 与清单不匹配' });
+    DB.pk32Order = ordered;
+    save();
+    sendJson(res, 200, { ok: true, order: DB.pk32Order, count: ordered.length });
+};
+// 后台读取：把「已保存顺序」补齐未排序的新游戏，保证后台能看到全部 pk32 项
+api['GET /api/admin/pk32/order'] = (req, res) => {
+    if (!isAdminToken(req)) return sendJson(res, 401, { error: '需要管理员' });
+    const all = pk32Ids();
+    const saved = Array.isArray(DB.pk32Order) ? DB.pk32Order.filter(x => pk32Set().has(x)) : [];
+    const seen = new Set(saved);
+    const order = saved.concat(all.filter(id => !seen.has(id)));
+    const full = saved.concat(all.filter(id => !seen.has(id)));
+    sendJson(res, 200, { order, all, full, names: pk32Names(), saved: saved.length > 0, count: all.length });
+};
+
 // ---- 经典模拟器 ROM 库：管理员上传（存 data/roms/ 磁盘文件，元数据进 DB）· 全员游玩 ----
 // ROM 是二进制大文件，不适合塞进 db.json / MySQL 表；业界通行做法（yikm/dos.lol 同理）都是磁盘文件 + 元数据入库
 const ROMS_DIR = path.join(DATA_DIR, 'roms');

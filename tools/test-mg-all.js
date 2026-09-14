@@ -61,7 +61,9 @@ const engPaths = ENGINE_FILES.map(f => path.join(engineDir, f));
 // 它们为了让清单/审计口径一致注册了 50 个占位 LEVELS，混进来只会污染计数、
 // 而且 start() 里会打真实网络请求（Node VM 里 fetch 不存在），纯属噪音。
 // 它们的可用性由 tools/smoke-integration.js 端到端验证，这里排除。
-const NOT_A_GAME = new Set(['emulator.js', 'arcade.js']);
+// pk32 / pk32Casual 同理：是「PK32 原版迁移馆」的目录/子启动器（注册进 MiniGames 只为入口一致），
+// 没有标准 LEVELS（pk32 是 LEVELS:[] 的目录、pk32Casual 是子玩法启动器），其可用性由 verify-pk32-*.js 验证。
+const NOT_A_GAME = new Set(['emulator.js', 'arcade.js', 'pk32.js', 'pk32-casual.js']);
 // mg-tower-core.js 在文件末尾才定义 MG.tower，而 mg-newtower56.js 顶部有
 // `if (!MG.tower) return;` —— 若按字母序排，newtower56 会跑在 core 之前被静默跳过，
 // 56 层魔塔就永远没被测试覆盖（index.html 里 core 在前，浏览器是好的）。
