@@ -1,5 +1,7 @@
 {
   "version": 1,
+  "name": "航海迷题",
+  "fullGameRulesVerified": false,
   "source": "PK32 extracted native strings",
   "nativeLevelCount": 52,
   "extractedLevelCount": 51,

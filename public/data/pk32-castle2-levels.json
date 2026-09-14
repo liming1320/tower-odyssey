@@ -1,5 +1,6 @@
 {
   "name": "魔法城堡二",
+  "fullGameRulesVerified": false,
   "nativeLevelCount": 40,
   "extractedLevelCount": 37,
   "encoding": "native decimal payloads; geometry pending rule decoding",

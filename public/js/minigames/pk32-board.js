@@ -286,7 +286,7 @@
         boardShell.className = 'pk32-board-scroll';
         boardShell.appendChild(boardEl);
         const style = document.createElement('style');
-        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:42px;min-height:42px;padding:2px;touch-action:manipulation}.pk32-animal-cell{position:relative}.pk32-animal-cell[data-terrain="river"]{background:#74b9dc;color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:#d9a441;color:#5b3810}.pk32-animal-cell[data-terrain="den"]{background:#9b6bd3;color:#fff}.pk32-animal-piece{display:block;width:34px;height:34px;margin:auto;background:none!important;font-size:29px;line-height:34px;text-align:center}.pk32-animal-piece[data-side="1"]{filter:saturate(1.35)}.pk32-animal-piece[data-side="2"]{filter:saturate(1.35) drop-shadow(0 0 1px #fff)}';
+        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:52px;min-height:52px;padding:3px;touch-action:manipulation}.pk32-animal-cell{position:relative;background:#d6c39a}.pk32-animal-cell[data-terrain="river"]{background:#5ba9d2;color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:#d9a441;color:#5b3810}.pk32-animal-cell[data-terrain="den"]{background:#8c61c9;color:#fff}.pk32-animal-piece{display:flex;align-items:center;justify-content:center;width:38px;height:38px;margin:auto;border:2px solid currentColor;border-radius:50%;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:22px;font-weight:700;line-height:1;background:#fff;color:#9b2f24;box-shadow:0 2px 3px rgba(0,0,0,.35)}.pk32-animal-piece[data-side="1"]{background:#fff1d5;color:#9b2f24}.pk32-animal-piece[data-side="2"]{background:#e7efff;color:#234b96}';
         rootEl.appendChild(style);
         restart.type = 'button';
         restart.textContent = '重开';
@@ -359,7 +359,7 @@
                     const piece = document.createElement('span');
                     piece.className = 'pk32-animal-piece';
                     piece.dataset.side = String(value.side);
-                    piece.textContent = ({ rat: '🐭', cat: '🐱', dog: '🐶', wolf: '🐺', leopard: '🐆', tiger: '🐯', lion: '🦁', elephant: '🐘' }[value.rank] || '🐾');
+                    piece.textContent = ({ rat: '鼠', cat: '猫', dog: '犬', wolf: '狼', leopard: '豹', tiger: '虎', lion: '狮', elephant: '象' }[value.rank] || '兽');
                     piece.setAttribute('aria-hidden', 'true');
                     button.appendChild(piece);
                     button.setAttribute('aria-label', text);

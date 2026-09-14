@@ -32,7 +32,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "跟花 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥7♣3♠9♥8♠4发牌结束本局"
+        "contentSample": "跟花 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥7♣11♥8♣6♦6发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -54,7 +54,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "丰收 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥10♠8♣11♦12♦8发牌结束本局"
+        "contentSample": "丰收 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦7♠7♠4♣12♦8发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -76,7 +76,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "锄大地（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃12红桃9梅花11方块5黑桃4重开结束"
+        "contentSample": "锄大地（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃10红桃12梅花13方块13黑桃3重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -98,7 +98,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "拱猪 · PK32 原版流程模式你的回合 · 当前累计：0♦1♠4♦4♥4♠5♦5♥9♦9♣9♠9♦10♠12♠13结束本局"
+        "contentSample": "拱猪 · PK32 原版流程模式你的回合 · 当前累计：0♠1♥2♦2♣3♠3♦4♥5♠5♦9♠9♥10♣13♦13结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -120,7 +120,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "十点半 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠9♦2♠8♣13♥4发牌结束本局"
+        "contentSample": "十点半 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦9♥6♥8♣12♠6发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -142,7 +142,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "钓鱼 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦6♣6♥12♥2♣10发牌结束本局"
+        "contentSample": "钓鱼 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦6♥11♠9♦11♦2发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -164,7 +164,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "争上游 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠2♠4♥12♥4♦9发牌结束本局"
+        "contentSample": "争上游 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥2♠12♥8♣7♦9发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -178,7 +178,7 @@
       "fullGameRulesVerified": false,
       "render": {
         "mounted": true,
-        "nodes": 22,
+        "nodes": 20,
         "brokenImages": [],
         "loadingImages": [],
         "visibleCanvases": 0,
@@ -186,7 +186,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♥3♣4♥1♦4♦2乌龟♥2♣9♣11♣6♠8♠2♥7♣12♣1抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♥6♣1♣5♠11♣4♥10♣12♥8♦5♠5♣2♣8♦9抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -208,7 +208,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈 · PK32 原版流程模式梭哈：五张牌牌型比较♠8♠1♦9♣8♥13你的牌：♠8 ♠1 ♦9 ♣8 ♥13比较牌型结束本局"
+        "contentSample": "梭哈 · PK32 原版流程模式梭哈：五张牌牌型比较♣10♥12♠13♠9♠10你的牌：♣10 ♥12 ♠13 ♠9 ♠10比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -230,7 +230,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "牌九 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣6♣10♠4♣12♥9发牌结束本局"
+        "contentSample": "牌九 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦5♣2♠13♠2♠9发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -252,7 +252,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "扑克麻将 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣2♣4♣11♣10♠4发牌结束本局"
+        "contentSample": "扑克麻将 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠2♥9♦4♦5♥5发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -296,7 +296,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "FF8卡片 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠12♣1♦4♥7♠10发牌结束本局"
+        "contentSample": "FF8卡片 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥12♠11♥7♠3♠12发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -340,7 +340,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "移动 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥12♥7♣3♣5♥9发牌结束本局"
+        "contentSample": "移动 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥13♣13♦9♥4♠3发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -362,7 +362,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "接龙PK32 独立玩法 · 原版流程模式接龙：点击牌列，再点击目标列或回收区牌堆 24 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♣9列 2■♦7列 3■■♦5列 4■■■♦J列 5■■■■♥7列 6■■■■■♠8列 7■■■■■■♣6检查完成"
+        "contentSample": "接龙PK32 独立玩法 · 原版流程模式接龙：点击牌列，再点击目标列或回收区牌堆 24 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♦J列 2■♠4列 3■■♣9列 4■■■♣3列 5■■■■♣10列 6■■■■■♥10列 7■■■■■■♥K检查完成"
       },
       "errors": [],
       "smokePassed": true,
@@ -384,7 +384,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "争夺 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠4♠3♦5♣1♥2发牌结束本局"
+        "contentSample": "争夺 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣6♦13♣2♥13♠1发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -406,7 +406,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "同花 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦11♠13♣8♥4♠1发牌结束本局"
+        "contentSample": "同花 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣10♥9♣1♦1♥1发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -428,7 +428,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "三打三 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠11♠4♣1♠6♣3发牌结束本局"
+        "contentSample": "三打三 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦2♦1♠9♦9♠1发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -472,7 +472,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "变幻牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣5♣3♦12♦1♣10发牌结束本局"
+        "contentSample": "变幻牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠10♠11♠6♥3♣9发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -494,7 +494,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "挑选 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦5♣10♦3♣11♦2发牌结束本局"
+        "contentSample": "挑选 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣10♦12♣8♣13♠10发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -516,7 +516,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "暗牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣13♣6♣10♥5♣11发牌结束本局"
+        "contentSample": "暗牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣3♥7♥8♣9♣7发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -560,7 +560,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "24点 · PK32 原版流程模式使用四张牌各一次组成 243  6  7  1提交结束本局"
+        "contentSample": "24点 · PK32 原版流程模式使用四张牌各一次组成 241  5  9  5提交结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -604,7 +604,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "炮牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣11♦12♥5♣8♦9发牌结束本局"
+        "contentSample": "炮牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠11♥8♠6♦13♣13发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -648,7 +648,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "转换（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：7123456789重开结束"
+        "contentSample": "转换（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：9123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -736,7 +736,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "连珠牌（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除紫紫红绿红绿红绿绿黄红红红蓝黄黄紫绿紫绿红黄红紫紫蓝黄红红蓝黄红紫红红绿黄绿紫红黄黄红红黄紫绿黄红黄蓝蓝黄黄蓝紫绿紫蓝黄蓝紫蓝红重开结束"
+        "contentSample": "连珠牌（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除红红蓝绿黄紫绿绿黄紫紫绿蓝绿黄蓝紫紫黄蓝绿黄绿蓝黄绿黄绿红蓝紫紫绿绿紫绿绿紫蓝紫绿蓝紫红绿紫绿紫绿蓝绿紫红红红紫黄绿红红红紫黄紫重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -758,7 +758,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "幸运 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦4♥4♥12♦11♣4发牌结束本局"
+        "contentSample": "幸运 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠4♣1♦10♠2♥12发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -802,7 +802,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈二 · PK32 原版流程模式梭哈：五张牌牌型比较♦10♣13♣1♥11♠10你的牌：♦10 ♣13 ♣1 ♥11 ♠10比较牌型结束本局"
+        "contentSample": "梭哈二 · PK32 原版流程模式梭哈：五张牌牌型比较♥10♣11♥1♠9♣8你的牌：♥10 ♣11 ♥1 ♠9 ♣8比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -846,7 +846,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "憋七（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃12红桃4梅花7方块4黑桃7重开结束"
+        "contentSample": "憋七（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃13红桃2梅花7方块12黑桃8重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -868,7 +868,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "FF9卡片（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃10红桃12梅花10方块4黑桃2重开结束"
+        "contentSample": "FF9卡片（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃5红桃6梅花2方块3黑桃6重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -890,7 +890,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "7鬼523（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃9红桃5梅花7方块9黑桃10重开结束"
+        "contentSample": "7鬼523（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃13红桃11梅花4方块9黑桃5重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -934,7 +934,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "拖拉机-升级 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦2♠3♣12♥10♦5发牌结束本局"
+        "contentSample": "拖拉机-升级 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦5♦1♠1♠5♠13发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -956,7 +956,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "纸牌魔法阵 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣1♠3♠12♠2♥13发牌结束本局"
+        "contentSample": "纸牌魔法阵 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦10♦9♠2♥6♦2发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1000,7 +1000,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "纸牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠5♠4♣1♣6♥6发牌结束本局"
+        "contentSample": "纸牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦1♣4♥13♣1♥6发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1022,7 +1022,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "空当接龙PK32 独立玩法 · 原版流程模式空当接龙：移动牌到空位、牌列或回收区牌堆 0 弃牌：空空当 空空当 空空当 空空当 空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♠4♣10♦3♦6♥3♣7♣Q列 2♣3♣2♥2♦J♣8♥9♦K列 3♦4♥J♠Q♦10♥8♠2♠7列 4♠6♦8♥Q♦5♠5♦9♣4列 5♥A♦2♣J♥10♣A♣5列 6♠A♠10♦7♣9♣K♠9列 7♠K♠8♦Q"
+        "contentSample": "空当接龙PK32 独立玩法 · 原版流程模式空当接龙：移动牌到空位、牌列或回收区牌堆 0 弃牌：空空当 空空当 空空当 空空当 空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♠A♦10♠7♠9♥J♠2♣3列 2♠K♣4♥6♣10♥5♥A♣5列 3♦3♥4♦A♥K♥7♠J♣9列 4♠10♦2♣J♣A♠5♣6♦K列 5♠8♦8♦9♠4♠3♦Q列 6♦5♦7♣Q♥9♦J♥2列 7♦6♦4♣K♥"
       },
       "errors": [],
       "smokePassed": true,
@@ -1044,7 +1044,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "蜘蛛纸牌PK32 独立玩法 · 原版流程模式蜘蛛纸牌：按同花色顺序排列并收集完整牌组牌堆 50 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♣3♣A♠4♦10♣K♠A列 2♠K♦7♥5♣Q♦3♣9列 3♦10♦K♥8♣2♠K♣A列 4♣7♦8♥4♠J♥7♠6列 5♥3♦2♠9♦4♦7列 6♥A♣8♥9♠2♦6列 7♦A♥J♠8♦A♠5列 8♣5♥4♥Q♦9♦5列 9♥3♠7♣J♣"
+        "contentSample": "蜘蛛纸牌PK32 独立玩法 · 原版流程模式蜘蛛纸牌：按同花色顺序排列并收集完整牌组牌堆 50 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♣A♠A♣K♣2♥8♦7列 2♠K♠6♣8♠8♣A♣4列 3♣2♣J♣10♣7♦7♠9列 4♣5♥7♥9♥5♠2♦5列 5♠A♣9♥3♥A♦A列 6♥J♦4♣3♥2♣8列 7♦Q♠5♦9♠7♥K列 8♥3♥6♦2♠5♣6列 9♦K♠4♦3♠3"
       },
       "errors": [],
       "smokePassed": true,
@@ -1066,7 +1066,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "14点 · PK32 原版流程模式抽取牌面，使点数尽量接近 14；超过目标即输♥4♦13当前点数：14要牌停牌结算结束本局"
+        "contentSample": "14点 · PK32 原版流程模式抽取牌面，使点数尽量接近 14；超过目标即输♠3♥10当前点数：13要牌停牌结算结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1088,7 +1088,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "考眼力 · PK32 原版流程模式找出与目标相同的花色目标：♠♠♥♣♦结束本局"
+        "contentSample": "考眼力 · PK32 原版流程模式找出与目标相同的花色目标：♥♠♥♣♦结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1154,7 +1154,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "13点 · PK32 原版流程模式抽取牌面，使点数尽量接近 13；超过目标即输♥1♣7当前点数：8要牌停牌结算结束本局"
+        "contentSample": "13点 · PK32 原版流程模式抽取牌面，使点数尽量接近 13；超过目标即输♠9♥2当前点数：11要牌停牌结算结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1176,7 +1176,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "24点二 · PK32 原版流程模式使用四张牌各一次组成 241  5  3  7提交结束本局"
+        "contentSample": "24点二 · PK32 原版流程模式使用四张牌各一次组成 249  6  7  3提交结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1198,7 +1198,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "扎金花 · PK32 原版流程模式三张牌：比较同花顺、同花、顺子、对子和高牌♣11♦9♠7比较牌型结束本局"
+        "contentSample": "扎金花 · PK32 原版流程模式三张牌：比较同花顺、同花、顺子、对子和高牌♠13♣5♣10比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1242,7 +1242,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟二 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♥5♥12♣5♣2♥11♣7♣4♠13乌龟♠8♦9♣6♠2♦4♥13抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟二 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♣5♠9♣13♣7♠13♣2♠4♥4♦8♥13♦5♦10♣11♥12♣1抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1264,7 +1264,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "排数字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：8123456789重开结束"
+        "contentSample": "排数字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：7123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -1300,7 +1300,7 @@
       "fullGameRulesVerified": false,
       "render": {
         "mounted": true,
-        "nodes": 22,
+        "nodes": 20,
         "brokenImages": [],
         "loadingImages": [],
         "visibleCanvases": 0,
@@ -1308,7 +1308,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟三 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♥6♠10♠1♦4♠8♣6♥7♣1♦7♦10♠7♣2乌龟♠13♦5抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟三 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♥8♠3♣13♠10♠6♥5♣2♣3♣12♣6♣1♣10♦3抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1318,23 +1318,10 @@
       "width": 390,
       "id": "pk32-060",
       "name": "接水管",
-      "status": "rules-partial",
+      "status": "catalogued",
       "fullGameRulesVerified": false,
-      "render": {
-        "mounted": true,
-        "nodes": 31,
-        "brokenImages": [],
-        "loadingImages": [],
-        "visibleCanvases": 0,
-        "nonblankCanvases": 0,
-        "preformatted": 0,
-        "documentOverflow": false,
-        "launchError": false,
-        "contentSample": "接水管PK32 独立玩法 · 原版流程模式第1 / 5 关：旋转管道，令左上角连接到右下角重置第1关第2关第3关第4关第5关┐┌└┐┘└┐┌┌┐┘└┐┌└└"
-      },
-      "errors": [],
-      "smokePassed": true,
-      "visualNeedsReview": false
+      "smokePassed": false,
+      "error": "locator.click: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-pk32-id=\"pk32-060\"]').locator('button').first()\u001b[22m\n"
     },
     {
       "width": 390,
@@ -1418,7 +1405,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈三 · PK32 原版流程模式梭哈：五张牌牌型比较♦8♣10♣12♣11♥8你的牌：♦8 ♣10 ♣12 ♣11 ♥8比较牌型结束本局"
+        "contentSample": "梭哈三 · PK32 原版流程模式梭哈：五张牌牌型比较♦8♥13♣9♥11♥10你的牌：♦8 ♥13 ♣9 ♥11 ♥10比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1440,7 +1427,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "桥牌 · PK32 原版流程模式第 1 墩 · 你的回合，首牌花色 待定♥1♦1♠1♣3♦3♠4♠6♣8♥10♣10♥12♦12♦13结束本局"
+        "contentSample": "桥牌 · PK32 原版流程模式第 1 墩 · 你的回合，首牌花色 待定♠2♥2♦2♣3♠3♣6♦7♣8♥9♦10♦12♥12♣13结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1484,7 +1471,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈四 · PK32 原版流程模式梭哈：五张牌牌型比较♣12♠1♣9♥12♣13你的牌：♣12 ♠1 ♣9 ♥12 ♣13比较牌型结束本局"
+        "contentSample": "梭哈四 · PK32 原版流程模式梭哈：五张牌牌型比较♥8♦13♥13♣9♣8你的牌：♥8 ♦13 ♥13 ♣9 ♣8比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1572,7 +1559,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈五 · PK32 原版流程模式梭哈：五张牌牌型比较♣1♦8♥1♣13♥8你的牌：♣1 ♦8 ♥1 ♣13 ♥8比较牌型结束本局"
+        "contentSample": "梭哈五 · PK32 原版流程模式梭哈：五张牌牌型比较♠8♥10♦13♠1♠11你的牌：♠8 ♥10 ♦13 ♠1 ♠11比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1594,7 +1581,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟四 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♠7♦5♥10♥8♦12♠3♠5♥11♠12♠11♦1抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟四 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♦9♣9♦10♠10♣10♠13♠2♦11♦12乌龟♠1抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1616,7 +1603,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "幸运数字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：9123456789重开结束"
+        "contentSample": "幸运数字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：1123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -1638,7 +1625,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "40点（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：8123456789重开结束"
+        "contentSample": "40点（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：6123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -1660,7 +1647,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟五 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对乌龟♣4♠1♠13♥5♣11♥4♠5♠4♠8♣7抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟五 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♠13♦8♠4♦3♦2♣3♦13♣6♣9♠3♥9抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1682,7 +1669,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈六 · PK32 原版流程模式梭哈：五张牌牌型比较♣9♥8♠9♥9♦8你的牌：♣9 ♥8 ♠9 ♥9 ♦8比较牌型结束本局"
+        "contentSample": "梭哈六 · PK32 原版流程模式梭哈：五张牌牌型比较♥10♥1♣1♥8♣9你的牌：♥10 ♥1 ♣1 ♥8 ♣9比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1726,7 +1713,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "三张牌 · PK32 原版流程模式三张牌：比较同花顺、同花、顺子、对子和高牌♣4♥8♥2比较牌型结束本局"
+        "contentSample": "三张牌 · PK32 原版流程模式三张牌：比较同花顺、同花、顺子、对子和高牌♦2♦6♦8比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1748,7 +1735,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈七 · PK32 原版流程模式梭哈：五张牌牌型比较♣8♥13♥8♦9♥10你的牌：♣8 ♥13 ♥8 ♦9 ♥10比较牌型结束本局"
+        "contentSample": "梭哈七 · PK32 原版流程模式梭哈：五张牌牌型比较♦8♠8♣11♠12♦11你的牌：♦8 ♠8 ♣11 ♠12 ♦11比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1770,7 +1757,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "魔力纸牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣11♦1♥5♠2♠5发牌结束本局"
+        "contentSample": "魔力纸牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣9♠4♣10♦12♣7发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1792,7 +1779,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "跟花二 · PK32 原版流程模式 · 原版 28 局点击牌进行选择，再点击“结束本局”♥2♥11♣11♥8♠6发牌结束本局"
+        "contentSample": "跟花二 · PK32 原版流程模式 · 原版 28 局点击牌进行选择，再点击“结束本局”♠2♦11♥4♦10♠13发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -1814,7 +1801,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "接龙PK32 独立玩法 · 原版流程模式接龙：点击牌列，再点击目标列或回收区牌堆 24 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♣5列 2■♦K列 3■■♠10列 4■■■♦10列 5■■■■♦2列 6■■■■■♦7列 7■■■■■■♦3检查完成"
+        "contentSample": "接龙PK32 独立玩法 · 原版流程模式接龙：点击牌列，再点击目标列或回收区牌堆 24 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♥2列 2■♠9列 3■■♣8列 4■■■♠J列 5■■■■♣K列 6■■■■■♥K列 7■■■■■■♣10检查完成"
       },
       "errors": [],
       "smokePassed": true,
@@ -2474,7 +2461,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "麻将（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌发七万八万七万二条三条六条二万八条东四条西八筒重开结束"
+        "contentSample": "麻将（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌一万中二万八筒九万九条七筒一筒六条六万三筒八万一筒重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -2892,7 +2879,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "海豚骰（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：7123456789重开结束"
+        "contentSample": "海豚骰（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：2123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -2936,7 +2923,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "魔力珠宝（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除绿紫黄绿蓝红紫黄黄紫黄蓝黄绿蓝黄红蓝绿绿绿红黄红紫绿蓝紫红紫紫红蓝红紫红绿黄紫黄蓝绿蓝紫绿紫绿红绿紫紫红绿紫黄黄红红蓝黄红紫红绿重开结束"
+        "contentSample": "魔力珠宝（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除绿紫黄紫紫绿绿红紫绿绿黄绿黄蓝黄紫紫红绿蓝黄黄紫绿黄红紫黄绿紫紫蓝绿黄紫紫黄蓝黄黄绿紫绿黄蓝黄蓝绿黄蓝绿蓝紫绿紫紫蓝紫紫黄紫绿红重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -2980,7 +2967,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "智商测试（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：6123456789重开结束"
+        "contentSample": "智商测试（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：1123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3288,7 +3275,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "成语填字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：8123456789重开结束"
+        "contentSample": "成语填字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：3123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3332,7 +3319,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "麻将王（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌五条一万五万三筒中八条七筒二条六万六筒三条三条三筒重开结束"
+        "contentSample": "麻将王（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌北九条七筒一万六筒七万九条八筒二筒五筒三万八万七条重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3354,7 +3341,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "麻将王二（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌三筒六条九万四条六筒二万四筒八条二筒四万九条九条八条重开结束"
+        "contentSample": "麻将王二（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌九条一条二筒三筒八万东四万二筒八万一万五筒三万五万重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3376,7 +3363,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "麻将王三（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌三筒四条七条六条三条一条二条四条八条九万三条五条一万重开结束"
+        "contentSample": "麻将王三（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌一筒一条四万九万二条一万六条八万九筒发白七条六万重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3508,7 +3495,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "绿洲（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除红黄蓝蓝红绿蓝红蓝红红黄绿黄蓝蓝黄蓝紫黄黄黄蓝蓝绿红蓝紫红绿蓝黄紫绿红红黄紫黄蓝紫蓝绿紫紫绿蓝黄紫紫绿绿红紫绿紫红紫蓝红绿黄红红重开结束"
+        "contentSample": "绿洲（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除红蓝绿紫紫红绿蓝蓝紫蓝黄红绿绿绿蓝蓝蓝蓝红黄红蓝黄绿黄蓝红蓝黄黄蓝紫蓝红黄紫绿蓝紫黄黄紫红红绿蓝紫蓝紫黄黄黄黄蓝黄紫紫蓝蓝绿红绿重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3530,7 +3517,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "魅力之球（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除红红紫绿蓝蓝绿黄绿绿黄红红红绿蓝黄蓝蓝紫黄黄黄紫黄红绿绿紫红红黄绿绿蓝绿紫黄红紫红蓝红绿蓝蓝绿黄黄红蓝绿红黄绿红红绿蓝黄黄绿绿红重开结束"
+        "contentSample": "魅力之球（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除绿绿红绿蓝蓝黄绿黄红蓝绿紫黄紫红绿绿红红紫黄红红紫绿黄红蓝红紫黄绿绿黄蓝绿黄蓝黄蓝蓝绿蓝蓝蓝紫黄红蓝紫黄红紫红黄黄紫绿黄黄紫绿红重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3794,7 +3781,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "骰子王（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：9123456789重开结束"
+        "contentSample": "骰子王（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：3123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3816,7 +3803,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "数谜（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0上一关下一关重置本关原版关卡：第 1 / 140 关；当前已确认原生数据串 97 条。找出目标数字：1123456789重开结束"
+        "contentSample": "数谜（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0上一关下一关重置本关原版关卡：第 1 / 140 关；当前已确认原生数据串 97 条。找出目标数字：8123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -3882,7 +3869,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "弹力连珠（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除绿紫红红黄绿绿黄紫红紫紫紫红紫红蓝绿紫蓝蓝红紫红红蓝绿绿蓝绿红绿红紫绿红蓝蓝绿蓝紫紫红绿蓝紫红红蓝蓝紫蓝红黄绿紫蓝黄紫绿黄紫黄蓝重开结束"
+        "contentSample": "弹力连珠（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除红紫黄绿紫红黄绿绿红紫红红红紫紫绿绿紫黄蓝黄红黄蓝蓝红蓝紫绿蓝绿蓝蓝绿红蓝蓝蓝红黄红蓝蓝红红黄黄紫红紫紫紫红绿紫红蓝蓝绿红绿红蓝重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -4432,7 +4419,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "PK32 · 七巧板原版流程模式 · 不使用统一 50 关系统选择拼图部件完成目标重新开始按目标顺序选择：三角形、正方形、大三角形、平行四边形、小三角形三角形正方形平行四边形小三角形大三角形"
+        "contentSample": "PK32 · 七巧板原版流程模式 · 不使用统一 50 关系统选择拼图部件完成目标重新开始按目标顺序选择：小三角形、平行四边形、大三角形、三角形、正方形三角形正方形平行四边形小三角形大三角形"
       },
       "errors": [],
       "smokePassed": true,
@@ -4564,7 +4551,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "彩球迷宫（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除红紫紫黄紫蓝红绿紫蓝红红蓝黄绿绿蓝红绿蓝红黄红黄紫黄绿黄红红蓝黄绿紫紫红绿蓝绿蓝蓝黄红绿紫紫绿红蓝蓝紫蓝黄紫紫黄黄紫蓝蓝紫绿黄蓝重开结束"
+        "contentSample": "彩球迷宫（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除黄红紫绿黄紫绿紫紫绿黄黄红黄蓝黄紫蓝蓝红红红蓝蓝蓝紫蓝紫紫绿红红黄绿红红绿红黄红蓝蓝黄绿紫紫红黄紫绿黄绿紫蓝黄蓝红红紫紫红红紫蓝重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -4586,7 +4573,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "反射镜（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0原版 1 关；原生载荷已加载，点击格子切换两种斜镜方向。\\\\\\\\\\●\\\\●//\\\\●\\\\/●★\\\\●●\\\\\\\\●\\\\●\\\\●/\\●\\\\/\\●★★\\\\\\\\★\\\\\\\\★/\\★\\●★\\●\\\\\\\\\\\\\\\\\\发射光线重置镜面重开结束"
+        "contentSample": "反射镜（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0原始载荷 1 条；关数尚未确认。当前仅提供斜镜方向与光线演示，原始坐标编码仍在解析。\\\\\\\\\\●\\\\●//\\\\●\\\\/●★\\\\●●\\\\\\\\●\\\\●\\\\●/\\●\\\\/\\●★★\\\\\\\\★\\\\\\\\★/\\★\\●★\\●\\\\\\\\\\\\\\\\\\发射光线重置镜面重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -4674,7 +4661,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "彩球连线（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除黄紫红蓝蓝绿紫紫绿红蓝绿绿绿黄紫蓝绿红蓝紫绿绿黄蓝蓝蓝红绿紫绿紫蓝红黄紫绿红红黄红紫蓝绿紫蓝黄紫黄黄紫紫绿紫黄绿红红绿红红绿蓝黄重开结束"
+        "contentSample": "彩球连线（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除黄绿紫紫红蓝红红黄黄绿绿紫红蓝紫蓝紫蓝绿红蓝绿紫紫紫红蓝蓝蓝红红黄蓝绿黄绿紫蓝蓝紫蓝蓝紫绿蓝红绿蓝红紫绿绿紫红绿红红绿红紫黄黄绿重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -4718,7 +4705,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "跟花 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣10♠13♦5♦8♥12发牌结束本局"
+        "contentSample": "跟花 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠6♣10♦12♥11♥7发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4740,7 +4727,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "丰收 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠8♦13♦5♣3♦1发牌结束本局"
+        "contentSample": "丰收 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦6♦5♠10♥10♠12发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4762,7 +4749,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "锄大地（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃5红桃5梅花2方块3黑桃4重开结束"
+        "contentSample": "锄大地（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃3红桃13梅花13方块4黑桃6重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -4784,7 +4771,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "拱猪 · PK32 原版流程模式你的回合 · 当前累计：0♣2♠2♦4♣4♠5♥7♠8♣8♦10♦11♥11♦12♦13结束本局"
+        "contentSample": "拱猪 · PK32 原版流程模式你的回合 · 当前累计：0♣1♠2♥2♥3♠4♦4♥5♣6♦6♥9♣9♦10♣13结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4806,7 +4793,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "十点半 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣3♦8♥4♦10♣13发牌结束本局"
+        "contentSample": "十点半 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦7♠13♣6♣4♦5发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4828,7 +4815,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "钓鱼 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠6♥13♦13♠11♥8发牌结束本局"
+        "contentSample": "钓鱼 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣5♦4♦13♥10♦2发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4850,7 +4837,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "争上游 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣2♠9♠3♥12♦10发牌结束本局"
+        "contentSample": "争上游 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥11♦1♦2♣12♦6发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4872,7 +4859,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♣6♠8♠9♣4♥7♦3♦13♣11♠7♦6乌龟♦9♦5抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♣4♦13♠6♥7♦7♣10♠5♣11♦6♥11♣9♣3乌龟抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4894,7 +4881,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈 · PK32 原版流程模式梭哈：五张牌牌型比较♠12♦13♦11♣1♠11你的牌：♠12 ♦13 ♦11 ♣1 ♠11比较牌型结束本局"
+        "contentSample": "梭哈 · PK32 原版流程模式梭哈：五张牌牌型比较♥8♥9♥11♣1♦8你的牌：♥8 ♥9 ♥11 ♣1 ♦8比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4916,7 +4903,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "牌九 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥1♠11♦9♠13♠7发牌结束本局"
+        "contentSample": "牌九 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥2♦10♠3♠12♣9发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4938,7 +4925,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "扑克麻将 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣4♣9♠10♥5♥3发牌结束本局"
+        "contentSample": "扑克麻将 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠12♠7♦11♥2♦5发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -4982,7 +4969,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "FF8卡片 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦4♣4♣3♣5♥8发牌结束本局"
+        "contentSample": "FF8卡片 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠4♠13♥9♣8♠10发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5026,7 +5013,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "移动 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣7♦3♦5♥6♥8发牌结束本局"
+        "contentSample": "移动 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥12♣3♠8♣8♦12发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5048,7 +5035,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "接龙PK32 独立玩法 · 原版流程模式接龙：点击牌列，再点击目标列或回收区牌堆 24 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♣7列 2■♣5列 3■■♦9列 4■■■♦J列 5■■■■♠6列 6■■■■■♥5列 7■■■■■■♥K检查完成"
+        "contentSample": "接龙PK32 独立玩法 · 原版流程模式接龙：点击牌列，再点击目标列或回收区牌堆 24 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♦J列 2■♣4列 3■■♥6列 4■■■♥9列 5■■■■♦A列 6■■■■■♣7列 7■■■■■■♣5检查完成"
       },
       "errors": [],
       "smokePassed": true,
@@ -5070,7 +5057,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "争夺 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣6♠2♦3♣5♦11发牌结束本局"
+        "contentSample": "争夺 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣7♥11♦1♥13♣3发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5092,7 +5079,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "同花 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥1♦8♠7♣6♣8发牌结束本局"
+        "contentSample": "同花 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥11♠11♦2♥2♣13发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5114,7 +5101,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "三打三 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣6♥5♦3♣11♥13发牌结束本局"
+        "contentSample": "三打三 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦9♣5♣1♦3♣10发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5158,7 +5145,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "变幻牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣7♠2♣2♦10♦5发牌结束本局"
+        "contentSample": "变幻牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣6♣4♦9♥10♠8发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5180,7 +5167,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "挑选 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥8♠5♦3♣6♥5发牌结束本局"
+        "contentSample": "挑选 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠3♦3♥2♣13♦4发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5202,7 +5189,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "暗牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣1♥10♦3♣10♠8发牌结束本局"
+        "contentSample": "暗牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥4♦13♣11♠4♠11发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5246,7 +5233,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "24点 · PK32 原版流程模式使用四张牌各一次组成 247  1  5  3提交结束本局"
+        "contentSample": "24点 · PK32 原版流程模式使用四张牌各一次组成 247  3  3  5提交结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5290,7 +5277,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "炮牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣11♠12♥10♣3♣7发牌结束本局"
+        "contentSample": "炮牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦5♣9♣3♠3♠7发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5312,7 +5299,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "记数（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：7123456789重开结束"
+        "contentSample": "记数（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：2123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -5334,7 +5321,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "转换（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：2123456789重开结束"
+        "contentSample": "转换（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：8123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -5422,7 +5409,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "连珠牌（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除黄黄蓝蓝紫红蓝蓝紫蓝红红黄红黄红黄红蓝红绿绿黄绿蓝蓝红黄绿蓝绿蓝蓝黄红蓝绿黄黄红黄绿绿蓝红红红绿绿黄绿黄绿紫蓝红绿红紫黄红红红黄重开结束"
+        "contentSample": "连珠牌（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除黄绿黄绿蓝红绿红黄黄紫绿蓝红蓝紫绿绿红蓝蓝绿紫黄绿红绿黄绿紫绿红蓝紫绿黄紫紫紫绿绿蓝蓝绿紫红蓝紫黄蓝黄蓝红蓝紫绿黄黄蓝紫蓝黄蓝蓝重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -5444,7 +5431,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "幸运 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦3♥5♠8♦12♦6发牌结束本局"
+        "contentSample": "幸运 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥10♥4♠7♠12♦13发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5488,7 +5475,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈二 · PK32 原版流程模式梭哈：五张牌牌型比较♥10♦8♣10♥1♥11你的牌：♥10 ♦8 ♣10 ♥1 ♥11比较牌型结束本局"
+        "contentSample": "梭哈二 · PK32 原版流程模式梭哈：五张牌牌型比较♦8♥9♣8♦9♠1你的牌：♦8 ♥9 ♣8 ♦9 ♠1比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5532,7 +5519,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "憋七（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃5红桃2梅花8方块12黑桃4重开结束"
+        "contentSample": "憋七（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃13红桃6梅花13方块6黑桃6重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -5554,7 +5541,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "FF9卡片（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃10红桃6梅花7方块10黑桃2重开结束"
+        "contentSample": "FF9卡片（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃10红桃13梅花6方块12黑桃9重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -5576,7 +5563,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "7鬼523（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃6红桃2梅花8方块4黑桃8重开结束"
+        "contentSample": "7鬼523（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0按原版单局节奏逐张处理牌面：0 / 5黑桃5红桃6梅花12方块2黑桃10重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -5620,7 +5607,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "拖拉机-升级 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦13♣6♥7♦7♦12发牌结束本局"
+        "contentSample": "拖拉机-升级 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♠13♠9♥7♠12♦5发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5642,7 +5629,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "纸牌魔法阵 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣13♣8♣9♦5♠6发牌结束本局"
+        "contentSample": "纸牌魔法阵 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♥10♦7♣12♣1♣9发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5686,7 +5673,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "纸牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣11♥8♦9♣8♣12发牌结束本局"
+        "contentSample": "纸牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣9♠11♠13♠4♣10发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5708,7 +5695,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "空当接龙PK32 独立玩法 · 原版流程模式空当接龙：移动牌到空位、牌列或回收区牌堆 0 弃牌：空空当 空空当 空空当 空空当 空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♥8♦6♠10♥5♣7♠2♦2列 2♥2♦5♣5♦10♠4♦Q♦8列 3♣9♣2♠9♦3♣8♥J♣6列 4♥A♥3♦9♠7♣Q♥6♥Q列 5♠K♣J♥9♠6♣3♥K列 6♥4♠J♠8♥10♣4♥7列 7♦7♣A♣K♠"
+        "contentSample": "空当接龙PK32 独立玩法 · 原版流程模式空当接龙：移动牌到空位、牌列或回收区牌堆 0 弃牌：空空当 空空当 空空当 空空当 空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♣7♣4♥6♥J♥9♣5♠10列 2♠J♦10♠8♦9♦6♠4♠2列 3♠A♣J♦7♥A♣9♦Q♠5列 4♠9♣6♥4♦8♦K♦A♥Q列 5♣2♥5♥K♠6♥2♣Q列 6♦3♣A♥7♠3♥8♦4列 7♣K♣8♠7♦5"
       },
       "errors": [],
       "smokePassed": true,
@@ -5730,7 +5717,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "蜘蛛纸牌PK32 独立玩法 · 原版流程模式蜘蛛纸牌：按同花色顺序排列并收集完整牌组牌堆 50 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♠8♠10♠3♦9♥A♠Q列 2♥4♠K♦8♠10♣7♠2列 3♥2♣2♣Q♦4♣6♣6列 4♠6♣3♣8♣K♠4♥J列 5♣5♥5♣Q♠5♠3列 6♣10♣9♣4♠5♣A列 7♦Q♥10♦J♥6♠9列 8♣J♦9♥3♦2♣5列 9♦3♦6♦"
+        "contentSample": "蜘蛛纸牌PK32 独立玩法 · 原版流程模式蜘蛛纸牌：按同花色顺序排列并收集完整牌组牌堆 50 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♠J♦5♣5♥8♦J♠K列 2♦8♣5♥10♥5♦3♠8列 3♣A♦4♠10♥J♣A♠6列 4♣9♥3♣7♠A♠Q♥6列 5♦9♠A♣K♠6♥K列 6♥3♠2♦A♠K♣6列 7♥7♥Q♣J♦K♣8列 8♥A♠8♣Q♠3♦10列 9♠2♣J♦J"
       },
       "errors": [],
       "smokePassed": true,
@@ -5752,7 +5739,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "14点 · PK32 原版流程模式抽取牌面，使点数尽量接近 14；超过目标即输♠11♦5当前点数：15要牌停牌结算结束本局"
+        "contentSample": "14点 · PK32 原版流程模式抽取牌面，使点数尽量接近 14；超过目标即输♠4♦10当前点数：14要牌停牌结算结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5774,7 +5761,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "考眼力 · PK32 原版流程模式找出与目标相同的花色目标：♠♠♥♣♦结束本局"
+        "contentSample": "考眼力 · PK32 原版流程模式找出与目标相同的花色目标：♥♠♥♣♦结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5840,7 +5827,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "13点 · PK32 原版流程模式抽取牌面，使点数尽量接近 13；超过目标即输♦13♣12当前点数：20要牌停牌结算结束本局"
+        "contentSample": "13点 · PK32 原版流程模式抽取牌面，使点数尽量接近 13；超过目标即输♥1♠12当前点数：11要牌停牌结算结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5862,7 +5849,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "24点二 · PK32 原版流程模式使用四张牌各一次组成 248  8  1  4提交结束本局"
+        "contentSample": "24点二 · PK32 原版流程模式使用四张牌各一次组成 241  7  5  9提交结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5884,7 +5871,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "扎金花 · PK32 原版流程模式三张牌：比较同花顺、同花、顺子、对子和高牌♦3♠3♣11比较牌型结束本局"
+        "contentSample": "扎金花 · PK32 原版流程模式三张牌：比较同花顺、同花、顺子、对子和高牌♠11♥10♦5比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5920,7 +5907,7 @@
       "fullGameRulesVerified": false,
       "render": {
         "mounted": true,
-        "nodes": 22,
+        "nodes": 20,
         "brokenImages": [],
         "loadingImages": [],
         "visibleCanvases": 0,
@@ -5928,7 +5915,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟二 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♦12♥9♦6♠3♦11♣3♦3♠13♦2乌龟♣7♥8♦10♣11♠4抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟二 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♥3♥2♦10♣3♣12♦12♦9♦5♣8♣7♠11♣9♠6抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -5950,7 +5937,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "排数字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：6123456789重开结束"
+        "contentSample": "排数字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：8123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -5986,7 +5973,7 @@
       "fullGameRulesVerified": false,
       "render": {
         "mounted": true,
-        "nodes": 18,
+        "nodes": 22,
         "brokenImages": [],
         "loadingImages": [],
         "visibleCanvases": 0,
@@ -5994,7 +5981,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟三 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♦2♥3♦9♠9乌龟♠5♠1♠6♣12♥9♠3抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟三 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♦11♥12♣8♦4♦2♣2♥6乌龟♥7♠9♥11♠5♣4♦7♣3抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6004,23 +5991,10 @@
       "width": 1280,
       "id": "pk32-060",
       "name": "接水管",
-      "status": "rules-partial",
+      "status": "catalogued",
       "fullGameRulesVerified": false,
-      "render": {
-        "mounted": true,
-        "nodes": 31,
-        "brokenImages": [],
-        "loadingImages": [],
-        "visibleCanvases": 0,
-        "nonblankCanvases": 0,
-        "preformatted": 0,
-        "documentOverflow": false,
-        "launchError": false,
-        "contentSample": "接水管PK32 独立玩法 · 原版流程模式第1 / 5 关：旋转管道，令左上角连接到右下角重置第1关第2关第3关第4关第5关┐┌└┐┘└┐┌┌┐┘└┐┌└└"
-      },
-      "errors": [],
-      "smokePassed": true,
-      "visualNeedsReview": false
+      "smokePassed": false,
+      "error": "locator.click: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-pk32-id=\"pk32-060\"]').locator('button').first()\u001b[22m\n"
     },
     {
       "width": 1280,
@@ -6060,7 +6034,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "超级99（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：3123456789重开结束"
+        "contentSample": "超级99（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：8123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -6104,7 +6078,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈三 · PK32 原版流程模式梭哈：五张牌牌型比较♣12♥13♥11♣10♥10你的牌：♣12 ♥13 ♥11 ♣10 ♥10比较牌型结束本局"
+        "contentSample": "梭哈三 · PK32 原版流程模式梭哈：五张牌牌型比较♣12♣9♣8♦13♠1你的牌：♣12 ♣9 ♣8 ♦13 ♠1比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6126,7 +6100,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "桥牌 · PK32 原版流程模式第 1 墩 · 你的回合，首牌花色 待定♣1♦1♦2♣2♠3♣3♦6♣6♦7♥9♠11♠12♠13结束本局"
+        "contentSample": "桥牌 · PK32 原版流程模式第 1 墩 · 你的回合，首牌花色 待定♥1♣2♥3♣3♠5♦6♥6♠7♦8♣8♠9♥10♠11结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6170,7 +6144,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈四 · PK32 原版流程模式梭哈：五张牌牌型比较♦9♠1♥8♣8♦1你的牌：♦9 ♠1 ♥8 ♣8 ♦1比较牌型结束本局"
+        "contentSample": "梭哈四 · PK32 原版流程模式梭哈：五张牌牌型比较♥10♣13♥8♦13♣11你的牌：♥10 ♣13 ♥8 ♦13 ♣11比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6258,7 +6232,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈五 · PK32 原版流程模式梭哈：五张牌牌型比较♠12♠11♥12♠10♥9你的牌：♠12 ♠11 ♥12 ♠10 ♥9比较牌型结束本局"
+        "contentSample": "梭哈五 · PK32 原版流程模式梭哈：五张牌牌型比较♣10♣1♠8♣11♠12你的牌：♣10 ♣1 ♠8 ♣11 ♠12比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6280,7 +6254,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟四 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♦3♦1♣8♥8♥2♦13♦5乌龟♣11♠8♦10♦6♥3抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟四 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♦13♠2♦10♥12♥5♣4♣11♦1乌龟♦4♦7♣6♣2抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6302,7 +6276,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "幸运数字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：3123456789重开结束"
+        "contentSample": "幸运数字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：2123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -6324,7 +6298,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "40点（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：1123456789重开结束"
+        "contentSample": "40点（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：9123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -6346,7 +6320,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "抽乌龟五 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♠7♥5♥3♦6♥8♦13♣9♠9♦12♣6♣1♠10♣2♥13乌龟抽电脑一张牌结束本局"
+        "contentSample": "抽乌龟五 · PK32 原版流程模式抽乌龟：从电脑手牌抽一张，自动配对♣11♠13♣5♦6♦12♥5♥9♦8♠2♣12♠7♠10♥7♦9♦4抽电脑一张牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6368,7 +6342,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈六 · PK32 原版流程模式梭哈：五张牌牌型比较♣1♥8♣9♥9♣11你的牌：♣1 ♥8 ♣9 ♥9 ♣11比较牌型结束本局"
+        "contentSample": "梭哈六 · PK32 原版流程模式梭哈：五张牌牌型比较♣13♥12♣8♠8♠12你的牌：♣13 ♥12 ♣8 ♠8 ♠12比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6412,7 +6386,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "三张牌 · PK32 原版流程模式三张牌：比较同花顺、同花、顺子、对子和高牌♠2♠13♦7比较牌型结束本局"
+        "contentSample": "三张牌 · PK32 原版流程模式三张牌：比较同花顺、同花、顺子、对子和高牌♣7♣4♣3比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6434,7 +6408,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "梭哈七 · PK32 原版流程模式梭哈：五张牌牌型比较♥10♣1♣12♣8♠1你的牌：♥10 ♣1 ♣12 ♣8 ♠1比较牌型结束本局"
+        "contentSample": "梭哈七 · PK32 原版流程模式梭哈：五张牌牌型比较♣1♠13♠9♦13♦10你的牌：♣1 ♠13 ♠9 ♦13 ♦10比较牌型结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6456,7 +6430,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "魔力纸牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♣4♣10♣1♣6♦8发牌结束本局"
+        "contentSample": "魔力纸牌 · PK32 原版流程模式点击牌进行选择，再点击“结束本局”♦12♠10♥8♦7♥11发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6478,7 +6452,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "跟花二 · PK32 原版流程模式 · 原版 28 局点击牌进行选择，再点击“结束本局”♦13♦5♠7♣12♣3发牌结束本局"
+        "contentSample": "跟花二 · PK32 原版流程模式 · 原版 28 局点击牌进行选择，再点击“结束本局”♣1♣7♥10♥1♥7发牌结束本局"
       },
       "errors": [],
       "smokePassed": true,
@@ -6500,7 +6474,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "接龙PK32 独立玩法 · 原版流程模式接龙：点击牌列，再点击目标列或回收区牌堆 24 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♦4列 2■♥10列 3■■♥4列 4■■■♥A列 5■■■■♣K列 6■■■■■♠A列 7■■■■■■♥9检查完成"
+        "contentSample": "接龙PK32 独立玩法 · 原版流程模式接龙：点击牌列，再点击目标列或回收区牌堆 24 弃牌：空回收 ♠ 0回收 ♥ 0回收 ♣ 0回收 ♦ 0列 1♠9列 2■♦5列 3■■♦7列 4■■■♦4列 5■■■■♥7列 6■■■■■♠6列 7■■■■■■♦J检查完成"
       },
       "errors": [],
       "smokePassed": true,
@@ -7160,7 +7134,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "麻将（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌南二条八条七条二万二万七条七万七条五万三筒三万七筒重开结束"
+        "contentSample": "麻将（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌八万南七万九万三筒四条四万四万一筒五万四万东七条重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -7578,7 +7552,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "海豚骰（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：8123456789重开结束"
+        "contentSample": "海豚骰（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：5123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -7622,7 +7596,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "魔力珠宝（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除绿绿黄紫红红蓝绿绿蓝蓝红蓝黄紫红绿紫紫黄红紫蓝红红黄蓝红绿蓝紫红绿蓝黄蓝红绿绿黄红蓝绿绿绿紫蓝黄红黄黄紫蓝紫紫紫紫黄红紫蓝绿红黄重开结束"
+        "contentSample": "魔力珠宝（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除紫绿紫绿蓝紫蓝蓝红绿绿绿蓝蓝紫紫紫绿黄紫黄红黄紫绿红绿黄绿绿红绿绿绿黄黄蓝蓝红紫紫蓝黄紫红红紫红蓝红紫黄绿紫绿黄蓝蓝红绿黄黄绿黄重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -7974,7 +7948,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "成语填字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：7123456789重开结束"
+        "contentSample": "成语填字（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：1123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -8018,7 +7992,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "麻将王（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌南九万一筒二条一筒五条五筒七条五筒八筒一条八筒四筒重开结束"
+        "contentSample": "麻将王（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌二万中白九条九筒白六筒九筒二万七万东一筒七万重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -8040,7 +8014,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "麻将王二（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌一筒六筒一条一万六筒九筒二条发五筒三万八条六万六万重开结束"
+        "contentSample": "麻将王二（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌八万八万九万二筒四万七筒四万八万北一条八条一条二条重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -8062,7 +8036,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "麻将王三（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌三条二万九条二筒五万五筒九条三万八万二万九万一筒七筒重开结束"
+        "contentSample": "麻将王三（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0牌堆剩余 123 张；当前手牌 13/14摸牌检查胡牌五条中发西九筒东东一筒八筒西中东三条重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -8194,7 +8168,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "绿洲（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除紫绿蓝黄蓝黄紫紫黄蓝红红红黄紫红绿红绿黄黄蓝紫蓝紫红蓝蓝绿红蓝绿紫黄绿绿黄紫红红紫绿绿黄紫紫绿红红紫黄黄绿紫黄黄黄黄蓝绿黄蓝蓝黄重开结束"
+        "contentSample": "绿洲（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除黄红红红红黄绿蓝绿蓝紫红蓝紫红红黄紫紫黄黄紫黄绿蓝红黄黄绿紫红黄蓝蓝紫紫蓝黄红黄红蓝黄绿黄绿黄红紫紫蓝蓝紫紫黄红蓝绿红黄黄黄黄绿重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -8216,7 +8190,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "魅力之球（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除紫黄蓝红蓝黄黄绿绿蓝紫蓝黄蓝黄绿绿蓝红绿绿蓝黄紫红黄绿红红蓝蓝紫红蓝紫黄红绿黄黄紫黄红黄蓝黄绿绿黄紫红红蓝蓝红蓝黄紫绿蓝红黄绿黄重开结束"
+        "contentSample": "魅力之球（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除红红绿黄红紫绿绿紫黄绿红蓝黄红黄绿蓝绿绿蓝绿绿紫红蓝紫紫蓝红紫红黄黄黄绿红红紫黄绿绿绿绿绿黄紫绿红红紫绿紫红紫紫绿红蓝红黄绿绿红重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -8480,7 +8454,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "骰子王（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：1123456789重开结束"
+        "contentSample": "骰子王（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0找出目标数字：4123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -8502,7 +8476,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "数谜（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0上一关下一关重置本关原版关卡：第 1 / 140 关；当前已确认原生数据串 97 条。找出目标数字：9123456789重开结束"
+        "contentSample": "数谜（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0上一关下一关重置本关原版关卡：第 1 / 140 关；当前已确认原生数据串 97 条。找出目标数字：4123456789重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -8568,7 +8542,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "弹力连珠（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除蓝蓝黄紫黄黄黄绿蓝紫红紫黄蓝紫绿绿紫绿黄绿绿黄绿黄紫绿蓝红紫紫红黄绿黄黄紫黄红红红蓝蓝黄黄绿黄黄红黄红蓝紫红紫黄红蓝紫紫红蓝绿紫重开结束"
+        "contentSample": "弹力连珠（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除红紫黄紫紫绿紫黄紫黄绿蓝黄红紫红黄绿红黄红紫紫蓝黄绿蓝紫黄红绿蓝红蓝蓝蓝黄紫红蓝红红绿蓝黄黄蓝紫紫黄红蓝黄紫蓝紫绿黄绿蓝绿红黄红重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -9118,7 +9092,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "PK32 · 七巧板原版流程模式 · 不使用统一 50 关系统选择拼图部件完成目标重新开始按目标顺序选择：大三角形、小三角形、平行四边形、正方形、三角形三角形正方形平行四边形小三角形大三角形"
+        "contentSample": "PK32 · 七巧板原版流程模式 · 不使用统一 50 关系统选择拼图部件完成目标重新开始按目标顺序选择：平行四边形、正方形、大三角形、三角形、小三角形三角形正方形平行四边形小三角形大三角形"
       },
       "errors": [],
       "smokePassed": true,
@@ -9250,7 +9224,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "彩球迷宫（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除蓝蓝蓝红黄蓝蓝绿蓝紫蓝蓝红紫紫蓝红蓝红绿红黄绿蓝绿黄绿红蓝红紫绿红黄绿蓝紫绿紫黄黄蓝黄黄红绿绿蓝绿绿绿红紫红蓝黄绿绿黄红蓝蓝蓝黄重开结束"
+        "contentSample": "彩球迷宫（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除黄绿紫绿蓝黄紫蓝绿红黄红黄黄绿黄黄黄黄黄蓝红黄紫蓝红黄紫红紫紫红绿黄黄黄绿红紫绿绿红绿紫红绿绿黄绿黄黄蓝黄绿绿黄红黄黄黄绿黄黄绿重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -9272,7 +9246,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "反射镜（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0原版 1 关；原生载荷已加载，点击格子切换两种斜镜方向。\\\\\\\\\\●\\\\●//\\\\●\\\\/●★\\\\●●\\\\\\\\●\\\\●\\\\●/\\●\\\\/\\●★★\\\\\\\\★\\\\\\\\★/\\★\\●★\\●\\\\\\\\\\\\\\\\\\发射光线重置镜面重开结束"
+        "contentSample": "反射镜（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0原始载荷 1 条；关数尚未确认。当前仅提供斜镜方向与光线演示，原始坐标编码仍在解析。\\\\\\\\\\●\\\\●//\\\\●\\\\/●★\\\\●●\\\\\\\\●\\\\●\\\\●/\\●\\\\/\\●★★\\\\\\\\★\\\\\\\\★/\\★\\●★\\●\\\\\\\\\\\\\\\\\\发射光线重置镜面重开结束"
       },
       "errors": [],
       "smokePassed": true,
@@ -9360,7 +9334,7 @@
         "preformatted": 0,
         "documentOverflow": false,
         "launchError": false,
-        "contentSample": "彩球连线（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除蓝蓝红黄红紫紫绿紫红绿蓝蓝绿黄紫黄紫紫红黄紫蓝紫紫蓝绿黄黄黄蓝红紫蓝黄黄蓝紫红紫绿紫红黄紫紫蓝红红绿绿黄红红黄绿黄绿红红蓝黄红绿重开结束"
+        "contentSample": "彩球连线（PK32 独立版）原版流程：独立模式；当前迁移状态：规则接入中得分 0当前得分 0；点击相邻同色球组消除绿蓝蓝红蓝红黄蓝绿蓝黄红紫蓝绿黄绿绿紫黄绿红红绿紫红黄蓝黄绿绿红黄黄紫蓝黄绿紫黄红红紫黄蓝蓝红紫紫蓝红紫黄蓝蓝红紫绿紫红绿红紫红重开结束"
       },
       "errors": [],
       "smokePassed": true,

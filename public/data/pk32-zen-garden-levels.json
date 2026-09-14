@@ -1,5 +1,6 @@
 {
   "name": "禅宗花园",
+  "fullGameRulesVerified": false,
   "nativeLevelCount": 64,
   "extractedLevelCount": 19,
   "levelCountBasis": "native level-selection prompt",

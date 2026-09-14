@@ -1,5 +1,6 @@
 {
   "name": "七巧板",
+  "fullGameRulesVerified": false,
   "nativeLevelCount": 80,
   "extractedLevelCount": 37,
   "puzzlesPerLevel": 10,

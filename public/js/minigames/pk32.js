@@ -29,7 +29,7 @@
         '21点': 'blackjack', '21点二': 'blackjack', '比大小': 'highlow', '扫雷': 'minesweeper',
         '扫雷二': 'minesweeper', '扑克扫雷': 'minesweeper', '连连看': 'mahjong-connect',
         '推箱子': 'sokoban', '推箱子二': 'sokoban', '推箱子三': 'sokoban', '推箱子四': '推箱子四',
-        '推箱子五': 'sokoban', '推箱子六': 'sokoban', '接水管': 'pipe-connect',
+        '推箱子五': 'sokoban', '推箱子六': 'sokoban',
         '泡泡彩球': 'bubble-match', '多彩泡泡': 'bubble-match',
         '爆破彩球二': 'bubble-match', '变色彩球': 'bubble-match', '交换彩球': 'bubble-match',
     };

@@ -1,5 +1,6 @@
 {
   "name": "智慧之光",
+  "fullGameRulesVerified": false,
   "nativeLevelCount": 140,
   "extractedPayloadCount": 140,
   "objective": "light all lightable objects",

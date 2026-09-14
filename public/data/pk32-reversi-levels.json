@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "name": "黑白棋",
+  "source": "PK32 native module.bin",
+  "count": 18,
+  "fullGameRulesVerified": false,
+  "levels": [
+    {
+      "number": 1,
+      "encoding": "native-board-string",
+      "cells": "08030702130411010609101512141605"
+    },
+    {
+      "number": 2,
+      "encoding": "native-board-string",
+      "cells": "10060305090107040208121413151116"
+    },
+    {
+      "number": 3,
+      "encoding": "native-board-string",
+      "cells": "05031002120414060709110801161513"
+    },
+    {
+      "number": 4,
+      "encoding": "native-board-string",
+      "cells": "021204050610030907080111"
+    },
+    {
+      "number": 5,
+      "encoding": "native-board-string",
+      "cells": "14120106070902111005150804031316"
+    },
+    {
+      "number": 6,
+      "encoding": "native-board-string",
+      "cells": "08060107020504031516131009111214"
+    },
+    {
+      "number": 7,
+      "encoding": "native-board-string",
+      "cells": "1106021304070314081201100509"
+    },
+    {
+      "number": 8,
+      "encoding": "native-board-string",
+      "cells": "11221819011204101617130506211407090215200308"
+    },
+    {
+      "number": 9,
+      "encoding": "native-board-string",
+      "cells": "15130218010709080612041416170319051011"
+    },
+    {
+      "number": 10,
+      "encoding": "native-board-string",
+      "cells": "16151412111303010508020607100409"
+    },
+    {
+      "number": 11,
+      "encoding": "native-board-string",
+      "cells": "060502080103101204110709"
+    },
+    {
+      "number": 12,
+      "encoding": "native-board-string",
+      "cells": "030407020105081211060910"
+    },
+    {
+      "number": 13,
+      "encoding": "native-board-string",
+      "cells": "05010709020810030406"
+    },
+    {
+      "number": 14,
+      "encoding": "native-board-string",
+      "cells": "0104050207100308091118191614121315061720"
+    },
+    {
+      "number": 15,
+      "encoding": "native-board-string",
+      "cells": "0301120205101417131607080406111519092018"
+    },
+    {
+      "number": 16,
+      "encoding": "native-board-string",
+      "cells": "0102050708140406090313191018161115121720"
+    },
+    {
+      "number": 17,
+      "encoding": "native-board-string",
+      "cells": "0102190304060708051012111415091316171820"
+    },
+    {
+      "number": 18,
+      "encoding": "native-board-string",
+      "cells": "07061705081821120111141913091503220410160220"
+    }
+  ]
+}

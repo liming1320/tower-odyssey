@@ -1,6 +1,7 @@
 {
   "name": "宇宙黑洞",
   "nativeLevelCount": 30,
+  "fullGameRulesVerified": false,
   "extractedPayloadCount": 41,
   "encoding": "native decimal payloads; gameplay decoding pending",
   "levels": [

@@ -27,6 +27,7 @@
     ['魔塔二', '魔塔三', '魔塔四', '坦克大战', '????'].forEach(function (name) { if (NAMES.indexOf(name) < 0) NAMES.push(name); });
 
     function modeFor(name) {
+        if (name === '接水管') return 'pipe-connect';
         if (ELECTROMAGNETIC.has(name)) return 'electromagnetic';
         if (PIXEL_ISLAND.has(name)) return 'pixel-island';
         if (ZEN_GARDEN.has(name)) return 'zen-garden';
@@ -113,6 +114,7 @@
         function addCleanup(fn) { cleanups.push(fn); }
         function renderAction() {
             if (config.name === '华容道') return renderNativeHuarong();
+            if (config.name === '接水管') return renderNativePipeConnect();
             let hits = 0;
             const limit = /海盗船|潜艇大战|宇宙黑洞|极品飞车|反射镜|企鹅/.test(config.name) ? 12 : 10;
             const prompt = el('p', { className: 'pk32v-prompt' }, '完成本局目标：0 / ' + limit);
@@ -125,6 +127,55 @@
                 if (hits >= limit) finish('本局目标完成。');
             });
             body.append(prompt, target);
+        }
+        function renderNativePipeConnect() {
+            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载接水管原版关卡…');
+            const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
+            fetch('/data/pk32-pipe-connect-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                let level = 0;
+                function draw() {
+                    panel.innerHTML = '';
+                    const item = data.levels[level];
+                    const raw = item.cells;
+                    const points = [];
+                    for (let i = 0; i + 2 < raw.length; i += 3) {
+                        const point = Number(raw.slice(i, i + 3));
+                        if (point >= 0 && point < 256) points.push(point);
+                    }
+                    const path = new Set(points);
+                    const masks = {};
+                    const turns = {};
+                    const links = [[1, 0, 1], [-1, 0, 4], [0, 1, 2], [0, -1, 8]];
+                    points.forEach(function (point, i) {
+                        let mask = 0;
+                        links.forEach(function (link) { if (path.has(point + link[0] + link[1] * 16)) mask |= link[2]; });
+                        masks[point] = mask || 3; turns[point] = 0;
+                    });
+                    function rotated(mask, count) { for (let i = 0; i < count; i += 1) mask = ((mask << 1) & 15) | ((mask >> 3) & 1); return mask; }
+                    function solved() {
+                        const start = points[0], goal = points[points.length - 1], seen = new Set([start]), queue = [start];
+                        while (queue.length) { const point = queue.shift(), mask = rotated(masks[point], turns[point]); links.forEach(function (link) { if (!(mask & link[2])) return; const next = point + link[0] + link[1] * 16; if (!path.has(next) || seen.has(next)) return; const back = link[2] === 1 ? 4 : link[2] === 4 ? 1 : link[2] === 2 ? 8 : 2; if (rotated(masks[next], turns[next]) & back) { seen.add(next); queue.push(next); } }); }
+                        return seen.has(goal);
+                    }
+                    const glyph = { 1: '│', 2: '─', 3: '└', 4: '│', 5: '│', 6: '┌', 7: '├', 8: '─', 9: '┘', 10: '─', 11: '┴', 12: '┐', 13: '┤', 14: '┬', 15: '┼' };
+                    const grid = renderGrid(16, 16, 'pipe-connect-native-board');
+                    for (let index = 0; index < 256; index += 1) {
+                        const x = index % 16, y = Math.floor(index / 16);
+                        const cell = button(path.has(index) ? glyph[rotated(masks[index], turns[index])] : '', function () { if (!path.has(index)) return; turns[index] = (turns[index] + 1) % 4; cell.textContent = glyph[rotated(masks[index], turns[index])] || '·'; if (solved()) finish('本局管路已连通。'); });
+                        cell.dataset.nativeCode = String(index).padStart(3, '0');
+                        cell.title = '原版坐标 ' + String(index).padStart(3, '0');
+                        const linked = path.has(index) && (path.has(index - 1) || path.has(index + 1) || path.has(index - 16) || path.has(index + 16));
+                        cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (linked ? '#38bdf8' : '#172033') + ';color:#fff;font-size:16px;font-weight:700';
+                        grid.appendChild(cell);
+                    }
+                    const select = el('select', { ariaLabel: '接水管原版关卡' });
+                    data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原版关卡 ' + (index + 1))); });
+                    select.value = String(level); select.onchange = function () { level = Number(select.value) || 0; draw(); };
+                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); draw(); }), select, grid);
+                    prompt.textContent = '接水管原版数据：第 ' + (level + 1) + ' / ' + data.nativeLevelCount + '；原始管路坐标已恢复，旋转连通规则仍在校核。';
+                }
+                draw();
+            }).catch(function () { prompt.textContent = '接水管原版数据加载失败'; });
         }
         function renderReaction() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '等待目标出现后立即点击。');
@@ -273,7 +324,7 @@
                   cells.forEach(function (_, i) { grid.appendChild(button('', function () { cells[i] = cells[i] === '0' ? '1' : cells[i] === '1' ? '2' : '0'; paint(); })); });
                 function paint(path) { cells.forEach(function (value, i) { grid.children[i].textContent = path && path.indexOf(i) >= 0 ? '·' : value === '1' ? '/' : value === '2' ? '\\' : value === '3' ? '●' : value === '4' ? '★' : ''; }); }
                 const controls = el('div', { className: 'pk32v-controls' }); controls.append(button('发射光线', function () { let x = 0, y = 0, dx = 1, dy = 0, path = [], hit = false; for (let step = 0; step < width * 6; step += 1) { if (x < 0 || x >= width || y < 0 || y >= 6) break; const i = y * width + x; path.push(i); if (cells[i] === '4') { hit = true; break; } if (cells[i] === '1') { const t = dx; dx = -dy; dy = -t; } else if (cells[i] === '2') { const t = dx; dx = dy; dy = t; } x += dx; y += dy; } paint(path); setScore(hit ? score + 50 : score); prompt.textContent = hit ? '光线命中目标，本关完成。' : '光线未命中目标，请调整镜面方向。'; if (hit) finish('反射成功。'); }), button('重置镜面', function () { cells.fill('0'); paint(); }));
-                  panel.append(grid, controls); paint(); prompt.textContent = '原版 1 关；原生载荷已加载，点击格子切换两种斜镜方向。';
+                  panel.append(grid, controls); paint(); prompt.textContent = '原始载荷 1 条；关数尚未确认。当前仅提供斜镜方向与光线演示，原始坐标编码仍在解析。';
             }).catch(function () { prompt.textContent = '反射镜原生数据加载失败'; });
         }
         function renderNativeSwapBalls() {
@@ -284,7 +335,7 @@
                 const raw = data.levels[0].cells, width = 16, values = raw.match(/.{1,16}/g).map(function (row) { return row.split(''); });
                 const grid = renderGrid(width, values.length, 'bubble-board');
                 let selected = null;
-                function groups() { const found = []; function same(a, b) { return a && b && (a === b || a === '4' || b === '4'); } for (let y = 0; y < values.length; y += 1) for (let x = 0; x < width - 2; x += 1) if (same(values[y][x], values[y][x + 1]) && same(values[y][x + 1], values[y][x + 2])) found.push([[x, y], [x + 1, y], [x + 2, y]]); for (let y = 0; y < values.length - 2; y += 1) for (let x = 0; x < width; x += 1) if (same(values[y][x], values[y + 1][x]) && same(values[y + 1][x], values[y + 2][x])) found.push([[x, y], [x, y + 1], [x, y + 2]]); return found; }
+                function groups() { const found = [], seen = new Set(); function same(a, b) { return a && b && (a === b || a === '4' || b === '4'); } for (let y = 0; y < values.length; y += 1) for (let x = 0; x < width; x += 1) { const key = x + ':' + y; if (seen.has(key) || !values[y][x] || values[y][x] === '0') continue; const group = [], queue = [[x, y]]; seen.add(key); while (queue.length) { const point = queue.shift(), px = point[0], py = point[1]; group.push(point); [[px - 1, py], [px + 1, py], [px, py - 1], [px, py + 1]].forEach(function (next) { const nx = next[0], ny = next[1], nk = nx + ':' + ny; if (nx >= 0 && nx < width && ny >= 0 && ny < values.length && !seen.has(nk) && same(values[py][px], values[ny][nx])) { seen.add(nk); queue.push(next); } }); } const colors = group.filter(function (point) { return values[point[1]][point[0]] !== '4'; }); if (colors.length >= 3 || (group.some(function (point) { return values[point[1]][point[0]] === '4'; }) && colors.length >= 2)) found.push(group); } return found; }
                 function draw() { grid.innerHTML = ''; values.forEach(function (row, y) { row.forEach(function (value, x) { const b = button(value === '0' ? '' : value, function () { if (!value) return; if (!selected) { selected = [x, y]; b.dataset.selected = 'true'; return; } if (Math.abs(selected[0] - x) + Math.abs(selected[1] - y) !== 1) { selected = [x, y]; draw(); return; } const other = values[selected[1]][selected[0]]; values[selected[1]][selected[0]] = value; values[y][x] = other; selected = null; let removed = 0, chain = 0, matched; do { matched = groups(); matched.forEach(function (group) { group.forEach(function (p) { if (values[p[1]][p[0]] !== '0') { values[p[1]][p[0]] = '0'; removed += 1; } }); }); if (matched.length) { chain += 1; for (let cx = 0; cx < width; cx += 1) { const kept = values.map(function (r) { return r[cx]; }).filter(function (v) { return v !== '0'; }); for (let cy = values.length - 1; cy >= 0; cy -= 1) values[cy][cx] = kept.pop() || '0'; } } } while (matched.length); if (removed) setScore(score + removed * 3 + Math.max(0, chain - 1) * 5); draw(); }); if (selected && selected[0] === x && selected[1] === y) b.dataset.selected = 'true'; grid.appendChild(b); }); }); prompt.textContent = '原版盘面：相邻交换，三连消除并自动连锁下落；当前得分 ' + score + '。'; }
                 draw(); panel.appendChild(grid);
             }).catch(function () { prompt.textContent = '交换彩球原生数据加载失败'; });
@@ -523,8 +574,8 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             fetch('/data/pk32-genhua2-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; const select = el('select', { 'aria-label': '跟花二原生关卡' }); data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); }); function draw() { panel.innerHTML = ''; const item = data.levels[level]; panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select, el('pre', { className: 'pk32v-native-grid' }, item.cells.match(/.{1,6}/g).join('\n'))); prompt.textContent = '跟花二原生关卡 ' + (level + 1) + ' / ' + data.levels.length + '；6×6 牌面编码，规则解析中。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '跟花二原生数据加载失败'; });
         }
         function renderNativeWires2() {
-            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载连结电线二原生盘面…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-            fetch('/data/pk32-connect-wires2-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; const select = el('select', { 'aria-label': '连结电线二原生盘面' }); data.confirmedLevels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生盘面 ' + (index + 1))); }); function draw() { panel.innerHTML = ''; const raw = data.confirmedLevels[level], width = raw.length === 36 ? 6 : 10, cells = raw.split(''), grid = renderGrid(width, Math.ceil(cells.length / width), 'pk32-wires2-board'); cells.forEach(function (value, index) { const cell = button('', function () { cells[index] = String((Number(cells[index]) + 1) % 6); paint(); }); cell.dataset.code = value; cell.style.cssText = 'min-width:30px;min-height:30px;padding:0;background:#e2e8f0;color:#111;font-size:0'; function paint() { cell.dataset.code = cells[index]; cell.textContent = ''; cell.style.background = '#e2e8f0'; if (cells[index] !== '0') { const line = el('span', { style: 'display:block;width:80%;height:10%;margin:45% auto;background:#2563eb' }); cell.appendChild(line); } } paint(); grid.appendChild(cell); }); panel.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一条', function () { level = Math.min(data.confirmedLevels.length - 1, level + 1); select.value = String(level); draw(); }), select, grid); prompt.textContent = '连结电线二：原版 60 关；当前确认原生盘面 ' + (level + 1) + ' / ' + data.confirmedLevels.length + '，点击旋转电线；完整连通判定仍在校核。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '连结电线二原生数据加载失败'; });
+            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载连结电线二原生箱体关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
+            fetch('/data/pk32-connect-wires2-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; const levels = data.levels || (data.confirmedLevels || []).map(function (cells, index) { return { number: index + 1, cells: cells }; }); const select = el('select', { 'aria-label': '连结电线二原生箱体关卡' }); levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); }); function draw() { panel.innerHTML = ''; const raw = levels[level].cells, width = raw.length === 36 ? 6 : 10, cells = raw.split(''), grid = renderGrid(width, Math.ceil(cells.length / width), 'pk32-wires2-board'); cells.forEach(function (value, index) { const cell = button(value === '0' ? '' : value === '1' ? '□' : value === '2' ? '▣' : value === '3' ? '■' : '·', function () {}); cell.dataset.code = value; cell.style.cssText = 'min-width:30px;min-height:30px;padding:0;background:' + (value === '0' ? '#172033' : value === '1' ? '#f8fafc' : '#64748b') + ';color:' + (value === '1' ? '#111' : '#fff') + ';font-size:16px;font-weight:700'; grid.appendChild(cell); }); panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(levels.length - 1, level + 1); select.value = String(level); draw(); }), select, grid); prompt.textContent = '连结电线二：原版 ' + data.nativeLevelCount + ' 关；目标是将白色箱子移到最右边。当前已确认原生编码 ' + (level + 1) + ' / ' + levels.length + '，箱体尺寸与移动规则解析中。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '连结电线二原生数据加载失败'; });
         }
         function renderNativeHuarong() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载华容道原版棋局…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
