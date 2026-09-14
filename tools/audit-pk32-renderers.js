@@ -3,7 +3,8 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'public', 'js', 'minigames', 'pk32-variants.js'), 'utf8');
-const namesMatch = source.match(/const NAMES = '([^']+)'\.split\('\|'\);/);
+const catalogSource = fs.readFileSync(path.join(root, 'public', 'js', 'minigames', 'pk32.js'), 'utf8');
+const namesMatch = catalogSource.match(/'([^']+)'\s*\r?\n\s*\)\.split\('\|'\);/);
 if (!namesMatch) throw new Error('cannot locate PK32 variant names');
 const names = namesMatch[1].split('|');
 const specialNames = new Set(Array.from(source.matchAll(/config\.name === '([^']+)'/g), match => match[1]));

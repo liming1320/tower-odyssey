@@ -286,7 +286,7 @@
         boardShell.className = 'pk32-board-scroll';
         boardShell.appendChild(boardEl);
         const style = document.createElement('style');
-        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:42px;min-height:42px;padding:2px;touch-action:manipulation}.pk32-animal-cell{position:relative}.pk32-animal-cell[data-terrain="river"]{background:#74b9dc;color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:#d9a441;color:#5b3810}.pk32-animal-cell[data-terrain="den"]{background:#9b6bd3;color:#fff}.pk32-animal-piece{display:block;width:32px;height:32px;margin:auto;background-image:url("/img/pk32/jungle-pieces.png");background-repeat:no-repeat;background-size:32px 256px;image-rendering:pixelated}.pk32-animal-piece[data-side="2"]{filter:invert(1)}';
+        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:42px;min-height:42px;padding:2px;touch-action:manipulation}.pk32-animal-cell{position:relative}.pk32-animal-cell[data-terrain="river"]{background:#74b9dc;color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:#d9a441;color:#5b3810}.pk32-animal-cell[data-terrain="den"]{background:#9b6bd3;color:#fff}.pk32-animal-piece{display:block;width:34px;height:34px;margin:auto;background:none!important;font-size:29px;line-height:34px;text-align:center}.pk32-animal-piece[data-side="1"]{filter:saturate(1.35)}.pk32-animal-piece[data-side="2"]{filter:saturate(1.35) drop-shadow(0 0 1px #fff)}';
         rootEl.appendChild(style);
         restart.type = 'button';
         restart.textContent = '重开';
@@ -359,7 +359,7 @@
                     const piece = document.createElement('span');
                     piece.className = 'pk32-animal-piece';
                     piece.dataset.side = String(value.side);
-                    piece.style.backgroundPosition = '0 -' + ({ rat: 0, cat: 1, dog: 2, wolf: 3, leopard: 4, tiger: 5, lion: 6, elephant: 7 }[value.rank] || 0) * 32 + 'px';
+                    piece.textContent = ({ rat: '🐭', cat: '🐱', dog: '🐶', wolf: '🐺', leopard: '🐆', tiger: '🐯', lion: '🦁', elephant: '🐘' }[value.rank] || '🐾');
                     piece.setAttribute('aria-hidden', 'true');
                     button.appendChild(piece);
                     button.setAttribute('aria-label', text);

@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "name": "碰撞彩球",
   "source": "PK32 native module.bin",
   "count": 2,
   "fullGameRulesVerified": false,

@@ -13,6 +13,6 @@ const levels = record.payloadSamples.map((item, index) => {
   return { number: index + 1, width: 5, height: Math.ceil(cells.length / 5), cells };
 });
 fs.writeFileSync(path.join(root, 'public/data/pk32-collision-balls-levels.json'), JSON.stringify({
-  version: 1, source: 'PK32 native module.bin', count: levels.length, fullGameRulesVerified: false, levels
+  version: 1, name: '碰撞彩球', source: 'PK32 native module.bin', count: levels.length, fullGameRulesVerified: false, levels
 }, null, 2) + '\n');
 console.log(JSON.stringify({ count: levels.length, lengths: levels.map(level => level.cells.length) }));

@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "name": "摘花朵",
   "source": "PK32 native module.bin",
   "count": 12,
   "fullGameRulesVerified": false,

@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "name": "华容道",
   "source": "PK32 native module.bin",
   "count": 11,
   "fullGameRulesVerified": false,
