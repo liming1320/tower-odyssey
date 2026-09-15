@@ -34,6 +34,16 @@ const groups = {
     games: ['\u6597\u517d\u68cb'],
     evidence: [],
     browser: ['tools/verify-pk32-jungle-cdp.js']
+  },
+  sokoban4: {
+    games: ['\u63a8\u7bb1\u5b50\u56db'],
+    evidence: ['tools/verify-pk32-sokoban4.js', 'tools/verify-pk32-sokoban4-data.js'],
+    browser: ['tools/verify-pk32-sokoban4-cdp.js']
+  },
+  light: {
+    games: ['\u667a\u6167\u4e4b\u5149'],
+    evidence: ['tools/verify-pk32-light.js', 'tools/verify-pk32-light-rules.js'],
+    browser: ['tools/verify-pk32-light-cdp.js']
   }
 };
 const selected = args.includes('--all') ? Object.keys(groups) : (requested.length ? requested : Object.keys(groups));

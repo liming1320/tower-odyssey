@@ -82,9 +82,16 @@ class CDP {
             await sleep(100);
         }
         const result = await cdp.eval(`(async () => {
+            const mask = document.createElement('div');
+            mask.id = 'pk32-mask';
+            mask.className = 'mini-mask';
+            const stage = document.createElement('div');
+            stage.className = 'mini-stage';
             const host = document.createElement('div');
             host.id = 'pk32-jungle-cdp-host';
-            document.body.appendChild(host);
+            stage.appendChild(host);
+            mask.appendChild(stage);
+            document.body.appendChild(mask);
             const catalog = window.MiniGames.pk32.start(host, {});
             const record = window.PK32Catalog.find(row => row.name === '斗兽棋');
             const button = record && host.querySelector('[data-pk32-id="' + record.id + '"] button');
@@ -92,12 +99,25 @@ class CDP {
             button.click();
             await new Promise(resolve => setTimeout(resolve, 300));
             const board = host.querySelector('.pk32-board-grid');
+            const scroll = host.querySelector('.pk32-board-scroll');
             const cells = [...host.querySelectorAll('.pk32-animal-cell')];
             const pieces = [...host.querySelectorAll('.pk32-animal-piece')];
             const image = new Image();
             image.src = '/img/pk32/jungle-original.png';
             await new Promise(resolve => { if (image.complete) return resolve(); image.onload = resolve; image.onerror = resolve; });
             const positions = pieces.map(node => ({ rank: node.dataset.rank, position: getComputedStyle(node).backgroundPosition, source: getComputedStyle(node).backgroundImage }));
+            const pieceBounds = pieces.map(node => {
+                const piece = node.getBoundingClientRect();
+                const cell = node.closest('.pk32-animal-cell').getBoundingClientRect();
+                return piece.left >= cell.left - 1 && piece.right <= cell.right + 1 && piece.top >= cell.top - 1 && piece.bottom <= cell.bottom + 1;
+            });
+            const sourceTiles = pieces.map(node => {
+                const style = getComputedStyle(node);
+                return { width: style.width, height: style.height, scale: style.transform };
+            });
+            if (scroll) scroll.scrollTop = scroll.scrollHeight;
+            const lastCell = cells[cells.length - 1];
+            const lastCellVisible = lastCell ? (() => { const rect = lastCell.getBoundingClientRect(); const shell = scroll.getBoundingClientRect(); return rect.bottom <= shell.bottom + 1 && rect.top >= shell.top - 1; })() : false;
             const state = window.PK32Board.start('jungle').state;
             const custom = () => {
                 const value = window.PK32Board.start('jungle').state;
@@ -120,6 +140,9 @@ class CDP {
                 firstPiece: pieces[0] ? pieces[0].outerHTML : '',
                 overflow: document.documentElement.scrollWidth > innerWidth || document.body.scrollWidth > innerWidth,
                 piecesInCells: pieces.every(node => !!node.closest('.pk32-animal-cell')),
+                piecesFullyVisible: pieceBounds.every(Boolean),
+                sourceTiles,
+                verticalScrollReady: !!scroll && scroll.scrollHeight >= scroll.clientHeight && lastCellVisible,
                 pieceCount: state.board.flat().filter(Boolean).length,
                 ratCapturesElephant: window.PK32Board.animalCanMove(rat, [2, 1], [2, 2]),
                 elephantCapturesRat: window.PK32Board.animalCanMove(elephant, [2, 1], [2, 2])
@@ -137,6 +160,9 @@ class CDP {
         assert.ok(result.positions.some(item => item.rank === '1' && / 0px$/.test(item.position)));
         assert.ok(result.positions.some(item => item.rank === '8' && / -371px$/.test(item.position)));
         assert.ok(result.piecesInCells);
+        assert.ok(result.piecesFullyVisible);
+        assert.ok(result.sourceTiles.every(tile => tile.width === '66px' && tile.height === '53px'));
+        assert.ok(result.verticalScrollReady);
         assert.ok(!result.overflow);
         assert.equal(result.ratCapturesElephant, true);
         assert.equal(result.elephantCapturesRat, false);
