@@ -182,6 +182,23 @@ csrf() {
     echo "$tok"
 }
 
+# 从 ST 日志里抓最后一次「password recovery code is: XXXXXX」的 6 位码。
+# 免得用户开第二个窗口翻日志；找不到就返回 1，由调用方退回手动输入。
+grab_recovery_code() {
+    local f hit
+    for f in "${PM2_HOME:-$HOME/.pm2}"/logs/*-out.log; do
+        [ -f "$f" ] || continue
+        hit="$(tail -n 200 "$f" 2>/dev/null | grep -oE 'recovery code is: [0-9]{6}' | tail -1 | grep -oE '[0-9]{6}')"
+        [ -n "$hit" ] && { echo "$hit"; return 0; }
+    done
+    if command -v journalctl >/dev/null 2>&1; then
+        hit="$(journalctl -u sillytavern -n 200 --no-pager 2>/dev/null \
+               | grep -oE 'recovery code is: [0-9]{6}' | tail -1 | grep -oE '[0-9]{6}')"
+        [ -n "$hit" ] && { echo "$hit"; return 0; }
+    fi
+    return 1
+}
+
 cmd_list() {
     echo "→ 列出 $ST_URL 的账号"
     local tok; tok="$(csrf)" || exit 1   # 必须：ST 全局 CSRF 保护，裸 POST 一律返回 HTML 403
@@ -229,23 +246,47 @@ cmd_passwd() {
         || die "请求验证码失败。句柄不存在？先用 '$0 list' 确认名字。"
 
     echo
-    echo "  验证码已经打印到 SillyTavern 的控制台里 —— **另开一个 SSH 窗口**去读："
-    echo "    $0 logs           ← 推荐，自动判断 pm2 / systemd / nohup"
-    echo "    · systemd : journalctl -u <服务名> -n 50 --no-pager"
-    echo "    · pm2     : pm2 logs <名字> --lines 50   （pm2 不在 PATH 就用上面的 logs）"
-    echo "    · nohup   : tail -50 st.log          · docker: docker logs --tail 50 <容器>"
-    echo
-    read -r -p "  输入 6 位验证码: " code
+    echo "  验证码已打印到 ST 控制台，正在日志里找（等 2 秒让日志落盘）…"
+    sleep 2
+    local code=""
+    code="$(grab_recovery_code || true)"
+
+    if [ -n "$code" ]; then
+        echo "  ✓ 自动读到验证码：$code"
+    else
+        echo "  ✗ 日志里没找到，另开一个 SSH 窗口自己看："
+        echo "    $0 logs           ← 推荐，自动判断 pm2 / systemd / nohup"
+        echo "    · pm2     : tail -50 /root/.pm2/logs/*-out.log"
+        echo "    · systemd : journalctl -u <服务名> -n 50 --no-pager"
+        echo "    · nohup   : tail -50 st.log"
+        read -r -p "  输入 6 位验证码: " code
+    fi
+
     read -r -s -p "  给 $handle 设置的新密码: " pw
     echo
 
     local payload
     payload="$(python3 -c 'import json,sys;print(json.dumps({"handle":sys.argv[1],"code":sys.argv[2],"newPassword":sys.argv[3]}))' "$handle" "$code" "$pw")"
 
-    curl -fsS -X POST "$ST_URL/api/users/recover-step2" \
-         -b "$JAR" -H "X-CSRF-Token: $tok" -H 'Content-Type: application/json' \
-         -d "$payload" -o /dev/null \
-        || die "设置密码失败（验证码错或已过期，5 分钟内有效）"
+    # 关键：ST 的 CSRF token 是一次性的（step1 用掉后立刻失效），
+    # 复用同一个 token 调 step2 会拿到 403 Invalid CSRF token，必须重新取。
+    tok="$(csrf)"
+
+    local body httpcode
+    body="$(curl -sS -w $'\n%{http_code}' -X POST "$ST_URL/api/users/recover-step2" \
+            -b "$JAR" -H "X-CSRF-Token: $tok" -H 'Content-Type: application/json' \
+            -d "$payload" 2>&1)"
+    httpcode="$(printf '%s' "$body" | tail -n1)"
+    if [ "$httpcode" != "200" ] && [ "$httpcode" != "204" ]; then
+        echo "✗ 设置密码失败，HTTP $httpcode"
+        printf '%s' "$body" | sed '$d' | head -c 400 | sed 's/^/    /'
+        echo
+        case "$httpcode" in
+            403) echo "  → 403 = 验证码错/过期，或 CSRF 失效。重跑一次本命令拿新验证码。" ;;
+            429) echo "  → 429 = 被限流，等一分钟再试" ;;
+        esac
+        return 1
+    fi
 
     echo
     echo "✓ 已设置。现在去塔界远征后台「AI 酒馆」页填："
