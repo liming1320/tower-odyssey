@@ -527,7 +527,7 @@
                 function hasMove() { return cells.some(function (value, index) { return value !== '0' && connected(index).length >= 2; }); }
                 function compact() {
                     for (let x = 0; x < width; x += 1) { const column = []; for (let y = height - 1; y >= 0; y -= 1) if (cells[y * width + x] !== '0') column.push(cells[y * width + x]); for (let y = height - 1; y >= 0; y -= 1) cells[y * width + x] = column[height - 1 - y] || '0'; }
-                    for (let x = 0; x < width;) { let empty = true; for (let y = 0; y < height; y += 1) if (cells[y * width + x] !== '0') empty = false; if (!empty) { x += 1; continue; } for (let from = x + 1; from < width; from += 1) for (let y = 0; y < height; y += 1) cells[y * width + from - 1] = cells[y * width + from]; for (let y = 0; y < height; y += 1) cells[y * width + width - 1] = '0'; }
+                    for (let x = 0; x < width;) { let empty = true; for (let y = 0; y < height; y += 1) if (cells[y * width + x] !== '0') empty = false; if (!empty) { x += 1; continue; } let next = x + 1; while (next < width) { let hasValue = false; for (let y = 0; y < height; y += 1) if (cells[y * width + next] !== '0') hasValue = true; if (hasValue) break; next += 1; } if (next === width) break; for (let from = next; from < width; from += 1) for (let y = 0; y < height; y += 1) cells[y * width + from - 1] = cells[y * width + from]; for (let y = 0; y < height; y += 1) cells[y * width + width - 1] = '0'; }
                     if (!ended && cells.some(function (value) { return value !== '0'; }) && !hasMove()) finish('没有可选择的彩球了，请重新开始本关。');
                 }
                 function draw() { panel.innerHTML = ''; const grid = renderGrid(width, height, 'bubble-board'); cells.forEach(function (value, index) { const b = button(value === '0' ? '' : '●', function () { if (ended || value === '0') return; const group = connected(index); if (group.length < 2) { prompt.textContent = '请选择两个以上上下左右连续相同颜色的彩球。'; return; } group.forEach(function (cell) { cells[cell] = '0'; }); compact(); setScore(score + group.length * 3); if (!cells.some(function (cell) { return cell !== '0'; })) { ended = true; draw(); finish('所有彩球已消除，本关完成。'); return; } draw(); }); b.dataset.cell = String(index); b.dataset.value = value; b.setAttribute('aria-label', value === '0' ? '空格' : '彩球 ' + value); b.disabled = ended || value === '0'; grid.appendChild(b); }); panel.append(button('上一关', function () { level = Math.max(0, level - 1); reset(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); reset(); }), select, grid); prompt.textContent = '原版关卡：第 ' + (level + 1) + ' / ' + data.levels.length + '；选择两个以上上下左右连续相同的彩球消除。'; }
@@ -895,7 +895,8 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             const selector = el('select', { ariaLabel: '选择已提取原生盘面' });
             let records = [], record = 0, cells = [], moves = 0;
             function reset() {
-                cells = (records[record] && records[record].cells || '').slice(0, 25).split('').map(function (value) { return value === '1' ? 1 : 0; });
+                const raw = records[record] && records[record].cells || '';
+                cells = (raw.match(/.{4}/g) || []).slice(0, 25).map(function (value) { return value === '0000' ? 0 : 1; });
                 moves = 0;
                 ended = false;
                 draw();
@@ -927,10 +928,11 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             function draw() {
                 grid.innerHTML = '';
                 const raw = records[record] && records[record].cells || '';
+                const chunks = raw.match(/.{4}/g) || [];
                 for (let i = 0; i < 25; i += 1) {
                     const value = cells[i] || 0;
                     const b = button(value ? '●' : '·', function () { toggle(i); });
-                    b.dataset.cell = String(i); b.dataset.value = String(value); b.dataset.rawState = raw.slice(i * 4, i * 4 + 4) || '0000';
+                    b.dataset.cell = String(i); b.dataset.value = String(value); b.dataset.rawState = chunks[i] || '0000';
                     b.setAttribute('aria-label', '第 ' + (i + 1) + ' 格，' + (value ? '有彩球' : '空格'));
                     b.style.cssText = value ? 'color:#f4c95d;background:#263653;min-width:44px;min-height:44px;padding:0;font-size:22px' : 'color:#64748b;background:#111827;min-width:44px;min-height:44px;padding:0;font-size:22px';
                     b.disabled = ended;
@@ -942,7 +944,8 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             function load() { fetch('/data/pk32-pixel-island-levels.json').then(r => r.json()).then(d => { records = (d.levels || []).filter(x => x.cells && x.cells.length === 100 && /^[01]+$/.test(x.cells)); records.forEach(function (_, i) { const option = el('option', {}, '原生盘面 ' + (i + 1)); option.value = String(i); selector.appendChild(option); }); reset(); }).catch(() => { info.textContent = '原生盘面加载失败'; }); }
             selector.addEventListener('change', function () { record = Number(selector.value) || 0; reset(); });
             controls.append(selector, button('重置本关', reset));
-            wrap.append(info, controls, grid, el('p', { className: 'pk32v-prompt' }, '原生帮助确认：5×5 格子中的彩球会随选择发生变化，目标是让所有彩球消失。当前 3 条已定位状态串按翻转相邻格规则运行，其余原版关卡仍待从宿主程序确认。')); body.append(wrap); load();
+            wrap.dataset.rulesStatus = 'unverified';
+            wrap.append(info, controls, grid, el('p', { className: 'pk32v-prompt' }, '原生帮助确认：5×5 格子中的彩球会随选择发生变化，目标是让所有彩球消失。当前保留 3 条原始 4 字符状态串；点击变化规则和其余原版关卡仍待从宿主程序确认。')); body.append(wrap); load();
             if (window.__MG_TEST) window.__pk32PixelIslandDebug = { getState: function () { return { record: record, cells: cells.slice(), moves: moves, ended: ended }; }, toggle: toggle, reset: reset, solveSimpleBoard: function () { const solution = solveCurrent(); if (!solution) return false; solution.forEach(toggle); return !cells.some(function (value) { return value; }); } };
         }
         function renderZenGarden() {

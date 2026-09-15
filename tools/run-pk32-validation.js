@@ -24,6 +24,16 @@ const groups = {
     games: ['\u540c\u8272\u65b9\u5757', '\u7206\u7834\u5f69\u7403'],
     evidence: ['tools/verify-pk32-same-color-data.js', 'tools/verify-pk32-burst-balls.js'],
     browser: ['tools/verify-pk32-native-cdp.js', 'tools/verify-pk32-burst-cdp.js']
+  },
+  'pixel-island': {
+    games: ['\u50cf\u7d20\u5c9b'],
+    evidence: ['tools/verify-pk32-pixel-island-data.js'],
+    browser: ['tools/verify-pk32-pixel-island-flow.js']
+  },
+  jungle: {
+    games: ['\u6597\u517d\u68cb'],
+    evidence: [],
+    browser: ['tools/verify-pk32-jungle-cdp.js']
   }
 };
 const selected = args.includes('--all') ? Object.keys(groups) : (requested.length ? requested : Object.keys(groups));

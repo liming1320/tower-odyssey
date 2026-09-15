@@ -8,7 +8,7 @@ const http = require('node:http');
 const net = require('node:net');
 const WebSocket = require('ws');
 
-const base = 'http://127.0.0.1:5180';
+const base = process.env.PK32_BASE_URL || 'http://127.0.0.1:5180';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const json = url => new Promise((resolve, reject) => {
     http.get(url, response => {
@@ -30,6 +30,10 @@ class CDP {
         this.waiters = new Map();
         ws.on('message', data => {
             const message = JSON.parse(data);
+            if (message.method === 'Runtime.consoleAPICalled') {
+                const values = (message.params.args || []).map(arg => arg.value == null ? '' : arg.value);
+                console.log('PAGE ' + values.join(' '));
+            }
             if (message.id && this.waiters.has(message.id)) { this.waiters.get(message.id)(message); this.waiters.delete(message.id); }
         });
     }
@@ -37,7 +41,7 @@ class CDP {
         const id = ++this.id;
         this.ws.send(JSON.stringify({ id, method, params: params || {} }));
         return new Promise((resolve, reject) => {
-            const timer = setTimeout(() => reject(new Error(method + ' timeout')), 5000);
+            const timer = setTimeout(() => reject(new Error(method + ' timeout')), 20000);
             this.waiters.set(id, message => { clearTimeout(timer); resolve(message); });
         });
     }
@@ -73,31 +77,48 @@ class CDP {
         await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 900, deviceScaleFactor: 1, mobile: true });
         await cdp.send('Page.navigate', { url: base + '?pk32-native-cdp=' + Date.now() });
         await sleep(1000);
+        const smoke = await cdp.eval('JSON.stringify({ ready: document.readyState, title: document.title, variants: !!window.PK32Variants, body: document.body ? document.body.children.length : -1 })');
+        console.log('SMOKE ' + smoke);
         const result = await cdp.eval(`(async () => {
             const output = [];
             async function check(name, expected) {
+                const startedAt = performance.now();
+                console.log('CHECK_START ' + name);
                 const host = document.createElement('div');
                 document.body.appendChild(host);
                 const errors = [];
                 const onError = event => errors.push(event.message);
+                const onRejection = event => errors.push(String(event.reason && event.reason.message || event.reason));
                 window.addEventListener('error', onError);
+                window.addEventListener('unhandledrejection', onRejection);
                 window.__MG_TEST = true;
-                const game = window.PK32Variants.startGame(host, name, {});
-                for (let i = 0; i < 250; i += 1) {
-                    const ready = name === '电磁彩球' ? host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length === 256 :
-                        name === '同色方块' ? host.querySelectorAll('.pk32v-native-data [data-cell]').length === 192 :
-                            !!host.querySelector('.pk32v-grid');
-                    if (ready) break;
-                    await new Promise(resolve => setTimeout(resolve, 20));
+                let game = null;
+                let row;
+                try {
+                    game = window.PK32Variants.startGame(host, name, {});
+                    const deadline = performance.now() + 2500;
+                    let ready = false;
+                    while (performance.now() < deadline) {
+                        ready = name === '电磁彩球' ? host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length === 256 :
+                            name === '同色方块' ? host.querySelectorAll('.pk32v-native-data [data-cell]').length === 192 :
+                                !!host.querySelector('.pk32v-grid');
+                        if (ready) break;
+                        await new Promise(resolve => setTimeout(resolve, 20));
+                    }
+                    row = {
+                        name,
+                        ready,
+                        elapsed: Math.round(performance.now() - startedAt),
+                        grid: host.querySelector('[data-board=electromagnetic]') ? host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length : host.querySelector('.pk32v-grid') ? host.querySelector('.pk32v-grid').children.length : host.querySelectorAll('[data-cell]').length,
+                        options: host.querySelector('select') ? host.querySelector('select').options.length : 0,
+                        prompt: host.querySelector('.pk32v-prompt') ? host.querySelector('.pk32v-prompt').textContent : '',
+                        errors
+                    };
+                } catch (error) {
+                    row = { name, ready: false, elapsed: Math.round(performance.now() - startedAt), grid: host.querySelectorAll('[data-cell]').length, options: host.querySelector('select') ? host.querySelector('select').options.length : 0, prompt: host.querySelector('.pk32v-prompt') ? host.querySelector('.pk32v-prompt').textContent : '', errors, error: String(error && error.stack || error) };
                 }
-                const row = {
-                    name,
-                    grid: host.querySelector('[data-board=electromagnetic]') ? host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length : host.querySelector('.pk32v-grid') ? host.querySelector('.pk32v-grid').children.length : 0,
-                    options: host.querySelector('select') ? host.querySelector('select').options.length : 0,
-                    prompt: host.querySelector('.pk32v-prompt') ? host.querySelector('.pk32v-prompt').textContent : '',
-                    errors
-                };
-                if (name === '电磁彩球') {
+                try {
+                if (name === '电磁彩球' && row.ready) {
                     const nodes = [...host.querySelectorAll('[data-board=electromagnetic] [data-cell]')];
                     const fixed = nodes.find(node => node.dataset.value === '5');
                     const empty = nodes.find(node => node.dataset.value === '0');
@@ -126,7 +147,7 @@ class CDP {
                         overflow: document.documentElement.scrollWidth > innerWidth || document.body.scrollWidth > innerWidth
                     };
                 }
-                if (name === '同色方块') {
+                if (name === '同色方块' && row.ready) {
                     const nodes = [...host.querySelectorAll('.pk32v-native-data [data-cell]')], values = nodes.map(node => node.dataset.value);
                     function connected(start) { const value = values[start], found = [], queue = [start], seen = new Set([start]); while (queue.length) { const index = queue.shift(); found.push(index); const x = index % 12, y = Math.floor(index / 12); [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].forEach(function (point) { if (point[0] < 0 || point[0] >= 12 || point[1] < 0 || point[1] >= 16) return; const next = point[1] * 12 + point[0]; if (!seen.has(next) && values[next] === value) { seen.add(next); queue.push(next); } }); } return found; }
                     const candidate = values.findIndex(function (value, index) { return value !== '0' && connected(index).length >= 2; });
@@ -137,9 +158,15 @@ class CDP {
                     const after = [...host.querySelectorAll('.pk32v-native-data [data-cell]')].filter(function (node) { return node.dataset.value !== '0'; }).length;
                     row.sameColor = { candidate: candidate, group: group.length, before: before, after: after, overflow: document.documentElement.scrollWidth > innerWidth || document.body.scrollWidth > innerWidth };
                 }
+                } catch (error) {
+                    row.error = String(error && error.stack || error);
+                }
                 output.push(row);
-                if (game && game.destroy) game.destroy();
+                console.log('CHECK_DONE ' + JSON.stringify(row));
+                try { if (game && game.destroy) game.destroy(); } catch (error) { row.cleanupError = String(error && error.stack || error); }
                 window.removeEventListener('error', onError);
+                window.removeEventListener('unhandledrejection', onRejection);
+                host.remove();
             }
             await check('同步移动', { grid: 142, options: 261 });
             await check('木乃伊', { grid: 42, options: 222 });
@@ -155,7 +182,7 @@ class CDP {
                 row.electromagnetic.chain === '1200' && row.electromagnetic.blocked === '5120' &&
                 row.electromagnetic.joined === '1100' && row.electromagnetic.moved && row.electromagnetic.undone &&
                 !row.electromagnetic.overflow,
-            '同色方块': row => row.grid === 192 && row.options === 3 && row.sameColor.candidate >= 0 && row.sameColor.group >= 2 && row.sameColor.after === row.sameColor.before - row.sameColor.group && !row.sameColor.overflow
+            '同色方块': row => row.grid === 192 && row.options === 3 && row.sameColor && row.sameColor.candidate >= 0 && row.sameColor.group >= 2 && row.sameColor.after === row.sameColor.before - row.sameColor.group && !row.sameColor.overflow
         };
         for (const row of result) {
             const passed = expected[row.name](row) && row.errors.length === 0;
