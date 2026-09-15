@@ -16,7 +16,18 @@ mkdir -p "$LOG_DIR"
 
 log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
 
-# ---------- 0) 运行环境：WebHook 的 PATH 常常没有 node ----------
+# ---------- 0) 先把脚本复制到 /tmp 再执行 ----------
+# 本脚本第 2 步会 git reset --hard，把仓库里这份 deploy.sh 也覆盖掉；而 bash 是「按偏移增量读」
+# 脚本文件的，文件被换掉后会读到新旧混杂的内容（表现为「明明改了脚本，行为却没变」）。
+# 先复制一份到 /tmp 再 exec，整个运行期间读的都是同一份稳定副本。
+if [ -z "${TO_DEPLOY_REEXEC:-}" ]; then
+    STABLE="/tmp/to-deploy-self.sh"
+    if cp "$0" "$STABLE" 2>/dev/null; then
+        TO_DEPLOY_REEXEC=1 exec bash "$STABLE" "$@"
+    fi
+fi
+
+# ---------- 0.1) 运行环境：WebHook 的 PATH 常常没有 node ----------
 export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 if ! command -v node >/dev/null 2>&1; then
     for d in /www/server/nodejs/*/bin /usr/local/nodejs/bin /opt/node*/bin /usr/local/n/versions/node/*/bin; do
@@ -59,6 +70,16 @@ kill_stale_deploys() {
     return 0
 }
 
+# 谁在握着锁？只查可能是本项目留下的两类进程，避免扫全部 /proc
+lock_holders() {
+    local p
+    for p in $(ps -eo pid,cmd 2>/dev/null | grep -E "deploy/hooks/deploy\.sh|node .*server\.js" | grep -v grep | awk '{print $1}'); do
+        case "$p" in ''|*[!0-9]*) continue ;; esac
+        [ "$p" = "$SELF" ] && continue
+        if ls -l "/proc/$p/fd" 2>/dev/null | grep -q "to-deploy.lock"; then echo "$p"; fi
+    done
+}
+
 kill_stale_deploys
 exec 9>"$LOCK"
 if command -v flock >/dev/null 2>&1; then
@@ -66,9 +87,16 @@ if command -v flock >/dev/null 2>&1; then
     if ! flock -w 20 9; then
         log "⚠ 等待 20s 仍拿不到部署锁，清理卡死进程后重试"
         kill_stale_deploys
+        # 兜底直启的 node 会继承 fd 9 从而一直握着锁（flock 与「打开文件描述」绑定，
+        # 父进程退出也不释放），这是「push 了但再也不自动部署」的元凶 —— 直接点名杀掉
+        for hp in $(lock_holders); do
+            kill -9 "$hp" 2>/dev/null && log "已清理仍握着部署锁的进程 $hp"
+        done
         flock -w 20 9 || { log "✗ 仍拿不到部署锁（有其它部署在跑），本次放弃"; exit 0; }
     fi
 fi
+# ⚠️ 后台进程若继承 fd 9，脚本退出后锁依然不释放 —— 起服务时必须显式关掉（见 restart_service）
+trap 'exec 9>&-' EXIT
 
 # ---------- 1) 存档保护（最高优先级）----------
 # data/db.json 是玩家数据。它曾经被 git 跟踪过，历史 commit 里仍有它，
@@ -142,7 +170,27 @@ restart_service() {
     # 非 root（宝塔 WebHook 以 www 运行）时连 stop/start 也要走 sudo，否则一律失败
     SCTL="systemctl"
     if [ "$(id -u)" != "0" ] && command -v sudo >/dev/null 2>&1; then SCTL="sudo -n systemctl"; fi
-    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q "$SERVICE"; then
+    # ⚠️ 不能用 `systemctl list-unit-files | grep -q`：set -o pipefail 下，grep -q 命中即退出，
+    #    systemctl 收到 SIGPIPE 返回 141，pipefail 让整条管道判为失败 → 这里恒假 → 每次都走
+    #    nohup 兜底（日志里那串「回退到直接启动（systemd 不可用）」就是这么来的）。
+    #    用命令替换绕开管道。
+    HAVE_SCTL=0
+    if command -v systemctl >/dev/null 2>&1; then
+        # systemctl cat 直接问「这个单元存不存在」，不依赖 list-unit-files 的文本匹配
+        if systemctl cat "$SERVICE.service" >/dev/null 2>&1; then
+            HAVE_SCTL=1
+        else
+            case "$(systemctl list-unit-files 2>/dev/null)" in
+                *"$SERVICE"*) HAVE_SCTL=1 ;;
+            esac
+        fi
+        if [ "$HAVE_SCTL" != "1" ]; then
+            log "⚠ 检测不到 systemd 单元 $SERVICE（systemctl 说：$(systemctl cat "$SERVICE.service" 2>&1 | head -2 | tr '\n' ' ')）"
+        fi
+    else
+        log "⚠ 环境里没有 systemctl（PATH=$(echo "$PATH" | tr ':' ' ' | head -c 120)）"
+    fi
+    if [ "$HAVE_SCTL" = "1" ]; then
         # ⚠️ 不能指望 systemctl restart 自己搞定端口。端口若被上次 nohup 直启的游离进程占着，
         # systemd 那份会 EADDRINUSE：旧代码不退出（restart 还返回成功 → 部署「假成功」，线上仍是旧进程），
         # 新代码直接退出（连续失败会触发 start-limit，单元被打进 failed，之后 start 全被拒）。
@@ -169,7 +217,10 @@ restart_service() {
     pkill -f "node ${APP_DIR}/server.js" 2>/dev/null || true
     kill_port_holders
     sleep 2
-    cd "$APP_DIR" && nohup "$NODE_BIN" server.js >>"$LOG_DIR/server.log" 2>&1 &
+    # 9>&- ：绝不能让服务进程继承 fd 9，否则它一直握着部署锁，之后再也不能自动部署。
+    # setsid + </dev/null + 全量重定向：彻底脱离，避免卡住 WebHook 的输出管道。
+    cd "$APP_DIR" && setsid nohup "$NODE_BIN" server.js </dev/null >>"$LOG_DIR/server.log" 2>&1 9>&- &
+    disown 2>/dev/null || true
 }
 restart_service
 log "服务已重启"
@@ -186,10 +237,14 @@ if [ "$OK" = "1" ]; then
     # 存储模式一致性检查：配了 data/db-env.json（MySQL）但服务跑在 json 模式，
     # 说明进程没拿到数据库配置（如游离 nohup 进程），会导致新玩家不进 MySQL —— 立刻告警。
     if [ -f "$APP_DIR/data/db-env.json" ]; then
-        if curl -fsS -m 5 "http://127.0.0.1:${PORT}/api/health" 2>/dev/null | grep -q '"storage":"json'; then
-            log "☠⚠ 严重告警：data/db-env.json 已配置 MySQL，但服务正在 json 模式运行！"
-            log "   新注册玩家会写进 data/db.json 而不是 MySQL。请执行：systemctl restart tower-odyssey"
-        fi
+        # 同样避开 pipefail + grep -q 的 SIGPIPE 陷阱
+        HEALTH_JSON="$(curl -fsS -m 5 "http://127.0.0.1:${PORT}/api/health" 2>/dev/null)"
+        case "$HEALTH_JSON" in
+            *'"storage":"json'*)
+                log "☠⚠ 严重告警：data/db-env.json 已配置 MySQL，但服务正在 json 模式运行！"
+                log "   新注册玩家会写进 data/db.json 而不是 MySQL。请执行：systemctl restart tower-odyssey"
+                ;;
+        esac
     fi
     rm -f "$SNAP"
     exit 0
