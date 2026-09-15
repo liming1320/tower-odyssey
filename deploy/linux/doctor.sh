@@ -77,6 +77,31 @@ else
     ok "$PORT 已在监听"
     echo "  ↳ 本机自检：curl -s -o /dev/null -w '%{http_code}' --noproxy '*' http://127.0.0.1:$PORT/api/health" \
         " → 实际：$(curl -s -o /dev/null -w '%{http_code}' -m 3 --noproxy '*' "http://127.0.0.1:$PORT/api/health" 2>/dev/null)"
+
+    # ⚠️ 「端口在监听」不等于「是你这份代码在监听」。
+    # 真事：systemd 起不来报 EADDRINUSE，实际是面板/PM2 托管的另一份 server.js 占着端口，
+    # 于是永远跑的是旧代码 —— 表现为「明明 git pull 了，新接口却 404」。
+    HOLDER_PID=""
+    if command -v ss >/dev/null 2>&1; then
+        HOLDER_PID="$(ss -lntp 2>/dev/null | grep -E ":$PORT\b" | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2)"
+    fi
+    MAIN_PID="$(systemctl show -p MainPID --value "$SERVICE" 2>/dev/null)"
+    if [ -n "$HOLDER_PID" ]; then
+        H_CWD="$(readlink /proc/$HOLDER_PID/cwd 2>/dev/null)"
+        H_CMD="$(tr '\0' ' ' < /proc/$HOLDER_PID/cmdline 2>/dev/null)"
+        H_PPID="$(awk '{print $4}' /proc/$HOLDER_PID/stat 2>/dev/null)"
+        echo "  ---- 占端口的进程 ----"
+        echo "  pid=$HOLDER_PID  cwd=${H_CWD:-（读不到）}"
+        echo "  cmd=$H_CMD"
+        [ -n "$H_PPID" ] && echo "  父进程 $H_PPID：$(tr '\0' ' ' < /proc/$H_PPID/cmdline 2>/dev/null | cut -c1-100)"
+        if [ -n "$MAIN_PID" ] && [ "$HOLDER_PID" = "$MAIN_PID" ]; then
+            ok "就是 systemd 的 $SERVICE（pid=$MAIN_PID），正常"
+        elif [ "$H_CWD" = "$APP_DIR" ]; then
+            bad "cwd 是本项目，但**不是** systemd 的进程（systemd 的 MainPID=${MAIN_PID:-无}）→ 双托管，systemd 那份必然 EADDRINUSE"
+        else
+            bad "占端口的进程跑的不是 $APP_DIR → 它一直提供旧代码，systemd 永远起不来"
+        fi
+    fi
 fi
 echo
 
@@ -84,8 +109,14 @@ echo
 say "⑤ 还在跑的 node / server.js 进程"
 PS_OUT="$(ps -eo pid,ppid,etime,cmd 2>/dev/null | grep -E "node .*server\.js|node .*tower" | grep -v grep)"
 if [ -n "$PS_OUT" ]; then
-    warn "发现以下进程（可能是旧的手动启动，会占着 $PORT 让 systemd 起不来）："
-    echo "$PS_OUT" | sed 's/^/  /'
+    warn "发现以下进程（⚠️ 千万别 blanket pkill -f 'node server.js'："
+    echo "     机器上很可能有别的项目也叫 server.js，一刀切会把它们一起杀掉）："
+    echo "$PS_OUT" | while read -r p pp et rest; do
+        cwd="$(readlink /proc/$p/cwd 2>/dev/null)"
+        if [ "$cwd" = "$APP_DIR" ]; then mark="  ← 本项目（可疑）"; else mark=""; fi
+        printf '  %-9s ppid=%-9s %-10s cwd=%s%s\n' "$p" "$pp" "$et" "${cwd:-?}" "$mark"
+    done
+    echo "  ↳ 只杀本项目那几个：kill -9 <上面标了「本项目」的 pid>"
 else
     ok "没有游离的 node server.js 进程"
 fi
@@ -149,9 +180,12 @@ say "================ 最可能的修复 ================"
 cat <<EOF
   1) 先看 ③ 的日志，那里会直接写出崩溃原因。
 
-  2) 如果是 EADDRINUSE（端口被占）— ⑤ 里能看到游离进程：
-       pkill -f "node server.js"; sleep 2
-       systemctl restart $SERVICE
+  2) 如果是 EADDRINUSE（端口被占）：
+     ⚠️ 不要 pkill -f "node server.js" —— 会误杀机器上其他同名项目。
+     按 ④「占端口的进程」给的 pid 精确杀，并顺手查它父进程是不是 PM2/面板：
+       kill -9 <pid>; sleep 2; systemctl restart $SERVICE
+     若父进程是 PM2 或宝塔面板，杀完还会被拉起来（双托管）——
+     二选一：面板里把这个项目停掉，或者 systemctl disable --now $SERVICE 交给面板管。
 
   3) 如果是 node 路径不对（⑥ 报红）— 重装一次服务让它自动探测：
        sudo bash deploy/linux/install.sh
@@ -161,7 +195,7 @@ cat <<EOF
        # 或者先用文件存档顶上：在 $UNIT 里加 Environment=DB_DRIVER=json
 
   5) 只是想立刻恢复访问（别用 nohup 手启，会留下游离进程再占端口）：
-       pkill -f "node .*server\.js"; sleep 2
+       kill -9 <占端口的 pid>; sleep 2
        systemctl restart $SERVICE; sleep 3
        curl -s -o /dev/null -w '%{http_code}' --noproxy '*' http://127.0.0.1:$PORT/api/health
        # 想看实时日志：journalctl -u $SERVICE -f
