@@ -36,19 +36,39 @@ cd "$APP_DIR" || { log "✗ 目录不存在：$APP_DIR"; exit 1; }
 # 真事：部署脚本卡住不退出，每次 push 都堆一个新的，每个还带着一个 nohup 起的
 # server.js —— 十几个进程一起抢 5180，systemd 永远起不来。
 LOCK="/tmp/to-deploy.lock"
+SELF="$$"
+
+# ⚠️ 清理必须放在加锁「之前」。曾经写在 flock 之后，结果：卡死的部署进程一直握着锁，
+#    之后的每次部署都在 flock 处直接跳过，永远走不到清理那一步 → 彻底死锁，
+#    表现为「push 成功了、WebHook 也没报错，但线上代码纹丝不动」。
+kill_stale_deploys() {
+    local n=0
+    ps -eo pid,etimes,cmd 2>/dev/null | grep "deploy/hooks/deploy.sh" | grep -v grep | while read -r p et _rest; do
+        case "$p" in ''|*[!0-9]*) continue ;; esac
+        [ "$p" = "$SELF" ] && continue
+        [ -n "$et" ] || continue
+        if [ "$et" -gt 600 ] 2>/dev/null; then
+            kill -9 "$p" 2>/dev/null && log "已清理卡死 ${et}s 的部署进程 $p"
+        fi
+    done
+    # 卡死的部署还会留下「活着但不服务」的 node（监听失败却不退出），一并清掉
+    for p in $(ps -eo pid,cmd 2>/dev/null | grep "[n]ode server.js" | awk '{print $1}'); do
+        [ "$(readlink /proc/$p/cwd 2>/dev/null)" = "$APP_DIR" ] || continue
+        kill -9 "$p" 2>/dev/null && log "已清理本项目的游离 node 进程 $p"
+    done
+    return 0
+}
+
+kill_stale_deploys
 exec 9>"$LOCK"
 if command -v flock >/dev/null 2>&1; then
-    flock -n 9 || { log "已有部署正在进行，本次跳过（避免并发抢端口）"; exit 0; }
-fi
-SELF="$$"
-ps -eo pid,etimes,cmd 2>/dev/null | grep "deploy/hooks/deploy.sh" | grep -v grep | while read -r p et _rest; do
-    case "$p" in ''|*[!0-9]*) continue ;; esac
-    [ "$p" = "$SELF" ] && continue
-    [ -n "$et" ] || continue
-    if [ "$et" -gt 600 ] 2>/dev/null; then
-        kill -9 "$p" 2>/dev/null && log "已清理卡死 ${et}s 的部署进程 $p"
+    # 先等 20s（正常部署也就几秒）；拿不到就再清一次老进程后重试，仍不行才放弃
+    if ! flock -w 20 9; then
+        log "⚠ 等待 20s 仍拿不到部署锁，清理卡死进程后重试"
+        kill_stale_deploys
+        flock -w 20 9 || { log "✗ 仍拿不到部署锁（有其它部署在跑），本次放弃"; exit 0; }
     fi
-done
+fi
 
 # ---------- 1) 存档保护（最高优先级）----------
 # data/db.json 是玩家数据。它曾经被 git 跟踪过，历史 commit 里仍有它，
