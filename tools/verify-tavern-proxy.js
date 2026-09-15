@@ -171,9 +171,10 @@ function getUserByToken(req) {
         check('来自酒馆页的 /api/ → 原样转发给 ST（路径不能被截断）',
             r1.status === 200 && r1.body.includes('ST_SEES:/api/settings/get'), r1.status + ' ' + r1.body.slice(0, 80));
 
-        const probe = (url, referer) => {
+        const probe = (url, referer, extraHeaders) => {
             const req = new PassThrough();
-            req.method = 'GET'; req.url = url; req.headers = referer ? { referer } : {};
+            req.method = 'GET'; req.url = url;
+            req.headers = Object.assign({}, referer ? { referer } : {}, extraHeaders || {});
             const res = new PassThrough(); res.writeHead = () => res;
             const p = Tavern.fallbackRequest(req, res, { getUserByToken, DB });
             req.end();
@@ -198,6 +199,16 @@ function getUserByToken(req) {
         check('ST 的模板在 Referer 被剥掉时也兜底',
             (await probe('/scripts/templates/character_select.html', null)) === true);
         check('游戏自己的 .html 不被误伤', (await probe('/index.html', GAME_REF)) === false);
+        // ST 里唯一不带 /api/ 前缀的功能路由：`app.use('/thumbnail', …)`（单数！），
+        // 后缀藏在查询串里（?file=xxx.png），路径本身没后缀 → 头图/角色卡图全 404。
+        check('ST 的 /thumbnail?type=…&file=x.png 兜底（Referer 来自酒馆）',
+            (await probe('/thumbnail?type=persona&file=user-default.png', REF)) === true);
+        check('Referer 被剥掉时 /thumbnail 靠 Accept: image/* 兜底',
+            (await probe('/thumbnail?type=avatar&file=default.png', null, { accept: 'image/avif,image/webp,*/*;q=0.8' })) === true);
+        // `*/*` 必须排除在外：curl 与 fetch() 的默认 Accept 就是它，
+        // 认了会把游戏自己的路由（/admin 这类磁盘上没实体文件的）也吞给 ST。
+        check('Accept 为 */* 的无后缀路径不接管（/admin 不能被 ST 吃掉）',
+            (await probe('/admin', null, { accept: '*/*' })) === false);
         // ST 前端每次写操作前先 GET /csrf-token（**没有后缀**，静态规则够不着），
         // 取不到令牌 → 后续所有 POST（/api/settings/get、/api/secrets/...）全 403
         // → 页面弹「设置无法加载，请稍后再试」。/version 是 ST 启动时的版本探测，同理。

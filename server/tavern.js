@@ -676,6 +676,10 @@ async function proxyRequest(req, res, deps, opts) {
 //    `/version` 同理（ST 启动时探测版本）。`/callback`、`/proxy/` 是 OAuth 与 CORS 代理。
 const FALLBACK_PATHS = [
     '/api/', '/socket.io/', '/scripts/',
+    // ST 里**唯一**不走 /api/ 前缀的功能路由（`app.use('/thumbnail', …)`，注意是单数），
+    // 而且它的后缀藏在查询串里（/thumbnail?type=persona&file=xxx.png）——
+    // 路径本身没有后缀，静态后缀规则完全够不着，头像/角色卡图会全 404。
+    '/thumbnail',
     '/csrf-token', '/version', '/callback', '/proxy/',
     '/login', '/login.html', '/manifest.json', '/sw.js',
 ];
@@ -706,7 +710,13 @@ function tavernFallbackPath(req) {
     const url = String(req.url || '');
     const qi = url.indexOf('?');
     const p = qi >= 0 ? url.slice(0, qi) : url;
-    const hit = FALLBACK_PATHS.some(x => p === x.replace(/\/$/, '') || p.startsWith(x)) || FALLBACK_EXT.test(p);
+    // 判据三：浏览器取图片时一定发 Accept: image/*（<img> / CSS 里的 url() 都是），
+    //   这类请求必然是资源 —— 用它兜住「后缀在查询串里」的路径
+    //   （如 ST 的 /thumbnail?type=persona&file=x.png），省得每发现一个就来补一次清单。
+    //   ⚠️ 刻意不认 `*/*`：curl / fetch() 的默认 Accept 就是它，认了会把游戏自己的请求
+    //      （尤其是 /admin 这类磁盘上没有实体文件的路由）也吞给 ST。
+    const acceptImg = /image\/(png|jpe?g|gif|webp|avif|svg\+xml)/.test(String(req.headers.accept || ''));
+    const hit = FALLBACK_PATHS.some(x => p === x.replace(/\/$/, '') || p.startsWith(x)) || FALLBACK_EXT.test(p) || acceptImg;
     if (!hit) return null;
     const ref = String(req.headers.referer || '');
     if (ref) {
