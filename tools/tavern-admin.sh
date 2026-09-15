@@ -49,7 +49,23 @@ cmd_detect() {
         [ -n "$d" ] && { echo "  docker: $d"; found=1; }
     fi
     pr="$(ps -ef 2>/dev/null | grep '[s]erver\.js' | grep -i silly || true)"
-    [ -n "$pr" ] && { echo "$pr" | sed 's/^/  裸进程: /'; found=1; }
+    [ -n "$pr" ] && { echo "$pr" | sed 's/^/  进程: /'; found=1; }
+
+    # 光看进程列表会误判成「裸进程」——PM2 起的工作进程，父进程是 "PM2 vX: God Daemon"。
+    # 而且 pm2 常常不在 root 的 PATH 里，所以必须靠父进程识别，不能只靠 command -v pm2。
+    local pids; pids="$(ps -eo pid,cmd 2>/dev/null | grep '[s]erver\.js' | grep -i silly | awk '{print $1}' || true)"
+    for pid in $pids; do
+        local ppid pcmd
+        ppid="$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true)"
+        pcmd="$(ps -o cmd= -p "$ppid" 2>/dev/null || true)"
+        case "$pcmd" in
+            *PM2*)        echo "  ⇒ 由 **PM2** 托管（父进程 $ppid 是 PM2 God Daemon）→ 用 pm2 重启"
+                          command -v pm2 >/dev/null 2>&1 || echo "     ⚠ pm2 不在 PATH 里，先找它：find / -maxdepth 6 -name pm2 -type f 2>/dev/null | head -3" ;;
+            *docker*|*containerd*) echo "  ⇒ 由 **docker** 托管（父进程 $ppid）→ docker restart <容器名>" ;;
+            *systemd*)    echo "  ⇒ 由 **systemd** 托管（父进程 $ppid）" ;;
+            *)            echo "  ⇒ 裸进程（父进程 $ppid: ${pcmd:0:50}）" ;;
+        esac
+    done
     [ "$found" = 0 ] && echo "  ⚠ 没找到 ST 进程（systemd / pm2 / docker / 裸进程 都没匹配到）"
 
     echo
@@ -80,6 +96,23 @@ cmd_detect() {
     fi
 
     echo
+    echo "━━ 4.5) 冲突检查（两种守护同时管 ST 会抢 8000 端口）━━"
+    local has_unit=0 has_pm2=0
+    systemctl list-unit-files 2>/dev/null | grep -qi silly && has_unit=1
+    ps -eo pid,cmd 2>/dev/null | grep '[s]erver\.js' | grep -i silly | awk '{print $1}' | while read -r pid; do
+        local ppid; ppid="$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true)"
+        ps -o cmd= -p "$ppid" 2>/dev/null | grep -q PM2 && echo "  PM2 也在管 ST（pid $pid）"
+    done
+    [ "$has_unit" = 1 ] && echo "  systemd 有 sillytavern 服务"
+    if [ "$has_unit" = 1 ]; then
+        echo "  ⚠ 若上面同时出现 PM2 和 systemd，二选一，别两个都开："
+        echo "     留 PM2   : systemctl disable --now sillytavern && rm -f /etc/systemd/system/sillytavern.service && systemctl daemon-reload"
+        echo "     留 systemd: pm2 stop <名字> && pm2 delete <名字>，再 systemctl restart sillytavern"
+    else
+        echo "  ✓ 没有发现双重守护"
+    fi
+
+    echo
     echo "━━ 5) 塔界远征服务状态 ━━"
     if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q tower-odyssey; then
         echo "  tower-odyssey: $(systemctl is-active tower-odyssey 2>/dev/null)"
@@ -90,11 +123,13 @@ cmd_detect() {
     echo
     echo "━━ 下一步 ━━"
     echo "  ① 确认第 3 步里 enableUserAccounts 是 true（是 false 就跑：$0 config <ST目录>）"
-    echo "  ② 按第 2 步的方式重启 SillyTavern："
-    echo "       systemd : systemctl restart <服务名>"
-    echo "       pm2     : pm2 restart <名字>"
+    echo "  ② 按第 2 步「⇒」指出的方式重启 SillyTavern（**只能选一种守护**）："
+    echo "       PM2     : pm2 restart <名字>          （日志：pm2 logs <名字> --lines 50）"
+    echo "       systemd : systemctl restart sillytavern（日志：journalctl -u sillytavern -f）"
     echo "       docker  : docker restart <容器名>"
     echo "       裸进程  : cd <ST目录> && nohup node server.js > st.log 2>&1 &"
+    echo "     ⚠ 别一边留 PM2 一边加 systemd：PM2 会自动拉起工作进程占住 8000，"
+    echo "       systemd 永远起不来，只会刷 'Address 127.0.0.1:8000 is already in use'。"
     echo "  ③ $0 list           看看有哪些账号"
     echo "  ④ $0 passwd <句柄>   设密码（验证码会打到 ST 控制台）"
     echo "  ⑤ systemctl restart tower-odyssey   让塔界远征加载新配置"

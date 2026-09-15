@@ -115,6 +115,32 @@ grep -n "enableUserAccounts" config.yaml      # 确认改成了 true
 
 **按第 0 步探测出来的方式选一条**，别全试。
 
+> ⚠️ **最容易踩的坑：PM2 和 systemd 同时管 ST。**
+> PM2 起的工作进程，在 `ps` 里看起来像「裸进程 `node server.js`」，很容易被误判。
+> 判据是**看父进程**:父进程是 `PM2 vX: God Daemon` 就说明是 PM2 托管
+> （`./tools/tavern-admin.sh detect` 第 4.5 步会自动做这个检查）。
+> 这种情况下若再建 systemd 服务，PM2 会瞬间把工作进程拉回来占住 8000，
+> systemd 只会无限刷 `Address 127.0.0.1:8000 is already in use`。**二选一，别都开。**
+>
+> 而且 `pm2` 经常不在 root 的 PATH 里（`command -v pm2` 查不到），
+> 需要 `find / -maxdepth 6 -name pm2 -type f 2>/dev/null | head -3` 找一下。
+
+### PM2
+
+```bash
+pm2 list                          # 找 ST 的名字
+pm2 restart <名字>
+pm2 logs <名字> --lines 50         # 验证码就在这里读
+```
+
+如果 `pm2: command not found`，先找到它再用绝对路径调用：
+
+```bash
+find / -maxdepth 6 -name pm2 -type f 2>/dev/null | head -3
+# 例如 /www/server/nodejs/v20.20.0/bin/pm2
+export PATH="$PATH:/www/server/nodejs/v20.20.0/bin"
+```
+
 ### systemd（最常见）
 
 ```bash
