@@ -593,6 +593,10 @@ async function proxyRequest(req, res, deps, opts) {
         for (const h of SSO_HEADERS) headers[h] = ssoHandle;
     }
 
+    // 与 ownConf/LB/limits无关的纯判断：这条路径是不是「失败时该降级」的外网依赖接口
+    const degradeBody = degradeOn() ? DEGRADE_JSON[restPath] : undefined;
+    const isApiPath = restPath.startsWith('/api/');
+
     try {
         let sent = false;
         const up = new URL(target);
@@ -601,7 +605,15 @@ async function proxyRequest(req, res, deps, opts) {
             method: req.method, hostname: up.hostname,
             port: up.port || (up.protocol === 'https:' ? 443 : 80),
             path: up.pathname + up.search, headers,
+            // ⚠ 只在降级路径上设超时：这里用的是 socket 空闲超时，只要有数据流动就不会触发，
+            //   聊天流式响应（SSE）不会被误伤；没配的话沿用 Node 默认（不设限）。
+            timeout: degradeBody ? degradeTimeoutMs() : Number(process.env.TAVERN_UPSTREAM_TIMEOUT_MS || 0) || undefined,
         }, ures => {
+            if (degradeBody && !(ures.statusCode >= 200 && ures.statusCode < 300)) {
+                sent = true;
+                ures.resume();
+                return writeDegraded(res, degradeBody, 'upstream ' + ures.statusCode + ' ' + restPath);
+            }
             const outHeaders = {};
             for (const k of Object.keys(ures.headers)) {
                 const lk = k.toLowerCase();
@@ -655,13 +667,14 @@ async function proxyRequest(req, res, deps, opts) {
         preq.on('timeout', () => preq.destroy(new Error('ST 响应超时')));
         preq.on('error', e => {
             if (sent) return;
-            res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
-            res.end('AI 酒馆网关错误：' + e.message);
+            sent = true;
+            if (degradeBody) return writeDegraded(res, degradeBody, e.message + ' ' + restPath);
+            writeGatewayError(res, 502, e.message, isApiPath);
         });
         req.pipe(preq);
     } catch (e) {
-        res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end('AI 酒馆网关错误：' + e.message);
+        if (degradeBody) return writeDegraded(res, degradeBody, e.message + ' ' + restPath);
+        writeGatewayError(res, 502, e.message, isApiPath);
     }
 }
 
@@ -689,6 +702,53 @@ const FALLBACK_PATHS = [
 //    （在 public/scripts/templates.js 里硬编码，不在 index.html 里，改写 HTML 够不着）。
 //    少了它就编译失败 → 前端报 "Error rendering template"。
 const FALLBACK_EXT = /\.(css|js|mjs|map|json|html?|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf|mp3|wav|ogg|mp4|webm|glb|gltf)(\?|$)/i;
+
+// ------------------------------------------------- 外网依赖接口的降级兜底
+// ST 有一批接口要连**境外第三方服务**（/api/horde/* 会去 aihorde.net 与 raw.githubusercontent
+// 拉模型清单）。国内服务器上必然连不通：要么立刻失败，要么挂到超时。
+// 麻烦在于 ST 前端对这些接口**毫无防御**（public/scripts/horde.js:55）：
+//      const data = await response.json();      // ← 响应体不是 JSON 就抛
+//      models = (await getModels()).sort(…)     // ← 不是数组就抛
+// 于是：getModels reject → getHordeModels reject → changeMainAPI reject
+//      → getSettings reject → firstLoadInit 中断 → settings 永远没就绪
+//      → 「设置无法保存」弹窗 + saveSettings 无限自我重排（script.js:7994 刷屏）+ 齿轮停不下。
+// 网关改不了 ST 的源码，但能保证它拿到**形状正确**的 JSON：拿不到就给一个合法空列表，
+// 让初始化链条走完。（成功时原样透传，绝不伪造数据。）
+const DEGRADE_JSON = {
+    '/api/horde/text-models': [],
+    '/api/horde/text-workers': [],
+    '/api/horde/sd-models': [],
+    '/api/horde/sd-samplers': [],
+    '/api/horde/status': { ok: false },
+    '/api/horde/user-info': { anonymous: true },
+    '/api/horde/cancel-task': {},
+    '/api/horde/task-status': {},
+};
+// 这些接口正常是秒回；给一个较短的超时，避免每次都陪它等到网络层放弃
+// （做成每次请求现读，测试里才能把它调到毫秒级，不至于让用例 dry 等 10 秒）
+const degradeTimeoutMs = () => Number(process.env.TAVERN_DEGRADE_TIMEOUT_MS || 10000) || 10000;
+const degradeOn = () => String(process.env.TAVERN_DEGRADE || '1') !== '0';
+
+// ST 前端统一走 JSON：网关自己的错误也必须 bodies 是 JSON，
+// 否则浏览器 fetch(...).then(r => r.json()) 直接 SyntaxError（控制台里那种
+// "Unexpected token 'A'"，主体就是网关的中文纯文本报错）。
+function writeGatewayError(res, status, msg, isApi) {
+    if (isApi) {
+        res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        return res.end(JSON.stringify({ error: { message: msg } }));
+    }
+    res.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('AI 酒馆网关错误：' + msg);
+}
+function writeDegraded(res, body, reason) {
+    console.warn('[tavern] 降级响应：' + reason);
+    res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Tavern-Degraded': String(reason).slice(0, 120),
+    });
+    res.end(JSON.stringify(body));
+}
 
 // 判据一：Referer 来自 /tavern/（iframe 里发出的请求一定是这个）。
 // ⚠️ 但实测 Referer 可能被剥掉（隐私插件 / Clash 这类本地代理会发 no-referrer），

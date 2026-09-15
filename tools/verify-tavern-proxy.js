@@ -47,6 +47,16 @@ function startFakeST() {
                     + '<link href="/css/x.css" rel="stylesheet">'
                     + '</head><body>hi</body></html>');
             }
+            // 模拟 ST 的 horde 接口：外网拉不到模型清单时它自己会
+            // `response.sendStatus(500)` —— 正文是纯文本 "Internal Server Error"。
+            // 这正是浏览器里 `Unexpected token 'I'` 的来源。
+            if (req.url.indexOf('/api/horde/') === 0) {
+                if (req.url.indexOf('hang') >= 0) return;   // 模拟挂死：连上但不响应
+                res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+                return res.end('Internal Server Error');
+            }
+            // 响应头都还没写就把连接掐断，用来验证网关自身出错时的错误体格式
+            if (req.url.indexOf('/boom') >= 0) return req.socket.destroy();
             res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
             res.end('ST_SEES:' + req.url);
         });
@@ -276,6 +286,53 @@ function getUserByToken(req) {
         const t = Tavern.signTicket(DB, 'u1');
         check('verifyTicket 能解回用户 id', Tavern.verifyTicket(DB, t) === 'u1');
         check('空票/垃圾票返回 null', Tavern.verifyTicket(DB, '') === null && Tavern.verifyTicket(DB, 'x.y.z') === null);
+    }
+
+    console.log('\n[10] 外网依赖接口降级：ST 前端拿到的一定是「能用的 JSON」');
+    {
+        const ticket = Tavern.signTicket(DB, 'u1');
+        const ck = { cookie: 'to_tavern=' + ticket };
+        process.env.TAVERN_DEGRADE_TIMEOUT_MS = '300';
+
+        // ST 的 getModels()：await response.json() 再 .sort() ——
+        // 上游这份 500 是纯文本 "Internal Server Error"，直接透传会让整条 init 链断掉
+        const m = await call(Tavern, DB, '/tavern/api/horde/text-models', ck);
+        check('上游 500 文本体 → 网关给出 200 + 合法 JSON', m.status === 200 && (() => {
+            try { JSON.parse(m.body); return true; } catch (e) { return false; }
+        })(), m.status + ' ' + m.body.slice(0, 60));
+        check('降级体必须是数组（否则 ST 里 models.sort() 仍是 TypeError）',
+            Array.isArray(JSON.parse(m.body)), m.body.slice(0, 60));
+        check('降级时带上 X-Tavern-Degraded 便于事后排查', !!m.headers['X-Tavern-Degraded'], JSON.stringify(m.headers));
+
+        const st = await call(Tavern, DB, '/tavern/api/horde/status?hang=1', ck);
+        check('上游挂死时按短超时快速降级，不让页面干等', st.status === 200 && JSON.parse(st.body).ok === false,
+            st.status + ' ' + st.body.slice(0, 60));
+
+        const ui = await call(Tavern, DB, '/tavern/api/horde/user-info', ck);
+        check('/api/horde/user-info 降级为 {anonymous:true}', JSON.parse(ui.body).anonymous === true, ui.body.slice(0, 60));
+
+        // 降级只针对清单过的外网接口，普通 /api/ 必须原样透传
+        const plain = await call(Tavern, DB, '/tavern/api/settings/get', ck);
+        check('普通 /api/ 不受降级影响（原样透传）', plain.status === 200 && plain.body.includes('ST_SEES:'), plain.body.slice(0, 60));
+
+        process.env.TAVERN_DEGRADE = '0';
+        const off = await call(Tavern, DB, '/tavern/api/horde/text-models', ck);
+        check('TAVERN_DEGRADE=0 时降级关闭（原样透传上游 500）', off.status === 500, off.status + ' ' + off.body.slice(0, 40));
+        process.env.TAVERN_DEGRADE = '1';
+    }
+
+    console.log('\n[11] 网关自身出错时：/api/ 必须返回 JSON，其余保留中文纯文本');
+    {
+        const ticket = Tavern.signTicket(DB, 'u1');
+        const ck = { cookie: 'to_tavern=' + ticket };
+        const apiErr = await call(Tavern, DB, '/tavern/api/boom', ck);
+        const okJson = (() => { try { JSON.parse(apiErr.body); return true; } catch (e) { return false; } })();
+        check('/api/ 出错返回 JSON（不然 ST 的 response.json() 直接 SyntaxError）',
+            okJson && JSON.parse(apiErr.body).error, apiErr.status + ' ' + apiErr.body.slice(0, 60));
+        check('JSON 错误体带 Content-Type: application/json',
+            /application\/json/.test(apiErr.headers['Content-Type'] || ''), JSON.stringify(apiErr.headers['Content-Type']));
+        const txtErr = await call(Tavern, DB, '/tavern/boom', ck);
+        check('非 /api/ 仍是给人看的中文纯文本', txtErr.body.indexOf('AI 酒馆网关错误') === 0, txtErr.body.slice(0, 60));
     }
 
     srv.close();
