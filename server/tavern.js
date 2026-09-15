@@ -495,15 +495,33 @@ function resolveUser(req, deps) {
     return deps.DB.users[uid] || null;
 }
 
+// 401 引导页（自愈）：本页与游戏同源，能读到 localStorage 里的 game-token，
+// 自己换一张入馆票再刷新即可进入 —— 玩家直接开 /tavern/ 标签页时也不会卡在这里
+function tavern401Page() {
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>AI 酒馆</title>'
+        + '<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;'
+        + 'background:#141a24;color:#c9d4e3;font:14px/1.9 system-ui}'
+        + '.box{max-width:440px;padding:30px}h3{color:#ffd56b;margin:0 0 12px}.tip{color:#7f8da3;margin-top:10px;font-size:12.5px}</style>'
+        + '</head><body><div class="box"><h3>🍺 正在进入 AI 酒馆…</h3>'
+        + '<div id="msg">正在同步登录态…</div><div class="tip" id="tip"></div></div><script>'
+        + '(function(){var msg=document.getElementById("msg"),tip=document.getElementById("tip");'
+        + 'var tk="";try{tk=localStorage.getItem("game-token")||""}catch(e){}'
+        + 'if(!tk){msg.textContent="未登录：请先打开游戏主界面登录，再从菜单进入「AI 酒馆」。";return;}'
+        + 'fetch("/api/tavern/ticket",{headers:{Authorization:"Bearer "+tk}}).then(function(r){'
+        + 'if(!r.ok)throw new Error("换票失败("+r.status+")");'
+        + 'msg.textContent="登录态已同步，正在进入…";location.reload();'
+        + '}).catch(function(e){msg.textContent="无法同步登录态："+e.message;'
+        + 'tip.textContent="若提示「API 不存在」，说明服务端代码未更新，请管理员 git pull 后重启服务。";});})();'
+        + '</script></body></html>';
+}
+
 async function proxyRequest(req, res, deps) {
     const user = resolveUser(req, deps);
     if (!user) {
-        res.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8' });
-        return res.end('<meta charset="utf-8"><div style="font:14px/1.9 system-ui;padding:30px;color:#c9d4e3;background:#141a24">'
-            + '<h3 style="color:#ffd56b;margin:0 0 12px">🍺 需要重新进入</h3>'
-            + '<div>登录态没带过来（iframe 请求不会携带前端保存的令牌）。</div>'
-            + '<div style="margin-top:10px;color:#7f8da3">请返回游戏重新点一次「AI 酒馆」；若反复出现，退出登录再重新登录一次。</div>'
-            + '</div>');
+        // 自愈：本页与游戏同源，localStorage 里的 game-token 读得到，
+        // 直接换票后刷新即可，不必让玩家回到游戏里再点一次（直接开标签页时尤其有用）
+        res.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+        return res.end(tavern401Page());
     }
     if (!enabledNow()) {
         res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -524,7 +542,14 @@ async function proxyRequest(req, res, deps) {
     if (!prov.ok) console.error('[tavern] 自动开通 ST 账号失败：' + prov.msg);
 
     const rest = req.url.slice(PREFIX.length) || '/';
-    const target = pickUrl().base + (rest.startsWith('/') ? rest : '/' + rest);
+    // ?token= 只用于鉴权（旧服务端兼容路径），绝不能透传给上游 —— 否则令牌会落进 ST 的访问日志
+    let restPath = rest, restQuery = '';
+    const qi = rest.indexOf('?');
+    if (qi >= 0) {
+        restPath = rest.slice(0, qi) || '/';
+        restQuery = rest.slice(qi + 1).split('&').filter(kv => kv && kv.split('=')[0] !== 'token').join('&');
+    }
+    const target = pickUrl().base + (restPath.startsWith('/') ? restPath : '/' + restPath) + (restQuery ? '?' + restQuery : '');
     const headers = cleanReqHeaders(req.headers, clientIpOf(req));
     // 即使没能开号也照样带 SSO 头：ST 若开了 Authelia 通道且能自行建号，这样仍可登录；
     // 最差情况是退回 ST 自己的登录页，不会白屏。头永远由网关生成，客户端伪造的已在上面剥离。

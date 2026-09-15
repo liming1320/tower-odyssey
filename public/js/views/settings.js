@@ -210,7 +210,7 @@ const SettingsView = {
     },
 
     // AI 酒馆（SillyTavern）：同域反向代理 iframe，网关层已做登录鉴权 + SSO 自动登录
-    openTavern(app) {
+    async openTavern(app) {
         U.closeModal();
         const mask = U.el(`<div class="mini-mask" id="tav-mask">
             <div class="mini-topbar">
@@ -229,8 +229,14 @@ const SettingsView = {
         stage.innerHTML = '<div class="emu-empty">正在检查 SillyTavern 服务…</div>';
         const tk = (typeof localStorage !== 'undefined' && localStorage.getItem('game-token')) || '';
         // 先换一张 HttpOnly 的入馆票 cookie：iframe 请求带不了 Authorization 头，
-        // 不换票的话 /tavern/ 一律 401「请先登录塔界远征」
-        fetch('/api/tavern/ticket', { headers: { Authorization: 'Bearer ' + tk } }).catch(() => { });
+        // 不换票的话 /tavern/ 一律 401「请先登录塔界远征」。
+        // 兼容旧服务端：/api/tavern/ticket 是新增接口，服务端还没更新时会返回 404，
+        // 此时退回「令牌放查询串」——代理的鉴权本来就支持 ?token=（同源、仅本地可见）。
+        let frameSrc = '/tavern/?token=' + encodeURIComponent(tk);
+        try {
+            const tr = await fetch('/api/tavern/ticket', { headers: { Authorization: 'Bearer ' + tk } });
+            if (tr.ok) frameSrc = '/tavern/';
+        } catch (e) { /* 取不到票就用查询串兜底 */ }
         fetch('/api/tavern/status', { headers: { Authorization: 'Bearer ' + tk } })
             .then(r => (r.ok ? r.json() : Promise.reject(new Error('状态查询失败'))))
             .then(st => {
@@ -261,7 +267,7 @@ const SettingsView = {
                 const frame = document.createElement('iframe');
                 frame.style.cssText = 'width:100%;height:100%;border:0;background:#0a0a14';
                 // 走 /tavern 而非直连 8000：同域，cookie/CSRF 都不会出问题
-                frame.src = '/tavern/';
+                frame.src = frameSrc;
                 stage.appendChild(frame);
             })
             .catch(e => {
