@@ -1,0 +1,32 @@
+# SillyTavern systemd 服务模板
+#
+# 用法（在服务器上执行，会自动填好 node 绝对路径）：
+#
+#   ST_DIR=/www/SillyTavern
+#   NODE_BIN="$(command -v node)"
+#   sed -e "s#__NODE_BIN__#${NODE_BIN}#" -e "s#__ST_DIR__#${ST_DIR}#" \
+#       deploy/linux/sillytavern.service > /etc/systemd/system/sillytavern.service
+#   systemctl daemon-reload && systemctl enable --now sillytavern
+#   systemctl status sillytavern
+#
+# 注意：
+#   · 必须先停掉原来手启的裸进程（kill <pid>），否则 8000 端口冲突，两边都起不来
+#   · User 默认 root；若 ST 目录属主是别的账号，改成那个
+#   · 同机部署请保持 ST 的 config.yaml 里 listen: false（不监听公网）
+#
+[Unit]
+Description=SillyTavern
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=__ST_DIR__
+ExecStart=__NODE_BIN__ __ST_DIR__/server.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
