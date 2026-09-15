@@ -2,6 +2,8 @@
   "version": 1,
   "name": "独粒钻石",
   "source": "PK32 native module.bin",
+  "assignmentVerified": false,
+  "quarantineReason": "The 207 20x14 numeric payloads are not the native 7x7 peg board initializers.",
   "count": 207,
   "fullGameRulesVerified": false,
   "levels": [

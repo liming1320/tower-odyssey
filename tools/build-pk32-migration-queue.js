@@ -17,6 +17,7 @@ const dataByName = new Map();
 for (const file of fs.readdirSync(dataDir).filter(name => /^pk32-.*-levels\.json$/.test(name))) {
     try {
         const data = JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'));
+        if (data.assignmentVerified === false) continue;
         if (data.name) dataByName.set(data.name, {
             file,
             levelCount: Array.isArray(data.levels) ? data.levels.length : 0,
@@ -38,7 +39,7 @@ for (const match of variants.matchAll(/if\s*\(config\.name === '([^']+)'\)\s*ret
 // These launchers are separate modules, so they are not visible in the
 // variants dispatcher scan above. Keep them explicit until the catalog has
 // a machine-readable renderer manifest.
-['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造'].forEach(name => rendererNames.add(name));
+['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造', '同色方块'].forEach(name => rendererNames.add(name));
 
 const rows = ledger.records.map(record => {
     const data = dataByName.get(record.name) || null;

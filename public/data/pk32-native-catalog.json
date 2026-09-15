@@ -3358,8 +3358,8 @@
           "sample": "000000000000000000000000000000000000000000000000"
         }
       ],
-      "levelCount": 207,
-      "levelCountBasis": "207 native 20x14 board payloads"
+      "levelCount": 17,
+      "levelCountBasis": "native initialization switch cases at RVA 0x14b970c..0x14bc247"
     },
     {
       "id": "pk32-089",

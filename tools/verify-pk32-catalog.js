@@ -28,7 +28,7 @@ const nativeCatalog = JSON.parse(fs.readFileSync(path.join(root, 'public', 'data
 if (nativeCatalog.total !== 213 || nativeCatalog.records.length !== 213) throw new Error('Native catalog must contain 213 records');
 if (nativeCatalog.records.filter(record => record.titleFound).length < 200) throw new Error('Native title coverage unexpectedly low');
 const peg = nativeCatalog.records.find(record => record.name === '独粒钻石');
-if (!peg || peg.levelCount !== 207 || peg.payloadLengths['280'] !== 207) throw new Error('独粒钻石 native board evidence changed');
+if (!peg || peg.levelCount !== 17 || !/initialization switch cases/.test(peg.levelCountBasis || '')) throw new Error('独粒钻石 native board evidence changed');
 if (nativeCatalog.records.some(record => record.originalComplete === true)) throw new Error('Native evidence must not imply migration completion');
 
 const dir = path.join(root, 'public', 'js', 'minigames');

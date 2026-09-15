@@ -1,5 +1,6 @@
 param(
-    [string]$Executable = 'F:\BaiduNetdiskDownload\pk32\Pk32.exe',
+    [string]$Executable = 'E:\WorkSpace\tower-odyssey\output\pk32\Pk32.exe',
+    [int]$ProcessId = 0,
     [string]$Output = 'output/pk32-reference/module.bin'
 )
 $ErrorActionPreference = 'Stop'
@@ -15,7 +16,11 @@ public static class Pk32ReadOnly {
     public static extern bool CloseHandle(IntPtr handle);
 }
 '@
-$target = Get-Process -Name Pk32 | Where-Object { $_.Path -ieq $Executable } | Select-Object -First 1
+$target = if ($ProcessId -gt 0) {
+    Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+} else {
+    Get-Process -Name Pk32 -ErrorAction SilentlyContinue | Where-Object { $_.Path -ieq $Executable } | Select-Object -First 1
+}
 if (-not $target) { throw 'Start the specified PK32 application first.' }
 $module = $target.MainModule
 $handle = [Pk32ReadOnly]::OpenProcess(0x410, $false, $target.Id)

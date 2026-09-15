@@ -1,5 +1,7 @@
 {
   "name": "建筑制造",
+  "assignmentVerified": false,
+  "quarantineReason": "This file mixes 29 level descriptors with 16x12 boards and four objective fixtures.",
   "fullGameRulesVerified": false,
   "nativeLevelCount": null,
   "extractedPayloadCount": 53,

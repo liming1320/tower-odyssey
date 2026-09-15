@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "name": "独粒钻石",
+  "source": "PK32 native initialization switch at RVA 0x14b9705; cases 0x14b970c..0x14bc247",
+  "count": 17,
+  "width": 7,
+  "height": 7,
+  "encoding": { "x": "outside", "0": "empty", "1": "peg" },
+  "center": 24,
+  "fullGameRulesVerified": false,
+  "levels": [
+    { "name": "拉　丁　十　字", "caseRva": "0x14b970c", "cells": "xx000xxx00100x001110000010000001000x00000xxx000xx" },
+    { "name": "希　腊　十　字", "caseRva": "0x14b982b", "cells": "xx000xxx00100x000100001111100001000x00100xxx000xx" },
+    { "name": "神　座", "caseRva": "0x14b994c", "cells": "xx010xxx00100x011111000010000001000x01110xxx111xx" },
+    { "name": "台　灯", "caseRva": "0x14b9b66", "cells": "xx010xxx01110x011111000010000001000x01110xxx111xx" },
+    { "name": "小　金　字　塔", "caseRva": "0x14b9e08", "cells": "xx000xxx00000x000100000111000111110x00000xxx000xx" },
+    { "name": "大　金　字　塔", "caseRva": "0x14b9f98", "cells": "xx000xxx00100x001110001111101111111x00000xxx000xx" },
+    { "name": "大　五　边　形", "caseRva": "0x14ba1a9", "cells": "xx010xxx01110x011111011111110111110x01110xxx000xx" },
+    { "name": "足　球　队", "caseRva": "0x14ba4ca", "cells": "xx111xxxx111xx001110000101000000000xx000xxxx000xx" },
+    { "name": "五　个　十　字", "caseRva": "0x14ba677", "cells": "xx010xxxx111xx010101011111110101010xx111xxxx010xx" },
+    { "name": "米　字", "caseRva": "0x14baa4d", "cells": "xx010xxx10101x001110011111110011100x10101xxx010xx" },
+    { "name": "空　心　斜　方　形", "caseRva": "0x14bacbd", "cells": "xx010xxxx111xx011111011111110111110xx111xxxx010xx" },
+    { "name": "八　角　形", "caseRva": "0x14bb063", "cells": "xx010xxx11111x011111011111110111110x11111xxx010xx" },
+    { "name": "戴　维　斯　跳　跃", "caseRva": "0x14bb3ee", "cells": "xx111xxx01110x110111111111111111111x01110xxx111xx" },
+    { "name": "从　角　到　角", "caseRva": "0x14bb78a", "cells": "xx011xxx11111x111111111111111111111x11111xxx111xx" },
+    { "name": "独粒钻石－法国式", "caseRva": "0x14bbb1f", "cells": "xx111xxx01110x111111111101111111111x01110xxx111xx" },
+    { "name": "独粒钻石－英国式", "caseRva": "0x14bbead", "cells": "xx111xxx11111x111111111101111111111x11111xxx111xx" },
+    { "name": "独粒钻石－中国式", "caseRva": "0x14bc247", "cells": "xx000xxx11111x011111001101100111110x11111xxx000xx" }
+  ]
+}

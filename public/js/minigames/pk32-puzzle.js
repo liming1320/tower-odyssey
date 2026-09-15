@@ -20,7 +20,7 @@
     function css() {
         if (document.getElementById('pk32-puzzle-style')) return;
         var s = document.createElement('style'); s.id = 'pk32-puzzle-style';
-        s.textContent = '.pk32p{max-width:820px;margin:auto;padding:18px;color:#eaf1f8;background:#17212b;border-radius:8px;font-family:system-ui}.pk32p h2{margin:0 0 5px}.pk32p .meta,.pk32p .msg{color:#b8c7d6;margin:8px 0;min-height:24px}.pk32p .bar{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.pk32p button{border:1px solid #60758a;border-radius:4px;background:#263b4c;color:#fff;padding:7px 10px;cursor:pointer}.pk32p button:hover{background:#35566e}.pk32p .grid{display:grid;gap:4px;margin:12px 0}.pk32p .tile{width:42px;height:42px;padding:0;font-size:18px}.pk32p .board{display:grid;place-items:center;gap:3px;background:#0d151c;padding:12px;max-width:max-content}.pk32p input{box-sizing:border-box;background:#0d151c;color:#fff;border:1px solid #60758a;border-radius:3px;padding:7px;text-align:center}.pk32p .selected{outline:3px solid #f3c45b}.pk32p .filled{background:#d08d35}.pk32p .empty{background:#20313f}.pk32p .swatch{width:32px;height:32px;border:2px solid #60758a;border-radius:50%;padding:0}.pk32p .red{background:#e85b55}.pk32p .blue{background:#4e9de8}.pk32p .green{background:#60bd78}.pk32p .yellow{background:#e4c44e}.pk32p .purple{background:#ad78d3}.pk32p .native-board-wrap{max-width:100%;overflow:auto;background:#0d151c;padding:10px;border:1px solid #405466;border-radius:6px}.pk32p .native-grid{display:grid;grid-template-columns:repeat(20,clamp(18px,3.5vw,32px));gap:2px;width:max-content;margin:auto;padding:8px;background:#7b522e;border:6px solid #b98248;border-radius:5px}.pk32p .native-cell{position:relative;width:clamp(18px,3.5vw,32px);height:clamp(18px,3.5vw,32px);padding:0;border:0;border-radius:50%;background:#9a693c;box-shadow:inset 0 1px 2px #d39a5f,0 1px 1px #4a2e1b;cursor:pointer}.pk32p .native-cell[data-code="0"]{visibility:hidden;pointer-events:none}.pk32p .native-cell[data-code="6"]{background:#3d271b;box-shadow:inset 0 2px 4px #1b100a,0 1px 1px #c18a50}.pk32p .native-cell:not([data-code="0"]):not([data-code="6"])::after{content:"";position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe3a5 0,#d99a4c 22%,#9b5428 62%,#5a2d16 100%);box-shadow:0 1px 2px #3b1b0d}.pk32p .native-cell[data-code="2"]::after{filter:hue-rotate(12deg)}.pk32p .native-cell[data-code="3"]::after{filter:hue-rotate(35deg)}.pk32p .native-cell[data-code="4"]::after{filter:hue-rotate(55deg)}.pk32p .native-cell[data-code="5"]::after{filter:hue-rotate(75deg)}.pk32p .native-cell.native-selected{outline:3px solid #f3c45b;outline-offset:2px}.pk32p .native-cell.native-legal{box-shadow:0 0 0 3px #73c7a5,inset 0 2px 4px #1b100a}.pk32p .native-level{background:#0d151c;color:#fff;border:1px solid #60758a;border-radius:3px;padding:7px 9px;min-height:34px}';
+        s.textContent = '.pk32p{max-width:820px;margin:auto;padding:18px;color:#eaf1f8;background:#17212b;border-radius:8px;font-family:system-ui}.pk32p h2{margin:0 0 5px}.pk32p .meta,.pk32p .msg{color:#b8c7d6;margin:8px 0;min-height:24px}.pk32p .bar{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.pk32p button{border:1px solid #60758a;border-radius:4px;background:#263b4c;color:#fff;padding:7px 10px;cursor:pointer}.pk32p button:hover{background:#35566e}.pk32p .grid{display:grid;gap:4px;margin:12px 0}.pk32p .tile{width:42px;height:42px;padding:0;font-size:18px}.pk32p .board{display:grid;place-items:center;gap:3px;background:#0d151c;padding:12px;max-width:max-content}.pk32p input{box-sizing:border-box;background:#0d151c;color:#fff;border:1px solid #60758a;border-radius:3px;padding:7px;text-align:center}.pk32p .selected{outline:3px solid #f3c45b}.pk32p .filled{background:#d08d35}.pk32p .empty{background:#20313f}.pk32p .swatch{width:32px;height:32px;border:2px solid #60758a;border-radius:50%;padding:0}.pk32p .red{background:#e85b55}.pk32p .blue{background:#4e9de8}.pk32p .green{background:#60bd78}.pk32p .yellow{background:#e4c44e}.pk32p .purple{background:#ad78d3}.pk32p .native-board-wrap{max-width:100%;overflow:auto;background:#0d151c;padding:10px;border:1px solid #405466;border-radius:6px}.pk32p .native-grid{display:grid;grid-template-columns:repeat(7,clamp(34px,9vw,52px));gap:3px;width:max-content;margin:auto;padding:10px;background:#7b522e;border:6px solid #b98248;border-radius:5px}.pk32p .native-cell{position:relative;width:clamp(34px,9vw,52px);height:clamp(34px,9vw,52px);padding:0;border:0;border-radius:50%;background:#9a693c;box-shadow:inset 0 1px 2px #d39a5f,0 1px 1px #4a2e1b;cursor:pointer}.pk32p .native-cell[data-code="x"]{visibility:hidden;pointer-events:none}.pk32p .native-cell[data-code="0"]{background:#3d271b;box-shadow:inset 0 2px 4px #1b100a,0 1px 1px #c18a50}.pk32p .native-cell[data-code="1"]::after{content:"";position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe3a5 0,#d99a4c 22%,#9b5428 62%,#5a2d16 100%);box-shadow:0 1px 2px #3b1b0d}.pk32p .native-cell.native-selected{outline:3px solid #f3c45b;outline-offset:2px}.pk32p .native-cell.native-legal{box-shadow:0 0 0 3px #73c7a5,inset 0 2px 4px #1b100a}.pk32p .native-level{background:#0d151c;color:#fff;border:1px solid #60758a;border-radius:3px;padding:7px 9px;min-height:34px}';
         document.head.appendChild(s);
     }
     function btn(text, fn) { var b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.onclick = fn; return b; }
@@ -210,8 +210,9 @@
             area.textContent = '正在读取原生棋盘数据';
             if (!state.loading) {
                 state.loading = true;
-                fetch('/data/pk32-peg-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                    state.payloads = (data.levels || []).filter(function (row) { return row.width === 20 && row.height === 14 && typeof row.cells === 'string'; }).map(function (row) { return { length: row.cells.length, value: row.cells }; });
+                fetch('/data/pk32-peg-native-boards.json').then(function (response) { return response.json(); }).then(function (data) {
+                    state.payloads = (data.levels || []).filter(function (row) { return typeof row.cells === 'string' && /^[x01]{49}$/.test(row.cells); }).map(function (row) { return { name: row.name, caseRva: row.caseRva, value: row.cells }; });
+                    state.center = Number.isInteger(data.center) ? data.center : 24;
                     state.level = 0;
                     state.board = null;
                     state.loading = false;
@@ -222,20 +223,21 @@
         }
         var payload = state.payloads[state.level] || state.payloads[0];
         if (!payload) { status('没有找到原生棋盘数据'); return; }
-        if (!Array.isArray(state.board) || state.board.length !== 280) state.board = payload.value.split('');
+        if (!Array.isArray(state.board) || state.board.length !== 49) state.board = payload.value.split('');
         var selected = Number.isInteger(state.selected) ? state.selected : -1;
         state.ended = state.ended === true;
-        function occupied(index) { return state.board[index] !== '0' && state.board[index] !== '6'; }
-        function cell(row, col) { return row < 0 || row >= 14 || col < 0 || col >= 20 ? -1 : row * 20 + col; }
+        state.chainActive = state.chainActive === true;
+        function occupied(index) { return state.board[index] === '1'; }
+        function cell(row, col) { return row < 0 || row >= 7 || col < 0 || col >= 7 ? -1 : row * 7 + col; }
         function hasLegalMove() {
             var directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
             for (var index = 0; index < state.board.length; index++) {
                 if (!occupied(index)) continue;
-                var row = Math.floor(index / 20), col = index % 20;
+                var row = Math.floor(index / 7), col = index % 7;
                 for (var d = 0; d < directions.length; d++) {
                     var middle = cell(row + directions[d][0], col + directions[d][1]);
                     var target = cell(row + directions[d][0] * 2, col + directions[d][1] * 2);
-                    if (middle >= 0 && target >= 0 && occupied(middle) && state.board[target] === '6') return true;
+                    if (middle >= 0 && target >= 0 && occupied(middle) && state.board[target] === '0') return true;
                 }
             }
             return false;
@@ -243,46 +245,52 @@
         function legalTargets(from) {
             var result = [];
             if (from < 0 || !occupied(from)) return result;
-            var row = Math.floor(from / 20), col = from % 20;
+            var row = Math.floor(from / 7), col = from % 7;
             [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(function (direction) {
                 var middle = cell(row + direction[0], col + direction[1]);
                 var target = cell(row + direction[0] * 2, col + direction[1] * 2);
-                if (middle >= 0 && target >= 0 && occupied(middle) && state.board[target] === '6') result.push(target);
+                if (middle >= 0 && target >= 0 && occupied(middle) && state.board[target] === '0') result.push(target);
             });
             return result;
         }
         function select(index) {
-            if (state.ended || state.board[index] === '0') return;
-            if (selected < 0) { if (occupied(index)) { selected = index; state.selected = index; redraw(); } return; }
-            var sr = Math.floor(selected / 20), sc = selected % 20, tr = Math.floor(index / 20), tc = index % 20;
+            if (state.ended || state.board[index] === 'x') return;
+            if (selected < 0) { if (occupied(index)) { selected = index; state.selected = index; state.chainActive = false; redraw(); } return; }
+            if (state.chainActive && index === selected) { selected = -1; state.selected = -1; state.chainActive = false; redraw(); return; }
+            var sr = Math.floor(selected / 7), sc = selected % 7, tr = Math.floor(index / 7), tc = index % 7;
             var dr = tr - sr, dc = tc - sc;
             var middle = cell(sr + dr / 2, sc + dc / 2), distance = Math.abs(dr) + Math.abs(dc);
-            if (distance === 2 && (dr === 0 || dc === 0) && occupied(selected) && middle >= 0 && occupied(middle) && state.board[index] === '6') {
-                state.history = Array.isArray(state.history) ? state.history : [];
-                state.history.push({ board: state.board.slice(), moves: state.moves || 0, ended: state.ended });
+            if (distance === 2 && (dr === 0 || dc === 0) && occupied(selected) && middle >= 0 && occupied(middle) && state.board[index] === '0') {
+                if (!state.chainActive) {
+                    state.history = Array.isArray(state.history) ? state.history : [];
+                    state.history.push({ board: state.board.slice(), moves: state.moves || 0, ended: state.ended });
+                    state.moves = (state.moves || 0) + 1;
+                }
                 var sourceCode = state.board[selected];
-                state.board[selected] = '6'; state.board[middle] = '6'; state.board[index] = sourceCode; state.moves = (state.moves || 0) + 1;
-                selected = -1; state.selected = -1; state.ended = !hasLegalMove(); redraw(); return;
+                state.board[selected] = '0'; state.board[middle] = '0'; state.board[index] = sourceCode;
+                state.ended = !hasLegalMove(); state.chainActive = !state.ended && legalTargets(index).length > 0;
+                selected = state.chainActive ? index : -1; state.selected = selected; redraw(); return;
             }
-            selected = occupied(index) ? index : -1; state.selected = selected; redraw();
+            state.chainActive = false; selected = occupied(index) ? index : -1; state.selected = selected; redraw();
         }
-        function changeLevel(level) { state.level = Math.max(0, Math.min(state.payloads.length - 1, level)); state.board = null; state.history = []; state.selected = -1; state.ended = false; state.moves = 0; redraw(); }
-        area.appendChild(btn('上一关', function () { changeLevel(state.level - 1); }));
-        area.appendChild(btn('下一关', function () { changeLevel(state.level + 1); }));
-        area.appendChild(btn('重置本关', function () { state.board = payload.value.split(''); state.history = []; state.selected = -1; state.ended = false; state.moves = 0; redraw(); }));
+        function changeLevel(level) { state.level = Math.max(0, Math.min(state.payloads.length - 1, level)); state.board = null; state.history = []; state.selected = -1; state.ended = false; state.chainActive = false; state.moves = 0; redraw(); }
+        area.appendChild(btn('上一个预设', function () { changeLevel(state.level - 1); }));
+        area.appendChild(btn('下一个预设', function () { changeLevel(state.level + 1); }));
+        area.appendChild(btn('重置预设', function () { state.board = payload.value.split(''); state.history = []; state.selected = -1; state.ended = false; state.chainActive = false; state.moves = 0; redraw(); }));
         var undo = btn('撤销一步', function () {
             var previous = Array.isArray(state.history) && state.history.pop();
             if (!previous) return;
-            state.board = previous.board; state.moves = previous.moves; state.ended = previous.ended === true; state.selected = -1; redraw();
+            state.board = previous.board; state.moves = previous.moves; state.ended = previous.ended === true; state.selected = -1; state.chainActive = false; redraw();
         });
         undo.disabled = !Array.isArray(state.history) || state.history.length === 0;
         area.appendChild(undo);
-        var picker = document.createElement('select'); picker.className = 'native-level'; picker.setAttribute('aria-label', '独粒钻石原版关卡'); for (var levelIndex = 0; levelIndex < state.payloads.length; levelIndex++) { var option = document.createElement('option'); option.value = String(levelIndex); option.textContent = '第 ' + (levelIndex + 1) + ' 关'; picker.appendChild(option); } picker.value = String(state.level); picker.onchange = function () { changeLevel(Number(picker.value) || 0); }; area.appendChild(picker);
-        var label = document.createElement('span'); label.textContent = '第 ' + (state.level + 1) + ' / ' + state.payloads.length + ' 关'; label.style.marginLeft = '8px'; area.appendChild(label);
+        var picker = document.createElement('select'); picker.className = 'native-level'; picker.setAttribute('aria-label', '独粒钻石原生棋盘预设'); for (var levelIndex = 0; levelIndex < state.payloads.length; levelIndex++) { var option = document.createElement('option'); option.value = String(levelIndex); option.textContent = (levelIndex + 1) + '．' + state.payloads[levelIndex].name; picker.appendChild(option); } picker.value = String(state.level); picker.onchange = function () { changeLevel(Number(picker.value) || 0); }; area.appendChild(picker);
+        var label = document.createElement('span'); label.textContent = payload.name + '（' + (state.level + 1) + ' / ' + state.payloads.length + '）'; label.style.marginLeft = '8px'; area.appendChild(label);
         var wrap = document.createElement('div'); wrap.className = 'native-board-wrap'; var grid = document.createElement('div'); grid.className = 'native-grid';
-        var legal = legalTargets(selected); state.board.forEach(function (code, index) { var b = btn('', function () { select(index); }); b.className = 'native-cell' + (selected === index ? ' native-selected' : '') + (legal.indexOf(index) >= 0 ? ' native-legal' : ''); b.dataset.code = code; b.setAttribute('aria-label', code === '0' ? '棋盘外' : code === '6' ? '空位' : '棋子'); b.disabled = code === '0'; grid.appendChild(b); }); wrap.appendChild(grid); area.appendChild(wrap);
-        var pieces = state.board.filter(function (value) { return value !== '0' && value !== '6'; }).length; var rating = pieces > 5 ? '不及格' : pieces === 5 ? '及格' : pieces === 4 ? '良好' : pieces === 3 ? '优秀' : pieces === 2 ? '高手' : pieces === 1 ? '大师' : '修改高手'; status(state.ended ? '本局结束；剩余棋子：' + pieces + '；评分：' + rating : (selected >= 0 ? '请选择发光空位完成跳吃；剩余棋子：' : '选择棋子，再选择发光空位；剩余棋子：') + pieces + '，移动：' + (state.moves || 0));
-        var gameRoot = area.closest('.pk32p'); if (gameRoot) { if (gameRoot.__pk32PegKeyHandler) gameRoot.removeEventListener('keydown', gameRoot.__pk32PegKeyHandler); gameRoot.tabIndex = 0; gameRoot.__pk32PegKeyHandler = function (event) { if (event.key === ' ' && !state.ended) { event.preventDefault(); var previous = Array.isArray(state.history) && state.history.pop(); if (previous) { state.board = previous.board; state.moves = previous.moves; state.ended = previous.ended === true; state.selected = -1; redraw(); } } }; gameRoot.addEventListener('keydown', gameRoot.__pk32PegKeyHandler); }
+        var legal = legalTargets(selected); state.board.forEach(function (code, index) { var b = btn('', function () { select(index); }); b.className = 'native-cell' + (selected === index ? ' native-selected' : '') + (legal.indexOf(index) >= 0 ? ' native-legal' : ''); b.dataset.code = code; b.setAttribute('aria-label', code === 'x' ? '棋盘外' : code === '0' ? '空位' : '棋子'); b.disabled = code === 'x'; grid.appendChild(b); }); wrap.appendChild(grid); area.appendChild(wrap);
+        var pieces = state.board.filter(function (value) { return value === '1'; }).length; var rating = pieces > 5 ? '不及格' : pieces === 5 ? '及格' : pieces === 4 ? '良好' : pieces === 3 ? '优秀' : pieces === 2 ? '高手' : pieces === 1 && state.board[state.center] === '1' ? '超级大师' : pieces === 1 ? '大师' : '修改高手'; var initialNoMove = (!state.history || state.history.length === 0) && !hasLegalMove(); status(initialNoMove ? '当前原生预设没有横纵合法跳步，其在原版中的用途仍待确认。' : state.ended ? '本局结束；剩余棋子：' + pieces + '；评分：' + rating : (state.chainActive ? '可继续跳，或点击当前棋子结束本步；剩余棋子：' : selected >= 0 ? '请选择发光空位完成跳吃；剩余棋子：' : '选择棋子，再选择发光空位；剩余棋子：') + pieces + '，移动：' + (state.moves || 0));
+        if (window.__MG_TEST) window.__pk32PegDebug = { getState: function () { return { board: state.board.slice(), selected: state.selected, chainActive: state.chainActive, moves: state.moves || 0, ended: state.ended }; }, setBoard: function (board) { state.board = board.slice(); state.history = []; state.selected = -1; state.ended = false; state.chainActive = false; state.moves = 0; redraw(); } };
+        var gameRoot = area.closest('.pk32p'); if (gameRoot) { if (gameRoot.__pk32PegKeyHandler) gameRoot.removeEventListener('keydown', gameRoot.__pk32PegKeyHandler); gameRoot.tabIndex = 0; gameRoot.__pk32PegKeyHandler = function (event) { if (event.key === ' ') { event.preventDefault(); var previous = Array.isArray(state.history) && state.history.pop(); if (previous) { state.board = previous.board; state.moves = previous.moves; state.ended = previous.ended === true; state.selected = -1; state.chainActive = false; redraw(); } } }; gameRoot.addEventListener('keydown', gameRoot.__pk32PegKeyHandler); }
     }
     function cube(area, status, reset, redraw, state) {
         if (!state || !state.cells) state = { cells: Array(9).fill(false), moves: 0 };

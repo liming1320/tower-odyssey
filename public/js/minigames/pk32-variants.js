@@ -511,11 +511,12 @@
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载爆破彩球原生关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
             fetch('/data/pk32-burst-balls-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; const select = el('select', { 'aria-label': '爆破彩球原生关卡' }); data.levels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); }); function draw() { panel.innerHTML = ''; const raw = data.levels[level].cells, width = 12, rows = raw.match(/.{1,12}/g), grid = renderGrid(width, rows.length, 'bubble-board'); rows.join('').split('').forEach(function (value, index) { grid.appendChild(button(value === '0' ? '·' : value, function () { if (value !== '0') { this.disabled = true; this.textContent = '·'; setScore(score + 3); } })); }); panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select, grid); prompt.textContent = '原版关卡数未知；原生数据 ' + (level + 1) + ' / ' + data.levels.length + '，相邻两个以上同色彩球可消除。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '爆破彩球原生数据加载失败'; });
         }
-        function renderNativeBurstOriginal() {
-            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载爆破彩球原生关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-            fetch('/data/pk32-burst-balls-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+        function renderNativeBurstOriginal(gameName, dataUrl) {
+            gameName = gameName || '爆破彩球'; dataUrl = dataUrl || '/data/pk32-burst-balls-levels.json';
+            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载' + gameName + '原生盘面…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
+            fetch(dataUrl).then(function (response) { return response.json(); }).then(function (data) {
                 let level = 0, cells = [], width = 12, height = 0;
-                const select = el('select', { 'aria-label': '爆破彩球原生关卡' });
+                const select = el('select', { 'aria-label': gameName + '原生盘面' });
                 data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); });
                 function connected(start) {
                     const value = cells[start]; if (value === '0') return [];
@@ -532,7 +533,7 @@
                 function draw() { panel.innerHTML = ''; const grid = renderGrid(width, height, 'bubble-board'); cells.forEach(function (value, index) { const b = button(value === '0' ? '' : '●', function () { if (ended || value === '0') return; const group = connected(index); if (group.length < 2) { prompt.textContent = '请选择两个以上上下左右连续相同颜色的彩球。'; return; } group.forEach(function (cell) { cells[cell] = '0'; }); compact(); setScore(score + group.length * 3); if (!cells.some(function (cell) { return cell !== '0'; })) { ended = true; draw(); finish('所有彩球已消除，本关完成。'); return; } draw(); }); b.dataset.cell = String(index); b.dataset.value = value; b.setAttribute('aria-label', value === '0' ? '空格' : '彩球 ' + value); b.disabled = ended || value === '0'; grid.appendChild(b); }); panel.append(button('上一关', function () { level = Math.max(0, level - 1); reset(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); reset(); }), select, grid); prompt.textContent = '原版关卡：第 ' + (level + 1) + ' / ' + data.levels.length + '；选择两个以上上下左右连续相同的彩球消除。'; }
                 function reset() { const raw = data.levels[level].cells; width = raw.length === 192 ? 12 : raw.length === 40 ? 8 : 6; height = Math.ceil(raw.length / width); cells = raw.padEnd(width * height, '0').slice(0, width * height).split(''); ended = false; draw(); if (cells.some(function (value) { return value !== '0'; }) && !hasMove()) finish('没有可选择的彩球了，请重新开始本关。'); }
                 select.onchange = function () { level = Number(select.value) || 0; reset(); }; reset();
-            }).catch(function () { prompt.textContent = '爆破彩球原生数据加载失败'; });
+            }).catch(function () { prompt.textContent = gameName + '原生数据加载失败'; });
         }
         function renderNativeTank() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载坦克大战原生盘面…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
@@ -776,18 +777,15 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             const info = el('p', { className: 'pk32v-prompt' }, '正在读取原生盘面');
             const controls = el('div', { className: 'pk32v-controls' });
             const grid = renderGrid(16, 16, 'electromagnetic-board');
-            grid.style.gridTemplateColumns = 'repeat(16, minmax(18px, 1fr))';
-            grid.style.width = 'min(100%, 560px)'; grid.style.maxWidth = '100%';
+            grid.style.cssText = 'display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:1px;width:min(100%,496px);aspect-ratio:1;margin:0 auto;background:#050505;overflow:hidden';
             grid.dataset.board = 'electromagnetic';
             const selector = el('select', { ariaLabel: '选择原版关卡' });
             const direction = el('div', { className: 'pk32v-controls' });
             let levels = [], level = 0, cells = [], history = [];
-            // Native text proves 1-4 are movable colors and 5 is fixed, but does not map
-            // the numeric values to named colors. Keep the original numeric identity.
             const colors = { '1': true, '2': true, '3': true, '4': true };
-            function groups() {
+            function groups(source) {
                 const seen = new Set(), result = [];
-                cells.forEach(function (value, index) {
+                source.forEach(function (value, index) {
                     if (!colors[value] || seen.has(index)) return;
                     const group = [], queue = [index]; seen.add(index);
                     while (queue.length) {
@@ -796,7 +794,7 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
                         [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].forEach(function (point) {
                             if (point[0] < 0 || point[0] >= 16 || point[1] < 0 || point[1] >= 16) return;
                             const next = point[1] * 16 + point[0];
-                            if (!seen.has(next) && cells[next] === value) { seen.add(next); queue.push(next); }
+                            if (!seen.has(next) && source[next] === value) { seen.add(next); queue.push(next); }
                         });
                     }
                     result.push(group);
@@ -809,59 +807,83 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
                 const colorNames = Object.keys(byColor);
                 return colorNames.length > 0 && colorNames.every(function (value) {
                     const first = cells.indexOf(value); if (first < 0) return true;
-                    const connected = groups().filter(function (group) { return group.indexOf(first) >= 0; })[0] || [];
+                    const connected = groups(cells).filter(function (group) { return group.indexOf(first) >= 0; })[0] || [];
                     return connected.length === byColor[value];
                 });
             }
-            function move(dx, dy, selected) {
-                if (!cells.length || ended) return selected;
-                if (selected == null || !colors[cells[selected]]) return selected;
-                const group = groups().find(function (candidate) { return candidate.indexOf(selected) >= 0; }) || [];
-                const moving = new Set(group);
-                const next = cells.slice();
-                const occupied = new Set();
-                cells.forEach(function (value, index) { if (value !== '0' && !moving.has(index)) occupied.add(index); });
-                let changed = false;
-                const destinations = group.map(function (index) { const x = index % 16, y = Math.floor(index / 16); return (y + dy) * 16 + x + dx; });
-                const valid = group.length > 0 && destinations.every(function (destination) {
-                    const x = destination % 16, y = Math.floor(destination / 16);
-                    return x >= 0 && x < 16 && y >= 0 && y < 16 && !occupied.has(destination);
+            function shift(source, dx, dy) {
+                const components = groups(source), owner = new Map(), state = [], movable = [];
+                components.forEach(function (component, componentIndex) { component.forEach(function (index) { owner.set(index, componentIndex); }); });
+                function canMove(componentIndex) {
+                    if (state[componentIndex] === 2) return movable[componentIndex];
+                    if (state[componentIndex] === 1) return true;
+                    state[componentIndex] = 1;
+                    const component = components[componentIndex];
+                    const allowed = component.every(function (index) {
+                        const x = index % 16, y = Math.floor(index / 16), nextX = x + dx, nextY = y + dy;
+                        if (nextX < 0 || nextX >= 16 || nextY < 0 || nextY >= 16) return false;
+                        const destination = nextY * 16 + nextX, value = source[destination];
+                        if (value === '5') return false;
+                        if (value === '0') return true;
+                        const dependency = owner.get(destination);
+                        return dependency === componentIndex || (dependency != null && canMove(dependency));
+                    });
+                    state[componentIndex] = 2; movable[componentIndex] = allowed;
+                    return allowed;
+                }
+                components.forEach(function (_, index) { canMove(index); });
+                const next = source.slice();
+                components.forEach(function (component, index) { if (movable[index]) component.forEach(function (cell) { next[cell] = '0'; }); });
+                components.forEach(function (component, index) {
+                    if (!movable[index]) return;
+                    component.forEach(function (cell) {
+                        const x = cell % 16, y = Math.floor(cell / 16), destination = (y + dy) * 16 + x + dx;
+                        next[destination] = source[cell];
+                    });
                 });
-                if (!valid) return selected;
-                const selectedOffset = group.indexOf(selected);
-                group.forEach(function (index) { next[index] = '0'; });
-                group.forEach(function (index, i) { next[destinations[i]] = cells[index]; });
-                selected = destinations[selectedOffset];
-                changed = true;
-                if (!changed) return selected;
+                return next;
+            }
+            function move(dx, dy) {
+                if (!cells.length || ended) return false;
+                const next = shift(cells, dx, dy);
+                if (next.join('') === cells.join('')) return false;
                 history.push(cells.slice()); cells = next; draw();
-                if (complete()) { setScore(score + 100); finish('同色彩球已经全部连通，本关完成。'); }
-                return selected;
+                if (complete()) {
+                    ended = true; setScore(score + 100); status.textContent = '恭喜！您过关了！';
+                    info.textContent = '同色彩球已经全部连通。';
+                    info.appendChild(button('确定', function () { level = (level + 1) % levels.length; reset(); }));
+                }
+                return true;
             }
             function draw() {
                 grid.innerHTML = '';
                 selector.value = String(level);
                 cells.forEach(function (value, index) {
-                    const b = button(value === '0' ? '' : '●', function () { if (value !== '0' && value !== '5') { selected = index; draw(); } }); b.disabled = value === '0' || value === '5';
-                    b.dataset.cell = String(index); b.dataset.value = value; b.dataset.selected = String(index === selected); b.classList.add('value-' + value);
-                    b.style.cssText = value === '0' ? '' : value === '5' ? 'color:#555;background:#aaa' : 'color:#fff;background:' + ({ '1': '#d04a43', '2': '#d39b2e', '3': '#397bb5', '4': '#3b9b68' }[value] || '#777');
-                    b.setAttribute('aria-label', value === '5' ? '固定球' : value === '0' ? '空格' : '可移动球 ' + value);
-                    grid.appendChild(b);
+                    const cell = el('span', { className: 'value-' + value });
+                    cell.dataset.cell = String(index); cell.dataset.value = value;
+                    cell.style.cssText = 'display:block;min-width:0;min-height:0;aspect-ratio:1;background-color:#050505;background-repeat:no-repeat;';
+                    if (value !== '0') {
+                        const sourceY = 100 + Number(value) * 30;
+                        cell.style.backgroundImage = 'url("/img/pk32/original/sheet-d3525b.png")';
+                        cell.style.backgroundSize = (544 / 30 * 100) + '% ' + (433 / 30 * 100) + '%';
+                        cell.style.backgroundPosition = (380 / (544 - 30) * 100) + '% ' + (sourceY / (433 - 30) * 100) + '%';
+                    }
+                    cell.setAttribute('aria-label', value === '0' ? '空位' : value === '5' ? '固定球' : '可移动球 ' + value);
+                    grid.appendChild(cell);
                 });
-                info.textContent = levels.length ? '原版关卡：第 ' + (level + 1) + ' / ' + levels.length + '；16×16；选择彩球后用方向键移动，固定球不移动' : '正在读取原生盘面';
+                info.textContent = levels.length ? '原版关卡：第 ' + (level + 1) + ' / ' + levels.length + '；方向键会同时移动全部彩球' : '正在读取原生盘面';
             }
-            function reset() { cells = (levels[level] && levels[level].cells || '').slice(0, 256).split(''); history = []; ended = false; selected = null; draw(); }
+            function reset() { cells = (levels[level] && levels[level].cells || '').slice(0, 256).split(''); history = []; ended = false; status.textContent = '原版流程：160 关；原始规则与图集已接入'; draw(); }
             function previous() { if (level > 0) { level -= 1; reset(); } }
             function next() { if (level + 1 < levels.length) { level += 1; reset(); } }
             function undo() { if (history.length) { cells = history.pop(); ended = false; draw(); } }
-            function keydown(event) { if (ended) return; const moves = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }; const moveBy = moves[event.key]; if (!moveBy || selected == null) return; event.preventDefault(); selected = move(moveBy[0], moveBy[1], selected); }
+            function keydown(event) { if (ended) return; const moves = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }; const moveBy = moves[event.key]; if (!moveBy) return; event.preventDefault(); move(moveBy[0], moveBy[1]); }
             document.addEventListener('keydown', keydown); addCleanup(function () { document.removeEventListener('keydown', keydown); });
             selector.addEventListener('change', function () { level = Number(selector.value) || 0; reset(); });
             controls.append(button('上一关', previous), button('下一关', next), selector, button('撤销上一步', undo));
-            let selected = null;
-            if (window.__MG_TEST) window.__pk32ElectromagneticDebug = { getState: function () { return { level: level, cells: cells.slice(), history: history.length, ended: ended, selected: selected }; }, move: move, reset: reset, select: function (index) { selected = index; draw(); } };
+            if (window.__MG_TEST) window.__pk32ElectromagneticDebug = { getState: function () { return { level: level, cells: cells.slice(), history: history.length, ended: ended }; }, move: move, shift: shift, reset: reset };
             direction.style.cssText = 'display:grid;grid-template-columns:repeat(3,minmax(54px,1fr));gap:6px;max-width:220px;margin:8px auto 0';
-            direction.append(el('span', {}), button('上', function () { selected = move(0, -1, selected); }), el('span', {}), button('左', function () { selected = move(-1, 0, selected); }), el('span', {}), button('右', function () { selected = move(1, 0, selected); }), el('span', {}), button('下', function () { selected = move(0, 1, selected); }), el('span', {}));
+            direction.append(el('span', {}), button('上', function () { move(0, -1); }), el('span', {}), button('左', function () { move(-1, 0); }), el('span', {}), button('右', function () { move(1, 0); }), el('span', {}), button('下', function () { move(0, 1); }), el('span', {}));
             wrap.append(info, controls, grid, direction); body.append(wrap);
             fetch('/data/pk32-electromagnetic-levels.json').then(function (r) { return r.json(); }).then(function (d) { levels = d.levels || []; levels.forEach(function (_, i) { const option = el('option', {}, '第 ' + (i + 1) + ' 关'); option.value = String(i); selector.appendChild(option); }); reset(); }).catch(function () { info.textContent = '原生盘面加载失败'; });
         }
@@ -981,7 +1003,7 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; selected = null; ended = false; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; selected = null; ended = false; draw(); } }), button('清除连线', function () { links = []; selected = null; ended = false; draw(); }));
             wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },

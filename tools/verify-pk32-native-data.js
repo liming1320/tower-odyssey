@@ -15,6 +15,7 @@ const rows = [];
 
 for (const file of files) {
     const data = JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'));
+    if (data.assignmentVerified === false) continue;
     assert.ok(data.name, file + ': missing name');
     assert.ok(names.has(data.name), file + ': name is not in the 213-item catalog');
     assert.ok(Array.isArray(data.levels), file + ': levels must be an array');
@@ -35,7 +36,7 @@ for (const file of files) {
     rows.push({ file, name: data.name, levels: data.levels.length, nativeLevelCount, countStatus: nativeLevelCount == null ? 'undeclared' : nativeLevelCount === data.levels.length ? 'matched' : 'needs-runtime-confirmation' });
 }
 
-const expected = { '同步移动': 261, '木乃伊': 222, '建筑制造': 53, '电磁彩球': 160 };
+const expected = { '同步移动': 261, '木乃伊': 222, '电磁彩球': 160, '同色方块': 3 };
 for (const [name, count] of Object.entries(expected)) {
     const row = rows.find(item => item.name === name);
     assert.ok(row, name + ': extracted data file missing');

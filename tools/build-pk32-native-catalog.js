@@ -7,6 +7,7 @@ const vm = require('vm');
 const root = path.resolve(__dirname, '..');
 const reference = path.join(root, 'output', 'pk32-reference');
 const strings = JSON.parse(fs.readFileSync(path.join(reference, 'strings.json'), 'utf8'));
+const pegBoards = JSON.parse(fs.readFileSync(path.join(root, 'public', 'data', 'pk32-peg-native-boards.json'), 'utf8'));
 const code = fs.readFileSync(path.join(root, 'public', 'js', 'minigames', 'pk32.js'), 'utf8');
 const context = { window: { MiniGames: {} } };
 vm.createContext(context);
@@ -68,9 +69,9 @@ const records = games.map(game => {
   if (game.name === '魔塔') {
     levelCount = 22;
     levelCountBasis = 'native floor-dispatch cases';
-  } else if (game.name === '独粒钻石' && payloads.filter(row => row.length === 280).length === 207) {
-    levelCount = 207;
-    levelCountBasis = '207 native 20x14 board payloads';
+  } else if (game.name === '独粒钻石') {
+    levelCount = pegBoards.count;
+    levelCountBasis = 'native initialization switch cases at RVA 0x14b970c..0x14bc247';
   } else {
     const explicit = explicitLevelMax(rows);
     if (explicit != null) {
