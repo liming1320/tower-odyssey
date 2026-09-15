@@ -137,6 +137,9 @@ function cleanReqHeaders(headers, clientIp) {
     out['x-forwarded-for'] = visIp;
     out['x-real-ip'] = visIp;
     out['x-forwarded-proto'] = 'http';
+    // 强制不压缩：HTML 要靠 rewriteHtmlPaths 改 <base>/属性，若上游返回 gzip 的字节流，
+    // 改写后就成了乱码。上游是本机的 127.0.0.1，关掉压缩没有带宽代价。
+    out['accept-encoding'] = 'identity';
     return out;
 }
 function clientIpOf(req) {
@@ -665,12 +668,16 @@ async function proxyRequest(req, res, deps, opts) {
 // 这里把「来自酒馆页面的请求」在路由未命中时转给 ST。
 // 判据用 Referer（iframe 里发出的请求一定带 /tavern/），游戏自己的请求不会被误伤。
 const FALLBACK_PATHS = ['/api/', '/socket.io/', '/login', '/login.html', '/manifest.json', '/sw.js'];
+// CSS/JS 里写的 url(/img/xxx.png) 这类根绝对路径没法靠改 HTML 覆盖（只读 HTML 不改写 CSS），
+// 浏览器会直接打到站点根 → 404。来自酒馆页的静态资源一律转给 ST。
+const FALLBACK_EXT = /\.(css|js|mjs|map|json|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf|mp3|wav|ogg|mp4|webm|glb|gltf)(\?|$)/i;
 function tavernFallbackPath(req) {
     if (!enabledNow()) return null;
     const url = String(req.url || '');
     const qi = url.indexOf('?');
     const p = qi >= 0 ? url.slice(0, qi) : url;
-    if (!FALLBACK_PATHS.some(x => p === x.replace(/\/$/, '') || p.startsWith(x))) return null;
+    const hit = FALLBACK_PATHS.some(x => p === x.replace(/\/$/, '') || p.startsWith(x)) || FALLBACK_EXT.test(p);
+    if (!hit) return null;
     const ref = String(req.headers.referer || '');
     const fromTavern = ref.indexOf(PREFIX + '/') >= 0 || ref.endsWith(PREFIX);
     if (!fromTavern) return null;

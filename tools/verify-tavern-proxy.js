@@ -180,6 +180,9 @@ function getUserByToken(req) {
         };
         check('游戏自己的 /api/（无酒馆 Referer）不被误伤', (await probe('/api/heroes/list', null)) === false);
         check('酒馆页发出的 /socket.io 轮询也会兜底', (await probe('/socket.io/?EIO=4', REF)) === true);
+        // CSS 里的 url(/img/xxx.png) 改不到（只读 HTML 不改写 CSS），只能靠兜底
+        check('酒馆页发出的根绝对路径静态资源也兜底', (await probe('/img/bg.png', REF)) === true);
+        check('游戏自己的静态资源不被误伤', (await probe('/img/bg.png', null)) === false);
     }
 
     console.log('\n[6] 票的签发/校验往返');
