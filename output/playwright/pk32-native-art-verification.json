@@ -190,7 +190,7 @@
       "keys": {
         "red": 0,
         "blue": 0,
-        "yellow": 1,
+        "yellow": 0,
         "green": 0
       },
       "defeated": {},
@@ -198,16 +198,33 @@
       "visited": {
         "0": true
       },
-      "npcFlags": {},
+      "npcFlags": {
+        "openingStory": true,
+        "openingShown": true
+      },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+      "dialogPages": [
+        "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+        "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+        "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+        "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+        "而我们的故事，就是从这里开始的……"
+      ],
+      "dialogIndex": 0,
+      "dialogAnchor": {
+        "x": 5,
+        "y": 9
+      }
     },
     "fairy": {
       "set": "魔塔",
       "layer": 0,
       "x": 5,
-      "y": 8,
+      "y": 9,
       "hp": 1000,
       "attack": 10,
       "defense": 10,
@@ -218,7 +235,7 @@
       "keys": {
         "red": 0,
         "blue": 0,
-        "yellow": 1,
+        "yellow": 0,
         "green": 0
       },
       "defeated": {},
@@ -227,11 +244,41 @@
         "0": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": "勇士：……",
+      "dialogPages": [
+        "勇士：……",
+        "仙子：你醒了。",
+        "勇士：你是谁？我在哪里？",
+        "仙子：我是这里的仙子，刚才你被这里的小怪打晕了。",
+        "勇士：剑、剑、我的剑呢？",
+        "仙子：你的剑被它们抢走了，我只来的及把你救出来。",
+        "勇士：那，公主呢？我是来救公主的。",
+        "仙子：公主还在里面，你这样进去是打不过里面的小怪的。",
+        "勇士：那我现在应该怎么办呢？我答应了国王一定要把公主救出来的。",
+        "仙子：放心吧，我把我的力量借给你，你就可以打赢那些小怪了，不过，你要先帮我找一样东西，找到了再来这里找我。",
+        "勇士：找东西？找什么东西？",
+        "仙子：是一个十字架，中间有一颗红色的宝石。",
+        "勇士：那个东西有什么用吗？",
+        "仙子：我本来是这座塔的守护者，可不久前，从北方来了一批恶魔，它们占领了这座塔，并将我的魔力封在了这个十字架里面，如果你能将它带出塔来，那我的魔力就会慢慢地恢复，到那时我就可以把力量借给你去救公主了。",
+        "勇士：好吧，我试试看。",
+        "仙子：刚才我去看过了，你的剑被放在三楼，你的盾在五楼上，而那个十字架被放在七楼。要到七楼，你要先取回你的剑和盾。另外，在塔里的其它楼层上，还有一些存放了几百年的宝物，如果得到它们，对于你对付里面的怪物有很大的帮助。",
+        "勇士：可是，我怎么进去呢？",
+        "仙子：我这里有三把钥匙，你先进去，在塔里面还有很多这样的钥匙，你一定要珍惜使用。勇敢地去吧，勇士。"
+      ],
+      "dialogIndex": 0,
+      "dialogAnchor": {
+        "x": 5,
+        "y": 8
+      },
+      "dialogEvent": "fairy-intro",
+      "dialogMove": null
     },
     "door": {
       "set": "魔塔",
@@ -246,8 +293,8 @@
       "level": 1,
       "inventory": {},
       "keys": {
-        "red": 0,
-        "blue": 0,
+        "red": 1,
+        "blue": 1,
         "yellow": 0,
         "green": 0
       },
@@ -259,11 +306,21 @@
         "0": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true,
+        "fairyIntro": true,
+        "fairyKeysReceived": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null
     },
     "reopened": {
       "set": "魔塔",
@@ -278,8 +335,8 @@
       "level": 1,
       "inventory": {},
       "keys": {
-        "red": 0,
-        "blue": 0,
+        "red": 1,
+        "blue": 1,
         "yellow": 0,
         "green": 0
       },
@@ -291,11 +348,21 @@
         "0": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true,
+        "fairyIntro": true,
+        "fairyKeysReceived": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null
     },
     "upstairs": {
       "set": "魔塔",
@@ -310,8 +377,8 @@
       "level": 1,
       "inventory": {},
       "keys": {
-        "red": 0,
-        "blue": 0,
+        "red": 1,
+        "blue": 1,
         "yellow": 0,
         "green": 0
       },
@@ -324,11 +391,21 @@
         "1": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true,
+        "fairyIntro": true,
+        "fairyKeysReceived": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null
     },
     "downstairs": {
       "set": "魔塔",
@@ -343,8 +420,8 @@
       "level": 1,
       "inventory": {},
       "keys": {
-        "red": 0,
-        "blue": 0,
+        "red": 1,
+        "blue": 1,
         "yellow": 0,
         "green": 0
       },
@@ -357,11 +434,21 @@
         "1": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true,
+        "fairyIntro": true,
+        "fairyKeysReceived": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null
     },
     "beforeKey": {
       "set": "魔塔",
@@ -376,8 +463,8 @@
       "level": 1,
       "inventory": {},
       "keys": {
-        "red": 0,
-        "blue": 0,
+        "red": 1,
+        "blue": 1,
         "yellow": 0,
         "green": 0
       },
@@ -390,11 +477,21 @@
         "1": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true,
+        "fairyIntro": true,
+        "fairyKeysReceived": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null
     },
     "picked": {
       "set": "魔塔",
@@ -409,8 +506,8 @@
       "level": 1,
       "inventory": {},
       "keys": {
-        "red": 0,
-        "blue": 0,
+        "red": 1,
+        "blue": 1,
         "yellow": 1,
         "green": 0
       },
@@ -424,11 +521,21 @@
         "1": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true,
+        "fairyIntro": true,
+        "fairyKeysReceived": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null
     },
     "revisited": {
       "set": "魔塔",
@@ -443,8 +550,8 @@
       "level": 1,
       "inventory": {},
       "keys": {
-        "red": 0,
-        "blue": 0,
+        "red": 1,
+        "blue": 1,
         "yellow": 1,
         "green": 0
       },
@@ -458,11 +565,21 @@
         "1": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true,
+        "fairyIntro": true,
+        "fairyKeysReceived": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null
     },
     "loaded": {
       "set": "魔塔",
@@ -477,8 +594,8 @@
       "level": 1,
       "inventory": {},
       "keys": {
-        "red": 0,
-        "blue": 0,
+        "red": 1,
+        "blue": 1,
         "yellow": 1,
         "green": 0
       },
@@ -492,11 +609,21 @@
         "1": true
       },
       "npcFlags": {
-        "fairyIntro": true
+        "openingStory": true,
+        "openingShown": true,
+        "fairyIntro": true,
+        "fairyKeysReceived": true
       },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null
     }
   },
   "pickups": {
@@ -505,9 +632,9 @@
         "code": 19,
         "before": {
           "set": "魔塔",
-          "layer": 5,
-          "x": 1,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -518,6 +645,51 @@
           "keys": {
             "red": 0,
             "blue": 0,
+            "yellow": 0,
+            "green": 0
+          },
+          "defeated": {},
+          "cleared": {},
+          "visited": {
+            "1": true
+          },
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
+          "gateFlags": {},
+          "won": false,
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        },
+        "after": {
+          "set": "魔塔",
+          "layer": 1,
+          "x": 5,
+          "y": 9,
+          "hp": 1000,
+          "attack": 10,
+          "defense": 10,
+          "gold": 0,
+          "experience": 0,
+          "level": 1,
+          "inventory": {},
+          "keys": {
+            "red": 1,
+            "blue": 1,
             "yellow": 1,
             "green": 0
           },
@@ -526,47 +698,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "after": {
-          "set": "魔塔",
-          "layer": 5,
-          "x": 0,
-          "y": 0,
-          "hp": 1000,
-          "attack": 10,
-          "defense": 10,
-          "gold": 0,
-          "experience": 0,
-          "level": 1,
-          "inventory": {},
-          "keys": {
-            "red": 1,
-            "blue": 1,
-            "yellow": 2,
-            "green": 0
-          },
-          "defeated": {},
-          "cleared": {
-            "5:0": true
-          },
-          "visited": {
-            "1": true,
-            "5": true
-          },
-          "npcFlags": {},
-          "gateFlags": {},
-          "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 5,
-          "x": 0,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -577,31 +735,44 @@
           "keys": {
             "red": 1,
             "blue": 1,
-            "yellow": 2,
+            "yellow": 1,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "5:0": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "5": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 20,
         "before": {
           "set": "魔塔",
           "layer": 1,
-          "x": 1,
-          "y": 2,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -612,7 +783,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -620,16 +791,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
           "layer": 1,
-          "x": 0,
-          "y": 2,
+          "x": 5,
+          "y": 9,
           "hp": 1200,
           "attack": 10,
           "defense": 10,
@@ -640,26 +828,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:22": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
           "layer": 1,
-          "x": 0,
-          "y": 2,
+          "x": 5,
+          "y": 9,
           "hp": 1200,
           "attack": 10,
           "defense": 10,
@@ -670,29 +873,44 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:22": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
-        "sprite": "76"
+        "sprite": "20"
       },
       {
         "code": 21,
         "before": {
           "set": "魔塔",
           "layer": 1,
-          "x": 0,
+          "x": 5,
           "y": 9,
           "hp": 1000,
           "attack": 10,
@@ -704,7 +922,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -712,15 +930,32 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
           "layer": 1,
-          "x": 1,
+          "x": 5,
           "y": 9,
           "hp": 1500,
           "attack": 10,
@@ -732,25 +967,40 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:100": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
           "layer": 1,
-          "x": 1,
+          "x": 5,
           "y": 9,
           "hp": 1500,
           "attack": 10,
@@ -762,30 +1012,45 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:100": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
-        "sprite": "76"
+        "sprite": "21"
       },
       {
         "code": 22,
         "before": {
           "set": "魔塔",
-          "layer": 14,
-          "x": 4,
-          "y": 3,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -796,7 +1061,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -804,16 +1069,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 14,
+          "layer": 1,
           "x": 5,
-          "y": 3,
+          "y": 9,
           "hp": 2000,
           "attack": 10,
           "defense": 10,
@@ -824,27 +1106,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "14:38": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "14": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 14,
+          "layer": 1,
           "x": 5,
-          "y": 3,
+          "y": 9,
           "hp": 2000,
           "attack": 10,
           "defense": 10,
@@ -855,31 +1151,44 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "14:38": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "14": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 23,
         "before": {
           "set": "魔塔",
-          "layer": 6,
-          "x": 1,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -890,7 +1199,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -898,16 +1207,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 6,
-          "x": 0,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 2000,
           "attack": 17,
           "defense": 17,
@@ -918,27 +1244,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "6:0": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "6": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 6,
-          "x": 0,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 2000,
           "attack": 17,
           "defense": 17,
@@ -949,31 +1289,44 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "6:0": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "6": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 24,
         "before": {
           "set": "魔塔",
-          "layer": 13,
-          "x": 6,
-          "y": 10,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -984,7 +1337,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -992,16 +1345,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 13,
-          "x": 7,
-          "y": 10,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 4000,
           "attack": 31,
           "defense": 31,
@@ -1012,27 +1382,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "13:117": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "13": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 13,
-          "x": 7,
-          "y": 10,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 4000,
           "attack": 31,
           "defense": 31,
@@ -1043,31 +1427,44 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "13:117": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "13": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 25,
         "before": {
           "set": "魔塔",
           "layer": 1,
-          "x": 0,
-          "y": 10,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1078,7 +1475,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1086,16 +1483,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
           "layer": 1,
-          "x": 1,
-          "y": 10,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1108,26 +1522,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:111": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
           "layer": 1,
-          "x": 1,
-          "y": 10,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1140,30 +1569,45 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:111": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
-        "sprite": "76"
+        "sprite": "25"
       },
       {
         "code": 26,
         "before": {
           "set": "魔塔",
-          "layer": 12,
-          "x": 9,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1174,7 +1618,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1182,16 +1626,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 12,
-          "x": 10,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1204,27 +1665,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "12:10": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "12": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 12,
-          "x": 10,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1237,31 +1712,44 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "12:10": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "12": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 27,
         "before": {
           "set": "魔塔",
-          "layer": 9,
-          "x": 1,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1272,7 +1760,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1280,16 +1768,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 9,
-          "x": 0,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1302,27 +1807,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "9:0": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "9": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 9,
-          "x": 0,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1335,31 +1854,44 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "9:0": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "9": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 28,
         "before": {
           "set": "魔塔",
-          "layer": 7,
-          "x": 4,
-          "y": 4,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1370,7 +1902,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1378,16 +1910,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 7,
+          "layer": 1,
           "x": 5,
-          "y": 4,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1400,27 +1949,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "7:49": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "7": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 7,
+          "layer": 1,
           "x": 5,
-          "y": 4,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1433,31 +1996,44 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "7:49": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "7": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 29,
         "before": {
           "set": "魔塔",
-          "layer": 6,
-          "x": 6,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1468,7 +2044,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1476,16 +2052,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 6,
-          "x": 7,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1496,27 +2089,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "6:7": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "6": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 6,
-          "x": 7,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1527,31 +2134,44 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "6:7": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "6": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 30,
         "before": {
           "set": "魔塔",
           "layer": 1,
-          "x": 1,
-          "y": 3,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1562,7 +2182,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1570,16 +2190,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
           "layer": 1,
-          "x": 2,
-          "y": 3,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 13,
           "defense": 10,
@@ -1590,26 +2227,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:35": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
           "layer": 1,
-          "x": 2,
-          "y": 3,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 13,
           "defense": 10,
@@ -1620,30 +2272,45 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:35": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
-        "sprite": "76"
+        "sprite": "30"
       },
       {
         "code": 31,
         "before": {
           "set": "魔塔",
-          "layer": 3,
-          "x": 1,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1654,7 +2321,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1662,82 +2329,130 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 3,
-          "x": 0,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 20,
           "defense": 10,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "sword": "31"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "3:0": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "3": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 3,
-          "x": 0,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 20,
           "defense": 10,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "sword": "31"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "3:0": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "3": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 32,
         "before": {
           "set": "魔塔",
-          "layer": 9,
-          "x": 1,
-          "y": 10,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1748,7 +2463,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1756,82 +2471,130 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 9,
-          "x": 0,
-          "y": 10,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 50,
           "defense": 10,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "sword": "32"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "9:110": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "9": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 9,
-          "x": 0,
-          "y": 10,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 50,
           "defense": 10,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "sword": "32"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "9:110": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "9": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 33,
         "before": {
           "set": "魔塔",
-          "layer": 19,
-          "x": 1,
-          "y": 7,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1842,7 +2605,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1850,82 +2613,130 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 19,
-          "x": 2,
-          "y": 7,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 160,
           "defense": 10,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "sword": "33"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "19:79": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "19": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 19,
-          "x": 2,
-          "y": 7,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 160,
           "defense": 10,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "sword": "33"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "19:79": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "19": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 34,
         "before": {
           "set": "魔塔",
           "layer": 1,
-          "x": 1,
-          "y": 6,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -1936,7 +2747,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -1944,16 +2755,33 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
           "layer": 1,
-          "x": 0,
-          "y": 6,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 13,
@@ -1964,26 +2792,41 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:66": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
           "layer": 1,
-          "x": 0,
-          "y": 6,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 13,
@@ -1994,30 +2837,45 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "1:66": true
-          },
+          "cleared": {},
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
-        "sprite": "76"
+        "sprite": "34"
       },
       {
         "code": 35,
         "before": {
           "set": "魔塔",
-          "layer": 5,
-          "x": 3,
-          "y": 3,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -2028,7 +2886,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -2036,82 +2894,130 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 5,
-          "x": 4,
-          "y": 3,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 20,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "shield": "35"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "5:37": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "5": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 5,
-          "x": 4,
-          "y": 3,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 20,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "shield": "35"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "5:37": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "5": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 36,
         "before": {
           "set": "魔塔",
-          "layer": 11,
-          "x": 8,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -2122,7 +3028,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -2130,82 +3036,130 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 11,
-          "x": 9,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 40,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "shield": "36"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "11:9": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "11": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 11,
-          "x": 9,
-          "y": 0,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 40,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "shield": "36"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "11:9": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "11": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       },
       {
         "code": 37,
         "before": {
           "set": "魔塔",
-          "layer": 19,
-          "x": 7,
-          "y": 7,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 10,
@@ -2216,7 +3170,7 @@
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
@@ -2224,81 +3178,129 @@
           "visited": {
             "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "after": {
           "set": "魔塔",
-          "layer": 19,
-          "x": 8,
-          "y": 7,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 200,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "shield": "37"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "19:85": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "19": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
         },
         "revisit": {
           "set": "魔塔",
-          "layer": 19,
-          "x": 8,
-          "y": 7,
+          "layer": 1,
+          "x": 5,
+          "y": 9,
           "hp": 1000,
           "attack": 10,
           "defense": 200,
           "gold": 0,
           "experience": 0,
           "level": 1,
-          "inventory": {},
+          "inventory": {
+            "shield": "37"
+          },
           "keys": {
             "red": 0,
             "blue": 0,
-            "yellow": 1,
+            "yellow": 0,
             "green": 0
           },
           "defeated": {},
-          "cleared": {
-            "19:85": true
-          },
+          "cleared": {},
           "visited": {
-            "1": true,
-            "19": true
+            "1": true
           },
-          "npcFlags": {},
+          "npcFlags": {
+            "openingStory": true,
+            "openingShown": true
+          },
           "gateFlags": {},
           "won": false,
-          "lost": false
-        },
-        "sprite": "76"
+          "lost": false,
+          "ending": null,
+          "dialog": "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+          "dialogPages": [
+            "这是一个很古老的故事，传说在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小，但全国的人们都生活得非常幸福和快乐。",
+            "突然有一天，从天空中飞来了一群可怕的怪物，它们来到皇宫，抢走了国王唯一的女儿。第二天，国王就向全国下达了紧急令，只要谁能将公主给找回来，他将会把王位让给他。",
+            "于是，全国的勇士们都出发了。他们的足迹走遍了全国的各个角落，可是一点线索都没有找到，时间很快就过去了一个月。",
+            "终于，在第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。勇士们又出发了，可是，大部分人都没有回来，能活着回来的，都再也不敢去了。",
+            "而我们的故事，就是从这里开始的……"
+          ],
+          "dialogIndex": 0,
+          "dialogAnchor": {
+            "x": 5,
+            "y": 9
+          }
+        }
       }
     ],
     "battle": {
       "set": "魔塔",
-      "layer": 1,
-      "x": 4,
-      "y": 0,
+      "layer": 3,
+      "x": 10,
+      "y": 2,
       "hp": 955,
       "attack": 10,
       "defense": 10,
@@ -2309,20 +3311,40 @@
       "keys": {
         "red": 0,
         "blue": 0,
-        "yellow": 1,
+        "yellow": 0,
         "green": 0
       },
       "defeated": {},
       "cleared": {
-        "1:4": true
+        "3:43": true
       },
       "visited": {
-        "1": true
+        "3": true
       },
-      "npcFlags": {},
+      "npcFlags": {
+        "openingStory": true,
+        "openingShown": true
+      },
       "gateFlags": {},
       "won": false,
-      "lost": false
+      "lost": false,
+      "ending": null,
+      "dialog": null,
+      "dialogPages": null,
+      "dialogIndex": 0,
+      "dialogAnchor": null,
+      "dialogEvent": null,
+      "dialogMove": null,
+      "battle": {
+        "code": "38",
+        "rounds": 9,
+        "damage": 45,
+        "enemyHp": 0,
+        "shown": 0,
+        "heroHpStart": 1000,
+        "enemyHpStart": 70,
+        "animating": true
+      }
     }
   },
   "rulesComplete": false,

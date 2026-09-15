@@ -18,7 +18,7 @@
     function load() {
         try {
             var s = JSON.parse(localStorage.getItem(SAVE));
-            if (!s || !Array.isArray(s.levels) || typeof s.current !== 'number') return null;
+            if (!s || !s.levels || typeof s.levels !== 'object' || typeof s.current !== 'number') return null;
             return s;
         } catch (e) { return null; }
     }
@@ -35,6 +35,7 @@
         var root = el('section', 'pk32-light');
         var head = el('header', 'pk32-light-head');
         var title = el('h2', '', 'PK32 · 智慧之光');
+        head.appendChild(title);
         var status = el('div', 'pk32-light-status');
         var boardWrap = el('div', 'pk32-light-board-wrap');
         var board = el('div', 'pk32-light-board');
@@ -189,7 +190,7 @@
         document.addEventListener('keydown', onKey);
 
         atlas = document.createElement('img');
-        atlas.onload = function () { if (!stopped) { assetStatus = 'ready'; render(); note('智慧之光 · 第 ' + (levelIdx + 1) + ' 关（原版精灵图已加载）'); } };
+        atlas.onload = function () { if (!stopped) { assetStatus = 'ready'; if (state) { render(); note('智慧之光 · 第 ' + (levelIdx + 1) + ' 关（原版精灵图已加载）'); } } };
         atlas.onerror = function () { if (!stopped) { assetStatus = 'failed'; note('精灵图加载失败：' + ART); } };
         atlas.src = ART;
 

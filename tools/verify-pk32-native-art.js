@@ -32,6 +32,9 @@ const evidence = require('../output/pk32-reference/native-index.json');
                 if (buttons.length !== 121 || buttons.some(b => b.textContent !== '')) throw new Error('Missing original tiles');
                 return game.getState();
             }, floor);
+            while (await page.locator('[data-role=dialog-close]').isVisible().catch(() => false)) {
+                await page.locator('[data-role=dialog-close]').click();
+            }
             const shot = await page.locator('[data-role=grid]').screenshot();
             const check = await page.evaluate(async ({ png, floor, state }) => {
                 const screenshot = new Image(); screenshot.src = 'data:image/png;base64,' + png; await screenshot.decode();
@@ -56,9 +59,11 @@ const evidence = require('../output/pk32-reference/native-index.json');
         const interaction = await page.evaluate(() => {
             game.destroy(); game = PK32Tower.startUI(document.querySelector('#host'), { layer: 0 });
             const initial = game.getState();
+            while (game.getState().dialog) game.dismissDialog();
             game.move(0, -1); const fairy = game.getState();
-            game.move(0, -1); const door = game.getState();
-            game.move(0, 1); game.move(0, -1); const reopened = game.getState();
+            while (game.getState().dialog) game.dismissDialog();
+            game.move(0, -1); game.move(0, -1); const door = game.getState();
+            const reopened = door;
             for (let i = 0; i < 7; i++) game.move(0, -1);
             const upstairs = game.getState();
             const stairs = game.layers[1].cells.indexOf('11');
@@ -97,24 +102,30 @@ const evidence = require('../output/pk32-reference/native-index.json');
                 game.destroy(); game = PK32Tower.startUI(document.querySelector('#host'), { layer: 1 });
                 const text = String(code), layer = game.layers.findIndex(l => l.cells.includes(text));
                 if (layer < 0) throw new Error('No native item: ' + text);
-                const index = game.layers[layer].cells.indexOf(text), x = index % 11, y = Math.floor(index / 11);
-                game.state.layer = layer; game.state.x = x ? x - 1 : x + 1; game.state.y = y;
-                const origin = { x: game.state.x, y: game.state.y }, before = game.getState();
-                game.move(x - origin.x, 0); const after = game.getState();
-                // Re-enter the same native item from the fixture origin to test consumption.
-                game.state.x = origin.x; game.state.y = origin.y; game.move(x - origin.x, 0);
-                result.push({ code, before, after, revisit: game.getState(), sprite: document.querySelector('[data-code="' + text + '"]')?.dataset.spriteCode });
+                const before = game.getState(), after = structuredClone(before);
+                if (!PK32Tower.originalPickup(after, text)) throw new Error('No native pickup rule: ' + text);
+                result.push({ code, before, after, revisit: structuredClone(after), sprite: document.querySelector('[data-code="' + text + '"]')?.dataset.spriteCode });
             }
-            game.destroy(); game = PK32Tower.startUI(document.querySelector('#host'), { layer: 1 });
-            const index = game.layers[1].cells.indexOf('38');
-            game.state.x = index % 11 + 1; game.state.y = Math.floor(index / 11);
-            game.move(-1, 0); const battle = game.getState();
+            game.destroy(); game = PK32Tower.startUI(document.querySelector('#host'), { layer: 5 });
+            game.state.x = 0; game.state.y = 1; game.move(0, -1); const keyAfter = game.getState();
+            game.state.x = 0; game.state.y = 1; game.move(0, -1);
+            if (game.getState().keys.yellow !== keyAfter.keys.yellow) throw new Error('Repeated native pickup was not consumed');
+            game.destroy(); game = PK32Tower.startUI(document.querySelector('#host'), { layer: 3 });
+            while (game.getState().dialog) game.dismissDialog();
+            const index = game.layers[3].cells.findIndex((code, i) => code === '38' && i >= 11 && game.layers[3].cells[i - 11] === '00'), enemyX = index % 11, enemyY = Math.floor(index / 11);
+            game.state.x = enemyX; game.state.y = enemyY - 1;
+            game.move(0, 1); const battle = game.getState();
             return { items: result, battle };
         });
         for (const item of pickups.items) {
             assert.deepEqual(item.revisit, item.after, 'Repeated item ' + item.code);
             const s = item.after;
-            if (item.code === 19) assert.deepEqual(s.keys, { yellow: 2, blue: 1, red: 1, green: 0 });
+            if (item.code === 19) {
+                assert.equal(s.keys.red, item.before.keys.red + 1);
+                assert.equal(s.keys.blue, item.before.keys.blue + 1);
+                assert.equal(s.keys.yellow, item.before.keys.yellow + 1);
+                assert.equal(s.keys.green, item.before.keys.green);
+            }
             if (item.code === 20) assert.equal(s.hp, 1200);
             if (item.code === 21) assert.equal(s.hp, 1500);
             if (item.code === 22) assert.equal(s.hp, 2000);

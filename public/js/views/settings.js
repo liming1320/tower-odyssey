@@ -170,7 +170,7 @@ const SettingsView = {
         U.closeModal();
         const mask = U.el(`<div class="mini-mask" id="pk32-mask">
             <div class="mini-topbar">
-                <button class="btn-back" id="pk32-back">‹ 返回</button>
+                <button class="btn-back" id="pk32-back">‹ 返回设置</button>
                 <div class="mini-title">🗃️ PK32 原版迁移</div>
                 <div class="mini-score" id="pk32-score"></div>
             </div>
@@ -180,12 +180,30 @@ const SettingsView = {
         const stage = document.getElementById('pk32-stage');
         const scoreEl = document.getElementById('pk32-score');
         let inst = null;
-        const close = () => { try { inst && inst.stop && inst.stop(); } catch (e) {} mask.remove(); };
-        document.getElementById('pk32-back').onclick = close;
+        let inCatalog = true;
+        const close = () => {
+            try { inst && inst.stop && inst.stop(); } catch (e) {}
+            mask.remove();
+            SettingsView.open(app);
+        };
+        const backButton = document.getElementById('pk32-back');
+        const syncBackLabel = () => { backButton.textContent = inCatalog ? '‹ 返回设置' : '‹ 返回 PK32 目录'; };
+        backButton.onclick = () => {
+            if (inCatalog) { close(); return; }
+            if (!inst) { close(); return; }
+            try { inst.stop && inst.stop(); } catch (e) {}
+            inst = null;
+            const game = window.MiniGames && window.MiniGames.pk32;
+            if (!game) { close(); return; }
+            inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; }, onCatalogState: state => { inCatalog = state !== false; } });
+            inCatalog = true;
+            syncBackLabel();
+        };
         try {
             const game = window.MiniGames && window.MiniGames.pk32;
             if (!game) throw new Error('未加载到 PK32 迁移模块');
-            inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; } });
+            inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; }, onCatalogState: state => { inCatalog = state !== false; syncBackLabel(); } });
+            syncBackLabel();
         } catch (e) {
             stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
         }

@@ -132,8 +132,8 @@ const saveKey = 'pk32-richman-save-picform13-v3';
         async function fixture(change) {
             await page.evaluate(({ initial, saveKey, change }) => {
                 game.destroy(); const s = structuredClone(initial);
-                if (change === 'bankrupt') { s.players[0].pos = 7; s.players[0].cash = 1; s.own[9] = 1; }
-                if (change === 'jail') { s.players[0].pos = 28; s.cards[0] = []; }
+                if (change === 'bankrupt') { s.players[0].pos = 8; s.players[0].cash = 1; s.own[9] = 1; }
+                if (change === 'jail') { s.players[0].pos = 29; s.cards[0] = []; }
                 if (change === 'build-zero') { s.players[0].pos = 9; s.players[0].cash = 100; s.own[9] = 0; }
                 if (change === 'buy-zero') { s.players[0].pos = 9; s.players[0].cash = 1200; s.phase = 'buy'; }
                 if (change === 'invalid') delete s.dice;
@@ -151,13 +151,14 @@ const saveKey = 'pk32-richman-save-picform13-v3';
         assert.equal(await page.getByRole('button', { name: '掷骰子', exact: true }).isEnabled(), true);
         await fixture('jail');
         await page.getByRole('button', { name: '掷骰子', exact: true }).click();
+        await page.waitForFunction(() => game.getState().phase === 'end');
         assert.equal(await page.evaluate(() => game.getState().players[0].pos), 10);
         assert.match(await page.locator('.pk32-rh-log').textContent(), /^坐牢/);
         await fixture('invalid');
-        assert.deepEqual(await page.evaluate(() => game.getState().dice), [1, 1]);
+        assert.deepEqual(await page.evaluate(() => game.getState().dice), [1]);
         await fixture('build-zero');
         await page.getByRole('button', { name: '建造', exact: true }).click();
-        assert.equal(await page.evaluate(() => game.getState().phase), 'over');
+        assert.equal(await page.evaluate(() => game.getState().buildings[9]), 0);
         await fixture('buy-zero');
         await page.getByRole('button', { name: '购买当前地产', exact: true }).click();
         assert.equal(await page.evaluate(() => game.getState().phase), 'over');

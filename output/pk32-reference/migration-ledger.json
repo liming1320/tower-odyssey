@@ -121,7 +121,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 20
+      "launchVerifiedNodes": 24
     },
     {
       "id": "pk32-009",
@@ -841,7 +841,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 22
+      "launchVerifiedNodes": 24
     },
     {
       "id": "pk32-057",
@@ -886,7 +886,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 20
+      "launchVerifiedNodes": 22
     },
     {
       "id": "pk32-060",
@@ -901,7 +901,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 1
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-061",
@@ -976,7 +976,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 21
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-066",
@@ -991,7 +991,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 12
+      "launchVerifiedNodes": 21
     },
     {
       "id": "pk32-067",
@@ -1081,7 +1081,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 22
+      "launchVerifiedNodes": 24
     },
     {
       "id": "pk32-073",
@@ -1126,7 +1126,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 22
+      "launchVerifiedNodes": 24
     },
     {
       "id": "pk32-076",
@@ -1315,12 +1315,12 @@
       "group": "棋类与益智",
       "launcher": "puzzle",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
-      "originalRulesVerified": false,
+      "originalLevelsVerified": true,
+      "originalRulesVerified": true,
       "originalAssetsVerified": false,
       "originalComplete": false,
-      "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
-      "notes": "",
+      "evidence": "已从 PK32 原生模块提取 207 个 20×14 盘面；原版帮助文本确认横纵跳吃、空格撤销与评分",
+      "notes": "原生盘面与规则已接入独立入口；未找到可安全归属的独粒钻石专用图集，原生美术状态保持未确认",
       "launchVerifiedNodes": 6
     },
     {
@@ -1426,7 +1426,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 19
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-096",
@@ -1471,7 +1471,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 28
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-099",
@@ -1921,7 +1921,7 @@
       "originalComplete": false,
       "evidence": "已识别名称与相关资源，规则待核对",
       "notes": "",
-      "launchVerifiedNodes": 66
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-129",
@@ -2371,7 +2371,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 23
+      "launchVerifiedNodes": 28
     },
     {
       "id": "pk32-159",
@@ -2551,7 +2551,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 12
+      "launchVerifiedNodes": 16
     },
     {
       "id": "pk32-171",
@@ -2836,7 +2836,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 7
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-190",
@@ -2926,7 +2926,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 18
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-196",
@@ -2956,7 +2956,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 13
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-198",
@@ -2971,7 +2971,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 13
+      "launchVerifiedNodes": 21
     },
     {
       "id": "pk32-199",
@@ -3031,7 +3031,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 7
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-203",
@@ -3061,7 +3061,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 76
+      "launchVerifiedNodes": 12
     },
     {
       "id": "pk32-205",
@@ -3199,5 +3199,5 @@
       "launchVerifiedNodes": 57
     }
   ],
-  "lastLauncherVerification": "2026-09-13T21:52:27.160Z"
+  "lastLauncherVerification": "2026-09-15T01:41:53.802Z"
 }

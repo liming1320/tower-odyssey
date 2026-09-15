@@ -7,9 +7,15 @@ const catalogSource = fs.readFileSync(path.join(root, 'public', 'js', 'minigames
 const namesMatch = catalogSource.match(/'([^']+)'\s*\r?\n\s*\)\.split\('\|'\);/);
 if (!namesMatch) throw new Error('cannot locate PK32 variant names');
 const names = namesMatch[1].split('|');
-const specialNames = new Set(Array.from(source.matchAll(/config\.name === '([^']+)'/g), match => match[1]));
+const specialNames = new Set();
+for (const match of catalogSource.matchAll(/'([^']+)'\s*:\s*\{\s*family:\s*'[^']+'\s*,\s*id:\s*'([^']+)'/g)) specialNames.add(match[1]);
+for (const match of source.matchAll(/config\.name === '([^']+)'\s*\?\s*(renderNative[A-Za-z0-9_]*)/g)) specialNames.add(match[1]);
+for (const match of source.matchAll(/if\s*\(config\.name === '([^']+)'\)\s*return\s+(renderNative[A-Za-z0-9_]*)/g)) specialNames.add(match[1]);
 const modeNames = {};
 for (const match of source.matchAll(/const ([A-Z0-9_]+) = new Set\('([^']*)'\.split\('\|'\)\);/g)) {
+  for (const name of match[2].split('|').filter(Boolean)) modeNames[name] = match[1].toLowerCase();
+}
+for (const match of source.matchAll(/const (GO|CHESS|MUMMY|ELECTROMAGNETIC|PIXEL_ISLAND|ZEN_GARDEN) = new Set\(\[?'([^']+)'\]?\);/g)) {
   for (const name of match[2].split('|').filter(Boolean)) modeNames[name] = match[1].toLowerCase();
 }
 const dataDir = path.join(root, 'public', 'data');

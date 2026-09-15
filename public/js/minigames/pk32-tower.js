@@ -310,7 +310,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
   };
   Tower.prototype.floorLabel = function (layer) { return this.setName === '魔塔' && layer === 0 ? '序章' : '第' + (this.setName === '魔塔' ? layer : layer + 1) + '层'; };
   Tower.prototype.on = function (el, type, fn) { el.addEventListener(type, fn); this.handlers.push([el, type, fn]); };
-  Tower.prototype.save = function () { try { if (this.state.battle && this.state.battle.animating) { this.state.battle.shown = this.state.battle.rounds; this.state.battle.animating = false; } localStorage.setItem(this.setName === '魔塔' ? SAVE_KEY + '-picform22' : SAVE_KEY, JSON.stringify(this.state)); this.render(); this.note('已保存当前楼层和状态'); } catch (e) { this.note('存档不可用'); } };
+  Tower.prototype.save = function () { try { if (this.state.battle && this.state.battle.animating) { this.state.battle.shown = this.state.battle.rounds; this.state.battle.animating = false; if (this.state.battle.targetX != null) { this.state.x = this.state.battle.targetX; this.state.y = this.state.battle.targetY; } } localStorage.setItem(this.setName === '魔塔' ? SAVE_KEY + '-picform22' : SAVE_KEY, JSON.stringify(this.state)); this.render(); this.note('已保存当前楼层和状态'); } catch (e) { this.note('存档不可用'); } };
   Tower.prototype.load = function () { try { var s = JSON.parse(localStorage.getItem(this.setName === '魔塔' ? SAVE_KEY + '-picform22' : SAVE_KEY)); var set = TOWER_SETS[s && s.set] || TOWER_SETS['魔塔']; if (!s || s.layer < 0 || s.layer >= set.layers.length || s.x < 0 || s.x >= set.width || s.y < 0 || s.y >= set.height || !s.keys || typeof s.keys.red !== 'number' || typeof s.keys.blue !== 'number' || typeof s.keys.yellow !== 'number' || typeof s.keys.green !== 'number' || !s.defeated || typeof s.defeated !== 'object' || !Number.isFinite(s.hp) || !Number.isFinite(s.attack) || !Number.isFinite(s.defense) || !Number.isFinite(s.gold) || typeof s.won !== 'boolean' || typeof s.lost !== 'boolean') throw new Error('invalid save'); s.visited = s.visited && typeof s.visited === 'object' ? s.visited : {}; s.visited[s.layer] = true; s.npcFlags = s.npcFlags && typeof s.npcFlags === 'object' ? s.npcFlags : {}; s.gateFlags = s.gateFlags && typeof s.gateFlags === 'object' ? s.gateFlags : {}; s.dialog = typeof s.dialog === 'string' ? s.dialog : null; this.setName = set.name; this.set = set; this.layers = set.layers; this.width = set.width; this.height = set.height; this.state = s; this.render(); this.note('已读取存档'); } catch (e) { this.note('存档无效或不可用'); } };
   Tower.prototype.restart = function () { if (this.battleTimer) { global.clearTimeout(this.battleTimer); this.battleTimer = null; } this.moveQueue = []; this.state = cloneState(this.setName, this.setName === '魔塔' ? 0 : this.state.layer); this.render(); if (this.setName === '魔塔') { this.state.npcFlags.openingShown = true; this.showDialog(OPENING_STORY); } };
   Tower.prototype.note = function (message) { var el = this.container.querySelector('[data-role=message]'); if (el) el.textContent = message; };
@@ -543,14 +543,15 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
       if (battle.shown >= battle.rounds) {
         battle.shown = battle.rounds;
         battle.animating = false;
+        if (battle.targetX != null) { self.state.x = battle.targetX; self.state.y = battle.targetY; }
         self.render();
         self.note('战斗结束：怪物已被击败，下一步进入原怪物格。');
         self.drainMoveQueue();
         return;
       }
-      self.battleTimer = global.setTimeout(tick, 70);
+      self.battleTimer = global.setTimeout(tick, 10);
     };
-    this.battleTimer = global.setTimeout(tick, 70);
+    this.battleTimer = global.setTimeout(tick, 10);
   };
   Tower.prototype.drainMoveQueue = function () {
     if (!this.moveQueue || !this.moveQueue.length || this.state.dialog || this.state.shop || this.state.door || this.state.battle && this.state.battle.animating) return;
@@ -595,7 +596,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
       var battle = originalBattle(this.state, code);
       if (!battle.allowed) return this.note(battle.reason);
       var monster = ORIGINAL_MONSTERS[Number(code) - 38];
-      this.state.battle = { code: code, rounds: battle.rounds, damage: battle.damage, enemyHp: battle.enemyHp, shown: 0, heroHpStart: this.state.hp, enemyHpStart: monster[0], animating: true };
+      this.state.battle = { code: code, rounds: battle.rounds, damage: battle.damage, enemyHp: battle.enemyHp, shown: 0, heroHpStart: this.state.hp, enemyHpStart: monster[0], targetX: nx, targetY: ny, animating: true };
       this.state.hp = battle.hp; this.state.gold += battle.gold; this.state.experience = (this.state.experience || 0) + battle.experience;
       if (battle.enemyHp === 0) this.state.cleared[token] = true;
       if (this.state.layer === 21 && code === '70' && battle.won) this.state.npcFlags.finalBossDefeated = true;
@@ -625,6 +626,7 @@ var TOWER2_MAPS = ["000000000000000000000000000000000000000000000000000000000000
     } else if (!original && (code === '72' || (this.state.layer === this.layers.length - 1 && nx === this.width - 2 && ny === 1))) { if (this.state.layer < this.layers.length - 1) { this.state.layer += 1; var next = this.layers[this.state.layer].start; this.state.x = next.x; this.state.y = next.y; } else this.state.won = true; }
     this.render();
     if (original && isOriginalNpc(code)) this.interactNpc(code);
+    this.drainMoveQueue();
     this.container.focus({ preventScroll: true });
   };
   Tower.prototype.render = function () {

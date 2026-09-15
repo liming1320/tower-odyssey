@@ -38,9 +38,14 @@
         return { type: 'connect4', rows: 6, cols: 7, board: board(6, 7), turn: 1, moveCount: 0, phase: 'playing' };
     }
 
-    function reversiState() {
+    function reversiState(options) {
         const b = board(8, 8);
-        b[3][3] = 2; b[3][4] = 1; b[4][3] = 1; b[4][4] = 2;
+        const native = options && typeof options.nativeCells === 'string' ? options.nativeCells.match(/.{2}/g) : null;
+        if (native && native.length >= 2 && native.every(value => /^\d{2}$/.test(value) && Number(value) >= 1 && Number(value) <= 64)) {
+            native.forEach((value, index) => { const square = Number(value) - 1; b[Math.floor(square / 8)][square % 8] = index % 2 ? 2 : 1; });
+        } else {
+            b[3][3] = 2; b[3][4] = 1; b[4][3] = 1; b[4][4] = 2;
+        }
         return { type: 'reversi', rows: 8, cols: 8, board: b, turn: 1, moveCount: 0, passCount: 0, phase: 'playing' };
     }
 
@@ -54,8 +59,8 @@
     function animalState() {
         const b = board(9, 7);
         const pieces = [
-            [0, 0, 'lion'], [0, 6, 'tiger'], [1, 1, 'cat'], [1, 5, 'dog'], [2, 0, 'rat'], [2, 2, 'leopard'], [2, 4, 'wolf'], [2, 6, 'elephant'],
-            [8, 6, 'lion'], [8, 0, 'tiger'], [7, 5, 'cat'], [7, 1, 'dog'], [6, 6, 'rat'], [6, 4, 'leopard'], [6, 2, 'wolf'], [6, 0, 'elephant']
+            [0, 0, 'lion'], [0, 6, 'tiger'], [1, 1, 'dog'], [1, 5, 'cat'], [2, 0, 'rat'], [2, 2, 'leopard'], [2, 4, 'wolf'], [2, 6, 'elephant'],
+            [8, 6, 'lion'], [8, 0, 'tiger'], [7, 5, 'dog'], [7, 1, 'cat'], [6, 6, 'rat'], [6, 4, 'leopard'], [6, 2, 'wolf'], [6, 0, 'elephant']
         ];
         pieces.forEach((p, i) => { b[p[0]][p[1]] = { side: i < 8 ? 2 : 1, rank: p[2] }; });
         return {
@@ -92,8 +97,8 @@
         },
         jungle: {
             id: 'jungle', name: '斗兽棋', kind: 'board', rows: 9, cols: 7, players: 2,
-            originalFlow: '单局制；七种兽力等级、陷阱、河流和兽穴；进入对方兽穴或吃尽对方获胜', levels: null,
-            winCondition: 'den-or-capture', create: animalState
+            originalFlow: '单局制；七种兽力等级、陷阱、河流和兽穴；进入对方兽穴、吃尽对方或令对方无合法步获胜', levels: null,
+            winCondition: 'den-or-capture-or-block', create: animalState
         }
     };
 
@@ -255,6 +260,18 @@
         }
         if (state.type === 'animal-chess' && state.dens.some(d => b[d[0]][d[1]] && b[d[0]][d[1]].side === lastPlayer)) return { winner: lastPlayer, reason: 'den' };
         if (state.type === 'animal-chess' && !b.flat().some(x => x && x.side === 3 - lastPlayer)) return { winner: lastPlayer, reason: 'capture' };
+        if (state.type === 'animal-chess') {
+            const opponent = 3 - lastPlayer;
+            let hasMove = false;
+            for (let row = 0; row < 9 && !hasMove; row++) for (let col = 0; col < 7 && !hasMove; col++) {
+                const piece = b[row][col];
+                if (!piece || piece.side !== opponent) continue;
+                for (let toRow = 0; toRow < 9 && !hasMove; toRow++) for (let toCol = 0; toCol < 7; toCol++) {
+                    if (animalCanMove(state, [row, col], [toRow, toCol])) { hasMove = true; break; }
+                }
+            }
+            if (!hasMove) return { winner: lastPlayer, reason: 'no-legal-move' };
+        }
         return null;
     }
 
@@ -286,7 +303,8 @@
         boardShell.className = 'pk32-board-scroll';
         boardShell.appendChild(boardEl);
         const style = document.createElement('style');
-        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:52px;min-height:52px;padding:3px;touch-action:manipulation}.pk32-animal-cell{position:relative;background:#d6c39a}.pk32-animal-cell[data-terrain="river"]{background:#5ba9d2;color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:#d9a441;color:#5b3810}.pk32-animal-cell[data-terrain="den"]{background:#8c61c9;color:#fff}.pk32-animal-piece{display:flex;align-items:center;justify-content:center;width:38px;height:38px;margin:auto;border:2px solid currentColor;border-radius:50%;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:22px;font-weight:700;line-height:1;background:#fff;color:#9b2f24;box-shadow:0 2px 3px rgba(0,0,0,.35)}.pk32-animal-piece[data-side="1"]{background:#fff1d5;color:#9b2f24}.pk32-animal-piece[data-side="2"]{background:#e7efff;color:#234b96}';
+        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:52px;min-height:52px;padding:3px;touch-action:manipulation}.pk32-board-grid:has(.pk32-animal-cell){min-width:378px;gap:0;border:5px solid #765126;background:#6f9f48;box-shadow:0 4px 12px rgba(0,0,0,.35)}.pk32-animal-cell{position:relative;display:grid;place-items:center;min-width:54px;min-height:54px;border:1px solid rgba(42,78,34,.45);background:#83b85c;color:#315d35}.pk32-animal-cell:nth-child(odd){background:#8abc62}.pk32-animal-cell[data-terrain="river"]{background:repeating-linear-gradient(0deg,rgba(255,255,255,.2) 0 2px,transparent 2px 15px),linear-gradient(#54b5dd,#2689bd);color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:radial-gradient(circle,transparent 0 28%,rgba(135,55,43,.8) 29% 32%,transparent 33%),repeating-linear-gradient(45deg,transparent 0 7px,rgba(135,55,43,.55) 7px 9px),repeating-linear-gradient(-45deg,transparent 0 7px,rgba(135,55,43,.55) 7px 9px),#91bd5d;color:#693529}.pk32-animal-cell[data-terrain="den"]{background:radial-gradient(circle,#172535 0 35%,#3e5264 36% 47%,#9ba8a8 48% 51%,#445766 52% 100%);color:#fff}.pk32-animal-cell[data-terrain="den"]::after{content:"穴";font-size:18px;font-weight:700;text-shadow:0 1px 2px #000}.pk32-animal-cell[data-terrain="trap"]::after{content:"";position:absolute;inset:15%;border:1px solid rgba(106,47,36,.8);border-radius:50%}.pk32-animal-piece{position:relative;display:grid;place-items:center;width:44px;height:44px;margin:auto;border:2px solid rgba(255,255,255,.85);border-radius:50%;font-size:20px;font-weight:700;background:#e5b05e;color:#fff;text-shadow:0 1px 2px #222;box-shadow:0 2px 4px rgba(0,0,0,.45),inset 0 0 0 3px rgba(0,0,0,.2)}.pk32-animal-piece::before{display:none}.pk32-animal-piece[data-side="1"]{background:#d8893c;border-color:#ffd18a}.pk32-animal-piece[data-side="2"]{background:#557bb6;border-color:#c9dcff}';
+        style.textContent += '.pk32-animal-piece{display:block;width:52px;height:52px;margin:auto;border:0;border-radius:0;background-color:transparent;background-image:url("/img/pk32/jungle-original.png");background-repeat:no-repeat;background-size:661px 460px;color:transparent!important;font-size:0;text-shadow:none;box-shadow:none}.pk32-animal-piece[data-side="1"]{background-position:-530px var(--pk32-jungle-y)}.pk32-animal-piece[data-side="2"]{background-position:-464px var(--pk32-jungle-y)}.pk32-animal-cell:has(.pk32-animal-piece)::after{display:none}@media (max-width:420px){.pk32-board-grid button{min-width:0;min-height:40px}.pk32-board-grid:has(.pk32-animal-cell){width:100%;min-width:0}.pk32-animal-cell{min-width:0;min-height:clamp(40px,12vw,54px)}.pk32-animal-piece{width:52px;height:52px;transform:scale(.82);transform-origin:center}}';
         rootEl.appendChild(style);
         restart.type = 'button';
         restart.textContent = '重开';
@@ -305,7 +323,7 @@
         };
         const cellText = (value, row, col) => {
             if (typeof value === 'object') {
-                const names = { elephant: '象', lion: '狮', tiger: '虎', cat: '猫', wolf: '狼', dog: '犬', leopard: '豹', rat: '鼠' };
+                const names = { elephant: '象', lion: '狮', tiger: '虎', cat: '猫', wolf: '狼', dog: '狗', leopard: '豹', rat: '鼠' };
                 return (value.side === 1 ? '我' : '敌') + (names[value.rank] || '兽');
             }
             if (value) return valueLabel(value);
@@ -352,6 +370,7 @@
                     const trap = session.state.traps.some(point => point[0] === row && point[1] === col);
                     const den = session.state.dens.some(point => point[0] === row && point[1] === col);
                     button.className = 'pk32-animal-cell';
+                    button.dataset.originalBoard = 'pk32-jungle-9x7';
                     button.dataset.terrain = den ? 'den' : trap ? 'trap' : river ? 'river' : 'land';
                     if (!value) button.setAttribute('aria-label', den ? '兽穴' : trap ? '陷阱' : river ? '河流' : '空地');
                 }
@@ -359,8 +378,13 @@
                     const piece = document.createElement('span');
                     piece.className = 'pk32-animal-piece';
                     piece.dataset.side = String(value.side);
-                    piece.textContent = ({ rat: '鼠', cat: '猫', dog: '犬', wolf: '狼', leopard: '豹', tiger: '虎', lion: '狮', elephant: '象' }[value.rank] || '兽');
-                    piece.setAttribute('aria-hidden', 'true');
+                    piece.dataset.rank = String({ rat: 1, cat: 2, dog: 3, wolf: 4, leopard: 5, tiger: 6, lion: 7, elephant: 8 }[value.rank] || 0);
+                    const jungleY = (-53 * ({ rat: 1, cat: 2, dog: 3, wolf: 4, leopard: 5, tiger: 6, lion: 7, elephant: 8 }[value.rank] || 1)) + 'px';
+                    if (piece.style && typeof piece.style.setProperty === 'function') piece.style.setProperty('--pk32-jungle-y', jungleY);
+                    else if (piece.style) piece.style['--pk32-jungle-y'] = jungleY;
+                    piece.textContent = text.replace(/^(我|敌)/, '');
+                    piece.dataset.assetSource = 'jungle-original.png';
+                    piece.setAttribute('aria-label', text);
                     button.appendChild(piece);
                     button.setAttribute('aria-label', text);
                 } else button.textContent = text;

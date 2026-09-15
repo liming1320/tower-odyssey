@@ -4,11 +4,12 @@
     window.MiniGames = window.MiniGames || {};
 
     const NAMES = (
-        '跟花|丰收|锄大地|拱猪|十点半|钓鱼|争上游|抽乌龟|梭哈|牌九|扑克麻将|百智牌|FF8卡片|比大小|移动|接龙|争夺|同花|三打三|记忆|变幻牌|挑选|暗牌|扑克扫雷|24点|追逐|炮牌|记数|转换|配对|连击|猜数|连珠牌|幸运|读心术|梭哈二|井字牌|憋七|FF9卡片|7鬼523|斗地主|拖拉机-升级|纸牌魔法阵|别棍|纸牌|空当接龙|蜘蛛纸牌|14点|考眼力|21点|读心术二|13点|24点二|扎金花|纸牌算命|抽乌龟二|排数字|变色龙|抽乌龟三|接水管|读心术三|超级99|重合|梭哈三|桥牌|????|梭哈四|读心术四|21点二|塔罗牌|梭哈五|抽乌龟四|幸运数字|40点|抽乌龟五|梭哈六|数字魔方|三张牌|梭哈七|魔力纸牌|跟花二|接龙二|扫雷|赛马|俄罗斯方块|飞行棋|贪吃蛇|独粒钻石|推箱子|火箭大战|打地鼠|黑白棋|同色方块|同步移动|摘花朵|平面魔方|激光坦克|华容道|强手棋|五彩连珠|跳棋|中国象棋|五子棋|围棋|象棋-暗棋|国际象棋|军棋|斗兽棋|迷宫|正方形棋|军棋-暗棋|麻将|极品飞车|六子连珠|拼图|天地棋|七彩宝石|宝石方块|连结电线|魔塔|开心辞典|开心灯谜|冒泡大战|剪刀石头布|海盗船|神符|原子|木乃伊|记忆考验|反应测试|海豚骰|汉诺塔|魔力珠宝|前进棋|智商测试|轮盘|老虎机|五连板|白手起家|连连看|扫雷二|泡泡彩球|跳跃棋|像素岛|找不同|找彩球|变化彩球|捡棋子|成语填字|邻居|麻将王|麻将王二|麻将王三|魔塔二|多彩泡泡|魔塔三|过河|电磁彩球|绿洲|魅力之球|魔塔四|推箱子二|圈地|推箱子三|推箱子四|推箱子五|连结电线二|移彩球|数独|智慧之光|禅宗花园|骰子王|数谜|航海迷题|魔法城堡|弹力连珠|魔法城堡二|潜艇大战|绝妙飞行|跳棋二|推箱子六|拼疑犯|十字绣|变色彩球|扩展线路|禅宗迷宫|飞镖王|马跳棋盘|打砖块|爆破彩球|爆破彩球二|花式九球|美式落袋|斯诺克|七盏灯|交换彩球|上一百层|下一百层|宇宙黑洞|飞一百米|七巧板|坦克大战|海底寻宝|碰撞彩球|四子棋|立体魔方|彩球迷宫|反射镜|企鹅|立体魔方二|吃豆子|彩球连线|建筑制造'
+        '跟花|丰收|锄大地|拱猪|十点半|钓鱼|争上游|抽乌龟|梭哈|牌九|扑克麻将|百智牌|FF8卡片|比大小|移动|接龙|争夺|同花|三打三|记忆|变幻牌|挑选|暗牌|扑克扫雷|24点|追逐|炮牌|记数|转换|配对|连击|猜数|连珠牌|幸运|读心术|梭哈二|井字牌|憋七|FF9卡片|7鬼523|斗地主|拖拉机-升级|纸牌魔法阵|别棍|纸牌|空当接龙|蜘蛛纸牌|14点|考眼力|21点|读心术二|13点|24点二|扎金花|纸牌算命|抽乌龟二|排数字|变色龙|抽乌龟三|接水管|读心术三|超级99|重合|梭哈三|桥桥|桥牌|梭哈四|读心术四|21点二|塔罗牌|梭哈五|抽乌龟四|幸运数字|40点|抽乌龟五|梭哈六|数字魔方|三张牌|梭哈七|魔力纸牌|跟花二|接龙二|扫雷|赛马|俄罗斯方块|飞行棋|贪吃蛇|独粒钻石|推箱子|火箭大战|打地鼠|黑白棋|同色方块|同步移动|摘花朵|平面魔方|激光坦克|华容道|强手棋|五彩连珠|跳棋|中国象棋|五子棋|围棋|象棋-暗棋|国际象棋|军棋|斗兽棋|迷宫|正方形棋|军棋-暗棋|麻将|极品飞车|六子连珠|拼图|天地棋|七彩宝石|宝石方块|连结电线|魔塔|开心辞典|开心灯谜|冒泡大战|剪刀石头布|海盗船|神符|原子|木乃伊|记忆考验|反应测试|海豚骰|汉诺塔|魔力珠宝|前进棋|智商测试|轮盘|老虎机|五连板|白手起家|连连看|扫雷二|泡泡彩球|跳跃棋|像素岛|找不同|找彩球|变化彩球|捡棋子|成语填字|邻居|麻将王|麻将王二|麻将王三|魔塔二|多彩泡泡|魔塔三|过河|电磁彩球|绿洲|魅力之球|魔塔四|推箱子二|圈地|推箱子三|推箱子四|推箱子五|连结电线二|移彩球|数独|智慧之光|禅宗花园|骰子王|数谜|航海迷题|魔法城堡|弹力连珠|魔法城堡二|潜艇大战|绝妙飞行|跳棋二|推箱子六|拼疑犯|十字绣|变色彩球|扩展线路|禅宗迷宫|飞镖王|马跳棋盘|打砖块|爆破彩球|爆破彩球二|花式九球|美式落袋|斯诺克|七盏灯|交换彩球|上一百层|下一百层|宇宙黑洞|飞一百米|七巧板|坦克大战|海底寻宝|碰撞彩球|四子棋|立体魔方|彩球迷宫|反射镜|企鹅|立体魔方二|吃豆子|彩球连线|建筑制造'
     ).split('|');
 
     const EVIDENCE = {
         '魔塔': '22 层原版地图与美术已还原；剧情、商店和机关仍在迁移',
+        '独粒钻石': '207 个原生盘面、横纵跳吃规则和评分文本已确认；原生美术仍待确认',
         '强手棋': '原版棋盘、四名角色和地产美术已还原；完整规则仍在迁移',
         '接水管': '原生提示确认 1-5 关；关卡 payload 已提取，布局编码仍在还原',
         '木乃伊': '已识别名称与相关资源，规则待核对',
@@ -41,6 +42,7 @@
     };
     const STRATEGY_CONFIG = {};
     ['飞行棋', '前进棋', '赛马', '轮盘', '老虎机', '神符', '原子', '开心辞典', '开心灯谜', '七盏灯', '上一百层', '下一百层'].forEach(name => { STRATEGY_CONFIG[name] = name; });
+    ['七盏灯', '上一百层', '下一百层'].forEach(name => { delete STRATEGY_CONFIG[name]; });
     const CARD_CONFIG = {};
     const CARD_NAMES = '跟花|丰收|拱猪|十点半|钓鱼|争上游|抽乌龟|梭哈|牌九|扑克麻将|百智牌|FF8卡片|移动|争夺|同花|三打三|记忆|变幻牌|挑选|暗牌|24点|炮牌|猜数|幸运|读心术|斗地主|拖拉机-升级|纸牌魔法阵|别棍|14点|考眼力|13点|扎金花|纸牌算命|桥牌|塔罗牌|数字魔方|三张牌|魔力纸牌|梭哈二|纸牌|抽乌龟二|抽乌龟三|读心术三|梭哈三|梭哈四|读心术四|梭哈五|抽乌龟四|抽乌龟五|梭哈六|梭哈七|跟花二'.split('|');
     CARD_NAMES.forEach(name => { CARD_CONFIG[name] = name; });
@@ -49,9 +51,12 @@
     '同色方块|五彩连珠|七彩宝石|宝石方块|找不同|找彩球|变化彩球|连结电线|连结电线二|移彩球|数独|迷宫|推箱子二|推箱子三|推箱子四|推箱子五|推箱子六|扩展线路|立体魔方|七巧板|汉诺塔|十字绣|拼图|独粒钻石'.split('|').forEach(name => { PUZZLE_CONFIG[name] = name; });
     const VARIANT_CONFIG = {};
     delete PUZZLE_CONFIG['推箱子四'];
-    '锄大地|追逐|记数|转换|配对|连击|连珠牌|憋七|FF9卡片|7鬼523|读心术二|24点二|排数字|变色龙|超级99|重合|幸运数字|40点|数字魔方|同色方块变体|同步移动|摘花朵|平面魔方|激光坦克|中国象棋|围棋|象棋-暗棋|国际象棋|军棋|正方形棋|军棋-暗棋|麻将|极品飞车|六子连珠|天地棋|冒泡大战|剪刀石头布|海盗船|木乃伊|记忆考验|反应测试|海豚骰|魔力珠宝|智商测试|五连板|白手起家|跳跃棋|像素岛|捡棋子|成语填字|邻居|麻将王|麻将王二|麻将王三|过河|电磁彩球|爆破彩球|绿洲|魅力之球|圈地|禅宗花园|骰子王|数谜|航海迷题|魔法城堡|弹力连珠|魔法城堡二|潜艇大战|跳棋二|拼疑犯|禅宗迷宫|马跳棋盘|花式九球|美式落袋|斯诺克|宇宙黑洞|飞一百米|打砖块|海底寻宝|碰撞彩球|彩球迷宫|反射镜|企鹅|立体魔方二|彩球连线|建筑制造|上一百层|下一百层|魔塔二|魔塔三|魔塔四|????'.split('|').forEach(name => { VARIANT_CONFIG[name] = name; });
+    '锄大地|追逐|记数|转换|配对|连击|连珠牌|憋七|FF9卡片|7鬼523|读心术二|24点二|排数字|变色龙|超级99|重合|幸运数字|40点|数字魔方|同色方块变体|同步移动|摘花朵|平面魔方|激光坦克|中国象棋|围棋|象棋-暗棋|国际象棋|军棋|正方形棋|军棋-暗棋|麻将|极品飞车|六子连珠|天地棋|冒泡大战|剪刀石头布|海盗船|木乃伊|记忆考验|反应测试|海豚骰|魔力珠宝|智商测试|五连板|白手起家|跳跃棋|像素岛|捡棋子|成语填字|邻居|麻将王|麻将王二|麻将王三|过河|电磁彩球|爆破彩球|绿洲|魅力之球|圈地|禅宗花园|骰子王|数谜|航海迷题|魔法城堡|弹力连珠|魔法城堡二|潜艇大战|跳棋二|拼疑犯|禅宗迷宫|马跳棋盘|花式九球|美式落袋|斯诺克|七盏灯|宇宙黑洞|飞一百米|打砖块|海底寻宝|碰撞彩球|彩球迷宫|反射镜|企鹅|立体魔方二|彩球连线|建筑制造|上一百层|下一百层|魔塔二|魔塔三|魔塔四|桥桥'.split('|').forEach(name => { VARIANT_CONFIG[name] = name; });
     VARIANT_CONFIG['坦克大战'] = '坦克大战';
     VARIANT_CONFIG['华容道'] = '华容道';
+    VARIANT_CONFIG['接水管'] = '接水管';
+    delete VARIANT_CONFIG['斗兽棋'];
+    ['井字牌', '黑白棋', '跳棋', '五子棋', '斗兽棋', '四子棋'].forEach(name => { delete VARIANT_CONFIG[name]; });
     const GROUPS = [
         [0, 80, '扑克与纸牌'], [80, 147, '棋类与益智'], [147, 196, '休闲与解谜'], [196, NAMES.length, '其他原版游戏'],
     ];
@@ -139,6 +144,7 @@
                 if (!activeSession) return;
                 const current = activeSession;
                 activeSession = null;
+                current.disposed = true;
                 try {
                     if (current.session && typeof current.session.destroy === 'function') current.session.destroy();
                     else if (current.session && typeof current.session.stop === 'function') current.session.stop();
@@ -177,18 +183,51 @@
             }
             function mount(record, title, start, note) {
                 stopActiveSession();
-                let session = null;
+                opts.onCatalogState && opts.onCatalogState(false);
                 list.innerHTML = '<div class="emu-note"><b>' + esc(record.name) + ' · ' + esc(title) + '</b><br>' + esc(note || '独立 PK32 迁移玩法；不使用 50 关模板。') + '</div>';
                 const host = document.createElement('div'); host.style.cssText = 'min-height:420px;margin-top:12px;'; list.appendChild(host);
-                const back = document.createElement('button'); back.className = 'btn ghost'; back.textContent = '返回 PK32 目录'; back.style.marginTop = '10px'; back.onclick = () => { stopActiveSession(); render(); }; list.appendChild(back);
+                const back = document.createElement('button'); back.className = 'btn ghost'; back.textContent = '返回 PK32 目录'; back.style.marginTop = '10px'; back.onclick = () => { stopActiveSession(); render(); opts.onCatalogState && opts.onCatalogState(true); }; list.appendChild(back);
+                const entry = { session: null, host: host, disposed: false };
+                const isCurrent = () => alive && !entry.disposed && activeSession === entry;
+                const registerSession = session => {
+                    if (!session) return null;
+                    if (!isCurrent()) {
+                        try { if (typeof session.destroy === 'function') session.destroy(); else if (typeof session.stop === 'function') session.stop(); } catch (e) {}
+                        return null;
+                    }
+                    if (entry.session && entry.session !== session) {
+                        try { if (typeof entry.session.destroy === 'function') entry.session.destroy(); else if (typeof entry.session.stop === 'function') entry.session.stop(); } catch (e) {}
+                    }
+                    entry.session = session;
+                    return session;
+                };
+                activeSession = entry;
                 try {
-                    session = start(host);
-                    activeSession = { session: session, host: host };
-                } catch (e) { host.innerHTML = '<div style="padding:20px;color:#ff7a8b">启动失败：' + esc(e.message) + '</div>'; }
+                    registerSession(start(host, registerSession, isCurrent));
+                } catch (e) { entry.disposed = true; activeSession = null; host.innerHTML = '<div style="padding:20px;color:#ff7a8b">启动失败：' + esc(e.message) + '</div>'; }
             }
             function launchModule(record) {
                 const mod = window.PK32Board, spec = record && record.module;
                 if (!mod || !mod.startUI) return;
+                if (spec && spec.id === 'reversi') {
+                    mount(record, '黑白棋原始开局版', (host, registerSession, isCurrent) => {
+                        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+                        fetch('/data/pk32-reversi-levels.json', controller ? { signal: controller.signal } : undefined).then(response => response.json()).then(data => {
+                            if (!isCurrent()) return;
+                            const picker = document.createElement('select');
+                            picker.setAttribute('aria-label', '黑白棋原始开局');
+                            (data.levels || []).forEach((level, index) => { const option = document.createElement('option'); option.value = String(index); option.textContent = '原始开局 ' + (index + 1); picker.appendChild(option); });
+                            host.appendChild(picker);
+                            let gameHost = document.createElement('div'); host.appendChild(gameHost);
+                            let gameSession = null;
+                            function startLevel() { if (!isCurrent()) return; gameHost.innerHTML = ''; const level = data.levels && data.levels[Number(picker.value) || 0]; gameSession = registerSession(mod.startUI(gameHost, spec.id, { onScore: opts.onScore, nativeCells: level && level.cells })); }
+                            picker.onchange = startLevel;
+                            startLevel();
+                        }).catch(error => { if (!isCurrent() || error.name === 'AbortError') return; registerSession(mod.startUI(host, spec.id, { onScore: opts.onScore })); });
+                        return { destroy() { if (controller) controller.abort(); } };
+                    });
+                    return;
+                }
                 mount(record, '棋类独立版', host => mod.startUI(host, spec.id, { onScore: opts.onScore }));
             }
             function launchCasual(record) {
@@ -197,6 +236,7 @@
                 mount(record, '纸牌/益智独立版', host => mod.startGame(host, spec, { onScore: opts.onScore }));
             }
             function launchAction(record) {
+                if (record && record.name === '飞一百米') { launchVariant(record); return; }
                 const mod = window.PK32Action, spec = record && record.action;
                 if (!mod || !mod.startGame) return;
                 mount(record, '动作独立版', host => mod.startGame(host, spec, { onScore: opts.onScore }));
@@ -210,6 +250,7 @@
                 if (window.PK32Card) mount(record, '纸牌独立版', host => window.PK32Card.startGame(host, record.card, { onScore: opts.onScore }));
             }
             function launchPuzzle(record) {
+                if (record && (record.name === '接水管' || record.name === '七巧板')) { launchVariant(record); return; }
                 if (window.PK32Puzzle) mount(record, '益智独立版', host => window.PK32Puzzle.startGame(host, record.puzzle, { onScore: opts.onScore }));
             }
             function launchVariant(record) {
@@ -217,7 +258,7 @@
                     mount(record, record.name + '独立版', host => window.PK32Tower.startUI(host, { set: record.name, layer: 0 }));
                     return;
                 }
-                if (window.PK32Variants) mount(record, 'PK32 独立版', host => window.PK32Variants.startGame(host, record.variant, { onScore: opts.onScore }));
+                if (window.PK32Variants) mount(record, 'PK32 独立版', host => window.PK32Variants.startGame(host, record.variant || record.name, { onScore: opts.onScore }));
             }
             function launch(record) {
                 const spec = record && record.playable;

@@ -10,7 +10,9 @@ const original = extract(image);
 const strings = new Map(require('../output/pk32-reference/strings.json').map(row => [row.offset, row.text]));
 const data = require('../public/data/pk32-sokoban4-levels.json');
 
-assert.deepEqual(data, original, 'Published maps must match all native dispatch cases, not title order');
+const publishedNative = Object.assign({}, data);
+delete publishedNative.name;
+assert.deepEqual(publishedNative, original, 'Published maps must match all native dispatch cases, not title order');
 assert.equal(data.levels.length, 23);
 assert.equal(data.fullGameRulesVerified, false);
 for (const level of data.levels) {
