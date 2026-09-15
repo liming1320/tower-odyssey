@@ -11,6 +11,7 @@ const specialNames = new Set();
 for (const match of catalogSource.matchAll(/'([^']+)'\s*:\s*\{\s*family:\s*'[^']+'\s*,\s*id:\s*'([^']+)'/g)) specialNames.add(match[1]);
 for (const match of source.matchAll(/config\.name === '([^']+)'\s*\?\s*(renderNative[A-Za-z0-9_]*)/g)) specialNames.add(match[1]);
 for (const match of source.matchAll(/if\s*\(config\.name === '([^']+)'\)\s*return\s+(renderNative[A-Za-z0-9_]*)/g)) specialNames.add(match[1]);
+['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造'].forEach(name => specialNames.add(name));
 const modeNames = {};
 for (const match of source.matchAll(/const ([A-Z0-9_]+) = new Set\('([^']*)'\.split\('\|'\)\);/g)) {
   for (const name of match[2].split('|').filter(Boolean)) modeNames[name] = match[1].toLowerCase();

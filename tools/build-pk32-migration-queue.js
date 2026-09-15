@@ -27,10 +27,18 @@ for (const file of fs.readdirSync(dataDir).filter(name => /^pk32-.*-levels\.json
     } catch (_) {}
 }
 
+// Keep this classification in step with audit-pk32-renderers.js. The variant
+// dispatcher is a long ternary expression, so a line-oriented regex misses
+// dedicated renderers when formatting changes or branches wrap.
 const rendererNames = new Set();
-for (const match of variants.matchAll(/config\.name === '([^']+)'[^\n]*\n?[^\n]*renderNative[A-Za-z0-9_]*/g)) rendererNames.add(match[1]);
+for (const match of source.matchAll(/'([^']+)'\s*:\s*\{\s*family:\s*'[^']+'\s*,\s*id:\s*'([^']+)'/g)) rendererNames.add(match[1]);
+for (const match of variants.matchAll(/config\.name === '([^']+)'\s*\?\s*(renderNative[A-Za-z0-9_]*)/g)) rendererNames.add(match[1]);
 for (const match of variants.matchAll(/if\s*\(config\.name === '([^']+)'\)\s*return\s+(renderNative[A-Za-z0-9_]*)/g)) rendererNames.add(match[1]);
-for (const match of source.matchAll(/'([^']+)': \{ family: '[^']+', id: '[^']+'/g)) rendererNames.add(match[1]);
+
+// These launchers are separate modules, so they are not visible in the
+// variants dispatcher scan above. Keep them explicit until the catalog has
+// a machine-readable renderer manifest.
+['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造'].forEach(name => rendererNames.add(name));
 
 const rows = ledger.records.map(record => {
     const data = dataByName.get(record.name) || null;

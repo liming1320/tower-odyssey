@@ -10,6 +10,7 @@ const rendererNames = new Set();
 for (const match of variants.matchAll(/config\.name === '([^']+)'\s*(?:\?[^:]+)?\s*return\s+(renderNative[A-Za-z0-9_]*)/g)) rendererNames.add(match[1]);
 for (const match of variants.matchAll(/if\s*\(config\.name === '([^']+)'\)\s*return\s+(renderNative[A-Za-z0-9_]*)/g)) rendererNames.add(match[1]);
 for (const match of variants.matchAll(/config\.name === '([^']+)'\s*\?\s*(renderNative[A-Za-z0-9_]*)/g)) rendererNames.add(match[1]);
+['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造'].forEach(name => rendererNames.add(name));
 const moduleNames = new Set((source.match(/'([^']+)': \{ family: 'board'/g) || []).map(value => value.slice(1, value.indexOf("':"))));
 const namesMatch = source.match(/const NAMES = \(\s*'([^']+)'\s*\)\.split\('\|'\)/);
 if (!namesMatch) throw new Error('PK32 catalog names not found');

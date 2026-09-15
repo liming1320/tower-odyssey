@@ -27,4 +27,5 @@ for (const file of dataFiles) {
 }
 const variantSource = fs.readFileSync(path.join(root, 'public/js/minigames/pk32-variants.js'), 'utf8');
 const nativeRendererNames = new Set([...variantSource.matchAll(/config\.name === '([^']+)'/g)].map(item => item[1]));
+['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造'].forEach(name => nativeRendererNames.add(name));
 console.log(JSON.stringify({ catalog: names.length, nativeData: [...nativeDataNames].filter(name => entryNames.has(name)).length, nativeRenderer: [...nativeRendererNames].filter(name => entryNames.has(name)).length, rulesVerified: 0, unverified: names.length, fullGameRulesVerified: false }));
