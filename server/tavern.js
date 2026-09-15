@@ -341,25 +341,59 @@ function slugifyHandle(s) {
         .replace(/[^a-z0-9-]/g, '');
 }
 
+// ST 的**所有**写接口（POST/PUT/DELETE）都受 CSRF 保护，而且 token 一次性：
+// 每个 POST 之前都必须重新 GET /csrf-token，否则一律 403（返回的是 HTML 不是 JSON，
+// 所以光看「解析失败」根本不知道是 CSRF 的问题）。顺带把响应里的 Set-Cookie 合并回会话。
+async function stPost(sess, path, bodyObj) {
+    const base = pickUrl().base;
+    const t = await rawRequest('GET', base + '/csrf-token', { headers: { Cookie: sess.cookie } });
+    if (t.setCookie.length) sess.cookie = mergeCookies(sess.cookie, t.setCookie);
+    let csrf = '';
+    try { csrf = JSON.parse(t.buffer.toString('utf8')).token; } catch (e) { }
+    if (!csrf) return { status: 0, json: null, raw: '', err: '取不到 CSRF token' };
+
+    const r = await rawRequest('POST', base + path, {
+        headers: {
+            'Content-Type': 'application/json', Cookie: sess.cookie,
+            'X-CSRF-Token': csrf, 'X-Forwarded-For': '127.0.0.1', 'X-Real-IP': '127.0.0.1',
+        },
+        bodyBuf: Buffer.from(JSON.stringify(bodyObj || {})),
+    });
+    if (r.setCookie.length) sess.cookie = mergeCookies(sess.cookie, r.setCookie);
+    const raw = r.buffer.toString('utf8');
+    let json = null;
+    try { json = JSON.parse(raw); } catch (e) { }
+    return { status: r.status, json, raw };
+}
+
+// 错误信息别把整页 HTML 甩给用户，取前 120 字符纯文本就够定位
+function stErrText(r) {
+    if (r.json && r.json.error) return String(r.json.error);
+    return String(r.raw || r.err || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+}
+
+// 查账号存不存在。优先用公开的 /list（返回数组），不行再退回管理员接口 /get。
+async function stUserList(sess) {
+    let r = await stPost(sess, '/api/users/list', {});
+    if (r.status === 200 && Array.isArray(r.json)) return { ok: true, list: r.json };
+    const first = r;
+    r = await stPost(sess, '/api/users/get', {});
+    if (r.status === 200) {
+        const j = r.json;
+        return { ok: true, list: Array.isArray(j) ? j : (j ? [j] : []) };
+    }
+    return { ok: false, status: r.status, detail: stErrText(r.status === 0 ? r : (r.status === 404 ? r : first.status === 200 ? r : first)) };
+}
+
 async function userExists(handle) {
     const s = await adminSession();
     if (!s.ok) return { ok: false, msg: s.msg };
-    const base = pickUrl().base;
-    // /api/users/get 是 POST（不是 GET）；用 GET 会 404，误判成「账号不存在」而反复建号
-    const r = await rawRequest('POST', base + '/api/users/get', {
-        headers: {
-            'Content-Type': 'application/json', Cookie: s.cookie,
-            'X-Forwarded-For': '127.0.0.1', 'X-Real-IP': '127.0.0.1',
-        },
-        bodyBuf: Buffer.from('{}'),
-    });
-    let list = [];
-    try { list = JSON.parse(r.buffer.toString('utf8')) || []; } catch (e) { }
-    if (r.status !== 200) {
+    const got = await stUserList(s);
+    if (!got.ok) {
         // 拿不到列表就不要硬说「不存在」，否则每次进酒馆都会重复建号
-        return { ok: false, msg: '查询 ST 用户列表失败（' + r.status + '）：' + (list && list.error ? list.error : s.msg || '需要管理员权限') };
+        return { ok: false, msg: '查询 ST 用户列表失败（' + got.status + '）：' + (got.detail || '需要管理员权限') };
     }
-    return { ok: true, exists: list.some(u => u && u.handle === handle) };
+    return { ok: true, exists: got.list.some(u => u && u.handle === handle) };
 }
 
 async function ensureUser(username, displayName) {
@@ -371,24 +405,12 @@ async function ensureUser(username, displayName) {
     if (ex.ok && ex.exists) return { ok: true, handle, created: false };
     if (!ex.ok) return { ok: false, msg: ex.msg };
 
-    const base = pickUrl().base;
-    // 必须先拿最新 CSRF token，用旧的一律 403
-    const t = await rawRequest('GET', base + '/csrf-token', { headers: { Cookie: s.cookie } });
-    let csrf = '';
-    try { csrf = JSON.parse(t.buffer.toString('utf8')).token; } catch (e) { }
-    const created = await rawRequest('POST', base + '/api/users/create', {
-        headers: {
-            'Content-Type': 'application/json', Cookie: s.cookie,
-            'X-CSRF-Token': csrf, 'X-Forwarded-For': '127.0.0.1', 'X-Real-IP': '127.0.0.1',
-        },
-        // 不设 password：账号只能经由本网关的 SSO 头登录，堵住「直接拿密码进 ST」这条路
-        bodyBuf: Buffer.from(JSON.stringify({ handle, name: displayName || handle })),
-    });
+    // stPost 内部会先取一次性 CSRF token 再 POST（不设 password：账号只能经由本网关的
+    // SSO 头登录，堵住「直接拿密码进 ST」这条路）
+    const created = await stPost(s, '/api/users/create', { handle, name: displayName || handle });
     if (created.status === 409) return { ok: true, handle, created: false };
-    if (created.status !== 200) {
-        let em = '';
-        try { em = JSON.parse(created.buffer.toString('utf8')).error || ''; } catch (e) { }
-        return { ok: false, msg: 'ST 建号失败（' + created.status + '）' + (em ? '：' + em : '') };
+    if (created.status !== 200 && created.status !== 201) {
+        return { ok: false, msg: 'ST 建号失败（' + created.status + '）' + (created.json && created.json.error ? '：' + created.json.error : '') };
     }
     return { ok: true, handle, created: true };
 }
