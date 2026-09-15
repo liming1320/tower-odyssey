@@ -198,6 +198,18 @@ function getUserByToken(req) {
         check('ST 的模板在 Referer 被剥掉时也兜底',
             (await probe('/scripts/templates/character_select.html', null)) === true);
         check('游戏自己的 .html 不被误伤', (await probe('/index.html', GAME_REF)) === false);
+        // ST 前端每次写操作前先 GET /csrf-token（**没有后缀**，静态规则够不着），
+        // 取不到令牌 → 后续所有 POST（/api/settings/get、/api/secrets/...）全 403
+        // → 页面弹「设置无法加载，请稍后再试」。/version 是 ST 启动时的版本探测，同理。
+        check('ST 的 /csrf-token 兜底（Referer 来自酒馆）', (await probe('/csrf-token', REF)) === true);
+        check('ST 的 /csrf-token 在 Referer 被剥掉时也兜底', (await probe('/csrf-token', null)) === true);
+        check('ST 的 /version 兜底', (await probe('/version', REF)) === true);
+        const rc = await call(Tavern, DB, '/csrf-token', { cookie: 'to_tavern=' + ticket, referer: REF, fallback: true });
+        check('/csrf-token 真的转发到 ST 且拿到令牌',
+            rc.status === 200 && rc.body.includes('faketoken'), rc.status + ' ' + rc.body.slice(0, 60));
+        const rv = await call(Tavern, DB, '/version', { cookie: 'to_tavern=' + ticket, referer: REF, fallback: true });
+        check('/version 真的转发到 ST（路径没被截断）',
+            rv.status === 200 && rv.body.includes('ST_SEES:/version'), rv.status + ' ' + rv.body.slice(0, 60));
     }
 
     console.log('\n[6] 票的签发/校验往返');

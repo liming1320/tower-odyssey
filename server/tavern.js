@@ -670,7 +670,15 @@ async function proxyRequest(req, res, deps, opts) {
 // 以及登录/登出时的 location='/login'。这些请求不带 /tavern 前缀，会直接落到游戏服务上
 // 变成 404「API 不存在」—— 表现为「页面能开但一片空白 / 一直在登录页打转」。
 // 这里把「来自酒馆页面的请求」在路由未命中时转给 ST。
-const FALLBACK_PATHS = ['/api/', '/socket.io/', '/login', '/login.html', '/manifest.json', '/sw.js', '/scripts/'];
+// ⚠ `/csrf-token` 必须在这：ST 前端每次写操作前先 GET 它取一次性令牌，
+//    取不到 → 后续所有 POST（/api/settings/get、/api/secrets/...）全 403
+//    → 表现为「设置无法加载，请稍后再试」。它没有后缀，静态后缀规则够不着。
+//    `/version` 同理（ST 启动时探测版本）。`/callback`、`/proxy/` 是 OAuth 与 CORS 代理。
+const FALLBACK_PATHS = [
+    '/api/', '/socket.io/', '/scripts/',
+    '/csrf-token', '/version', '/callback', '/proxy/',
+    '/login', '/login.html', '/manifest.json', '/sw.js',
+];
 // CSS/JS 里写的 url(/img/xxx.png) 这类根绝对路径没法靠改 HTML 覆盖（只读 HTML 不改写 CSS），
 // 浏览器会直接打到站点根 → 404。来自酒馆页的静态资源一律转给 ST。
 // ⚠️ html 必须有：ST 的 Handlebars 模板是运行时 fetch 的 `/scripts/templates/<id>.html`
