@@ -638,6 +638,10 @@ async function proxyRequest(req, res, deps, opts) {
                     if (sent) return;
                     const buf = Buffer.from(rewriteHtmlPaths(Buffer.concat(chunks).toString('utf8')), 'utf8');
                     outHeaders['content-length'] = String(buf.length);
+                    // 必须禁缓存：浏览器若缓存了改写前的旧 HTML（<base href="/">），
+                    // 下次就照旧去站点根取资源 → /style.css、/lib/*.js 全 404，页面裸奔。
+                    // 这个坑在改版部署后尤其常见（清了缓存就好、不清就一直坏）。
+                    outHeaders['cache-control'] = 'no-store, must-revalidate';
                     res.writeHead(ures.statusCode, Object.assign(outHeaders, { 'Set-Cookie': cookies }));
                     res.end(buf);
                     sent = true;
@@ -666,11 +670,26 @@ async function proxyRequest(req, res, deps, opts) {
 // 以及登录/登出时的 location='/login'。这些请求不带 /tavern 前缀，会直接落到游戏服务上
 // 变成 404「API 不存在」—— 表现为「页面能开但一片空白 / 一直在登录页打转」。
 // 这里把「来自酒馆页面的请求」在路由未命中时转给 ST。
-// 判据用 Referer（iframe 里发出的请求一定带 /tavern/），游戏自己的请求不会被误伤。
 const FALLBACK_PATHS = ['/api/', '/socket.io/', '/login', '/login.html', '/manifest.json', '/sw.js'];
 // CSS/JS 里写的 url(/img/xxx.png) 这类根绝对路径没法靠改 HTML 覆盖（只读 HTML 不改写 CSS），
 // 浏览器会直接打到站点根 → 404。来自酒馆页的静态资源一律转给 ST。
 const FALLBACK_EXT = /\.(css|js|mjs|map|json|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf|mp3|wav|ogg|mp4|webm|glb|gltf)(\?|$)/i;
+
+// 判据一：Referer 来自 /tavern/（iframe 里发出的请求一定是这个）。
+// ⚠️ 但实测 Referer 可能被剥掉（隐私插件 / Clash 这类本地代理会发 no-referrer），
+//    此时一律拒绝兜底，ST 的 /api/... 就全 404 了 —— 这正是「页面出来了但样式和功能全没了」的成因。
+// 判据二：没有 Referer 时，只在「游戏自己也提供不了」的前提下接管：
+//    /api/ 已经过了路由表（确认游戏没有这条）；静态资源则看磁盘上有没有这个文件。
+//    有 Referer 但来自游戏主页（站点根）的请求绝不能接管。
+const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+function gameHasFile(urlPath) {
+    try {
+        const p = urlPath === '/' ? '/index.html' : urlPath;
+        const full = path.join(PUBLIC_DIR, p);
+        if (!full.startsWith(PUBLIC_DIR)) return false;
+        return fs.existsSync(full) && fs.statSync(full).isFile();
+    } catch (e) { return false; }
+}
 function tavernFallbackPath(req) {
     if (!enabledNow()) return null;
     const url = String(req.url || '');
@@ -679,9 +698,12 @@ function tavernFallbackPath(req) {
     const hit = FALLBACK_PATHS.some(x => p === x.replace(/\/$/, '') || p.startsWith(x)) || FALLBACK_EXT.test(p);
     if (!hit) return null;
     const ref = String(req.headers.referer || '');
-    const fromTavern = ref.indexOf(PREFIX + '/') >= 0 || ref.endsWith(PREFIX);
-    if (!fromTavern) return null;
-    return url;
+    if (ref) {
+        // 有 Referer 就只认酒馆页；游戏主页（Referer = 站点根）不接管
+        return (ref.indexOf(PREFIX + '/') >= 0 || ref.endsWith(PREFIX)) ? url : null;
+    }
+    if (p.startsWith('/api/')) return url;      // 路由表已确认游戏没有这条，否则不会走到这
+    return gameHasFile(p) ? null : url;
 }
 // 返回 true 表示已被酒馆接管，调用方不要再走自己的 404
 async function fallbackRequest(req, res, deps) {

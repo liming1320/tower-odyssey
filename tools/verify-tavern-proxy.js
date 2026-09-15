@@ -165,6 +165,7 @@ function getUserByToken(req) {
     {
         const ticket = Tavern.signTicket(DB, 'u1');
         const REF = 'http://127.0.0.1:5180/tavern/';
+        const GAME_REF = 'http://127.0.0.1:5180/';
         seen.length = 0;
         const r1 = await call(Tavern, DB, '/api/settings/get', { cookie: 'to_tavern=' + ticket, referer: REF, fallback: true });
         check('来自酒馆页的 /api/ → 原样转发给 ST（路径不能被截断）',
@@ -178,11 +179,17 @@ function getUserByToken(req) {
             req.end();
             return p;
         };
-        check('游戏自己的 /api/（无酒馆 Referer）不被误伤', (await probe('/api/heroes/list', null)) === false);
+        // 判据是「Referer 指向站点根」= 游戏自己的请求，不是「没有 Referer」
+        // （Referer 会被隐私插件/本地代理剥掉，那种情况必须照样兜底）
+        check('游戏自己的 /api/（Referer 是站点根）不被误伤', (await probe('/api/heroes/list', GAME_REF)) === false);
+        check('Referer 被剥掉时 /api/ 仍兜底（否则 ST 的接口全 404）', (await probe('/api/settings/get', null)) === true);
         check('酒馆页发出的 /socket.io 轮询也会兜底', (await probe('/socket.io/?EIO=4', REF)) === true);
         // CSS 里的 url(/img/xxx.png) 改不到（只读 HTML 不改写 CSS），只能靠兜底
         check('酒馆页发出的根绝对路径静态资源也兜底', (await probe('/img/bg.png', REF)) === true);
-        check('游戏自己的静态资源不被误伤', (await probe('/img/bg.png', null)) === false);
+        check('游戏自己的静态资源不被误伤', (await probe('/img/bg.png', GAME_REF)) === false);
+        // 没有 Referer 时不能一律接管：游戏磁盘上真有的文件仍归游戏
+        check('无 Referer 但游戏磁盘上有该文件 → 不接管', (await probe('/index.html', null)) === false);
+        check('无 Referer 且游戏没有该文件 → 接管', (await probe('/lib/select2.min.js', null)) === true);
     }
 
     console.log('\n[6] 票的签发/校验往返');

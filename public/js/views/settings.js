@@ -232,10 +232,13 @@ const SettingsView = {
         // 不换票的话 /tavern/ 一律 401「请先登录塔界远征」。
         // 兼容旧服务端：/api/tavern/ticket 是新增接口，服务端还没更新时会返回 404，
         // 此时退回「令牌放查询串」——代理的鉴权本来就支持 ?token=（同源、仅本地可见）。
-        let frameSrc = '/tavern/?token=' + encodeURIComponent(tk);
+        // 加时间戳破缓存：改版前浏览器缓存过 <base href="/"> 的旧 HTML 的话，
+        // 不清缓存就会一直去站点根取 style.css / lib/*.js → 全 404、页面裸奔
+        const _bust = '_=' + Date.now();
+        let frameSrc = '/tavern/?token=' + encodeURIComponent(tk) + '&' + _bust;
         try {
             const tr = await fetch('/api/tavern/ticket', { headers: { Authorization: 'Bearer ' + tk } });
-            if (tr.ok) frameSrc = '/tavern/';
+            if (tr.ok) frameSrc = '/tavern/?' + _bust;
         } catch (e) { /* 取不到票就用查询串兜底 */ }
         fetch('/api/tavern/status', { headers: { Authorization: 'Bearer ' + tk } })
             .then(r => (r.ok ? r.json() : Promise.reject(new Error('状态查询失败'))))
