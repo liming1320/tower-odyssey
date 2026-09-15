@@ -12,6 +12,11 @@
 #   ./tools/tavern-admin.sh list                  # 列出 ST 里的账号（走 API）
 #   ./tools/tavern-admin.sh config <ST目录>       # 打开多用户模式（改 config.yaml，自动备份）
 #   ./tools/tavern-admin.sh passwd <handle>       # 用「找回密码」通道给账号设密码
+#   ./tools/tavern-admin.sh logs [行数]           # 读 ST 控制台输出（找验证码用，不需要 pm2 命令）
+#   ./tools/tavern-admin.sh restart               # 重启 ST（不需要 pm2 命令）
+#
+# 提示：pm2 常常不在 root 的 PATH 里。本脚本的 logs / restart 都不依赖 pm2 命令，
+#       它会先自己找 pm2（见 find_pm2），找不到就退化成「直接读 ~/.pm2/logs」和「kill 让 PM2 拉起」。
 #
 # 环境变量：
 #   ST_URL     SillyTavern 地址，默认 http://127.0.0.1:8000
@@ -40,9 +45,13 @@ cmd_detect() {
         u="$(systemctl list-unit-files 2>/dev/null | grep -i silly || true)"
         [ -n "$u" ] && { echo "$u" | sed 's/^/  systemd: /'; found=1; }
     fi
-    if command -v pm2 >/dev/null 2>&1; then
-        p="$(pm2 jlist 2>/dev/null | grep -o '"name":"[^"]*"' | grep -i silly || true)"
-        [ -n "$p" ] && { echo "  pm2: $p"; found=1; }
+    local pm2bin=""; pm2bin="$(find_pm2 2>/dev/null || true)"
+    if [ -n "$pm2bin" ]; then
+        echo "  pm2 命令：$pm2bin $([ "$pm2bin" = "$(command -v pm2 2>/dev/null)" ] || echo '（不在 PATH 里，本脚本已自动定位）')"
+        p="$("$pm2bin" jlist 2>/dev/null | grep -o '"name":"[^"]*"' | grep -i silly || true)"
+        [ -n "$p" ] && { echo "  pm2 进程：$p"; found=1; }
+    else
+        echo "  pm2 命令：没找到（不影响，用 '$0 logs' / '$0 restart' 代替）"
     fi
     if command -v docker >/dev/null 2>&1; then
         d="$(docker ps --format '{{.Names}} ({{.Image}})' 2>/dev/null | grep -i silly || true)"
@@ -59,8 +68,9 @@ cmd_detect() {
         ppid="$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true)"
         pcmd="$(ps -o cmd= -p "$ppid" 2>/dev/null || true)"
         case "$pcmd" in
-            *PM2*)        echo "  ⇒ 由 **PM2** 托管（父进程 $ppid 是 PM2 God Daemon）→ 用 pm2 重启"
-                          command -v pm2 >/dev/null 2>&1 || echo "     ⚠ pm2 不在 PATH 里，先找它：find / -maxdepth 6 -name pm2 -type f 2>/dev/null | head -3" ;;
+            *PM2*)        echo "  ⇒ 由 **PM2** 托管（父进程 $ppid 是 PM2 God Daemon）"
+                          echo "     重启：$( [ -n "$pm2bin" ] && echo "$pm2bin restart <名字>  （或 $0 restart）" || echo "$0 restart   ← kill 后 PM2 会自动拉起，不需要 pm2 命令" )"
+                          echo "     日志：$( [ -n "$pm2bin" ] && echo "$pm2bin logs <名字>  （或 $0 logs）" || echo "$0 logs       ← 直接 tail ~/.pm2/logs，不需要 pm2 命令" )" ;;
             *docker*|*containerd*) echo "  ⇒ 由 **docker** 托管（父进程 $ppid）→ docker restart <容器名>" ;;
             *systemd*)    echo "  ⇒ 由 **systemd** 托管（父进程 $ppid）" ;;
             *)            echo "  ⇒ 裸进程（父进程 $ppid: ${pcmd:0:50}）" ;;
@@ -124,6 +134,8 @@ cmd_detect() {
     echo "━━ 下一步 ━━"
     echo "  ① 确认第 3 步里 enableUserAccounts 是 true（是 false 就跑：$0 config <ST目录>）"
     echo "  ② 按第 2 步「⇒」指出的方式重启 SillyTavern（**只能选一种守护**）："
+    echo "       $0 restart    ← 推荐：自动识别 PM2 / systemd，PM2 不在 PATH 也能用"
+    echo "       $0 logs       ← 读控制台输出（找验证码用），同样不需要 pm2 命令"
     echo "       PM2     : pm2 restart <名字>          （日志：pm2 logs <名字> --lines 50）"
     echo "       systemd : systemctl restart sillytavern（日志：journalctl -u sillytavern -f）"
     echo "       docker  : docker restart <容器名>"
@@ -197,9 +209,10 @@ cmd_passwd() {
         || die "请求验证码失败。句柄不存在？先用 '$0 list' 确认名字。"
 
     echo
-    echo "  验证码已经打印到 SillyTavern 的控制台里，去那边找 6 位数字："
+    echo "  验证码已经打印到 SillyTavern 的控制台里 —— **另开一个 SSH 窗口**去读："
+    echo "    $0 logs           ← 推荐，自动判断 pm2 / systemd / nohup"
     echo "    · systemd : journalctl -u <服务名> -n 50 --no-pager"
-    echo "    · pm2     : pm2 logs <名字> --lines 50"
+    echo "    · pm2     : pm2 logs <名字> --lines 50   （pm2 不在 PATH 就用上面的 logs）"
     echo "    · nohup   : tail -50 st.log          · docker: docker logs --tail 50 <容器>"
     echo
     read -r -p "  输入 6 位验证码: " code
@@ -221,10 +234,124 @@ cmd_passwd() {
     echo "  然后点「保存并生效」。"
 }
 
+# =========================================================== 找 pm2（常常不在 PATH 里）
+# 不要用 `find / -name pm2` —— 扫全盘太慢（几十秒到几分钟），下面这些都是 O(1) 的探测。
+find_pm2() {
+    command -v pm2 2>/dev/null && return 0
+    local n
+    for n in /www/server/nodejs/*/bin/pm2 \
+             /usr/local/bin/pm2 /usr/bin/pm2 \
+             /usr/lib/node_modules/pm2/bin/pm2 \
+             /usr/local/lib/node_modules/pm2/bin/pm2 \
+             /root/.nvm/versions/node/*/bin/pm2 \
+             /www/server/nvm/versions/node/*/bin/pm2
+    do
+        [ -x "$n" ] && { echo "$n"; return 0; }
+    done
+    # 兜底：从 PM2 守护进程自己身上反推 —— 它的 exe 就是 node，pm2 是同目录的兄弟文件
+    local dpid; dpid="$(ps -eo pid,cmd 2>/dev/null | grep '[P]M2 v' | awk '{print $1}' | head -1)"
+    if [ -n "$dpid" ] && [ -r "/proc/$dpid/exe" ]; then
+        local d; d="$(dirname "$(readlink "/proc/$dpid/exe" 2>/dev/null)" 2>/dev/null)"
+        [ -n "$d" ] && [ -x "$d/pm2" ] && { echo "$d/pm2"; return 0; }
+        # 再从它的环境变量 PATH 里翻（PM2 是被带完整 PATH 拉起来的）
+        local ep p
+        ep="$(tr '\0' '\n' < "/proc/$dpid/environ" 2>/dev/null | grep '^PATH=' | head -1 | cut -d= -f2-)"
+        if [ -n "$ep" ]; then
+            for p in $(echo "$ep" | tr ':' ' '); do
+                [ -x "$p/pm2" ] && { echo "$p/pm2"; return 0; }
+            done
+        fi
+    fi
+    return 1
+}
+
+st_pids() { ps -eo pid,cmd 2>/dev/null | grep '[s]erver\.js' | grep -i silly | awk '{print $1}'; }
+
+# =========================================================== 读日志（找验证码用）
+# PM2 的日志是固定路径 ~/.pm2/logs/<name>-out.log，直接 tail 就行，不需要 pm2 命令。
+cmd_logs() {
+    local n="${1:-60}"
+    local d="${PM2_HOME:-$HOME/.pm2}/logs"
+    if [ -d "$d" ]; then
+        echo "→ PM2 日志目录：$d"
+        ls -1t "$d" 2>/dev/null | head -10 | sed 's/^/    /'
+        echo
+        echo "── stdout（最后 $n 行）──"
+        tail -n "$n" "$d"/*-out.log 2>/dev/null
+        local err
+        err="$(tail -n 30 "$d"/*-error.log 2>/dev/null | grep -v '^[[:space:]]*$')"
+        [ -n "$err" ] && { echo; echo "── stderr ──"; echo "$err"; }
+        return 0
+    fi
+    local pm2bin; pm2bin="$(find_pm2 2>/dev/null)"
+    if [ -n "$pm2bin" ]; then
+        echo "→ 用 $pm2bin 读日志"
+        "$pm2bin" logs --lines "$n" --nostream 2>&1 | tail -n "$((n+10))"
+        return 0
+    fi
+    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -qi silly; then
+        local u; u="$(systemctl list-unit-files 2>/dev/null | grep -i silly | awk '{print $1}' | head -1)"
+        echo "→ 走 systemd：$u"
+        journalctl -u "$u" -n "$n" --no-pager 2>&1 | sed 's/^/    /'
+        return 0
+    fi
+    echo "✗ 找不到 PM2 日志目录 $d，也没找到 pm2 命令，也没有 systemd 服务。"
+    echo "  手动看看 ST 的输出打到哪：ls -l /proc/<ST的pid>/fd/1"
+    echo "  如果指向 /dev/null，说明控制台输出被丢了 —— 验证码读不到，得先改成能落盘的方式启动。"
+}
+
+# =========================================================== 重启 ST
+# 关键：如果 ST 由 PM2 托管，kill 掉工作进程后 PM2 会自动拉起一个新的（带新配置）。
+# 这才是不需要 pm2 命令也能重启的原理。
+cmd_restart() {
+    local pm2bin; pm2bin="$(find_pm2 2>/dev/null)"
+    if [ -n "$pm2bin" ]; then
+        echo "→ 找到 pm2：$pm2bin"
+        echo "  当前进程："
+        "$pm2bin" list 2>&1 | sed 's/^/    /'
+        local name
+        name="$("$pm2bin" jlist 2>/dev/null | grep -o '"name":"[^"]*"' | cut -d'"' -f4 | grep -i silly | head -1)"
+        if [ -n "$name" ]; then
+            echo "→ pm2 restart $name"
+            "$pm2bin" restart "$name" 2>&1 | sed 's/^/    /'
+            sleep 4
+            "$pm2bin" logs "$name" --lines 25 --nostream 2>&1 | sed 's/^/    /'
+        else
+            echo "  ⚠ pm2 list 里没看到名字含 silly 的进程，请手动：pm2 restart <名字>"
+        fi
+        return 0
+    fi
+
+    echo "⚠ 没找到 pm2 命令，改用「kill + PM2 自动拉起」"
+    local pids; pids="$(st_pids)"
+    [ -n "$pids" ] || die "没找到 ST 进程，也没 pm2。手动进 ST 目录启动：nohup node server.js > st.log 2>&1 &"
+    local guarded=0
+    for pid in $pids; do
+        local ppid; ppid="$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')"
+        if ps -o cmd= -p "$ppid" 2>/dev/null | grep -q PM2; then guarded=1; fi
+        echo "  kill $pid（父进程 $ppid）"
+        kill "$pid" 2>/dev/null
+    done
+    if [ "$guarded" = 1 ]; then
+        echo "→ PM2 会在几秒内自动拉起新进程，等 8 秒…"
+        sleep 8
+    else
+        echo "  ⚠ 父进程不是 PM2，kill 后不会自动拉起！需要手动启动。"
+        return 1
+    fi
+    echo "  新进程："
+    ps -eo pid,ppid,etime,cmd 2>/dev/null | grep '[s]erver\.js' | grep -i silly | sed 's/^/    /'
+    local ok
+    ok="$(curl -fsS --max-time 5 "$ST_URL/csrf-token" 2>/dev/null)"
+    if [ -n "$ok" ]; then echo "✓ ST 已就绪：$ok"; else echo "✗ ST 还没起来，跑 '$0 logs'"; fi
+}
+
 case "${1:-}" in
     detect)  cmd_detect ;;
     config)  cmd_config "${2:-}" ;;
     list)    cmd_list ;;
     passwd)  cmd_passwd "${2:-}" ;;
-    *)       sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//' ;;
+    logs)    cmd_logs "${2:-60}" ;;
+    restart) cmd_restart ;;
+    *)       sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//' ;;
 esac

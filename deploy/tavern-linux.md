@@ -122,23 +122,34 @@ grep -n "enableUserAccounts" config.yaml      # 确认改成了 true
 > 这种情况下若再建 systemd 服务，PM2 会瞬间把工作进程拉回来占住 8000，
 > systemd 只会无限刷 `Address 127.0.0.1:8000 is already in use`。**二选一，别都开。**
 >
-> 而且 `pm2` 经常不在 root 的 PATH 里（`command -v pm2` 查不到），
-> 需要 `find / -maxdepth 6 -name pm2 -type f 2>/dev/null | head -3` 找一下。
+> 而且 `pm2` 经常不在 root 的 PATH 里（`command -v pm2` 查不到）。
+> **别用 `find / -name pm2` 去找** —— 扫全盘要几十秒到几分钟，往往等不及就被 Ctrl+C 了。
+> 直接用下面这条（秒出）：
+> ```bash
+> ls -d /www/server/nodejs/*/bin/pm2 /usr/local/bin/pm2 /usr/bin/pm2 \
+>       /usr/lib/node_modules/pm2/bin/pm2 /root/.nvm/versions/node/*/bin/pm2 2>/dev/null
+> ```
+> 或者干脆绕开 pm2：用 `./tools/tavern-admin.sh restart` 和 `./tools/tavern-admin.sh logs`，
+> 它们会自动定位 pm2，定位不到也能用（原理见下）。
 
-### PM2
+### PM2（推荐：用脚本，不需要 pm2 命令）
 
 ```bash
-pm2 list                          # 找 ST 的名字
-pm2 restart <名字>
-pm2 logs <名字> --lines 50         # 验证码就在这里读
+cd /www/wwwroot/tower-odyssey
+./tools/tavern-admin.sh restart     # 自动找 pm2；找不到就 kill 让 PM2 自动拉起
+./tools/tavern-admin.sh logs        # 直接 tail ~/.pm2/logs/*-out.log，验证码在这读
 ```
 
-如果 `pm2: command not found`，先找到它再用绝对路径调用：
+**为什么 kill 一下也算重启**：PM2 托管的工作进程被 kill 后，God Daemon 会在几秒内自动拉起一个新的，
+而新进程会重新读一次 `config.yaml` —— 所以配置改动就生效了。这正是 `find` 不到 pm2 时的兜底方案。
+
+如果脚本找到了 pm2，它会打印路径，之后你也可以直接用：
 
 ```bash
-find / -maxdepth 6 -name pm2 -type f 2>/dev/null | head -3
-# 例如 /www/server/nodejs/v20.20.0/bin/pm2
-export PATH="$PATH:/www/server/nodejs/v20.20.0/bin"
+export PATH="$PATH:<脚本打印的目录>"
+pm2 list
+pm2 restart <名字>
+pm2 logs <名字> --lines 50
 ```
 
 ### systemd（最常见）
@@ -153,13 +164,6 @@ journalctl -u sillytavern -f           # 实时看日志（Ctrl+C 退出）
 
 ```bash
 systemctl list-unit-files | grep -i silly
-```
-
-### pm2
-
-```bash
-pm2 restart <名字>          # 名字看 pm2 list
-pm2 logs <名字> --lines 50
 ```
 
 ### Docker
@@ -220,14 +224,15 @@ curl -s http://127.0.0.1:8000/csrf-token
 脚本会请求一个验证码，**ST 会把 6 位验证码打印到它自己的控制台**。另开一个终端窗口去读：
 
 ```bash
-# systemd
-journalctl -u sillytavern -n 20 --no-pager
-# pm2
-pm2 logs <名字> --lines 20
-# nohup
-tail -20 st.log
-# docker
-docker logs --tail 20 <容器名>
+# 推荐：脚本自动判断 pm2 / systemd / nohup，不需要 pm2 命令
+./tools/tavern-admin.sh logs
+
+# 或者手动
+journalctl -u sillytavern -n 20 --no-pager   # systemd
+pm2 logs <名字> --lines 20                    # pm2（pm2 在 PATH 里才行）
+tail -20 /root/.pm2/logs/*-out.log           # pm2 但命令找不到时
+tail -20 st.log                              # nohup
+docker logs --tail 20 <容器名>                # docker
 ```
 
 看到 `your password recovery code is: 123456` 这类输出，把 6 位数字填回脚本，再输入新密码即可。
