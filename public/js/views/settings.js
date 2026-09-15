@@ -228,6 +228,9 @@ const SettingsView = {
 
         stage.innerHTML = '<div class="emu-empty">正在检查 SillyTavern 服务…</div>';
         const tk = (typeof localStorage !== 'undefined' && localStorage.getItem('game-token')) || '';
+        // 先换一张 HttpOnly 的入馆票 cookie：iframe 请求带不了 Authorization 头，
+        // 不换票的话 /tavern/ 一律 401「请先登录塔界远征」
+        fetch('/api/tavern/ticket', { headers: { Authorization: 'Bearer ' + tk } }).catch(() => { });
         fetch('/api/tavern/status', { headers: { Authorization: 'Bearer ' + tk } })
             .then(r => (r.ok ? r.json() : Promise.reject(new Error('状态查询失败'))))
             .then(st => {

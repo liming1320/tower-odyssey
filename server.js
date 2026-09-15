@@ -4017,6 +4017,23 @@ api['POST /api/free'] = (req, res) => {
     sendJson(res, 200, { ok: true, rewards: r, state: u });
 };
 
+// ---- AI 酒馆：换一张「入馆票」cookie ----
+// 为什么需要：酒馆是 iframe 加载 /tavern/，浏览器不会给 iframe 请求带 Authorization 头，
+// 而玩家的 game-token 存在 localStorage 里 —— 直接进 iframe 必然 401。
+// 做法：先用带 Authorization 的 fetch 换一张 HttpOnly 票 cookie，之后同源请求自动携带。
+api['GET /api/tavern/ticket'] = async (req, res) => {
+    const user = getUserByToken(req);
+    if (!user) return sendJson(res, 401, { error: '未登录' });
+    const ticket = Tavern.signTicket(DB, user.id);
+    const body = JSON.stringify({ ok: true });
+    res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'Set-Cookie': 'to_tavern=' + ticket + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=' + (12 * 3600),
+    });
+    res.end(body);
+};
+
 // ---- AI 酒馆（SillyTavern）网关状态：给设置页做降级提示 ----
 api['GET /api/tavern/status'] = async (req, res) => {
     const user = getUserByToken(req);

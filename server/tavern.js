@@ -481,11 +481,29 @@ async function status(db, force) {
 
 // ------------------------------------------------------------------ 代理主体
 // deps: { getUserByToken, DB } —— 复用主服务的鉴权，避免出现两套登录态
+// 识别当前是谁。两条路：
+//   ① 常规：Authorization 头 / ?token= （主服务鉴权）
+//   ② 网关票 cookie `to_tavern`：iframe 加载 /tavern/ 时带不了自定义头，
+//      所以前端先调 /api/tavern/ticket 换一张 HttpOnly 票，之后同源请求自动携带。
+function resolveUser(req, deps) {
+    const u = deps.getUserByToken(req);
+    if (u) return u;
+    const ck = parseCookies(req.headers.cookie);
+    const uid = verifyTicket(deps.DB, ck.to_tavern);
+    if (!uid) return null;
+    if (uid === 'admin') return { id: 'admin', username: 'admin', isAdmin: true };
+    return deps.DB.users[uid] || null;
+}
+
 async function proxyRequest(req, res, deps) {
-    const user = deps.getUserByToken(req);
+    const user = resolveUser(req, deps);
     if (!user) {
-        res.writeHead(401, { 'Content-Type': 'text/plain; charset=utf-8' });
-        return res.end('请先登录塔界远征，再进入 AI 酒馆');
+        res.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end('<meta charset="utf-8"><div style="font:14px/1.9 system-ui;padding:30px;color:#c9d4e3;background:#141a24">'
+            + '<h3 style="color:#ffd56b;margin:0 0 12px">🍺 需要重新进入</h3>'
+            + '<div>登录态没带过来（iframe 请求不会携带前端保存的令牌）。</div>'
+            + '<div style="margin-top:10px;color:#7f8da3">请返回游戏重新点一次「AI 酒馆」；若反复出现，退出登录再重新登录一次。</div>'
+            + '</div>');
     }
     if (!enabledNow()) {
         res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
