@@ -16,6 +16,12 @@
 #   B) 直接暴露端口：WEBHOOK_HOST=0.0.0.0 再跑本脚本，然后去腾讯云安全组放行该端口
 #
 # 如果你装了宝塔面板，也可以用「宝塔 WebHook 插件」，见 deploy/README.md
+#
+# ⚠ 宝塔插件以 www 用户执行，systemctl 会没权限，部署脚本会回退到 nohup 直启，
+#   留下的游离进程会占住端口让 systemd 再也起不来（EADDRINUSE）。
+#   装完务必执行一次（root）：
+#     cp deploy/linux/sudoers-tower-odyssey /etc/sudoers.d/tower-odyssey
+#     chmod 440 /etc/sudoers.d/tower-odyssey && visudo -c
 
 set -e
 

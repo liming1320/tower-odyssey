@@ -109,13 +109,23 @@ restart_service() {
         # 走到这里多半是端口被游离进程占着（上次直启留下的），清掉后用 systemd 再拉一次。
         # 不要直接退回 nohup，否则会不断产生新的游离进程，systemd 永远接管不回来。
         log "⚠ systemctl 重启失败，清理端口占用后重试"
-        systemctl stop "$SERVICE" 2>/dev/null
+        # 非 root（宝塔 WebHook 以 www 运行）时连 stop/start 也要走 sudo，否则一律失败
+        SCTL="systemctl"
+        if [ "$(id -u)" != "0" ] && command -v sudo >/dev/null 2>&1; then SCTL="sudo -n systemctl"; fi
+        $SCTL stop "$SERVICE" 2>/dev/null
         kill_port_holders
         sleep 1
-        systemctl start "$SERVICE" 2>>"$LOG" && { log "已通过 systemctl 重启（清理端口后）"; return 0; }
+        $SCTL start "$SERVICE" 2>>"$LOG" && { log "已通过 systemctl 重启（清理端口后）"; return 0; }
         log "✗ systemctl 仍无法启动，日志：journalctl -u $SERVICE -n 20"
+        if [ "$(id -u)" != "0" ]; then
+            log "   多半是权限问题（WebHook 以 $(id -un) 运行）。放行办法（root 执行一次）："
+            log "     cp $APP_DIR/deploy/linux/sudoers-tower-odyssey /etc/sudoers.d/tower-odyssey"
+            log "     chmod 440 /etc/sudoers.d/tower-odyssey && visudo -c"
+        fi
     fi
-    log "⚠ 回退到直接启动（systemd 不可用）"
+    # ⚠️ 兜底直启会留下游离进程，下次 systemd 就再也起不来（EADDRINUSE）——
+    #    能走 systemd 就绝不要走到这里。
+    log "⚠ 回退到直接启动（systemd 不可用）—— 这会留下游离进程，请尽快按上面提示放行 sudo"
     pkill -f "node ${APP_DIR}/server.js" 2>/dev/null || true
     kill_port_holders
     sleep 2

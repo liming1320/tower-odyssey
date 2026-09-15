@@ -1,0 +1,18 @@
+# 允许 WebHook 进程（宝塔插件以 www 用户运行）免密重启游戏服务。
+#
+# 为什么需要：deploy/hooks/deploy.sh 里如果 systemctl 没有权限，会回退到
+#   nohup node server.js &
+# 这条兜底会产生一个**游离进程长期占着 5180**，之后 systemd 再启动必然
+#   Error: listen EADDRINUSE: address already in use 0.0.0.0:5180
+# 表现极具迷惑性：「代码明明 pull 了，新接口却 404」——因为提供服务的
+# 是那个游离进程，它可能还跑着旧代码。
+#
+# 安装（root 执行）：
+#   cp deploy/linux/sudoers-tower-odyssey /etc/sudoers.d/tower-odyssey
+#   chmod 440 /etc/sudoers.d/tower-odyssey
+#   visudo -c            # 必须显示「parsed OK」，写错了会让 sudo 整体不可用
+#
+# 若你的 WebHook 不是 www 用户，把下面的 www 换成实际用户（ps -o user= -p <pid>）
+
+www ALL=(root) NOPASSWD: /usr/bin/systemctl restart tower-odyssey, /usr/bin/systemctl start tower-odyssey, /usr/bin/systemctl stop tower-odyssey, /usr/bin/systemctl status tower-odyssey
+www ALL=(root) NOPASSWD: /bin/systemctl restart tower-odyssey, /bin/systemctl start tower-odyssey, /bin/systemctl stop tower-odyssey, /bin/systemctl status tower-odyssey
