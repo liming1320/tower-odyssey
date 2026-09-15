@@ -103,10 +103,10 @@ function assert(condition, message) {
         let targets;
         for (let attempt = 0; attempt < 50; attempt += 1) {
             try { targets = await getJson('http://127.0.0.1:' + port + '/json/list'); } catch (_) {}
-            if (targets && targets.some(item => item.type === 'page')) break;
+            if (targets && targets.some(item => item.type === 'page' && item.url && item.url.startsWith(base))) break;
             await sleep(100);
         }
-        const page = (targets || []).find(item => item.type === 'page');
+        const page = (targets || []).find(item => item.type === 'page' && item.url && item.url.startsWith(base));
         assert(page, 'Chrome page target unavailable');
         ws = new WebSocket(page.webSocketDebuggerUrl);
         await new Promise((resolve, reject) => { ws.once('open', resolve); ws.once('error', reject); });
@@ -120,7 +120,10 @@ function assert(condition, message) {
         await cdp.send('Page.enable');
         await cdp.send('Emulation.setDeviceMetricsOverride', { width: 430, height: 932, deviceScaleFactor: 1, mobile: true });
         await cdp.send('Page.navigate', { url: base + '?pk32-pixel-island-flow=' + Date.now() });
-        await sleep(1000);
+        await cdp.eval(`new Promise(resolve => {
+            const wait = () => window.PK32Variants ? resolve(true) : setTimeout(wait, 25);
+            wait();
+        })`);
 
         const result = await cdp.eval(`(async () => {
             const host = document.createElement('div');
@@ -132,15 +135,16 @@ function assert(condition, message) {
             const onRejection = event => rejections.push(String(event.reason || 'unhandled rejection'));
             window.addEventListener('error', onError);
             window.addEventListener('unhandledrejection', onRejection);
+            window.__MG_TEST = true;
             let game;
             try { game = window.PK32Variants.startGame(host, '像素岛', {}); }
             catch (error) { errors.push(String(error && error.stack || error)); }
 
             for (let i = 0; i < 100; i += 1) {
-                if (host.querySelectorAll('[data-board="pixel-island-board"] [data-cell]').length === 25) break;
+                if (host.querySelectorAll('.pixel-island-board [data-cell]').length === 25) break;
                 await new Promise(resolve => setTimeout(resolve, 25));
             }
-            const cells = () => [...host.querySelectorAll('[data-board="pixel-island-board"] [data-cell]')];
+            const cells = () => [...host.querySelectorAll('.pixel-island-board [data-cell]')];
             const state = () => cells().map(cell => ({
                 text: cell.textContent,
                 raw: cell.dataset.rawState || '',

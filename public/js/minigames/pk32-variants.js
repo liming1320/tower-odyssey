@@ -530,7 +530,7 @@
                     if (!ended && cells.some(function (value) { return value !== '0'; }) && !hasMove()) finish('没有可选择的彩球了，请重新开始本关。');
                 }
                 function draw() { panel.innerHTML = ''; const grid = renderGrid(width, height, 'bubble-board'); cells.forEach(function (value, index) { const b = button(value === '0' ? '' : '●', function () { if (ended || value === '0') return; const group = connected(index); if (group.length < 2) { prompt.textContent = '请选择两个以上上下左右连续相同颜色的彩球。'; return; } group.forEach(function (cell) { cells[cell] = '0'; }); compact(); setScore(score + group.length * 3); if (!cells.some(function (cell) { return cell !== '0'; })) { ended = true; draw(); finish('所有彩球已消除，本关完成。'); return; } draw(); }); b.dataset.cell = String(index); b.dataset.value = value; b.setAttribute('aria-label', value === '0' ? '空格' : '彩球 ' + value); b.disabled = ended || value === '0'; grid.appendChild(b); }); panel.append(button('上一关', function () { level = Math.max(0, level - 1); reset(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); reset(); }), select, grid); prompt.textContent = '原版关卡：第 ' + (level + 1) + ' / ' + data.levels.length + '；选择两个以上上下左右连续相同的彩球消除。'; }
-                function reset() { const raw = data.levels[level].cells; width = raw.length === 192 ? 12 : raw.length === 40 ? 8 : 6; height = Math.ceil(raw.length / width); cells = raw.padEnd(width * height, '0').slice(0, width * height).split(''); ended = false; draw(); }
+                function reset() { const raw = data.levels[level].cells; width = raw.length === 192 ? 12 : raw.length === 40 ? 8 : 6; height = Math.ceil(raw.length / width); cells = raw.padEnd(width * height, '0').slice(0, width * height).split(''); ended = false; draw(); if (cells.some(function (value) { return value !== '0'; }) && !hasMove()) finish('没有可选择的彩球了，请重新开始本关。'); }
                 select.onchange = function () { level = Number(select.value) || 0; reset(); }; reset();
             }).catch(function () { prompt.textContent = '爆破彩球原生数据加载失败'; });
         }
@@ -891,6 +891,17 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
                 draw();
                 if (!cells.some(function (value) { return value; })) finish('本局完成：25 格彩球全部消失。');
             }
+            function solveCurrent() {
+                const start = cells.map(function (value) { return value ? 1 : 0; });
+                for (let firstRow = 0; firstRow < 32; firstRow += 1) {
+                    const board = start.slice(), presses = [];
+                    function press(index) { presses.push(index); const x = index % 5, y = Math.floor(index / 5); [[x, y], [x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].forEach(function (point) { if (point[0] >= 0 && point[0] < 5 && point[1] >= 0 && point[1] < 5) { const target = point[1] * 5 + point[0]; board[target] = board[target] ? 0 : 1; } }); }
+                    for (let x = 0; x < 5; x += 1) if (firstRow & (1 << x)) press(x);
+                    for (let y = 1; y < 5; y += 1) for (let x = 0; x < 5; x += 1) if (board[(y - 1) * 5 + x]) press(y * 5 + x);
+                    if (!board.some(function (value) { return value; })) return presses;
+                }
+                return null;
+            }
             function draw() {
                 grid.innerHTML = '';
                 const raw = records[record] && records[record].cells || '';
@@ -910,7 +921,7 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             selector.addEventListener('change', function () { record = Number(selector.value) || 0; reset(); });
             controls.append(selector, button('重置本关', reset));
             wrap.append(info, controls, grid, el('p', { className: 'pk32v-prompt' }, '原生帮助确认：5×5 格子中的彩球会随选择发生变化，目标是让所有彩球消失。当前 3 条已定位状态串按翻转相邻格规则运行，其余原版关卡仍待从宿主程序确认。')); body.append(wrap); load();
-            if (window.__MG_TEST) window.__pk32PixelIslandDebug = { getState: function () { return { record: record, cells: cells.slice(), moves: moves, ended: ended }; }, toggle: toggle, reset: reset };
+            if (window.__MG_TEST) window.__pk32PixelIslandDebug = { getState: function () { return { record: record, cells: cells.slice(), moves: moves, ended: ended }; }, toggle: toggle, reset: reset, solveSimpleBoard: function () { const solution = solveCurrent(); if (!solution) return false; solution.forEach(toggle); return !cells.some(function (value) { return value; }); } };
         }
         function renderZenGarden() {
             const wrap = el('div', { className: 'pk32v-native-zen' });
