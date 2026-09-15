@@ -157,23 +157,33 @@ function cookiesToString(arr) {
 
 // 把 ST 登录失败的 HTTP 状态码翻成「下一步该干什么」。
 // 只报「登录失败（401）」等于没说：管理员不知道是账号不存在、密码错、还是 ST 没开用户系统。
-function tavernLoginErrorMsg(status, handle) {
+// 状态码含义按 ST 官方 src/endpoints/users-public.js 对齐（只看数字会完全误判）：
+//   404 路由不存在  → 没开 enableUserAccounts
+//   403 凭据错误    → 账号不存在 / 密码错 / 账号被禁用（三合一，ST 不区分）
+//   400 缺字段      → 请求体里没有 handle（典型：字段名写成 username）
+//   429 限流        → 同 IP 一分钟内失败 5 次，等一会儿或改 rateLimiting 配置
+function tavernLoginErrorMsg(status, handle, detail) {
     const h = handle || 'admin';
+    const extra = detail ? '（ST 返回：' + detail + '）' : '';
     if (status === 404) {
-        return 'ST 没有 /api/users/login（' + status + '）——多半是 SillyTavern 没开用户账号系统。'
+        return 'ST 没有 /api/users/login（404）——多半是 SillyTavern 没开多用户模式。'
             + '在 ST 的 config.yaml 里设 enableUserAccounts: true 并重启 ST。';
     }
     if (status === 403) {
-        return 'ST 拒绝了登录请求（' + status + '）——通常是 CSRF 或 IP 白名单。'
-            + 'config.yaml 里确认 whitelistMode / sso.trustedProxies 已放行本机（127.0.0.1）。';
+        return 'ST 账号「' + h + '」登录失败（403）：账号不存在、密码错，或账号被禁用。' + extra
+            + ' 处理：① 在 SillyTavern 里确认存在这个账号且是管理员（全新安装的 ST 会自动建一个管理员账号 '
+            + 'default-user，初始无密码）；② 把它的密码设成和后台一致；'
+            + '③ 后台密码存在 data/tavern-env.json 的 TAVERN_ADMIN_PASSWORD。';
     }
-    if (status === 401 || status === 400) {
-        return 'ST 账号「' + h + '」登录失败（' + status + '）：ST 里没有这个账号，或密码与后台填的不一致。'
-            + '处理：① 打开 SillyTavern 原页面用 ' + h + ' 注册/登录一次（首个注册者自动成为管理员）；'
-            + '② 若 ST 里管理员是别的名字，把后台「管理员句柄」改成那个名字；'
-            + '③ 密码两边必须一致 —— 后台的密码存在 data/tavern-env.json 的 TAVERN_ADMIN_PASSWORD。';
+    if (status === 429) {
+        return 'ST 登录被限流（429）：同一 IP 失败太多次，请 1 分钟后再试，'
+            + '或在 config.yaml 调大 rateLimiting.accountsLoginMaxAttempts。';
     }
-    return 'ST 管理员登录失败（' + status + '）';
+    if (status === 400) {
+        return 'ST 登录请求被拒（400 Missing required fields）' + extra
+            + ' —— 请求体缺少 handle 字段。通常是 ST 版本与网关不兼容，或后台「管理员句柄」填了空值。';
+    }
+    return 'ST 管理员登录失败（' + status + '）' + extra;
 }
 
 // 列出 SillyTavern 里已经存在的账号。
@@ -255,16 +265,19 @@ async function adminSession(force) {
                     'X-Forwarded-For': '127.0.0.1',
                     'X-Real-IP': '127.0.0.1',
                 },
-                bodyBuf: Buffer.from(JSON.stringify({ username: adminHandle(), password: adminPassword() })),
+                // ST 的 /api/users/login 只读 request.body.handle，传 username 会被判
+                // 「Missing required fields」直接 400 —— 这是最容易踩的坑，改动前务必保持 handle
+                bodyBuf: Buffer.from(JSON.stringify({ handle: adminHandle(), password: adminPassword() })),
             });
             // 会话 cookie 含 .sig 签名，必须整段原样回传，丢了就是 403
             if (login.setCookie.length) cookie = cookie + '; ' + cookiesToString(login.setCookie);
             if (login.status !== 200) {
                 _admin.ok = false;
-                // 401 有两种完全不同的原因，必须分开讲，否则管理员只能瞎猜：
-                //   1) ST 里压根没有这个 handle 的账号（最常见：还没在 ST 注册过）
-                //   2) 账号在，但密码和后台配的不一致
-                _admin.msg = tavernLoginErrorMsg(login.status, adminHandle());
+                // 把 ST 返回的 error 原文带上：「Incorrect credentials」是账号/密码问题，
+                // 「Missing required fields」是字段名问题 —— 不看原文就只能瞎猜
+                let detail = '';
+                try { detail = JSON.parse(login.buffer.toString('utf8')).error || ''; } catch (e) { }
+                _admin.msg = tavernLoginErrorMsg(login.status, adminHandle(), detail);
                 return _admin;
             }
             const me = await rawRequest('GET', base + '/api/users/me', { headers: { Cookie: cookie } });
@@ -301,9 +314,20 @@ async function userExists(handle) {
     const s = await adminSession();
     if (!s.ok) return { ok: false, msg: s.msg };
     const base = pickUrl().base;
-    const r = await rawRequest('GET', base + '/api/users/get', { headers: { Cookie: s.cookie, 'X-Forwarded-For': '127.0.0.1', 'X-Real-IP': '127.0.0.1' } });
+    // /api/users/get 是 POST（不是 GET）；用 GET 会 404，误判成「账号不存在」而反复建号
+    const r = await rawRequest('POST', base + '/api/users/get', {
+        headers: {
+            'Content-Type': 'application/json', Cookie: s.cookie,
+            'X-Forwarded-For': '127.0.0.1', 'X-Real-IP': '127.0.0.1',
+        },
+        bodyBuf: Buffer.from('{}'),
+    });
     let list = [];
     try { list = JSON.parse(r.buffer.toString('utf8')) || []; } catch (e) { }
+    if (r.status !== 200) {
+        // 拿不到列表就不要硬说「不存在」，否则每次进酒馆都会重复建号
+        return { ok: false, msg: '查询 ST 用户列表失败（' + r.status + '）：' + (list && list.error ? list.error : s.msg || '需要管理员权限') };
+    }
     return { ok: true, exists: list.some(u => u && u.handle === handle) };
 }
 

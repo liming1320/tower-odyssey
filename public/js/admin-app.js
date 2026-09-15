@@ -1772,12 +1772,26 @@ const AdminApp = {
                 <div style="font-size:12.5px;color:#b9b3d8;line-height:1.9">
                     1. 在 SillyTavern 目录执行一次 <code>node server.js</code>，生成配置文件后 Ctrl+C 停掉<br>
                     2. 编辑仓库<b>根目录</b>的 <code>config.yaml</code>（不是 <code>default/</code> 里那份）：<br>
-                    &nbsp;&nbsp;&nbsp;· <code>enableUserAccounts: true</code> ← 必须，否则没有多用户<br>
+                    &nbsp;&nbsp;&nbsp;· <code>enableUserAccounts: true</code> ← <b>必须</b>，否则 ST 没有多用户，登录接口直接 404<br>
                     &nbsp;&nbsp;&nbsp;· 增加 <code>sso</code> 段：<code>autheliaAuth: true</code>、<code>trustedProxies: [127.0.0.1]</code><br>
-                    &nbsp;&nbsp;&nbsp;· <code>listen</code> 保持 <code>false</code>（别加 --listen，会把能改 API Key 的面板暴露到公网）<br>
-                    3. 重启 SillyTavern，用服务器本机访问 <code>http://127.0.0.1:8000</code>，进「用户设置 → 管理员面板」<br>
-                    4. 给默认账号 <code>default-user</code> 设密码（它默认就是管理员），或新建一个提升为 Admin 的账号<br>
+                    3. 重启 SillyTavern，打开 ST 页面：<br>
+                    &nbsp;&nbsp;&nbsp;· <b>同机</b>：直接访问 <code>http://127.0.0.1:8000</code><br>
+                    &nbsp;&nbsp;&nbsp;· <b>ST 在 Linux 远端</b>（推荐，不用开公网）：在你电脑上做 SSH 隧道
+                    <code>ssh -L 8000:127.0.0.1:8000 用户@服务器</code>，然后浏览器开 <code>http://127.0.0.1:8000</code><br>
+                    4. 给默认账号 <code>default-user</code> 设密码（ST 首次启动会自动建它，<b>默认就是管理员、初始无密码</b>），
+                    或新建账号再提升为 Admin。「用户设置 → 账户 → 更改密码」<br>
                     5. 把句柄和密码填到上面，点「保存并生效」
+                </div>
+                <div class="admin-note" style="margin-top:10px">
+                    <b>ST 和塔界远征不在同一台机器上时</b>（比如 ST 单独跑在 Linux）：<br>
+                    · <code>listen: true</code> + 把网关那台机器的 IP 加进 <code>whitelist</code>（或 <code>whitelistMode: false</code>）——
+                    否则 ST 只认 127.0.0.1，连过来一律拒绝<br>
+                    · 上面「上游地址」填 <code>http://&lt;Linux 内网IP&gt;:8000</code>，别再写 127.0.0.1<br>
+                    · <code>sso.trustedProxies</code> 也要加上网关机器的 IP
+                </div>
+                <div class="admin-note" style="margin-top:10px">
+                    <b>报错含义对照</b>：<code>404</code> = ST 没开多用户；<code>403</code> = 账号不存在 / 密码错 / 被禁用；
+                    <code>400</code> = 请求字段不对（句柄填了空值或版本不兼容）；<code>429</code> = 失败太多次被限流，等 1 分钟。
                 </div>
             </div>
             <div class="card">

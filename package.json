@@ -7,6 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "pk32:rebuild": "node tools/build-pk32-reference.js",
+    "pk32:inventory": "node tools/scan-pk32-inventory.js",
+    "pk32:queue": "node tools/build-pk32-migration-queue.js",
+    "pk32:verify-inventory": "node tools/verify-pk32-inventory.js",
     "migrate": "node tools/migrate-to-mysql.js",
     "seed:heroes": "node tools/gen-mysql-seed.js",
     "art": "node tools/gen-hero-art.js"
