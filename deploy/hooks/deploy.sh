@@ -119,22 +119,23 @@ kill_port_holders() {
 
 # ---------- 3) 重启服务 ----------
 restart_service() {
+    # 非 root（宝塔 WebHook 以 www 运行）时连 stop/start 也要走 sudo，否则一律失败
+    SCTL="systemctl"
+    if [ "$(id -u)" != "0" ] && command -v sudo >/dev/null 2>&1; then SCTL="sudo -n systemctl"; fi
     if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q "$SERVICE"; then
-        systemctl restart "$SERVICE" 2>>"$LOG" && return 0
-        # 某些 WebHook 插件以 www 用户运行，systemctl 需要 root —— 再试一次免密 sudo
-        if [ "$(id -u)" != "0" ] && command -v sudo >/dev/null 2>&1; then
-            sudo -n systemctl restart "$SERVICE" 2>>"$LOG" && { log "已通过 sudo systemctl 重启"; return 0; }
-        fi
-        # 走到这里多半是端口被游离进程占着（上次直启留下的），清掉后用 systemd 再拉一次。
-        # 不要直接退回 nohup，否则会不断产生新的游离进程，systemd 永远接管不回来。
-        log "⚠ systemctl 重启失败，清理端口占用后重试"
-        # 非 root（宝塔 WebHook 以 www 运行）时连 stop/start 也要走 sudo，否则一律失败
-        SCTL="systemctl"
-        if [ "$(id -u)" != "0" ] && command -v sudo >/dev/null 2>&1; then SCTL="sudo -n systemctl"; fi
+        # ⚠️ 不能指望 systemctl restart 自己搞定端口。端口若被上次 nohup 直启的游离进程占着，
+        # systemd 那份会 EADDRINUSE：旧代码不退出（restart 还返回成功 → 部署「假成功」，线上仍是旧进程），
+        # 新代码直接退出（连续失败会触发 start-limit，单元被打进 failed，之后 start 全被拒）。
+        # 所以每次都主动：停服 → 清空端口 → reset-failed → 启动。
+        log "停服并清空 ${PORT}（避免游离进程抢占导致 systemd 起不来）"
         $SCTL stop "$SERVICE" 2>/dev/null
         kill_port_holders
         sleep 1
-        $SCTL start "$SERVICE" 2>>"$LOG" && { log "已通过 systemctl 重启（清理端口后）"; return 0; }
+        $SCTL reset-failed "$SERVICE" 2>/dev/null
+        if $SCTL start "$SERVICE" 2>>"$LOG"; then
+            log "已通过 systemctl 重启（已先清空 ${PORT}）"
+            return 0
+        fi
         log "✗ systemctl 仍无法启动，日志：journalctl -u $SERVICE -n 20"
         if [ "$(id -u)" != "0" ]; then
             log "   多半是权限问题（WebHook 以 $(id -un) 运行）。放行办法（root 执行一次）："
