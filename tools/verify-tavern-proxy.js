@@ -190,6 +190,14 @@ function getUserByToken(req) {
         // 没有 Referer 时不能一律接管：游戏磁盘上真有的文件仍归游戏
         check('无 Referer 但游戏磁盘上有该文件 → 不接管', (await probe('/index.html', null)) === false);
         check('无 Referer 且游戏没有该文件 → 接管', (await probe('/lib/select2.min.js', null)) === true);
+        // ST 的 Handlebars 模板：运行时 fetch /scripts/templates/<id>.html（硬编码在
+        // public/scripts/templates.js 里，不在 index.html 中，HTML 改写够不着）。
+        // 兜底清单少了 .html 就会编译失败 → 前端报 "Error rendering template"。
+        check('ST 的 /scripts/templates/*.html 模板会兜底（Referer 来自酒馆）',
+            (await probe('/scripts/templates/character_select.html', REF)) === true);
+        check('ST 的模板在 Referer 被剥掉时也兜底',
+            (await probe('/scripts/templates/character_select.html', null)) === true);
+        check('游戏自己的 .html 不被误伤', (await probe('/index.html', GAME_REF)) === false);
     }
 
     console.log('\n[6] 票的签发/校验往返');

@@ -670,10 +670,13 @@ async function proxyRequest(req, res, deps, opts) {
 // 以及登录/登出时的 location='/login'。这些请求不带 /tavern 前缀，会直接落到游戏服务上
 // 变成 404「API 不存在」—— 表现为「页面能开但一片空白 / 一直在登录页打转」。
 // 这里把「来自酒馆页面的请求」在路由未命中时转给 ST。
-const FALLBACK_PATHS = ['/api/', '/socket.io/', '/login', '/login.html', '/manifest.json', '/sw.js'];
+const FALLBACK_PATHS = ['/api/', '/socket.io/', '/login', '/login.html', '/manifest.json', '/sw.js', '/scripts/'];
 // CSS/JS 里写的 url(/img/xxx.png) 这类根绝对路径没法靠改 HTML 覆盖（只读 HTML 不改写 CSS），
 // 浏览器会直接打到站点根 → 404。来自酒馆页的静态资源一律转给 ST。
-const FALLBACK_EXT = /\.(css|js|mjs|map|json|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf|mp3|wav|ogg|mp4|webm|glb|gltf)(\?|$)/i;
+// ⚠️ html 必须有：ST 的 Handlebars 模板是运行时 fetch 的 `/scripts/templates/<id>.html`
+//    （在 public/scripts/templates.js 里硬编码，不在 index.html 里，改写 HTML 够不着）。
+//    少了它就编译失败 → 前端报 "Error rendering template"。
+const FALLBACK_EXT = /\.(css|js|mjs|map|json|html?|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf|mp3|wav|ogg|mp4|webm|glb|gltf)(\?|$)/i;
 
 // 判据一：Referer 来自 /tavern/（iframe 里发出的请求一定是这个）。
 // ⚠️ 但实测 Referer 可能被剥掉（隐私插件 / Clash 这类本地代理会发 no-referrer），
