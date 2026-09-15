@@ -50,6 +50,19 @@ function startFakeST() {
             res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
             res.end('ST_SEES:' + req.url);
         });
+        // WebSocket：既能正常握手，也能按 URL 里的 refuse 标记回一个普通 403
+        // （后者用来验证网关不会把非 101 的响应吞掉）
+        srv.on('upgrade', (req, sock) => {
+            if (String(req.url).indexOf('refuse') >= 0) {
+                sock.write('HTTP/1.1 403 Forbidden\r\nContent-Length: 9\r\nConnection: close\r\n\r\nForbidden');
+                return sock.end();
+            }
+            const accept = require('crypto').createHash('sha1')
+                .update(String(req.headers['sec-websocket-key']) + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
+                .digest('base64');
+            sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n'
+                + 'Sec-WebSocket-Accept: ' + accept + '\r\n\r\n');
+        });
         srv.listen(0, '127.0.0.1', () => resolve(srv));
     });
 }
@@ -221,6 +234,41 @@ function getUserByToken(req) {
         const rv = await call(Tavern, DB, '/version', { cookie: 'to_tavern=' + ticket, referer: REF, fallback: true });
         check('/version 真的转发到 ST（路径没被截断）',
             rv.status === 200 && rv.body.includes('ST_SEES:/version'), rv.status + ' ' + rv.body.slice(0, 60));
+    }
+
+    console.log('\n[9] WebSocket 升级：上游不回 101 时必须把响应回吐（不能让客户端干等到超时）');
+    {
+        const { EventEmitter } = require('events');
+        const gw = new EventEmitter();
+        Tavern.attachUpgrade(gw, { getUserByToken, DB });
+
+        const tryUpgrade = (pathname, cookie) => new Promise(resolve => {
+            const sock = new PassThrough();
+            const chunks = [];
+            sock.on('data', d => chunks.push(d));
+            const req = {
+                method: 'GET', url: pathname,
+                headers: Object.assign({
+                    connection: 'Upgrade', upgrade: 'websocket',
+                    'sec-websocket-key': 'dGhlIHNhbXBsZSBub25jZQ==', 'sec-websocket-version': '13',
+                }, cookie ? { cookie } : {}),
+            };
+            gw.emit('upgrade', req, sock, Buffer.alloc(0));
+            setTimeout(() => resolve(Buffer.concat(chunks).toString('utf8')), 400);
+        });
+
+        const ticket = Tavern.signTicket(DB, 'u1');
+        const ok101 = await tryUpgrade('/socket.io/?EIO=4&transport=websocket', 'to_tavern=' + ticket);
+        check('上游正常时握手透传 101', ok101.indexOf('101 Switching Protocols') >= 0, JSON.stringify(ok101.slice(0, 80)));
+        check('Sec-WebSocket-Accept 一并带回（否则浏览器会拒绝握手）', /Sec-WebSocket-Accept:/i.test(ok101));
+
+        // 反向验证：把 bug 注入回去（只监听 upgrade 事件）就是这段 Ø 字节的元凶
+        const refused = await tryUpgrade('/socket.io/?EIO=4&transport=websocket&refuse=1', 'to_tavern=' + ticket);
+        check('上游回 403 时必须回吐给客户端，不能吞掉让他干等',
+            refused.indexOf('HTTP/1.1 403') === 0, JSON.stringify(refused.slice(0, 80)));
+
+        const noCred = await tryUpgrade('/socket.io/?EIO=4&transport=websocket', null);
+        check('没有入馆票 → 401，不能放行', noCred.indexOf('401') >= 0, JSON.stringify(noCred.slice(0, 60)));
     }
 
     console.log('\n[6] 票的签发/校验往返');

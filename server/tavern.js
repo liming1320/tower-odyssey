@@ -774,6 +774,24 @@ function attachUpgrade(server, deps) {
                 if (phead && phead.length) socket.write(phead);
                 psock.pipe(socket); socket.pipe(psock);
             });
+            // ⚠ 上游**没有**回 101 时必须把它的响应原样回吐（2026-09-15 线上坑）：
+            //   只监听 'upgrade' 的话，一旦 ST 返回普通响应（403：会话没建立 / IP 不在白名单），
+            //   网关一个字节都不写，客户端只能死等到超时 —— 表现为 socket.io 一直 pending、
+            //   页面卡在「正在初始化」的齿轮上，而 Network 面板里那条请求既不红也不成功。
+            proxyReq.on('response', pres => {
+                console.warn('[tavern] WS 握手被上游拒绝：' + pres.statusCode + ' ' + (pres.statusMessage || '') + ' —— 通常意味着 ST 会话没建立或 IP 不在白名单');
+                const head = ['HTTP/1.1 ' + pres.statusCode + ' ' + (pres.statusMessage || '')];
+                for (const k of Object.keys(pres.headers)) {
+                    if (HOP_BY_HOP.has(k.toLowerCase()) || k.toLowerCase() === 'content-length') continue;
+                    head.push(k + ': ' + pres.headers[k]);
+                }
+                head.push('', '');
+                try {
+                    socket.write(head.join('\r\n'));
+                    pres.on('data', c => socket.write(c));
+                    pres.on('end', () => socket.end());
+                } catch (e) { try { socket.destroy(); } catch (_) { } }
+            });
             proxyReq.on('error', () => { try { socket.destroy(); } catch (e) { } });
             proxyReq.end();
         } catch (e) { try { socket.destroy(); } catch (_) { } }
