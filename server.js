@@ -4060,6 +4060,10 @@ const server = http.createServer(async (req, res) => {
         if (pathname.startsWith('/api/')) {
             const key = req.method + ' ' + pathname;
             const handler = api[key];
+            // 游戏没有这条路由时，先给酒馆兜底（ST 前端发的 /api/... 是站点根绝对路径）。
+            // ⚠️ 必须排在 readBody 之前：proxyRequest 靠 req.pipe(上游) 转发，
+            //    一旦 readBody 先把流读完，POST 的 body 就丢了（表现为写操作全是空）。
+            if (!handler && await Tavern.fallbackRequest(req, res, { getUserByToken, DB })) return;
             // 原始二进制流式接口（handler 自己落盘，不能过 readBody 的 JSON 解析）：
             //   ROM 上传 / BIOS 上传 / 云存档上传
             // ⚠️ 新增这类接口必须同步加进下面的 RAW_BODY_API 集合，
@@ -4079,6 +4083,8 @@ const server = http.createServer(async (req, res) => {
         if (pathname === Tavern.PREFIX || pathname.startsWith(Tavern.PREFIX + '/')) {
             return Tavern.proxyRequest(req, res, { getUserByToken, DB });
         }
+        // 非 /api 的站点根绝对路径（ST 的 /socket.io 轮询、/login 落地页等）也要兜底
+        if (await Tavern.fallbackRequest(req, res, { getUserByToken, DB })) return;
         serveStatic(req, res, pathname);
     } catch (e) {
         // sendJson 本身也可能抛（响应已发出 / 连接已断），这里必须兜住，

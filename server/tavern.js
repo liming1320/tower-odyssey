@@ -23,6 +23,20 @@ const PREFIX = '/tavern';
 // Authelia 通道的标准请求头；不同版本可能读 Remote-User / X-Forwarded-User，两个都发更稳
 const SSO_HEADERS = ['remote-user', 'x-remote-user', 'x-forwarded-user'];
 
+// ST 的页面里有 <base href="/">，于是 style.css / css/*.css / js/*.js 这些相对引用
+// 全被浏览器解析到站点根路径 —— 可酒馆是挂在 /tavern 子路径下的，结果就是 /style.css 404。
+// 这里把文档里的根绝对路径改写成 /tavern 前缀，并把 <base> 指到 /tavern/。
+function rewriteHtmlPaths(html) {
+    let s = html;
+    // 标签属性里的绝对路径：<link href="/css/x.css">、<script src="/js/x.js">、<a href="/login">
+    // (?!\/) 用来排除协议相对路径 //example.com，避免改成 /tavern//example.com
+    s = s.replace(/\b(href|src|action)=(["'])\/(?!\/)/gi, '$1=$2' + PREFIX + '/');
+    // <base> 必须指向 /tavern/，否则所有相对路径仍然从站点根解析
+    if (/<base\b/i.test(s)) s = s.replace(/<base\b[^>]*>/i, '<base href="' + PREFIX + '/">');
+    else s = s.replace(/<head\b([^>]*)>/i, '<head$1><base href="' + PREFIX + '/">');
+    return s;
+}
+
 // ==================================================================
 // 配置（支持热更新：管理后台改完立即生效，不需要重启服务）
 //
@@ -396,22 +410,38 @@ async function userExists(handle) {
     return { ok: true, exists: got.list.some(u => u && u.handle === handle) };
 }
 
+// 开号结果缓存：proxyRequest 对**每个**请求（含 css/js 等静态资源）都会走这里，
+// 不缓存的话每刷一张图就要「管理员登录 + 拉一次用户列表」，ST 会被打爆、页面也卡。
+// 只缓存成功结果；失败不缓存，下次仍会重试。
+const _provCache = new Map();   // handle -> { handle, ts }
+const PROV_TTL = 5 * 60 * 1000;
+function invalidateProv(handle) { _provCache.delete(handle); }
+
 async function ensureUser(username, displayName) {
     const handle = slugifyHandle(username);
     if (!handle) return { ok: false, msg: '用户名无法转成合法 ST handle' };
+    const hit = _provCache.get(handle);
+    if (hit && Date.now() - hit.ts < PROV_TTL) return { ok: true, handle, created: false, cached: true };
     const s = await adminSession();
     if (!s.ok) return { ok: false, msg: s.msg };
     const ex = await userExists(handle);
-    if (ex.ok && ex.exists) return { ok: true, handle, created: false };
+    if (ex.ok && ex.exists) {
+        _provCache.set(handle, { handle, ts: Date.now() });
+        return { ok: true, handle, created: false };
+    }
     if (!ex.ok) return { ok: false, msg: ex.msg };
 
     // stPost 内部会先取一次性 CSRF token 再 POST（不设 password：账号只能经由本网关的
     // SSO 头登录，堵住「直接拿密码进 ST」这条路）
     const created = await stPost(s, '/api/users/create', { handle, name: displayName || handle });
-    if (created.status === 409) return { ok: true, handle, created: false };
+    if (created.status === 409) {
+        _provCache.set(handle, { handle, ts: Date.now() });
+        return { ok: true, handle, created: false };
+    }
     if (created.status !== 200 && created.status !== 201) {
         return { ok: false, msg: 'ST 建号失败（' + created.status + '）' + (created.json && created.json.error ? '：' + created.json.error : '') };
     }
+    _provCache.set(handle, { handle, ts: Date.now() });
     return { ok: true, handle, created: true };
 }
 
@@ -515,7 +545,8 @@ function tavern401Page() {
         + '</script></body></html>';
 }
 
-async function proxyRequest(req, res, deps) {
+// opts.rest：直接指定转发给 ST 的路径（用于「ST 前端绝对路径回退」，见 fallbackRequest）
+async function proxyRequest(req, res, deps, opts) {
     const user = resolveUser(req, deps);
     if (!user) {
         // 自愈：本页与游戏同源，localStorage 里的 game-token 读得到，
@@ -541,7 +572,7 @@ async function proxyRequest(req, res, deps) {
     const prov = await ensureUser(user.username, user.username);
     if (!prov.ok) console.error('[tavern] 自动开通 ST 账号失败：' + prov.msg);
 
-    const rest = req.url.slice(PREFIX.length) || '/';
+    const rest = (opts && opts.rest) || (req.url.slice(PREFIX.length) || '/');
     // ?token= 只用于鉴权（旧服务端兼容路径），绝不能透传给上游 —— 否则令牌会落进 ST 的访问日志
     let restPath = rest, restQuery = '';
     const qi = rest.indexOf('?');
@@ -592,6 +623,24 @@ async function proxyRequest(req, res, deps) {
             if (ssoHandle) {
                 cookies.push('to_tavern=' + signTicket(deps.DB, user.id) + '; Path=/; HttpOnly; SameSite=Lax');
             }
+            // HTML 文档要改写路径（<base href="/"> 会让所有资源都跑到站点根去 → 404），
+            // 所以只能缓冲下来改完再发；其它类型（css/js/图片…）原样流式转发
+            const ctype = String(ures.headers['content-type'] || '');
+            if (ctype.indexOf('text/html') >= 0) {
+                delete outHeaders['content-encoding'];
+                delete outHeaders['content-length'];
+                const chunks = [];
+                ures.on('data', c => chunks.push(c));
+                ures.on('end', () => {
+                    if (sent) return;
+                    const buf = Buffer.from(rewriteHtmlPaths(Buffer.concat(chunks).toString('utf8')), 'utf8');
+                    outHeaders['content-length'] = String(buf.length);
+                    res.writeHead(ures.statusCode, Object.assign(outHeaders, { 'Set-Cookie': cookies }));
+                    res.end(buf);
+                    sent = true;
+                });
+                return;
+            }
             res.writeHead(ures.statusCode, Object.assign(outHeaders, { 'Set-Cookie': cookies }));
             ures.pipe(res);
             sent = true;
@@ -609,11 +658,40 @@ async function proxyRequest(req, res, deps) {
     }
 }
 
+// ------------------------------------------------------------------ 绝对路径回退
+// ST 前端大量使用站点根的绝对路径：fetch('/api/settings/get')、io() → /socket.io/、
+// 以及登录/登出时的 location='/login'。这些请求不带 /tavern 前缀，会直接落到游戏服务上
+// 变成 404「API 不存在」—— 表现为「页面能开但一片空白 / 一直在登录页打转」。
+// 这里把「来自酒馆页面的请求」在路由未命中时转给 ST。
+// 判据用 Referer（iframe 里发出的请求一定带 /tavern/），游戏自己的请求不会被误伤。
+const FALLBACK_PATHS = ['/api/', '/socket.io/', '/login', '/login.html', '/manifest.json', '/sw.js'];
+function tavernFallbackPath(req) {
+    if (!enabledNow()) return null;
+    const url = String(req.url || '');
+    const qi = url.indexOf('?');
+    const p = qi >= 0 ? url.slice(0, qi) : url;
+    if (!FALLBACK_PATHS.some(x => p === x.replace(/\/$/, '') || p.startsWith(x))) return null;
+    const ref = String(req.headers.referer || '');
+    const fromTavern = ref.indexOf(PREFIX + '/') >= 0 || ref.endsWith(PREFIX);
+    if (!fromTavern) return null;
+    return url;
+}
+// 返回 true 表示已被酒馆接管，调用方不要再走自己的 404
+async function fallbackRequest(req, res, deps) {
+    const rest = tavernFallbackPath(req);
+    if (!rest) return false;
+    await proxyRequest(req, res, deps, { rest });
+    return true;
+}
+
 // WebSocket 透传（ST 的 socket.io 走长连接，缺了它页面能开但收发消息卡死）
 function attachUpgrade(server, deps) {
     server.on('upgrade', (req, socket, head) => {
         if (!enabledNow()) return;
-        if (!String(req.url || '').startsWith(PREFIX)) return;
+        const url0 = String(req.url || '');
+        // socket.io 的握手是站点根的绝对路径（/socket.io/?EIO=4…），不带 /tavern 前缀
+        const isPrefix = url0.startsWith(PREFIX);
+        if (!isPrefix && !url0.startsWith('/socket.io/')) return;
         const ck = parseCookies(req.headers.cookie);
         const uid = verifyTicket(deps.DB, ck.to_tavern);
         const stCk = Object.keys(ck).some(k => /^connect\.sid$|^sillytavern/i.test(k));
@@ -622,7 +700,7 @@ function attachUpgrade(server, deps) {
             socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n');
             return socket.destroy();
         }
-        const rest = req.url.slice(PREFIX.length) || '/';
+        const rest = isPrefix ? (url0.slice(PREFIX.length) || '/') : url0;
         const base = pickUrl();
         try {
             const up = new URL(base.base + rest);
@@ -703,7 +781,7 @@ async function scanPorts(from, to) {
 
 module.exports = {
     PREFIX,
-    proxyRequest, attachUpgrade, status, ensureUser, adminSession,
+    proxyRequest, fallbackRequest, tavernFallbackPath, attachUpgrade, status, ensureUser, adminSession, invalidateProv,
     signTicket, verifyTicket, slugifyHandle,
     // 配置热更新（管理后台用）
     getConfig: publicConfig, configure, reload, testConnection, scanPorts, listHandles,

@@ -39,6 +39,14 @@ function startFakeST() {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 return res.end(JSON.stringify({ token: 'faketoken' }));
             }
+            // 模拟 ST 的 index.html：<base href="/"> + 相对/绝对混用的资源引用
+            if (req.url === '/page') {
+                res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+                return res.end('<html><head><base href="/">'
+                    + '<link rel="stylesheet" href="style.css">'
+                    + '<link href="/css/x.css" rel="stylesheet">'
+                    + '</head><body>hi</body></html>');
+            }
             res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
             res.end('ST_SEES:' + req.url);
         });
@@ -47,13 +55,14 @@ function startFakeST() {
 }
 
 // ------------------------------------------------------------------ 驱动 proxyRequest
-function call(Tavern, DB, url, { cookie, auth } = {}) {
+function call(Tavern, DB, url, { cookie, auth, referer, method, fallback } = {}) {
     const req = new PassThrough();
-    req.method = 'GET';
+    req.method = method || 'GET';
     req.url = url;
     req.headers = {};
     if (cookie) req.headers.cookie = cookie;
     if (auth) req.headers.authorization = 'Bearer ' + auth;
+    if (referer) req.headers.referer = referer;
 
     const res = new PassThrough();
     let status = 0, headers = {};
@@ -62,7 +71,8 @@ function call(Tavern, DB, url, { cookie, auth } = {}) {
     res.on('data', d => chunks.push(d));
     const done = new Promise(r => res.on('end', r));
 
-    Tavern.proxyRequest(req, res, { getUserByToken, DB });
+    // fallback=true 走「站点根绝对路径回退」入口（server.js 里路由未命中时调的那个）
+    (fallback ? Tavern.fallbackRequest : Tavern.proxyRequest)(req, res, { getUserByToken, DB });
     req.end();
     return done.then(() => ({ status, headers, body: Buffer.concat(chunks).toString('utf8') }));
 }
@@ -101,9 +111,9 @@ function getUserByToken(req) {
     console.log('\n[2] 带有效入馆票 cookie → 放行并真的代理到上游');
     {
         const ticket = Tavern.signTicket(DB, 'u1');
-        const r = await call(Tavern, DB, '/tavern/', { cookie: 'to_tavern=' + ticket });
+        const r = await call(Tavern, DB, '/tavern/plain', { cookie: 'to_tavern=' + ticket });
         check('返回 200', r.status === 200, 'status=' + r.status);
-        check('内容来自上游 ST', r.body.includes('ST_SEES:/'), r.body.slice(0, 80));
+        check('内容来自上游 ST', r.body.includes('ST_SEES:/plain'), r.body.slice(0, 80));
     }
 
     console.log('\n[3] 旧服务端兜底：?token= 能进，但令牌不能透传给上游');
@@ -139,6 +149,37 @@ function getUserByToken(req) {
         await call(Tavern, DB, '/tavern/', { cookie: 'to_tavern=' + ticket });
         const last = seen[seen.length - 1];
         check('注入了 remote-user 头', last && last.headers['remote-user'] === 'liming1320', last && last.headers['remote-user']);
+    }
+
+    console.log('\n[7] HTML 路径重写：<base href="/"> 会让所有资源跑到站点根（/style.css 404）');
+    {
+        const ticket = Tavern.signTicket(DB, 'u1');
+        const r = await call(Tavern, DB, '/tavern/page', { cookie: 'to_tavern=' + ticket });
+        check('返回 200', r.status === 200, 'status=' + r.status);
+        check('<base> 指向 /tavern/', r.body.includes('<base href="/tavern/">'), r.body.slice(0, 120));
+        check('绝对路径补上 /tavern 前缀', r.body.includes('href="/tavern/css/x.css"'), r.body.slice(0, 200));
+        check('相对路径原样保留（交给 base 解析）', r.body.includes('href="style.css"'));
+    }
+
+    console.log('\n[8] 站点根绝对路径回退：ST 的 fetch(\'/api/...\') 不带 /tavern 前缀');
+    {
+        const ticket = Tavern.signTicket(DB, 'u1');
+        const REF = 'http://127.0.0.1:5180/tavern/';
+        seen.length = 0;
+        const r1 = await call(Tavern, DB, '/api/settings/get', { cookie: 'to_tavern=' + ticket, referer: REF, fallback: true });
+        check('来自酒馆页的 /api/ → 原样转发给 ST（路径不能被截断）',
+            r1.status === 200 && r1.body.includes('ST_SEES:/api/settings/get'), r1.status + ' ' + r1.body.slice(0, 80));
+
+        const probe = (url, referer) => {
+            const req = new PassThrough();
+            req.method = 'GET'; req.url = url; req.headers = referer ? { referer } : {};
+            const res = new PassThrough(); res.writeHead = () => res;
+            const p = Tavern.fallbackRequest(req, res, { getUserByToken, DB });
+            req.end();
+            return p;
+        };
+        check('游戏自己的 /api/（无酒馆 Referer）不被误伤', (await probe('/api/heroes/list', null)) === false);
+        check('酒馆页发出的 /socket.io 轮询也会兜底', (await probe('/socket.io/?EIO=4', REF)) === true);
     }
 
     console.log('\n[6] 票的签发/校验往返');

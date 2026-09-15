@@ -90,24 +90,38 @@ listen: false                 # ← 保持 false！同机部署不需要监听�
 whitelistMode: true           # 默认值，同机部署不用动
 ```
 
-再补一段 `sso`（文件里没有就加在末尾，**缩进用空格，不要用 Tab**）：
+再打开 SSO。**注意：ST 的 config.yaml 默认就带着 `sso:` 段，只是 `autheliaAuth: false`**
+—— 所以「没有 sso 段就追加」的做法永远不生效（这个坑真实发生过：配置看着改了，
+玩家还是一直被踢回登录页）。必须**就地把已有那行改成 true**：
 
 ```yaml
 sso:
-  autheliaAuth: true
+  autheliaAuth: true        # ← 必须是 true，网关发的 Remote-User 头才会被 ST 采纳
+  authentikAuth: false
   trustedProxies:
-    - 127.0.0.1
     - ::1
+    - 127.0.0.1             # ← 网关同机部署，请求 IP 就是它；缺了会被判成不可信代理
 ```
 
 ### 用 sed 一行搞定（不想开编辑器的话）
 
 ```bash
-cd /www/wwwroot/SillyTavern
+cd /www/SillyTavern
 cp config.yaml config.yaml.bak
 sed -i -E 's/^([[:space:]]*enableUserAccounts[[:space:]]*:[[:space:]]*).*/\1true/' config.yaml
-grep -n "enableUserAccounts" config.yaml      # 确认改成了 true
+sed -i -E 's/^([[:space:]]*autheliaAuth[[:space:]]*:[[:space:]]*).*/\1true/' config.yaml
+grep -nE 'enableUserAccounts|autheliaAuth|trustedProxies' config.yaml
+# 期望看到：enableUserAccounts: true  /  autheliaAuth: true
 ```
+
+改完**必须重启 ST**才生效（下一步）。三个条件缺一不可：
+
+| 条件 | 缺了会怎样 |
+|---|---|
+| `enableUserAccounts: true` | ST 没有多用户，登录/建号接口直接 404 |
+| `sso.autheliaAuth: true` | ST **忽略**网关发的 `Remote-User` 头 → 玩家被踢回 `/login` |
+| `sso.trustedProxies` 含 `127.0.0.1` | ST 日志刷 `Received Remote-User header from untrusted IP` |
+| ST 里已存在同名（小写）账号 | Authelia 通道**不会自动建号**，网关负责提前开好 |
 
 ---
 
@@ -285,6 +299,8 @@ journalctl -u tower-odyssey -n 30 --no-pager
 | 报 **429** | 失败太多次被限流 | 等 1 分钟；或 `rateLimiting.accountsLoginMaxAttempts` |
 | 「连不上 SillyTavern」 | ST 没起 / 端口不是 8000 | 第 4 步；`ss -lntp \| grep 8000` |
 | 玩家进酒馆要重新登录 | SSO 头没被信任 | 确认 `sso.trustedProxies` 含 `127.0.0.1` 且 `autheliaAuth: true` |
+| `/tavern/` 302 到 `/tavern/login` 然后卡住 | `autheliaAuth` 还是 `false`（ST 默认就有 sso 段且为 false） | 第 2 步的 sed，改完**重启 ST** |
+| 登录页样式全丢 / `http://…/style.css` 404 | ST 页面里的 `<base href="/">` 把相对资源指到了站点根 | 网关会自动改写成 `/tavern/`，若仍出现说明服务端是旧代码 → `git pull` + 重启 |
 | 玩家能开页面但消息发不出去 | WebSocket 没透传 | 必须走 `/tavern` 前缀，别直连 8000 |
 
 ---

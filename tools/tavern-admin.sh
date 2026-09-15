@@ -90,7 +90,11 @@ cmd_detect() {
     else
         echo "$cands" | while read -r f; do
             echo "  📄 $f"
-            grep -nE '^[[:space:]]*(enableUserAccounts|listen|whitelistMode|port)[[:space:]]*:' "$f" 2>/dev/null | sed 's/^/       /'
+            grep -nE '^[[:space:]]*(enableUserAccounts|listen|whitelistMode|port|autheliaAuth)[[:space:]]*:|^[[:space:]]*trustedProxies[[:space:]]*:' "$f" 2>/dev/null | sed 's/^/       /'
+            # SSO 关着 = ST 完全忽略网关发的 Remote-User 头 → 玩家一直被踢回登录页，
+            # 但网关日志一切正常，极难排查。这里必须显式报警。
+            grep -qE '^[[:space:]]*autheliaAuth[[:space:]]*:[[:space:]]*true' "$f" 2>/dev/null \
+                || echo "       ⚠ sso.autheliaAuth 不是 true：SSO 未启用，玩家会被 ST 踢回登录页。修：$0 config $(dirname "$f")"
         done
     fi
 
@@ -133,7 +137,9 @@ cmd_detect() {
 
     echo
     echo "━━ 下一步 ━━"
-    echo "  ① 确认第 3 步里 enableUserAccounts 是 true（是 false 就跑：$0 config <ST目录>）"
+    echo "  ① 确认第 3 步里 enableUserAccounts=**true** 且 sso.autheliaAuth=**true**"
+    echo "     （前者是 false → 多用户没开；后者是 false → SSO 没开，玩家照样被踢回登录页。"
+    echo "       两个都缺就跑：$0 config <ST目录>，它会一次改好并自动备份原文件）"
     echo "  ② 按第 2 步「⇒」指出的方式重启 SillyTavern（**只能选一种守护**）："
     echo "       $0 restart    ← 推荐：自动识别 PM2 / systemd，PM2 不在 PATH 也能用"
     echo "       $0 logs       ← 读控制台输出（找验证码用），同样不需要 pm2 命令"
@@ -160,11 +166,44 @@ cmd_config() {
     if grep -qE '^[[:space:]]*enableUserAccounts[[:space:]]*:' "$f"; then
         sed -i -E 's/^([[:space:]]*enableUserAccounts[[:space:]]*:[[:space:]]*).*/\1true/' "$f"
     else
-        printf '\n# 多用户模式（塔界远征网关需要）\nenableUserAccounts: true\n' >> "$f"
+        # 用 heredoc 而不是 printf '\n...'：后者在某些 shell（Windows 的 Git Bash）
+        # 里 \n 会被当路径分隔符转成字面 /n，配置文件直接写坏
+        cat >> "$f" <<'EOF'
+
+# 多用户模式（塔界远征网关需要）
+enableUserAccounts: true
+EOF
     fi
 
-    if ! grep -qE '^[[:space:]]*sso[[:space:]]*:' "$f"; then
-        printf '\nsso:\n  autheliaAuth: true\n  trustedProxies:\n    - 127.0.0.1\n    - ::1\n' >> "$f"
+    # ⚠️ ST 的 config.yaml **默认就带着 sso: 段**（autheliaAuth: false），
+    #    所以不能写成「没有 sso: 才追加」——那样永远走不进去，SSO 一直是关的，
+    #    表现就是网关发了 Remote-User 头、ST 却照样把人踢到登录页。
+    # 在 sso: 段下方插几行（用 awk 重建文件，不用 sed 的 a\ —— 后者在不同 sed 版本里
+    # 对行首空格和 \n 的转义处理不一致，实测会被塞到文件末尾）
+    insert_after_sso() {
+        awk -v ins="$1" '
+            /^[[:space:]]*sso[[:space:]]*:/ { print; n=split(ins, a, "|"); for (i=1;i<=n;i++) print a[i]; next }
+            { print }
+        ' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+    }
+    if grep -qE '^[[:space:]]*sso[[:space:]]*:' "$f"; then
+        if grep -qE '^[[:space:]]*autheliaAuth[[:space:]]*:' "$f"; then
+            sed -i -E 's/^([[:space:]]*autheliaAuth[[:space:]]*:[[:space:]]*).*/\1true/' "$f"
+        else
+            insert_after_sso '  autheliaAuth: true'
+        fi
+        # 没有 trustedProxies 就补一组（ST 只认来自可信代理的 SSO 头）
+        grep -qE '^[[:space:]]*trustedProxies[[:space:]]*:' "$f" || \
+            insert_after_sso '  trustedProxies:|    - 127.0.0.1|    - ::1'
+    else
+        cat >> "$f" <<'EOF'
+
+sso:
+  autheliaAuth: true
+  trustedProxies:
+    - 127.0.0.1
+    - ::1
+EOF
     fi
 
     echo "✓ 已改好，当前关键配置："
