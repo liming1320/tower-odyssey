@@ -184,16 +184,36 @@ csrf() {
 
 cmd_list() {
     echo "→ 列出 $ST_URL 的账号"
-    curl -fsS -X POST "$ST_URL/api/users/list" -H 'Content-Type: application/json' -d '{}' 2>/dev/null \
-    | python3 -c '
+    local tok; tok="$(csrf)" || exit 1   # 必须：ST 全局 CSRF 保护，裸 POST 一律返回 HTML 403
+
+    # -w 把 HTTP 状态码打出来，非 2xx 时把原始响应也吐出来，否则只能看到「不是 JSON」这种废话
+    local body code
+    body="$(curl -sS -w $'\n%{http_code}' -X POST "$ST_URL/api/users/list" \
+            -b "$JAR" -H "X-CSRF-Token: $tok" -H 'Content-Type: application/json' -d '{}' 2>&1)"
+    code="$(printf '%s' "$body" | tail -n1)"
+    body="$(printf '%s' "$body" | sed '$d')"
+
+    if [ "$code" != "200" ]; then
+        echo "✗ HTTP $code"
+        printf '%s' "$body" | head -c 400 | sed 's/^/    /'
+        echo
+        case "$code" in
+            404) echo "  → 404 = ST 没开多用户模式：config.yaml 的 enableUserAccounts 要为 true 并重启 ST" ;;
+            403) echo "  → 403 = CSRF 或 IP 白名单。确认 config.yaml 的 whitelist 含 127.0.0.1" ;;
+            429) echo "  → 429 = 被限流了，等一分钟再试" ;;
+        esac
+        return 1
+    fi
+
+    printf '%s' "$body" | python3 -c '
 import sys, json
 try: users = json.load(sys.stdin)
 except Exception:
-    print("（返回不是 JSON —— ST 没开多用户 / 地址不对 / 被 CSRF 拦了）"); sys.exit(0)
+    print("（返回不是 JSON，原始内容见上）"); sys.exit(0)
 if not users: print("⚠ 一个账号都没有。先把 config.yaml 的 enableUserAccounts 设为 true 并重启 ST。")
 for u in users:
     print("  %-20s 名称=%-16s 已设密码=%s" % (u.get("handle","?"), u.get("name",""), "是" if u.get("password") else "否"))
-' || echo "✗ 请求失败，先跑 '$0 detect' 确认 ST 在跑"
+'
 }
 
 cmd_passwd() {
