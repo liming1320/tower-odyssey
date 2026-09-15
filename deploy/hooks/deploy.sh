@@ -32,6 +32,24 @@ log "===== 开始部署 branch=$BRANCH (node $(node -v) @ $NODE_BIN) ====="
 
 cd "$APP_DIR" || { log "✗ 目录不存在：$APP_DIR"; exit 1; }
 
+# ---------- 0.5) 单实例 + 清理卡死的旧部署进程 ----------
+# 真事：部署脚本卡住不退出，每次 push 都堆一个新的，每个还带着一个 nohup 起的
+# server.js —— 十几个进程一起抢 5180，systemd 永远起不来。
+LOCK="/tmp/to-deploy.lock"
+exec 9>"$LOCK"
+if command -v flock >/dev/null 2>&1; then
+    flock -n 9 || { log "已有部署正在进行，本次跳过（避免并发抢端口）"; exit 0; }
+fi
+SELF="$$"
+ps -eo pid,etimes,cmd 2>/dev/null | grep "deploy/hooks/deploy.sh" | grep -v grep | while read -r p et _rest; do
+    case "$p" in ''|*[!0-9]*) continue ;; esac
+    [ "$p" = "$SELF" ] && continue
+    [ -n "$et" ] || continue
+    if [ "$et" -gt 600 ] 2>/dev/null; then
+        kill -9 "$p" 2>/dev/null && log "已清理卡死 ${et}s 的部署进程 $p"
+    fi
+done
+
 # ---------- 1) 存档保护（最高优先级）----------
 # data/db.json 是玩家数据。它曾经被 git 跟踪过，历史 commit 里仍有它，
 # 而 `git reset --hard` 会用仓库里的版本覆盖甚至删除它 —— 那样玩家数据就没了。
@@ -67,7 +85,8 @@ git config --global --add safe.directory "$APP_DIR" >/dev/null 2>&1
 OLD_SHA="$(git rev-parse HEAD 2>/dev/null)"
 log "当前版本：$OLD_SHA"
 
-if ! git fetch --all --quiet 2>>"$LOG"; then
+# timeout：网络/凭据异常时 git 可能无限期挂住，把部署进程永远留在进程表里
+if ! timeout 120 git fetch --all --quiet 2>>"$LOG"; then
     log "✗ git fetch 失败（SSH 公钥或令牌权限失效？）"; restore_db; exit 1
 fi
 # 注意 -f：db.json 曾被 git 跟踪，服务器上它必然被玩家数据改过，
@@ -138,7 +157,7 @@ log "服务已重启"
 OK=0
 for i in $(seq 1 20); do
     sleep 1
-    if curl -fsS "http://127.0.0.1:${PORT}/api/health" >>"$LOG" 2>&1; then OK=1; break; fi
+    if curl -fsS -m 5 "http://127.0.0.1:${PORT}/api/health" >>"$LOG" 2>&1; then OK=1; break; fi
 done
 
 if [ "$OK" = "1" ]; then
@@ -146,7 +165,7 @@ if [ "$OK" = "1" ]; then
     # 存储模式一致性检查：配了 data/db-env.json（MySQL）但服务跑在 json 模式，
     # 说明进程没拿到数据库配置（如游离 nohup 进程），会导致新玩家不进 MySQL —— 立刻告警。
     if [ -f "$APP_DIR/data/db-env.json" ]; then
-        if curl -fsS "http://127.0.0.1:${PORT}/api/health" 2>/dev/null | grep -q '"storage":"json'; then
+        if curl -fsS -m 5 "http://127.0.0.1:${PORT}/api/health" 2>/dev/null | grep -q '"storage":"json'; then
             log "☠⚠ 严重告警：data/db-env.json 已配置 MySQL，但服务正在 json 模式运行！"
             log "   新注册玩家会写进 data/db.json 而不是 MySQL。请执行：systemctl restart tower-odyssey"
         fi
@@ -160,7 +179,7 @@ git reset --hard "$OLD_SHA" --quiet 2>>"$LOG"
 restore_db
 restart_service
 sleep 3
-curl -fsS "http://127.0.0.1:${PORT}/api/health" >>"$LOG" 2>&1 \
+curl -fsS -m 5 "http://127.0.0.1:${PORT}/api/health" >>"$LOG" 2>&1 \
     && log "↩ 回滚完成，服务已恢复" \
     || log "☠ 回滚后仍不健康，请人工检查：$LOG"
 rm -f "$SNAP"

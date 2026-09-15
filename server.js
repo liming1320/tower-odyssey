@@ -4102,6 +4102,21 @@ Tavern.attachUpgrade(server, { getUserByToken, DB });
 // 现在改成：初始化失败也要监听端口（降级用本地 db.json 种子），
 //   保证站点永远可访问、/admin 永远能进去排错。再加一个 15 秒看门狗防 await 卡死。
 let _listening = false;
+// ⚠️ 监听失败必须让进程退出（2026-09-15 血的教训）：
+// 端口被占时如果只打日志不退出，会留下一个「活着但不服务」的僵尸进程 ——
+// systemd 显示 active (running)、Main PID 也在，实际 5180 上根本没有它，
+// 于是表现为「代码明明更新了，新接口却 404」。部署脚本每跑一次就多一个。
+// 退出后 systemd Restart=always 会自动重试，端口一空出来就能正常起来。
+server.on('error', e => {
+    console.error('[game] 端口 ' + PORT + ' 监听失败：' + ((e && e.code) || '') + ' ' + ((e && e.message) || e));
+    if (e && e.code === 'EADDRINUSE') {
+        console.error('[game] ' + PORT + ' 已被别的进程占用（常见：部署脚本 nohup 直启留下的游离进程）。');
+        console.error('[game] 查是谁：ss -lntp | grep ' + PORT + '   然后 kill -9 <pid>');
+        console.error('[game] 进程退出，交给 systemd 重试；端口空出来后会自动起来。');
+    }
+    try { flush(); } catch (_) { }
+    process.exit(1);
+});
 function startListen() {
     if (_listening) return;
     _listening = true;
