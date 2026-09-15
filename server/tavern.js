@@ -155,6 +155,24 @@ function cookiesToString(arr) {
     return (arr || []).map(c => String(c).split(';')[0]).join('; ');
 }
 
+// 把新的 Set-Cookie 合并进已有 cookie 串，按 name 去重（新的覆盖旧的）。
+// 不能简单 `old + '; ' + new`：登录后 ST 会下发同名的新 sid，两个同名 cookie 一起发出去时
+// 服务端取到的是**排在前面的旧值**，会话其实没生效 —— /api/users/me 直接 403，
+// 表现为「登录成功但说你不是管理员」，极难排查。
+function mergeCookies(baseStr, newArr) {
+    const map = new Map();
+    const eat = (s) => String(s || '').split(';').forEach(part => {
+        const i = part.indexOf('=');
+        if (i <= 0) return;
+        map.set(part.slice(0, i).trim(), part.slice(i + 1).trim());
+    });
+    eat(baseStr);
+    (newArr || []).forEach(c => eat(String(c).split(';')[0]));
+    let out = '';
+    map.forEach((v, k) => { out += (out ? '; ' : '') + k + '=' + v; });
+    return out;
+}
+
 // 把 ST 登录失败的 HTTP 状态码翻成「下一步该干什么」。
 // 只报「登录失败（401）」等于没说：管理员不知道是账号不存在、密码错、还是 ST 没开用户系统。
 // 状态码含义按 ST 官方 src/endpoints/users-public.js 对齐（只看数字会完全误判）：
@@ -269,8 +287,9 @@ async function adminSession(force) {
                 // 「Missing required fields」直接 400 —— 这是最容易踩的坑，改动前务必保持 handle
                 bodyBuf: Buffer.from(JSON.stringify({ handle: adminHandle(), password: adminPassword() })),
             });
-            // 会话 cookie 含 .sig 签名，必须整段原样回传，丢了就是 403
-            if (login.setCookie.length) cookie = cookie + '; ' + cookiesToString(login.setCookie);
+            // 会话 cookie 含 .sig 签名，必须整段原样回传，丢了就是 403；
+            // 且要用 mergeCookies 按名覆盖，别直接往后拼（同名旧 sid 会顶掉新的）
+            if (login.setCookie.length) cookie = mergeCookies(cookie, login.setCookie);
             if (login.status !== 200) {
                 _admin.ok = false;
                 // 把 ST 返回的 error 原文带上：「Incorrect credentials」是账号/密码问题，
@@ -281,13 +300,25 @@ async function adminSession(force) {
                 return _admin;
             }
             const me = await rawRequest('GET', base + '/api/users/me', { headers: { Cookie: cookie } });
-            let isAdmin = false;
-            try { isAdmin = !!JSON.parse(me.buffer.toString('utf8')).admin; } catch (e) { }
-            if (!isAdmin) {
+            let meJson = null;
+            try { meJson = JSON.parse(me.buffer.toString('utf8')); } catch (e) { }
+            // /me 返回 403 = 会话没生效（request.user 为空）：不是账号的问题，是 cookie 没传对。
+            // 这两者表现完全一样（都是 admin 取不到 true），必须分开报，否则会误导管理员去改账号。
+            if (me.status !== 200 || !meJson) {
                 _admin.ok = false;
-                _admin.msg = 'ST 账号 ' + adminHandle() + ' 不是管理员，无法通过官方接口建号。'
-                    + '请在 SillyTavern 里改用**第一个注册的账号**（ST 把首个注册者设为管理员），'
-                    + '或把后台「管理员句柄」改成那个账号名。';
+                _admin.msg = 'ST 已登录，但 /api/users/me 返回 ' + me.status
+                    + '（取不到登录态）。这是网关侧的会话 cookie 问题，不是账号问题。'
+                    + '先确认 ST 的 config.yaml 里 session/cookie 没被改成 https-only，再重试一次；'
+                    + '仍不行就重启 SillyTavern 让会话存储重置。';
+                return _admin;
+            }
+            if (!meJson.admin) {
+                _admin.ok = false;
+                _admin.msg = 'ST 账号「' + adminHandle() + '」不是管理员（/api/users/me 的 admin=false），'
+                    + '无法通过官方接口给玩家建号。'
+                    + '处理：在服务器上跑 `bash tools/tavern-admin.sh promote ' + adminHandle() + ' <ST目录>` '
+                    + '把它提升为管理员（会改 data/_storage 里的账号记录并重启 ST）；'
+                    + '或改用 ST 里第一个注册的账号当管理员句柄。';
                 return _admin;
             }
             _admin = { cookie, at: Date.now(), ok: true, msg: '' };

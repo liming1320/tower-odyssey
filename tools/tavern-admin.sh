@@ -12,6 +12,7 @@
 #   ./tools/tavern-admin.sh list                  # 列出 ST 里的账号（走 API）
 #   ./tools/tavern-admin.sh config <ST目录>       # 打开多用户模式（改 config.yaml，自动备份）
 #   ./tools/tavern-admin.sh passwd <handle>       # 用「找回密码」通道给账号设密码
+#   ./tools/tavern-admin.sh promote <handle> [ST目录]   # 把账号提升为管理员（改 data/_storage）
 #   ./tools/tavern-admin.sh logs [行数]           # 读 ST 控制台输出（找验证码用，不需要 pm2 命令）
 #   ./tools/tavern-admin.sh restart               # 重启 ST（不需要 pm2 命令）
 #
@@ -295,6 +296,54 @@ cmd_passwd() {
     echo "  然后点「保存并生效」。"
 }
 
+# =========================================================== 提升为管理员
+# ST 用 node-persist 把账号存在 data/_storage（每个 key 一个 JSON 文件），记录里有 admin 字段。
+# 没有管理员账号时 /api/users/create 根本调不动，只能直接改这条记录。
+cmd_promote() {
+    local handle="${1:-}" dir="${2:-}"
+    [ -n "$handle" ] || die "用法：$0 promote <handle> [SillyTavern目录]"
+
+    if [ -z "$dir" ]; then
+        for d in /www/SillyTavern /opt/SillyTavern /root/SillyTavern "$HOME/SillyTavern" /www/wwwroot/SillyTavern; do
+            [ -f "$d/server.js" ] && dir="$d" && break
+        done
+    fi
+    [ -n "$dir" ] || die "找不到 SillyTavern 目录，手动指定：$0 promote $handle /www/SillyTavern"
+
+    local store="$dir/data/_storage"
+    [ -d "$store" ] || die "没有 $store —— 这台不是 node-persist 版本的 ST，或目录不对"
+
+    echo "→ 在 $store 里找 handle=$handle 的账号记录"
+    node -e '
+const fs = require("fs"), p = require("path");
+const dir = process.argv[1], handle = process.argv[2];
+let found = 0;
+for (const f of fs.readdirSync(dir)) {
+  const fp = p.join(dir, f);
+  let d; try { d = JSON.parse(fs.readFileSync(fp, "utf8")); } catch (e) { continue; }
+  let rec = null, wrapped = false;
+  if (d && d.handle === handle) { rec = d; }
+  else if (d && d.value && d.value.handle === handle) { rec = d.value; wrapped = true; }
+  if (!rec) continue;
+  found++;
+  console.log("  " + fp);
+  console.log("    handle=" + rec.handle + " admin=" + rec.admin + " enabled=" + rec.enabled);
+  if (rec.admin === true) { console.log("    已经是管理员，不用改"); continue; }
+  const bak = fp + ".bak";
+  if (!fs.existsSync(bak)) fs.copyFileSync(fp, bak);
+  rec.admin = true;
+  const out = wrapped ? Object.assign({}, d, { value: rec }) : rec;
+  fs.writeFileSync(fp, JSON.stringify(out));
+  console.log("    ✓ admin 已改成 true（原文件备份在 " + bak + "）");
+}
+if (!found) { console.log("  ✗ 没找到 handle=" + handle + " 的账号记录"); process.exit(1); }
+' "$store" "$handle" || return 1
+
+    echo
+    echo "→ 改完必须重启 SillyTavern 才生效（账号在 ST 内存里有缓存）："
+    echo "    $0 restart"
+}
+
 # =========================================================== 找 pm2（常常不在 PATH 里）
 # 不要用 `find / -name pm2` —— 扫全盘太慢（几十秒到几分钟），下面这些都是 O(1) 的探测。
 find_pm2() {
@@ -412,6 +461,7 @@ case "${1:-}" in
     config)  cmd_config "${2:-}" ;;
     list)    cmd_list ;;
     passwd)  cmd_passwd "${2:-}" ;;
+    promote) cmd_promote "${2:-}" "${3:-}" ;;
     logs)    cmd_logs "${2:-60}" ;;
     restart) cmd_restart ;;
     *)       sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//' ;;
