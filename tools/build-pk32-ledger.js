@@ -17,10 +17,15 @@ const ledger = catalog.map(record => ({
   group: record.group,
   launcher: record.playable ? record.playable.gameId : record.module ? 'board' : record.casual ? 'casual' : record.action ? 'action' : record.strategy ? 'strategy' : record.card ? 'card' : record.puzzle ? 'puzzle' : record.variant ? 'variant' : null,
   launcherVerified: false,
+  assetsMigrated: false,
+  levelsMigrated: false,
+  rulesMigrated: false,
+  fullFlowMigrated: false,
   originalLevelsVerified: false,
   originalRulesVerified: false,
   originalAssetsVerified: false,
-  originalComplete: record.originalComplete === true,
+  fullFlowVerified: false,
+  originalComplete: false,
   evidence: record.evidence,
   notes: ''
 }));

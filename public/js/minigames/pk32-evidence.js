@@ -45,6 +45,8 @@
             const verificationItems = [['素材', record.verification.assetsVerified], ['关卡/回合', record.verification.levelsVerified], ['规则', record.verification.rulesVerified], ['完整流程', record.verification.fullFlowVerified]];
             add(facts, 'p', '', '内容迁移：' + migrationItems.map(item => item[0] + (item[1] ? '已迁移' : '待迁移')).join('；'));
             add(facts, 'p', '', '原版验证：' + verificationItems.map(item => item[0] + (item[1] ? '已验证' : '待验证')).join('；'));
+            add(facts, 'p', '', '内容迁移状态：' + (record.migrationComplete ? '迁移完成' : '尚未完成'));
+            add(facts, 'p', '', '原版验证状态：' + (record.verificationComplete ? '验证完成' : '尚未完成'));
         }
         add(facts, 'p', '', native && native.levelCount != null
             ? '原版关卡/回合证据：' + native.levelCount + '（' + (native.levelCountBasis || '来源待补充') + '）'
@@ -59,7 +61,7 @@
             add(facts, 'p', '', '载荷归属置信度：' + native.payloadAssignment.confidence + '（' + native.payloadAssignment.method + '）');
             (native.payloadAssignment.warnings || []).forEach(warning => add(facts, 'p', 'emu-tip', '归属警告：' + warning));
         }
-        add(facts, 'p', '', '当前阶段：原始证据已绑定；素材映射、状态规则和完整流程仍需验证。');
+        add(facts, 'p', '', '总完成状态：' + (record.originalComplete ? '内容迁移与原版验证均已完成' : '仅在内容迁移和原版验证都完成后标记为原版完成'));
 
         const help = native && Array.isArray(native.help) ? native.help : [];
         add(root, 'h3', '', '原程序文本证据');

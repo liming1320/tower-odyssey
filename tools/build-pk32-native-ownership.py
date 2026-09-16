@@ -272,6 +272,45 @@ def recover_control_dispatchers(data, image, known_addresses, object_addresses):
     return dispatchers
 
 
+def build_direct_call_graph(data, image):
+    engine = Cs(CS_ARCH_X86, CS_MODE_32)
+    engine.detail = True
+    code_start = image["nativeCodeStartRva"]
+    code_end = image["nativeCodeEndRva"]
+    graph = defaultdict(set)
+    for match in re.compile(re.escape(b"\xe8")).finditer(data, code_start, code_end - 4):
+        instruction = next(engine.disasm(data[match.start():match.start() + 5], image["imageBase"] + match.start()), None)
+        if instruction is None or instruction.mnemonic != "call" or instruction.size != 5:
+            continue
+        if not instruction.operands or instruction.operands[0].type != X86_OP_IMM:
+            continue
+        target_rva = (instruction.operands[0].imm & 0xFFFFFFFF) - image["imageBase"]
+        if not code_start <= target_rva < code_end:
+            continue
+        caller_rva = previous_prologue(data, code_start, match.start())
+        if caller_rva is not None:
+            graph[caller_rva].add(target_rva)
+    return graph
+
+
+def reachable_title_games(start_rvas, call_graph, title_games_by_function, max_depth=5):
+    queue = [(rva, 0) for rva in start_rvas]
+    visited = set()
+    matches = {}
+    while queue:
+        function_rva, depth = queue.pop(0)
+        if function_rva in visited or depth > max_depth:
+            continue
+        visited.add(function_rva)
+        for game in title_games_by_function.get(function_rva, []):
+            previous = matches.get(game["gameId"])
+            if previous is None or depth < previous["callDepth"]:
+                matches[game["gameId"]] = {**game, "titleFunctionRva": function_rva, "callDepth": depth}
+        if depth < max_depth:
+            queue.extend((target, depth + 1) for target in call_graph.get(function_rva, []))
+    return list(matches.values())
+
+
 def build(args):
     module_path = Path(args.module)
     catalog_path = Path(args.catalog)
@@ -286,12 +325,18 @@ def build(args):
 
     string_by_rva = {row["offset"]: row["text"] for row in strings}
     string_by_va = {image["imageBase"] + rva: text for rva, text in string_by_rva.items()}
+    exact_string_rvas = defaultdict(list)
+    for rva, text in string_by_rva.items():
+        exact_string_rvas[text].append(rva)
     payload_owners = defaultdict(list)
     title_owners = defaultdict(list)
+    menu_label_owners = defaultdict(list)
     payload_rows = []
     for game in catalog["records"]:
         if game.get("titleOffset") is not None:
-            title_owners[game["titleOffset"]].append({"gameId": game["id"], "name": game["name"]})
+            title_owners[game["titleOffset"]].append({"gameId": game["id"], "name": game["name"], "seedType": "window-title"})
+        for label_rva in exact_string_rvas.get(game["name"], []):
+            menu_label_owners[label_rva].append({"gameId": game["id"], "name": game["name"], "seedType": "menu-label"})
         for payload_index, payload in enumerate(game.get("nativePayloads") or []):
             rva = payload["offset"]
             payload_owners[rva].append({"gameId": game["id"], "name": game["name"], "payloadIndex": payload_index})
@@ -303,6 +348,9 @@ def build(args):
     title_addresses = {image["imageBase"] + rva for rva in title_owners}
     title_strings = {address: string_by_va[address] for address in title_addresses if address in string_by_va}
     title_code_refs = find_code_references(data, image, title_strings)
+    menu_label_addresses = {image["imageBase"] + rva for rva in menu_label_owners}
+    menu_label_strings = {address: string_by_va[address] for address in menu_label_addresses if address in string_by_va}
+    menu_label_code_refs = find_code_references(data, image, menu_label_strings)
     data_refs = find_aligned_data_references(data, image, payload_addresses)
     candidate_functions = {
         reference["functionRva"]
@@ -329,16 +377,19 @@ def build(args):
             "functionRva": function_rva,
             "games": list({row["gameId"]: row for row in owners}.values()),
         })
+    menu_label_reference_functions = []
+    for label_rva, owners in menu_label_owners.items():
+        functions = sorted({reference["functionRva"] for reference in menu_label_code_refs.get(image["imageBase"] + label_rva, []) if reference["functionRva"] is not None})
+        if functions:
+            menu_label_reference_functions.append({"stringRva": label_rva, "functions": functions, "games": owners})
     launch_edges = []
+    direct_call_graph = build_direct_call_graph(data, image)
     framework_end = image["nativeCodeStartRva"] + 0x300000
     for dispatcher_index, dispatcher in enumerate(control_dispatchers):
         if dispatcher["functionRva"] >= framework_end:
             continue
         for case in dispatcher["cases"]:
-            matches = []
-            for call_rva in case["directCallRvas"]:
-                matches.extend(title_games_by_function.get(call_rva, []))
-            unique_matches = list({row["gameId"]: row for row in matches}.values())
+            unique_matches = reachable_title_games(case["directCallRvas"], direct_call_graph, title_games_by_function)
             if unique_matches:
                 launch_edges.append({
                     "controlDispatcherIndex": dispatcher_index,
@@ -422,6 +473,7 @@ def build(args):
             "controlDispatcherCount": len(control_dispatchers),
             "largestControlDispatcher": max((row["caseCount"] for row in control_dispatchers), default=0),
             "titleReferencedGames": len({owner["gameId"] for owners in title_owners.values() for owner in owners}),
+            "menuLabelReferencedGames": len({owner["gameId"] for owners in menu_label_owners.values() for owner in owners}),
             "launchEdgeCount": len(launch_edges),
             "launchMappedGames": len({game["gameId"] for edge in launch_edges for game in edge["games"]}),
             "conflictingDispatcherCount": len(conflict_dispatchers),
@@ -432,6 +484,7 @@ def build(args):
         "dispatchers": dispatchers,
         "controlDispatchers": control_dispatchers,
         "titleReferenceFunctions": title_reference_functions,
+        "menuLabelReferenceFunctions": menu_label_reference_functions,
         "launchEdges": launch_edges,
         "payloadEvidence": evidence,
     }

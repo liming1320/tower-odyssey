@@ -72,6 +72,8 @@ const records = catalog.records.map(game => {
         verification: queueRecord.verification,
         migrationComplete: queueRecord.migrationComplete,
         verificationComplete: queueRecord.verificationComplete,
+        migrationEvidence: queueRecord.migrationEvidence,
+        migrationPhase: queueRecord.migrationPhase,
         originalComplete: queueRecord.originalComplete
     };
 });
@@ -112,6 +114,8 @@ const result = {
         ownershipVerified: 0,
         migrationComplete: records.filter(record => record.migrationComplete).length,
         verificationComplete: records.filter(record => record.verificationComplete).length,
+        payloadMigration: records.filter(record => record.migrationPhase === 'payload-migration').length,
+        partialContentMigration: records.filter(record => record.migrationPhase === 'partial-content-migration').length,
         originalComplete: records.filter(record => record.originalComplete).length
     },
     handlerGroups: groups,
@@ -130,6 +134,8 @@ const publicStatus = {
         verification: record.verification,
         migrationComplete: record.migrationComplete,
         verificationComplete: record.verificationComplete,
+        migrationEvidence: record.migrationEvidence,
+        migrationPhase: record.migrationPhase,
         originalComplete: record.originalComplete
     }))
 };

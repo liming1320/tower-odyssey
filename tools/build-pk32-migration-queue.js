@@ -11,6 +11,13 @@ const reference = path.join(root, 'output', 'pk32-reference');
 const inventory = JSON.parse(fs.readFileSync(path.join(reference, 'pk32-inventory.json'), 'utf8'));
 const ledger = JSON.parse(fs.readFileSync(path.join(reference, 'migration-ledger.json'), 'utf8'));
 const nativeCatalog = JSON.parse(fs.readFileSync(path.join(root, 'public', 'data', 'pk32-native-catalog.json'), 'utf8'));
+const ownershipFile = path.join(reference, 'native-ownership.json');
+const nativeOwnership = fs.existsSync(ownershipFile) ? JSON.parse(fs.readFileSync(ownershipFile, 'utf8')) : null;
+const ownershipByGame = new Map();
+for (const row of nativeOwnership && nativeOwnership.payloadEvidence || []) {
+    if (!ownershipByGame.has(row.gameId)) ownershipByGame.set(row.gameId, []);
+    ownershipByGame.get(row.gameId).push(row);
+}
 const source = fs.readFileSync(path.join(root, 'public/js/minigames/pk32.js'), 'utf8');
 const variants = fs.readFileSync(path.join(root, 'public/js/minigames/pk32-variants.js'), 'utf8');
 
@@ -74,7 +81,6 @@ const rows = ledger.records.map(record => {
     const native = nativeByName.get(record.name) || null;
     const nativePayloadCount = native && Array.isArray(native.nativePayloads) ? native.nativePayloads.length : 0;
     const renderer = rendererNames.has(record.name) ? 'dedicated-or-board' : record.launcher ? 'shared-mode-or-placeholder' : 'none';
-    const originalComplete = record.originalComplete === true && record.originalAssetsVerified === true && record.originalLevelsVerified === true && record.originalRulesVerified === true;
     const migration = {
         assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true,
         levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true,
@@ -86,9 +92,24 @@ const rows = ledger.records.map(record => {
         assetsVerified: record.originalAssetsVerified === true,
         levelsVerified: record.originalLevelsVerified === true,
         rulesVerified: record.originalRulesVerified === true,
-        fullFlowVerified: record.originalComplete === true
+        fullFlowVerified: record.fullFlowVerified === true || record.originalComplete === true
     };
     verification.verificationComplete = verification.assetsVerified && verification.levelsVerified && verification.rulesVerified && verification.fullFlowVerified;
+    const originalComplete = migration.migrationComplete && verification.verificationComplete;
+    const ownershipRows = ownershipByGame.get(record.id) || [];
+    const migrationEvidence = {
+        catalogRegistered: true,
+        rawPayloadsBound: nativePayloadCount > 0 && ownershipRows.length === nativePayloadCount && ownershipRows.every(row => row.nativeUsageVerified === true),
+        structuredPayloadsBound: !!candidateData,
+        dedicatedAdapterBound: renderer === 'dedicated-or-board',
+        contentComplete: migration.migrationComplete,
+        verificationComplete: verification.verificationComplete
+    };
+    const migrationPhase = verification.verificationComplete ? 'verification-complete'
+        : migration.migrationComplete ? 'content-migration-complete'
+        : migrationEvidence.dedicatedAdapterBound ? 'partial-content-migration'
+        : migrationEvidence.structuredPayloadsBound || migrationEvidence.rawPayloadsBound ? 'payload-migration'
+        : 'catalog-migration';
     let status = 'unstarted';
     if (originalComplete) status = 'original-complete';
     else if (data && data.fullRules && renderer === 'dedicated-or-board') status = 'flow-and-rules-review';
@@ -122,6 +143,8 @@ const rows = ledger.records.map(record => {
         verification,
         migrationComplete: migration.migrationComplete,
         verificationComplete: verification.verificationComplete,
+        migrationEvidence,
+        migrationPhase,
         originalComplete,
         nextEvidence: originalComplete ? [] : ['original startup/menu capture', 'asset-to-object mapping', 'observable rule trace', 'complete first-flow verification']
     };
@@ -149,7 +172,7 @@ const result = {
     version: 1,
     generatedAt: new Date().toISOString(),
     source: ['pk32-inventory.json', 'migration-ledger.json', 'public/data/pk32-native-catalog.json', 'public/data/pk32-*-levels.json', 'public/js/minigames/pk32.js', 'public/js/minigames/pk32-variants.js'],
-    completionRule: 'Only assets, original level/round data, observable rules and complete flow evidence can promote originalComplete.',
+    completionRule: 'Content migration and original verification are tracked independently; originalComplete requires both to be complete.',
     engineGroups: inventory.engineGroups,
     payloadFormatGroups,
     structuredPayloadGroups: structuredPayloads && structuredPayloads.groups || [],
@@ -158,6 +181,8 @@ const result = {
         originalComplete: rows.filter(row => row.originalComplete).length,
         migrationComplete: rows.filter(row => row.migrationComplete).length,
         verificationComplete: rows.filter(row => row.verificationComplete).length,
+        payloadMigration: rows.filter(row => row.migrationPhase === 'payload-migration').length,
+        partialContentMigration: rows.filter(row => row.migrationPhase === 'partial-content-migration').length,
         nativeData: rows.filter(row => row.data).length,
         candidateData: rows.filter(row => row.candidateData).length,
         rawNativePayloads: rows.reduce((sum, row) => sum + row.nativePayloadCount, 0),

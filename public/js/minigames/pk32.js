@@ -77,6 +77,17 @@
         const hit = GROUPS.find(g => index >= g[0] && index < g[1]);
         return hit ? hit[2] : '未分类';
     }
+    function statusTags(record) {
+        const migrationText = record.migrationComplete ? '内容迁移完成'
+            : record.migrationPhase === 'partial-content-migration' ? '内容部分迁移'
+            : record.migrationPhase === 'payload-migration' ? '原始载荷已绑定'
+            : record.status === 'structured-assignment-review' ? '结构已解析，归属待复核'
+            : record.status === 'payload-assignment-review' ? '载荷归属待复核'
+            : '内容待迁移';
+        const verificationText = record.verificationComplete ? '原版验证完成' : '原版待验证';
+        return '<span class="emu-tag" style="color:#ffd56b;border-color:rgba(255,213,107,.35)">' + esc(migrationText) + '</span>' +
+            '<span class="emu-tag" style="color:' + (record.verificationComplete ? '#84e6ad' : '#b8c0cc') + ';border-color:' + (record.verificationComplete ? 'rgba(132,230,173,.35)' : 'rgba(184,192,204,.25)') + '">' + esc(verificationText) + '</span>';
+    }
     function records() {
         return NAMES.map((name, index) => ({
             id: 'pk32-' + String(index + 1).padStart(3, '0'),
@@ -139,6 +150,8 @@
             record.verification = status.verification;
             record.migrationComplete = status.migrationComplete === true;
             record.verificationComplete = status.verificationComplete === true;
+            record.migrationEvidence = status.migrationEvidence;
+            record.migrationPhase = status.migrationPhase;
             record.originalComplete = status.originalComplete === true;
         });
     }
@@ -209,7 +222,7 @@
                     (x.dedicatedLauncher === 'puzzle' ? '<button class="btn ghost pk32-puzzle-launch" data-pk32-puzzle="' + esc(x.id) + '">独立启动</button>' : '') +
                     (x.dedicatedLauncher === 'variant' ? '<button class="btn ghost pk32-variant-launch" data-pk32-variant="' + esc(x.id) + '">独立启动</button>' : '') +
                     '<button class="btn ghost pk32-evidence-launch" data-pk32-evidence="' + esc(x.id) + '">原始迁移资料</button>' +
-                    '<span class="emu-tag" style="color:#ffd56b;border-color:rgba(255,213,107,.35)">' + esc(x.status === 'rules-partial' ? '规则接入中' : x.status === 'structured-assignment-review' ? '结构已解析，归属待复核' : x.status === 'payload-assignment-review' ? '载荷归属待复核' : x.status === 'payload-awaiting-adapter' ? '原始载荷待解码' : '迁移资料已绑定') + '</span></div>'
+                    statusTags(x) + '</div>'
                 ).join('');
                 list.querySelectorAll('[data-pk32-launch]').forEach(btn => btn.onclick = () => launch(all.find(x => x.id === btn.dataset.pk32Launch)));
                 list.querySelectorAll('[data-pk32-module]').forEach(btn => btn.onclick = () => launchModule(all.find(x => x.id === btn.dataset.pk32Module)));

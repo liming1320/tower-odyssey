@@ -149,6 +149,16 @@ function originalEvidence(record) {
 const records = catalog.map(record => {
   const evidence = originalEvidence(record);
   const old = byIndex.get(record.index) || {};
+  const assetsMigrated = old.assetsMigrated === true || evidence.asset.verified;
+  const levelsMigrated = old.levelsMigrated === true || evidence.levels.verified;
+  const rulesMigrated = old.rulesMigrated === true || evidence.rules.verified;
+  const fullFlowMigrated = old.fullFlowMigrated === true || old.originalComplete === true;
+  const originalAssetsVerified = old.originalAssetsVerified === true || evidence.asset.verified;
+  const originalLevelsVerified = old.originalLevelsVerified === true || evidence.levels.verified;
+  const originalRulesVerified = old.originalRulesVerified === true || evidence.rules.verified;
+  const fullFlowVerified = old.fullFlowVerified === true || old.originalComplete === true;
+  const migrationComplete = assetsMigrated && levelsMigrated && rulesMigrated && fullFlowMigrated;
+  const verificationComplete = originalAssetsVerified && originalLevelsVerified && originalRulesVerified && fullFlowVerified;
   return {
     id: record.id,
     index: record.index,
@@ -156,14 +166,15 @@ const records = catalog.map(record => {
     group: record.group,
     launcher: launcher(record),
     launcherVerified: old.launcherVerified === true,
-    assetsMigrated: old.assetsMigrated === true || evidence.asset.verified,
-    levelsMigrated: old.levelsMigrated === true || evidence.levels.verified,
-    rulesMigrated: old.rulesMigrated === true || evidence.rules.verified,
-    fullFlowMigrated: old.fullFlowMigrated === true || old.originalComplete === true,
-    originalAssetsVerified: evidence.asset.verified,
-    originalLevelsVerified: evidence.levels.verified,
-    originalRulesVerified: evidence.rules.verified,
-    originalComplete: old.originalComplete === true,
+    assetsMigrated,
+    levelsMigrated,
+    rulesMigrated,
+    fullFlowMigrated,
+    originalAssetsVerified,
+    originalLevelsVerified,
+    originalRulesVerified,
+    fullFlowVerified,
+    originalComplete: migrationComplete && verificationComplete,
     evidence,
     launchVerifiedNodes: old.launchVerifiedNodes || 0,
     notes: old.notes || '',
@@ -184,7 +195,7 @@ const manifest = {
     executableLogicRecovered: extraction.coverage.executableLogicRecovered,
     nativeGameCatalog: nativeCatalog ? 'native-game-catalog.json' : null
   },
-  completionRule: 'originalComplete is true only when the same game has verified assets, original level/round data, and observable rules.',
+  completionRule: 'Migration and verification are independent; originalComplete is true only when both are complete for the same game.',
   records,
   unassignedPicForms: picform.records.map(row => row.internalId).filter(id => id != null && ![13, 22].includes(id)),
   limitations: [

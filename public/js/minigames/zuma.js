@@ -12,6 +12,14 @@ window.MiniGames = window.MiniGames || {};
     }
 
     function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+    // 颜色提亮/压暗：amt ∈ [-1,1]，正=提亮，负=压暗
+    function shade(hex, amt) {
+        const n = parseInt(hex.slice(1), 16);
+        let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+        if (amt >= 0) { r += (255 - r) * amt; g += (255 - g) * amt; b += (255 - b) * amt; }
+        else { const k = 1 + amt; r *= k; g *= k; b *= k; }
+        return `rgb(${r | 0},${g | 0},${b | 0})`;
+    }
 
     function buildPath(seed) {
         const rnd = mulberry(seed * 131 + 7);
@@ -54,7 +62,7 @@ window.MiniGames = window.MiniGames || {};
             const path = buildPath(idx + 1);
             const frog = path.end;
             let score = 0, combo = 0, over = false, spawnLeft = count;
-            let chain = [], shots = [], cool = 0;
+            let chain = [], shots = [], cool = 0, floaters = [];
             let cur = MG.ri(0, nColors - 1), next = MG.ri(0, nColors - 1);
             let aim = { x: W / 2, y: 60 };
 
@@ -84,9 +92,14 @@ window.MiniGames = window.MiniGames || {};
                 while (b < chain.length - 1 && chain[b + 1].c === c) b++;
                 if (b - a + 1 >= 3) {
                     const n = b - a + 1;
+                    let cx = 0, cy = 0;
+                    for (let i = a; i <= b; i++) { const p = ptAt(path, chain[i].d); cx += p.x; cy += p.y; }
+                    cx /= n; cy /= n;
                     chain.splice(a, n);
                     combo++;
-                    score += 40 * n + combo * 15;
+                    const gain = 40 * n + combo * 15;
+                    score += gain;
+                    floaters.push({ x: cx, y: cy, t: 0, txt: combo > 1 ? `+${gain}  连击 ${combo}!` : (n > 3 ? `${n} 连消!` : `+${gain}`), big: n >= 4 || combo > 1 });
                 } else combo = 0;
                 hud();
             }
@@ -138,26 +151,56 @@ window.MiniGames = window.MiniGames || {};
             }
 
             function draw() {
+                // 氛围背景：深紫庙宇 + 远处光晕 + 暗角
                 const g = ctx.createLinearGradient(0, 0, 0, H);
-                g.addColorStop(0, '#241a33'); g.addColorStop(1, '#0d0a16');
+                g.addColorStop(0, '#2a1f3e'); g.addColorStop(0.55, '#1a1330'); g.addColorStop(1, '#0b0814');
                 ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-                // 石道
-                ctx.strokeStyle = '#3a2f4d'; ctx.lineWidth = 30; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-                ctx.beginPath(); path.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
-                ctx.strokeStyle = '#241c36'; ctx.lineWidth = 22; ctx.stroke();
-                // 入口洞（球链从这冒出来）
+                const rg = ctx.createRadialGradient(W / 2, H * 0.38, 20, W / 2, H * 0.38, W * 0.85);
+                rg.addColorStop(0, 'rgba(120,90,170,0.18)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+                const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.33, W / 2, H / 2, H * 0.78);
+                vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.45)');
+                ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+                // 石道：外影 → 石面 → 内面 → 中槽 → 边沿虚线高光
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                const trace = () => { ctx.beginPath(); path.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); };
+                trace(); ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 38; ctx.stroke();
+                trace(); ctx.strokeStyle = '#4a3f63'; ctx.lineWidth = 30; ctx.stroke();
+                trace(); ctx.strokeStyle = '#3a3052'; ctx.lineWidth = 26; ctx.stroke();
+                trace(); ctx.strokeStyle = '#221a36'; ctx.lineWidth = 12; ctx.stroke();
+                trace(); ctx.strokeStyle = 'rgba(200,180,240,0.10)'; ctx.lineWidth = 30; ctx.setLineDash([2, 11]); ctx.stroke(); ctx.setLineDash([]);
+                // 入口洞（球链从这冒出来）：辉光 + 深井
                 const p0 = path.pts[0];
-                ctx.beginPath(); ctx.arc(p0.x, p0.y, 19, 0, Math.PI * 2);
-                ctx.fillStyle = '#08050f'; ctx.fill();
-                ctx.strokeStyle = '#4a3c66'; ctx.lineWidth = 3; ctx.stroke();
-                ctx.beginPath(); ctx.arc(p0.x, p0.y, 12, 0, Math.PI * 2);
-                ctx.fillStyle = '#000'; ctx.fill();
+                const hg = ctx.createRadialGradient(p0.x, p0.y, 2, p0.x, p0.y, 22);
+                hg.addColorStop(0, 'rgba(90,210,255,0.35)'); hg.addColorStop(0.5, 'rgba(40,20,60,0.9)'); hg.addColorStop(1, 'rgba(8,5,15,1)');
+                ctx.beginPath(); ctx.arc(p0.x, p0.y, 20, 0, Math.PI * 2); ctx.fillStyle = hg; ctx.fill();
+                ctx.strokeStyle = '#5a4a7a'; ctx.lineWidth = 3; ctx.stroke();
+                ctx.beginPath(); ctx.arc(p0.x, p0.y, 11, 0, Math.PI * 2); ctx.fillStyle = '#050309'; ctx.fill();
                 // 球链
                 for (let j = chain.length - 1; j >= 0; j--) {
                     const p = ptAt(path, chain[j].d);
                     if (chain[j].d < -2) continue;
                     ball(p.x, p.y, chain[j].c, R);
                 }
+                // 浮动得分 / 连击文字
+                for (let i = floaters.length - 1; i >= 0; i--) {
+                    const f = floaters[i];
+                    f.t += 0.016;
+                    const a = Math.max(0, 1 - f.t / 1.1);
+                    ctx.globalAlpha = a;
+                    ctx.font = (f.big ? 'bold 18px' : 'bold 14px') + ' Microsoft YaHei, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+                    ctx.strokeText(f.txt, f.x, f.y - f.t * 34);
+                    ctx.fillStyle = f.big ? '#ffd56b' : '#ffffff';
+                    ctx.fillText(f.txt, f.x, f.y - f.t * 34);
+                    ctx.globalAlpha = 1;
+                    if (f.t >= 1.1) floaters.splice(i, 1);
+                }
+                // 蛙口光晕
+                const fa = ctx.createRadialGradient(frog.x, frog.y, 4, frog.x, frog.y, 42);
+                fa.addColorStop(0, 'rgba(130,255,190,0.20)'); fa.addColorStop(1, 'rgba(130,255,190,0)');
+                ctx.fillStyle = fa; ctx.beginPath(); ctx.arc(frog.x, frog.y, 42, 0, Math.PI * 2); ctx.fill();
                 // 蛙：石台底座 + 蹲坐蛤蟆（朝瞄准方向旋转，朝左时上下翻回正）
                 drawFrogBase(frog.x, frog.y + 6);
                 const ang = Math.atan2(aim.y - frog.y, aim.x - frog.x);
@@ -256,12 +299,25 @@ window.MiniGames = window.MiniGames || {};
             }
             function ball(x, y, c, r) {
                 const col = COLORS[c % COLORS.length];
-                const rg = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.15, x, y, r);
-                rg.addColorStop(0, '#ffffff'); rg.addColorStop(0.25, col); rg.addColorStop(1, '#00000088');
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+                const rg = ctx.createRadialGradient(x - r * 0.36, y - r * 0.4, r * 0.1, x, y, r);
+                rg.addColorStop(0, '#ffffff');
+                rg.addColorStop(0.2, shade(col, 0.55));
+                rg.addColorStop(0.62, col);
+                rg.addColorStop(1, shade(col, -0.5));
                 ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = rg; ctx.fill();
-                ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1.4; ctx.stroke();
-                ctx.beginPath(); ctx.arc(x - r * 0.38, y - r * 0.38, r * 0.16, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill();
+                ctx.restore();
+                // 暗边
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.strokeStyle = shade(col, -0.55); ctx.lineWidth = 1.3; ctx.stroke();
+                // 主高光（玻璃质感）
+                ctx.beginPath();
+                ctx.ellipse(x - r * 0.3, y - r * 0.36, r * 0.42, r * 0.26, -0.5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fill();
+                // 次高光点
+                ctx.beginPath(); ctx.arc(x + r * 0.3, y + r * 0.34, r * 0.12, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill();
             }
 
             cvs.addEventListener('pointermove', e => {

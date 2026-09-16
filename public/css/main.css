@@ -778,6 +778,26 @@ body.in-battle .avatar-btn { display: none; }
 .doc-text p { font-size: 12px; line-height: 1.7; color: #cfd2e2; margin-bottom: 6px; }
 
 /* ---------- 小游戏入口（竖版卡片） ---------- */
+.mini-filter { padding: 6px 0 10px; position: sticky; top: 0; z-index: 5; background: linear-gradient(180deg, #14121f 70%, rgba(20,18,31,0)); }
+.mini-search {
+    width: 100%; box-sizing: border-box; padding: 9px 12px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.35);
+    color: #f3f0e0; font-size: 13px; outline: none; transition: border-color .15s;
+}
+.mini-search::placeholder { color: #8a86a0; }
+.mini-search:focus { border-color: rgba(255,213,107,.55); }
+.mini-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.mini-cat {
+    border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04);
+    color: #cfd2e2; border-radius: 14px; padding: 5px 11px; font-size: 12px;
+    cursor: pointer; transition: .15s; white-space: nowrap;
+}
+.mini-cat:hover { border-color: rgba(255,213,107,.35); }
+.mini-cat.active {
+    background: linear-gradient(90deg, #ffd56b, #f5a623); color: #1a1320;
+    border-color: transparent; font-weight: bold;
+}
+.mini-cat:active { transform: scale(.96); }
 .mini-hub { padding: 4px 0 80px; }
 .mini-card {
     display: flex; align-items: center; gap: 12px;

@@ -1,6 +1,7 @@
 // 小游戏入口：竖版滚动卡片，每张游戏点击进入全屏游戏容器
 // 真正的 20 个游戏实现放在 /js/minigames/*.js，由本文件按需加载
 const MinigamesView = {
+    _cat: 'all', _q: '',
     async open(app) {
         // 先同步服务器进度（登录用户），并拉取后台设置的排序；无排序时按 manifest 原序
         try {
@@ -17,14 +18,44 @@ const MinigamesView = {
         this.render(app);
     },
     render(app) {
-        const list = this._sorted || GAMES;
+        const all = this._sorted || GAMES;
         // 切到独立 tab 区域显示
         const root = document.getElementById('page-content');
         root.innerHTML = `
-            <div class="section-title">🎮 小游戏<span style="float:right;font-size:12px;color:#b9b3d8;font-weight:normal">共 ${list.length} 款</span></div>
+            <div class="section-title">🎮 小游戏<span style="float:right;font-size:12px;color:#b9b3d8;font-weight:normal">共 ${all.length} 款</span></div>
+            <div class="mini-filter">
+                <input class="mini-search" id="mini-search" type="search" placeholder="🔍 搜索游戏名称 / 简介…" />
+                <div class="mini-cats" id="mini-cats">
+                    ${CATEGORIES.map(([k, label]) => `<button class="mini-cat${k === this._cat ? ' active' : ''}" data-cat="${k}">${label}</button>`).join('')}
+                </div>
+            </div>
             <div class="mini-hub" id="mini-hub"></div>
         `;
+        const search = document.getElementById('mini-search');
+        search.value = this._q || '';
+        search.addEventListener('input', () => { this._q = search.value.trim().toLowerCase(); this._renderHub(); });
+        document.getElementById('mini-cats').addEventListener('click', e => {
+            const b = e.target.closest('.mini-cat');
+            if (!b) return;
+            this._cat = b.dataset.cat;
+            document.querySelectorAll('#mini-cats .mini-cat').forEach(x => x.classList.toggle('active', x === b));
+            this._renderHub();
+        });
+        this._renderHub();
+    },
+    _renderHub() {
+        const all = this._sorted || GAMES;
+        const q = (this._q || '').toLowerCase();
+        const list = all.filter(g =>
+            (this._cat === 'all' || g.cat === this._cat) &&
+            (!q || g.name.toLowerCase().includes(q) || (g.desc || '').toLowerCase().includes(q))
+        );
         const hub = document.getElementById('mini-hub');
+        hub.innerHTML = '';
+        if (!list.length) {
+            hub.innerHTML = `<div style="color:#b9b3d8;padding:24px;text-align:center;font-size:13px">没有匹配的小游戏，换个关键词或分类试试～</div>`;
+            return;
+        }
         list.forEach(g => {
             const stars = MG.totalStars(g.id);
             const card = U.el(`
@@ -245,6 +276,27 @@ const GAMES = [
     sc('tower24', '魔塔 24 层', '24 层轻松魔塔 · 入门友好 · 节奏明快', '#1f3a28', '#2c5440', ['\ud83d\uddfc', '\ud83d\udef1', '\ud83d\udc8e']),
     sc('newtower56', '新新魔塔 56 层', '56 层高难魔塔 · 守层卫士 + 魔王', '#2a1f3e', '#3e2a56', ['\ud83d\uddfc', '\ud83d\udc51', '\ud83d\udd25']),
 ];
+
+// ===== 分类（棋牌/益智/休闲/动作/记忆/问答/运气/模拟/魔塔/街机）=====
+const CATEGORIES = [
+    ['all', '全部'], ['board', '棋牌类'], ['puzzle', '益智类'], ['casual', '休闲类'],
+    ['action', '动作类'], ['memory', '记忆类'], ['quiz', '问答类'], ['luck', '运气类'],
+    ['sim', '模拟类'], ['tower', '魔塔类'], ['fc', '街机经典'],
+];
+const CAT_OF = Object.assign({}, ...[
+    ['board', ['gomoku', 'g2048', 'banqi', 'xiangqi', 'tictactoe', 'connect4', 'reversi', 'nim', 'battleship', 'dots', 'mancala', 'queens', 'peg', 'breakthru', 'chess', 'junqi', 'jungle', 'ludo', 'advchess', 'solitaire', 'spider', 'freecell', 'pyramid', 'blackjack', 'poker', 'war', 'monopoly', 'richman']],
+    ['puzzle', ['link', 'match3', 'snake', 'tetris', 'mine', 'slide15', 'bulls', 'sudoku6', 'hanoi', 'mummymaze', 'jigsaw', 'maze', 'lightsout', 'floodit', 'pipes', 'nonogram', 'sudoku9', 'numberpath', 'sokoban', 'blockpuzzle', 'mastermind']],
+    ['memory', ['memory', 'flashnum', 'chimp', 'simon', 'cardmem', 'wordmem', 'spot', 'pathmem', 'shadowmatch', 'whatmiss', 'reversenum']],
+    ['quiz', ['mathquiz', 'stroop', 'higherlower', 'oddone', 'idiom', 'trivia', 'counting', 'estimate', 'clockread', 'sequence']],
+    ['luck', ['coinflip', 'dicehi', 'slots', 'bingo', 'spinner', 'rpsgame', 'plinko', 'lucky7', 'tapburst', 'gacha']],
+    ['casual', ['mole', 'piano', 'reaction', 'zuma', 'bejeweled', 'bubble', 'rocketmania', 'sheep', 'cookingfever']],
+    ['action', ['breakout', 'jump', 'shooter', 'alienshoot', 'flappy', 'dodge', 'catcher', 'balloonpop', 'archery', 'basketball', 'darts', 'fishing', 'helicopter', 'stacker', 'knife', 'pocketarmy', 'danmaku']],
+    ['sim', ['towerdef', 'idleclick', 'life', 'virus', 'sandfall', 'ballance', 'rocketland', 'orbit', 'traffic', 'growfarm']],
+    ['tower', ['tower50', 'tower24', 'newtower56']],
+    ['fc', ['tank', 'contra1', 'contra2', 'pinball']],
+].map(([c, ids]) => Object.fromEntries(ids.map(id => [id, c])))
+);
+GAMES.forEach(g => { g.cat = CAT_OF[g.id] || 'other'; });
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合
 // items: [emoji, x, y, size]
