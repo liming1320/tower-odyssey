@@ -88,6 +88,20 @@
         return '<span class="emu-tag" style="color:#ffd56b;border-color:rgba(255,213,107,.35)">' + esc(migrationText) + '</span>' +
             '<span class="emu-tag" style="color:' + (record.verificationComplete ? '#84e6ad' : '#b8c0cc') + ';border-color:' + (record.verificationComplete ? 'rgba(132,230,173,.35)' : 'rgba(184,192,204,.25)') + '">' + esc(verificationText) + '</span>';
     }
+    function looksLikeRawPayloadText(text) {
+        const value = String(text || '').trim();
+        if (value.length < 8 || /[\u4e00-\u9fff]/.test(value) || !/^[0-9A-Z]+$/i.test(value)) return false;
+        if (value.length >= 32) return true;
+        const digits = (value.match(/\d/g) || []).length;
+        return digits / value.length >= 0.5;
+    }
+    function firstReadableHelp(list) {
+        if (!Array.isArray(list)) return '';
+        return list.find(text => {
+            const value = String(text || '').trim();
+            return value.length >= 4 && !looksLikeRawPayloadText(value);
+        }) || '';
+    }
     function records() {
         return NAMES.map((name, index) => ({
             id: 'pk32-' + String(index + 1).padStart(3, '0'),
@@ -127,8 +141,9 @@
                         ? 'structured-assignment-review'
                     : native.payloadCount ? 'payload-awaiting-adapter' : 'evidence-bound';
             }
-            if (native.help && native.help.length && record.name !== '魔塔' && record.name !== '强手棋') {
-                record.evidence = native.help[0];
+            const readableHelp = firstReadableHelp(native.help);
+            if (readableHelp && record.name !== '魔塔' && record.name !== '强手棋') {
+                record.evidence = readableHelp;
             }
         });
     }

@@ -151,30 +151,50 @@ window.MiniGames = window.MiniGames || {};
             }
 
             function draw() {
-                // 氛围背景：深紫庙宇 + 远处光晕 + 暗角
+                // 丛林神庙背景：藤蔓光晕 + 暗角（靠拢原版丛林石道氛围）
                 const g = ctx.createLinearGradient(0, 0, 0, H);
-                g.addColorStop(0, '#2a1f3e'); g.addColorStop(0.55, '#1a1330'); g.addColorStop(1, '#0b0814');
+                g.addColorStop(0, '#1c3a2c'); g.addColorStop(0.5, '#0f2a26'); g.addColorStop(1, '#070f12');
                 ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-                const rg = ctx.createRadialGradient(W / 2, H * 0.38, 20, W / 2, H * 0.38, W * 0.85);
-                rg.addColorStop(0, 'rgba(120,90,170,0.18)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+                const rg = ctx.createRadialGradient(W / 2, H * 0.4, 20, W / 2, H * 0.4, W * 0.8);
+                rg.addColorStop(0, 'rgba(255,205,120,0.18)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
-                const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.33, W / 2, H / 2, H * 0.78);
-                vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.45)');
+                // 顶部垂藤树叶剪影
+                ctx.fillStyle = 'rgba(6,22,14,0.55)';
+                for (let i = 0; i < 8; i++) {
+                    const lx = 24 + i * 56, ly = 6 + (i % 2) * 10;
+                    ctx.beginPath();
+                    ctx.moveTo(lx, ly);
+                    ctx.quadraticCurveTo(lx - 12, ly + 26, lx - 4, ly + 46);
+                    ctx.quadraticCurveTo(lx + 2, ly + 24, lx + 10, ly + 44);
+                    ctx.quadraticCurveTo(lx + 8, ly + 22, lx, ly);
+                    ctx.fill();
+                }
+                // 底部草丛剪影
+                ctx.fillStyle = 'rgba(5,18,12,0.6)';
+                for (let i = 0; i < 14; i++) {
+                    const gx = 10 + i * 30, gh2 = 14 + (i % 3) * 8;
+                    ctx.beginPath();
+                    ctx.moveTo(gx, H); ctx.lineTo(gx - 5, H - gh2); ctx.lineTo(gx, H - gh2 - 4);
+                    ctx.lineTo(gx + 5, H - gh2); ctx.lineTo(gx + 9, H); ctx.closePath(); ctx.fill();
+                }
+                const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.33, W / 2, H / 2, H * 0.8);
+                vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.5)');
                 ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-                // 石道：外影 → 石面 → 内面 → 中槽 → 边沿虚线高光
+                // 石道：外影 → 受光斜面 → 石面 → 中槽 → 边沿虚线高光（砂岩质感，靠拢原版）
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 const trace = () => { ctx.beginPath(); path.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); };
-                trace(); ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 38; ctx.stroke();
-                trace(); ctx.strokeStyle = '#4a3f63'; ctx.lineWidth = 30; ctx.stroke();
-                trace(); ctx.strokeStyle = '#3a3052'; ctx.lineWidth = 26; ctx.stroke();
-                trace(); ctx.strokeStyle = '#221a36'; ctx.lineWidth = 12; ctx.stroke();
-                trace(); ctx.strokeStyle = 'rgba(200,180,240,0.10)'; ctx.lineWidth = 30; ctx.setLineDash([2, 11]); ctx.stroke(); ctx.setLineDash([]);
-                // 入口洞（球链从这冒出来）：辉光 + 深井
+                trace(); ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 40; ctx.stroke();
+                ctx.save(); ctx.translate(0, -2.5); trace(); ctx.strokeStyle = 'rgba(225,210,170,0.35)'; ctx.lineWidth = 34; ctx.stroke(); ctx.restore();
+                trace(); ctx.strokeStyle = '#a99a78'; ctx.lineWidth = 30; ctx.stroke();
+                trace(); ctx.strokeStyle = '#8c7e5e'; ctx.lineWidth = 26; ctx.stroke();
+                trace(); ctx.strokeStyle = '#4f4632'; ctx.lineWidth = 13; ctx.stroke();
+                trace(); ctx.strokeStyle = 'rgba(245,235,200,0.10)'; ctx.lineWidth = 30; ctx.setLineDash([2, 11]); ctx.stroke(); ctx.setLineDash([]);
+                // 入口洞（球链从这冒出来）：石框 + 深井 + 微光
                 const p0 = path.pts[0];
                 const hg = ctx.createRadialGradient(p0.x, p0.y, 2, p0.x, p0.y, 22);
-                hg.addColorStop(0, 'rgba(90,210,255,0.35)'); hg.addColorStop(0.5, 'rgba(40,20,60,0.9)'); hg.addColorStop(1, 'rgba(8,5,15,1)');
+                hg.addColorStop(0, 'rgba(255,200,120,0.30)'); hg.addColorStop(0.5, 'rgba(60,40,20,0.92)'); hg.addColorStop(1, 'rgba(8,5,15,1)');
                 ctx.beginPath(); ctx.arc(p0.x, p0.y, 20, 0, Math.PI * 2); ctx.fillStyle = hg; ctx.fill();
-                ctx.strokeStyle = '#5a4a7a'; ctx.lineWidth = 3; ctx.stroke();
+                ctx.strokeStyle = '#7a6a48'; ctx.lineWidth = 3; ctx.stroke();
                 ctx.beginPath(); ctx.arc(p0.x, p0.y, 11, 0, Math.PI * 2); ctx.fillStyle = '#050309'; ctx.fill();
                 // 球链
                 for (let j = chain.length - 1; j >= 0; j--) {
@@ -241,52 +261,51 @@ window.MiniGames = window.MiniGames || {};
                 ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1.4;
                 ctx.beginPath(); ctx.moveTo(x - 18, y - 3); ctx.lineTo(x - 8, y - 5); ctx.moveTo(x + 4, y + 4); ctx.lineTo(x + 16, y + 1); ctx.stroke();
             }
-            // 蛤蟆本体（局部坐标：+x 为嘴方向，+y 为下）
+            // 石蛙神像（局部坐标：+x 为嘴方向，+y 为下）—— 靠拢原版石雕风格
             function frogShape() {
-                // 后腿（左右两坨）
-                for (const s of [-1, 1]) {
-                    ctx.beginPath(); ctx.ellipse(-10, 8 * s * 0.6 + 6, 9, 6, s * 0.5, 0, Math.PI * 2);
-                    ctx.fillStyle = '#2f6b2a'; ctx.fill();
-                }
-                // 身体
-                ctx.beginPath(); ctx.ellipse(0, 0, 20, 16, 0, 0, Math.PI * 2);
-                const bg = ctx.createRadialGradient(-4, -6, 3, 0, 2, 24);
-                bg.addColorStop(0, '#8fce5f'); bg.addColorStop(0.45, '#57a53f'); bg.addColorStop(1, '#2f6b2a');
+                // 身体（砂岩石雕）
+                ctx.beginPath(); ctx.ellipse(0, 0, 21, 17, 0, 0, Math.PI * 2);
+                const bg = ctx.createRadialGradient(-5, -7, 3, 0, 2, 26);
+                bg.addColorStop(0, '#cfc8b8'); bg.addColorStop(0.5, '#9a9183'); bg.addColorStop(1, '#5e594c');
                 ctx.fillStyle = bg; ctx.fill();
-                ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 2.4; ctx.stroke();
-                // 背部斑纹
-                ctx.fillStyle = 'rgba(30,70,25,0.55)';
-                ctx.beginPath(); ctx.ellipse(-8, -4, 3.4, 2.4, 0.5, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(-3, -8, 2.6, 1.8, 0.3, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(-13, 3, 2.2, 1.6, -0.4, 0, Math.PI * 2); ctx.fill();
-                // 肚皮
-                ctx.beginPath(); ctx.ellipse(4, 7, 12, 7, 0.1, 0, Math.PI * 2);
-                ctx.fillStyle = '#d8eda6'; ctx.fill();
-                // 张开的嘴（前端楔形暗口，球从这里射出）
+                ctx.strokeStyle = '#37332a'; ctx.lineWidth = 2.4; ctx.stroke();
+                // 石纹裂纹
+                ctx.strokeStyle = 'rgba(40,36,28,0.5)'; ctx.lineWidth = 1.2;
+                ctx.beginPath(); ctx.moveTo(-11, -2); ctx.lineTo(-4, -6); ctx.lineTo(3, -1); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(2, 6); ctx.lineTo(8, 4); ctx.lineTo(12, 8); ctx.stroke();
+                // 青苔斑
+                ctx.fillStyle = 'rgba(95,135,60,0.5)';
+                ctx.beginPath(); ctx.ellipse(-13, 7, 4, 2.4, 0.4, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(10, 9, 3, 2, 0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(-6, 10, 2.4, 1.4, -0.3, 0, Math.PI * 2); ctx.fill();
+                // 大嘴（前端楔形深口，球从这里射出）
                 ctx.beginPath();
-                ctx.moveTo(14, -6); ctx.quadraticCurveTo(26, 0, 14, 7);
-                ctx.quadraticCurveTo(18, 0, 14, -6);
-                ctx.fillStyle = '#132a10'; ctx.fill();
-                ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.moveTo(13, -7); ctx.quadraticCurveTo(27, 0, 13, 7);
+                ctx.quadraticCurveTo(19, 0, 13, -7);
+                ctx.fillStyle = '#190f07'; ctx.fill();
+                ctx.strokeStyle = '#37332a'; ctx.lineWidth = 2; ctx.stroke();
+                // 嘴内微光
+                ctx.fillStyle = 'rgba(120,200,255,0.22)';
+                ctx.beginPath(); ctx.ellipse(18, 0, 4, 3, 0, 0, Math.PI * 2); ctx.fill();
                 // 嘴角线
-                ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.moveTo(6, 3); ctx.quadraticCurveTo(13, 5, 17, 2); ctx.stroke();
-                // 头顶两只大眼（眼柄 + 眼球 + 瞳孔 + 高光）
+                ctx.strokeStyle = '#37332a'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(5, 3); ctx.quadraticCurveTo(13, 5, 17, 2); ctx.stroke();
+                // 双眼（顶端眼柄 + 发光琥珀瞳，原版石像标志）
                 for (const s of [-1, 1]) {
-                    ctx.beginPath(); ctx.ellipse(6, -14 + s * 5.5, 7, 7, 0, 0, Math.PI * 2);
-                    const eg = ctx.createRadialGradient(4, -17, 1.5, 6, -14 + s * 5.5, 8);
-                    eg.addColorStop(0, '#a8dd6e'); eg.addColorStop(1, '#3f7d3a');
+                    ctx.beginPath(); ctx.ellipse(5, -15 + s * 5.5, 7.5, 7.5, 0, 0, Math.PI * 2);
+                    const eg = ctx.createRadialGradient(3, -18, 1.5, 5, -15 + s * 5.5, 9);
+                    eg.addColorStop(0, '#e9d9a8'); eg.addColorStop(1, '#7d7256');
                     ctx.fillStyle = eg; ctx.fill();
-                    ctx.strokeStyle = '#1d3d1b'; ctx.lineWidth = 2; ctx.stroke();
-                    ctx.beginPath(); ctx.arc(8, -14 + s * 5.5, 4.4, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fdfdf2'; ctx.fill();
-                    ctx.beginPath(); ctx.arc(9.6, -14 + s * 5.5, 2.2, 0, Math.PI * 2);
-                    ctx.fillStyle = '#141414'; ctx.fill();
-                    ctx.beginPath(); ctx.arc(8.6, -15.6 + s * 5.5, 0.9, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fff'; ctx.fill();
+                    ctx.strokeStyle = '#37332a'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(255,180,60,0.9)'; ctx.shadowBlur = 9;
+                    ctx.beginPath(); ctx.arc(7, -15 + s * 5.5, 3.4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffb43c'; ctx.fill();
+                    ctx.restore();
+                    ctx.beginPath(); ctx.arc(8, -16 + s * 5.5, 1.2, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
                 }
                 // 鼻孔
-                ctx.fillStyle = '#1d3d1b';
+                ctx.fillStyle = '#37332a';
                 ctx.beginPath(); ctx.arc(17, -2, 0.9, 0, Math.PI * 2); ctx.fill();
             }
             function drawFrog(x, y, ang) {
@@ -318,6 +337,14 @@ window.MiniGames = window.MiniGames || {};
                 // 次高光点
                 ctx.beginPath(); ctx.arc(x + r * 0.3, y + r * 0.34, r * 0.12, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill();
+                // 星芒闪点（玻璃珠宝感）
+                if (r > 10) {
+                    ctx.save();
+                    ctx.translate(x - r * 0.34, y - r * 0.4); ctx.rotate(-0.5);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1; ctx.lineCap = 'round';
+                    ctx.beginPath(); ctx.moveTo(-2.4, 0); ctx.lineTo(2.4, 0); ctx.moveTo(0, -2.4); ctx.lineTo(0, 2.4); ctx.stroke();
+                    ctx.restore();
+                }
             }
 
             cvs.addEventListener('pointermove', e => {

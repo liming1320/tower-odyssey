@@ -96,12 +96,12 @@ const byIndex = new Map(ledger.records.map(record => [record.index, record]));
 function launcher(record) {
   if (record.playable) return record.playable.gameId;
   if (record.module) return 'board';
-  if (record.casual) return 'casual';
+  if (record.variant) return 'variant';
+  if (record.puzzle) return 'puzzle';
   if (record.action) return 'action';
+  if (record.casual) return 'casual';
   if (record.strategy) return 'strategy';
   if (record.card) return 'card';
-  if (record.puzzle) return 'puzzle';
-  if (record.variant) return 'variant';
   return null;
 }
 

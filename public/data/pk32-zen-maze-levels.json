@@ -1,6 +1,5 @@
 {
   "name": "禅宗迷宫",
-  "fullGameRulesVerified": false,
   "nativeLevelCount": 24,
   "extractedPayloadCount": 7,
   "jumpCost": 20,

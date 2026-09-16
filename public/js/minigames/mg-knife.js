@@ -8,6 +8,7 @@
 window.MiniGames = window.MiniGames || {};
 (function () {
     const E = (window.MG && window.MG.eng) || {};
+    const DIR = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0], w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0] };
     E.def && E.def('knife', {
         levels: [
             '初入江湖', '小试锋芒', '刀随心动', '微风', '林间', '山谷', '云端', '雷雨', '霜降', '雪原',
@@ -24,8 +25,9 @@ window.MiniGames = window.MiniGames || {};
             enemySpd: 34 + 26 * t,                            // 敌人速度
             mixFast: i >= 3, mixTank: i >= 6,                 // 3 关起加快速怪，6 关起加壮汉
         }), endless: { name: '无尽·割草', desc: '杀到力竭为止，看你能割多少' },
-        hint: '按住屏幕指哪走哪（电脑 WASD/方向键） · 飞刀自动旋转杀敌 · 吃经验球升级三选一',
+        hint: '电脑：方向键 / WASD 移动，鼠标点击或拖动指向移动 · 手机：手指拖动或点按 · 飞刀自动旋转杀敌 · 吃经验球升级三选一 · 击杀偶尔掉落 🔪飞刀+ / 🌀转速+ 道具',
         w: 360, h: 520,
+        preventKeys: ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],
         init: P => ({
             px: 180, py: 300,                                  // 玩家位置
             hp: 10, maxHp: 10, invuln: 0,
@@ -35,7 +37,7 @@ window.MiniGames = window.MiniGames || {};
             kills: 0, need: P.need || 8,
             enemies: [], orbs: [], sparks: [],
             spawnT: 0.5, elapsed: 0,
-            keyVec: null, keyT: 0,
+            keys: {},                                       // 当前按住的键 → 最近一次 keydown 时间戳（用于持续移动）
             touch: null,                                     // 按住屏幕的目标点（指哪走哪）
             upgrading: null,                                   // 三选一面板
             flash: 0,                                          // 受伤闪白
@@ -48,13 +50,22 @@ window.MiniGames = window.MiniGames || {};
             // 升级面板打开时全场暂停
             if (S.upgrading) return;
 
-            // ---- 移动输入：指哪走哪 ----
-            // 按住屏幕/鼠标 → 鸠摩智朝手指位置精确移动（近了自动减速停住，不飘）
+            // ---- 移动输入：电脑方向键（持续按住）/ 鼠标指哪走哪 / 手机触屏 ----
             let mvx = 0, mvy = 0, mSpd = S.spd;
-            if (S.touch) {
+            const now = performance.now();
+            // 键盘方向：合成最近 220ms 内仍被按住（系统自动重复 keydown）的方向；松开后自动失效
+            let kdx = 0, kdy = 0;
+            for (const kk in S.keys) {
+                if (now - S.keys[kk] > 220) { delete S.keys[kk]; continue; }
+                const m = DIR[kk]; if (m) { kdx += m[0]; kdy += m[1]; }
+            }
+            if (kdx || kdy) {
+                mvx = kdx; mvy = kdy; S.touch = null;  // 用键盘时放弃触屏目标，方向键优先
+            } else if (S.touch) {
+                // 鼠标 / 手指：朝目标点精确移动（近了自动减速停住，不飘）
                 const tx = S.touch.x - S.px, ty = S.touch.y - S.py, td = Math.hypot(tx, ty);
                 if (td > 3) { mvx = tx; mvy = ty; mSpd = Math.min(S.spd, td * 6); }
-            } else if (S.keyVec && (performance.now() - S.keyT) < 250) { mvx = S.keyVec.x; mvy = S.keyVec.y; }
+            }
             const ml = Math.hypot(mvx, mvy);
             if (ml > 0.01) {
                 S.px += mvx / ml * mSpd * dt;
@@ -114,6 +125,10 @@ window.MiniGames = window.MiniGames || {};
                             S.kills += 1;
                             S.orbs.push({ x: e.x, y: e.y, v: e.pts });
                             if (api.fx) api.fx.burst(e.x, e.y, { n: 6, color: e.col, speed: 90 });
+                            // 道具掉落：约 20% 概率掉「飞刀 +1」或「转速 +」
+                            const dro = Math.random();
+                            if (dro < 0.10) S.powerups.push({ x: e.x, y: e.y, kind: 'knife' });
+                            else if (dro < 0.20) S.powerups.push({ x: e.x, y: e.y, kind: 'speed' });
                             break;
                         }
                     }
@@ -153,8 +168,28 @@ window.MiniGames = window.MiniGames || {};
                 }
             }
 
+            // ---- 道具掉落拾取（刀数 / 转速）----
+            for (let i = S.powerups.length - 1; i >= 0; i--) {
+                const o = S.powerups[i];
+                const d = Math.hypot(o.x - S.px, o.y - S.py);
+                if (d < S.pickup + 8) { o.x += (S.px - o.x) * Math.min(1, dt * 8); o.y += (S.py - o.y) * Math.min(1, dt * 8); }
+                if (d < 16) {
+                    S.powerups.splice(i, 1);
+                    if (o.kind === 'knife') {
+                        S.knives += 1;
+                        S.floaters.push({ x: S.px, y: S.py - 14, t: 0, life: 1.1, text: '🔪 飞刀 +1', col: '#ffd56b' });
+                        if (api.fx) api.fx.ring(S.px, S.py, { color: '#ffd56b' });
+                    } else {
+                        S.kSpeed *= 1.22;
+                        S.floaters.push({ x: S.px, y: S.py - 14, t: 0, life: 1.1, text: '🌀 转速 +', col: '#5cd6ff' });
+                        if (api.fx) api.fx.ring(S.px, S.py, { color: '#5cd6ff' });
+                    }
+                }
+            }
+
             // ---- 特效计时 ----
             for (let i = S.sparks.length - 1; i >= 0; i--) { S.sparks[i].t += dt; if (S.sparks[i].t > 0.25) S.sparks.splice(i, 1); }
+            for (let i = S.floaters.length - 1; i >= 0; i--) { S.floaters[i].t += dt; if (S.floaters[i].t > S.floaters[i].life) S.floaters.splice(i, 1); }
 
             // ---- 胜利 ----
             if (S.kills >= S.need && !P.endless) {
@@ -172,11 +207,9 @@ window.MiniGames = window.MiniGames || {};
         // 松手不清除目标点 —— 角色会缓动到该点并自动停下（见 update 里的 S.touch 清除逻辑）
         dragend(S) { /* 保留 S.touch，让角色平滑抵达手指最后位置 */ },
         key(S, k, P, api) {
-            const m = {
-                w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0],
-                ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
-            }[k];
-            if (m) { S.keyVec = { x: m[0], y: m[1] }; S.keyT = performance.now(); }
+            // 仅记录方向键 / WASD；字母统一转小写以匹配 DIR
+            const nk = k && k.length === 1 ? k.toLowerCase() : k;
+            if (nk in DIR) S.keys[nk] = performance.now();
         },
 
         tap(S, x, y, P, api) {
@@ -292,6 +325,18 @@ window.MiniGames = window.MiniGames || {};
                 ctx.restore();
             }
 
+            // ---- 浮动文字（道具拾取反馈）----
+            for (const f of S.floaters) {
+                const k = f.t / f.life;
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, 1 - k);
+                ctx.fillStyle = f.col;
+                ctx.font = 'bold 15px "Microsoft YaHei"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4;
+                ctx.fillText(f.text, f.x, f.y - k * 28);
+                ctx.restore();
+            }
+
             // ---- 受伤闪白 ----
             if (S.flash > 0) {
                 ctx.fillStyle = `rgba(255,60,60,${S.flash * 1.2})`;
@@ -340,7 +385,7 @@ window.MiniGames = window.MiniGames || {};
     });
 
     // ============ 技能池 ============
-    const SKILL_HINT = '按住屏幕指哪走哪';
+    const SKILL_HINT = '方向键 / WASD 移动 · 鼠标点按';
 const SKILLS = [
         { name: '小无相功', desc: '攻击力 +1（刀刀更疼）', apply: S => { S.kDmg += 1; } },
         { name: '火焰刀', desc: '飞刀 +1 把', apply: S => { S.knives += 1; } },

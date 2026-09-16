@@ -44,6 +44,14 @@ function numericPayloads(rows) {
   });
 }
 
+function looksLikeRawPayloadText(text) {
+  const value = String(text || '').trim();
+  if (value.length < 8 || /[\u4e00-\u9fff]/.test(value) || !/^[0-9A-Z]+$/i.test(value)) return false;
+  if (value.length >= 32) return true;
+  const digits = (value.match(/\d/g) || []).length;
+  return digits / value.length >= 0.5;
+}
+
 const records = games.map(game => {
   const title = titles.find(row => titleTexts(game.name).indexOf(row.text) >= 0);
   if (!title) {
@@ -65,7 +73,7 @@ const records = games.map(game => {
   const payloads = numericPayloads(rows);
   const payloadLengths = {};
   payloads.forEach(row => { payloadLengths[row.length] = (payloadLengths[row.length] || 0) + 1; });
-  const help = rows.filter(row => row.text !== title.text && !/^\d+$/.test(row.text) && row.text.length >= 8)
+  const help = rows.filter(row => row.text !== title.text && !looksLikeRawPayloadText(row.text) && row.text.length >= 8)
     .slice(0, 12).map(row => row.text.slice(0, 240));
   const crossGameMentions = games.filter(other => other.name !== game.name && other.name.length >= 3 && help.some(text => text.includes(other.name))).map(other => other.name);
   const payloadAssignment = {

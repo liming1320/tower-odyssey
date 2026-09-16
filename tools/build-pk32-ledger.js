@@ -10,12 +10,23 @@ const runtime = { window: { MiniGames: {} } };
 vm.createContext(runtime);
 vm.runInContext(source, runtime, { filename: file });
 const catalog = runtime.window.PK32Catalog || [];
+function launcher(record) {
+  if (record.playable) return record.playable.gameId;
+  if (record.module) return 'board';
+  if (record.variant) return 'variant';
+  if (record.puzzle) return 'puzzle';
+  if (record.action) return 'action';
+  if (record.casual) return 'casual';
+  if (record.strategy) return 'strategy';
+  if (record.card) return 'card';
+  return null;
+}
 const ledger = catalog.map(record => ({
   id: record.id,
   index: record.index,
   name: record.name,
   group: record.group,
-  launcher: record.playable ? record.playable.gameId : record.module ? 'board' : record.casual ? 'casual' : record.action ? 'action' : record.strategy ? 'strategy' : record.card ? 'card' : record.puzzle ? 'puzzle' : record.variant ? 'variant' : null,
+  launcher: launcher(record),
   launcherVerified: false,
   assetsMigrated: false,
   levelsMigrated: false,

@@ -15,9 +15,17 @@ const nativeById = new Map(catalog.records.map(record => [record.id, record]));
 const targetIds = new Set([...(queue.payloadFormatGroups || []), ...(queue.structuredPayloadGroups || [])].flatMap(group => group.games || []).map(game => game.id));
 const pending = queue.records.filter(record => record.migrationStatus === 'native-payloads-awaiting-adapter' || targetIds.has(record.id));
 
-const games = pending.map(record => {
+const skippedAssignments = [];
+const games = pending.flatMap(record => {
     const native = nativeById.get(record.id);
-    if (!native || !native.payloadAssignment || native.payloadAssignment.confidence !== 'candidate') throw new Error('unverified payload assignment: ' + record.name);
+    if (!native || !native.payloadAssignment || native.payloadAssignment.confidence !== 'candidate') {
+        skippedAssignments.push({
+            id: record.id,
+            name: record.name,
+            reason: native && native.payloadAssignment ? 'payload assignment confidence is ' + native.payloadAssignment.confidence : 'missing native payload assignment'
+        });
+        return [];
+    }
     const payloads = native.nativePayloads.map(payload => {
         const decoded = decodePayload(payload);
         const nativeEvidence = nativeEvidenceByPayload.get(record.id + ':' + payload.offset) || null;
@@ -43,7 +51,7 @@ const games = pending.map(record => {
     });
     const nativeHandlerRvas = [...new Set(payloads.flatMap(payload => payload.nativeHandlerRvas))].sort((a, b) => a - b);
     const nativeDispatcherIndexes = [...new Set(payloads.flatMap(payload => payload.nativeDispatcherIndexes))].sort((a, b) => a - b);
-    return {
+    return [{
         id: record.id,
         name: record.name,
         group: record.group,
@@ -64,7 +72,7 @@ const games = pending.map(record => {
         nativePayloadCount: native.payloadCount,
         decodedPayloadCount: payloads.length,
         payloads
-    };
+    }];
 });
 
 const groups = [];
@@ -94,10 +102,11 @@ const result = {
     payloadCount: games.reduce((sum, game) => sum + game.decodedPayloadCount, 0),
     nativeUsageVerifiedPayloadCount: games.reduce((sum, game) => sum + game.payloads.filter(payload => payload.nativeUsageVerified).length, 0),
     catalogAssignmentConflictGames: games.filter(game => game.catalogAssignmentConflict).length,
+    skippedAssignments,
     groups,
     games
 };
 
 const output = path.join(root, 'public/data/pk32-structured-payloads.json');
 fs.writeFileSync(output, JSON.stringify(result, null, 2) + '\n');
-console.log(JSON.stringify({ output: path.relative(root, output), games: result.gameCount, payloads: result.payloadCount, groups: groups.map(group => ({ family: group.family, games: group.gameCount, payloads: group.payloadCount })) }));
+console.log(JSON.stringify({ output: path.relative(root, output), games: result.gameCount, payloads: result.payloadCount, skippedAssignments: skippedAssignments.length, groups: groups.map(group => ({ family: group.family, games: group.gameCount, payloads: group.payloadCount })) }));

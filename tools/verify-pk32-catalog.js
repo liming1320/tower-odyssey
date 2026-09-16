@@ -24,9 +24,33 @@ const missing = catalog.filter(record => !record.playable && !record.module && !
 if (missing.length) throw new Error('Unmapped entries: ' + missing.join(', '));
 const launcherMapped = catalog.filter(record => record.playable || record.module || record.casual || record.action || record.strategy || record.card || record.puzzle || record.variant).length;
 const originalComplete = catalog.filter(record => record.originalComplete === true).length;
+const ambiguousLaunchers = catalog.filter(record => [
+    record.playable, record.module, record.variant, record.puzzle, record.action, record.casual, record.strategy, record.card
+].filter(Boolean).length > 1);
+const allowedAmbiguous = new Set(['24点二', '21点二', '数字魔方', '跟花二', '推箱子二', '推箱子三', '推箱子五', '连结电线二', '推箱子六', '交换彩球', '飞一百米', '接水管', '七巧板']);
+const unexpectedAmbiguous = ambiguousLaunchers.filter(record => !allowedAmbiguous.has(record.name));
+if (unexpectedAmbiguous.length) throw new Error('Unexpected multi-launcher entries: ' + unexpectedAmbiguous.map(record => record.name).join(', '));
+const distinctPairs = [
+    ['魔塔', '魔塔四'],
+    ['推箱子', '推箱子二'],
+    ['跟花', '跟花二']
+];
+distinctPairs.forEach(pair => {
+    const a = catalog.find(record => record.name === pair[0]);
+    const b = catalog.find(record => record.name === pair[1]);
+    if (!a || !b || a.id === b.id) throw new Error('Distinct PK32 games were merged: ' + pair.join(' / '));
+});
 const nativeCatalog = JSON.parse(fs.readFileSync(path.join(root, 'public', 'data', 'pk32-native-catalog.json'), 'utf8'));
 if (nativeCatalog.total !== 213 || nativeCatalog.records.length !== 213) throw new Error('Native catalog must contain 213 records');
 if (nativeCatalog.records.filter(record => record.titleFound).length < 200) throw new Error('Native title coverage unexpectedly low');
+const rawHelp = nativeCatalog.records.filter(record => (record.help || []).some(text => {
+    const value = String(text || '').trim();
+    if (value.length < 8 || /[\u4e00-\u9fff]/.test(value) || !/^[0-9A-Z]+$/i.test(value)) return false;
+    if (value.length >= 32) return true;
+    const digits = (value.match(/\d/g) || []).length;
+    return digits / value.length >= 0.5;
+}));
+if (rawHelp.length) throw new Error('Native help contains raw payload strings: ' + rawHelp.slice(0, 8).map(record => record.name).join(', '));
 const peg = nativeCatalog.records.find(record => record.name === '独粒钻石');
 if (!peg || peg.levelCount !== 17 || !/initialization switch cases/.test(peg.levelCountBasis || '')) throw new Error('独粒钻石 native board evidence changed');
 if (nativeCatalog.records.some(record => record.originalComplete === true)) throw new Error('Native evidence must not imply migration completion');

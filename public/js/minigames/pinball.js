@@ -1068,6 +1068,33 @@ window.MiniGames = window.MiniGames || {};
                 dmdDots(4, 1.0, 0.30);
             }
 
+            function drawEmblem() {
+                const ex = 176, ey = 392, R = 62;
+                ctx.save();
+                const gg = ctx.createRadialGradient(ex, ey, 8, ex, ey, R + 26);
+                gg.addColorStop(0, 'rgba(120,200,255,0.14)');
+                gg.addColorStop(0.6, 'rgba(90,150,230,0.05)');
+                gg.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = gg;
+                ctx.beginPath(); ctx.arc(ex, ey, R + 26, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'rgba(150,200,255,0.18)'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(ex, ey, R, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(ex, ey, R - 10, 0, Math.PI * 2); ctx.stroke();
+                // 中央星徽
+                ctx.fillStyle = 'rgba(180,220,255,0.20)';
+                ctx.save(); ctx.translate(ex, ey);
+                ctx.beginPath();
+                for (let i = 0; i < 10; i++) {
+                    const a = -Math.PI / 2 + i * Math.PI / 5;
+                    const rr = i % 2 ? 8 : 20;
+                    const px = Math.cos(a) * rr, py = Math.sin(a) * rr;
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.closePath(); ctx.fill();
+                ctx.restore();
+                ctx.restore();
+            }
+
             function drawPlayfield() {
                 if (BG) ctx.drawImage(BG, 0, 0, GW, GH);
                 else { ctx.fillStyle = '#0a1028'; ctx.fillRect(0, 88, GW, GH - 88); }
@@ -1085,8 +1112,16 @@ window.MiniGames = window.MiniGames || {};
                 ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.stroke();
                 ctx.restore();
 
+                // 台面顶部受光（让台面像被聚光灯照亮）
+                const lg = ctx.createLinearGradient(0, 100, 0, 360);
+                lg.addColorStop(0, 'rgba(150,180,255,0.10)');
+                lg.addColorStop(1, 'rgba(150,180,255,0)');
+                ctx.fillStyle = lg; ctx.fillRect(20, 100, GW - 40, 280);
+
+                drawEmblem();
+
                 const vg = ctx.createRadialGradient(176, 380, 90, 176, 380, 330);
-                vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.55)');
+                vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.5)');
                 ctx.fillStyle = vg; ctx.fillRect(0, 88, GW, GH - 88);
             }
 
@@ -1687,6 +1722,14 @@ window.MiniGames = window.MiniGames || {};
                 ctx.beginPath(); ctx.ellipse(b.x - 3, b.y - 3.6, 2.6, 1.7, -0.6, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = 'rgba(255,255,255,0.35)';
                 ctx.beginPath(); ctx.arc(b.x + 3.4, b.y + 3.4, 1.5, 0, Math.PI * 2); ctx.fill();
+                // 环境反射弧（金属感）
+                ctx.save();
+                ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R - 0.5, Math.PI * 0.15, Math.PI * 0.85);
+                ctx.strokeStyle = 'rgba(200,225,255,0.5)'; ctx.lineWidth = 1.2; ctx.stroke();
+                ctx.restore();
+                // 顶部细高光环
+                ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R - 1.5, Math.PI * 1.05, Math.PI * 1.7);
+                ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1; ctx.stroke();
                 // 多球：给额外球加一圈金色光环，一眼能认出「这不是主球」
                 if (!isMain) {
                     ctx.strokeStyle = 'rgba(255,200,90,0.85)'; ctx.lineWidth = 1.6;

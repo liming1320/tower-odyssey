@@ -54,7 +54,7 @@ MiniGames.link = {
                 desc: `${lv.cols}×${lv.rows} · ${lv.time}s${lv.rocks ? ' · 🪨' + lv.rocks : ''}`,
             }));
             MG.levelSelect(container, {
-                game: 'link', title: '连连看 · 20 关挑战', levels,
+                game: 'link', title: '连连看 · 50 关挑战', levels,
                 onStart: idx => runRound(idx + 1),
             });
         };

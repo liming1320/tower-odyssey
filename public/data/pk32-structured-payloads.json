@@ -6,10 +6,11 @@
   "assignmentConfidence": "candidate",
   "recordsArePlayableLevels": false,
   "fullGameRulesVerified": false,
-  "gameCount": 29,
-  "payloadCount": 493,
-  "nativeUsageVerifiedPayloadCount": 493,
-  "catalogAssignmentConflictGames": 26,
+  "gameCount": 28,
+  "payloadCount": 489,
+  "nativeUsageVerifiedPayloadCount": 489,
+  "catalogAssignmentConflictGames": 25,
+  "skippedAssignments": [],
   "groups": [
     {
       "family": "fixed-area-candidate",
@@ -188,19 +189,6 @@
           "id": "pk32-188",
           "name": "马跳棋盘",
           "payloadCount": 19
-        }
-      ]
-    },
-    {
-      "family": "numeric-mixed",
-      "semanticsVerified": false,
-      "gameCount": 1,
-      "payloadCount": 4,
-      "games": [
-        {
-          "id": "pk32-176",
-          "name": "弹力连珠",
-          "payloadCount": 4
         }
       ]
     }
@@ -13855,139 +13843,6 @@
           ],
           "nativeDispatcherIndexes": [
             19
-          ],
-          "catalogAssignmentConflict": true,
-          "ownershipVerified": false
-        }
-      ]
-    },
-    {
-      "id": "pk32-176",
-      "name": "弹力连珠",
-      "group": "休闲与解谜",
-      "source": "PK32 native numeric strings",
-      "dataKind": "structured-native-payloads",
-      "dominantFamily": "numeric-mixed",
-      "payloadFamilyCounts": {
-        "numeric-mixed": 4
-      },
-      "assignmentVerified": false,
-      "assignmentConfidence": "candidate",
-      "assignmentRequires": "native code reference from game dispatcher to payload offset",
-      "nativeUsageVerified": true,
-      "nativeHandlerRvas": [
-        29864128
-      ],
-      "nativeDispatcherIndexes": [
-        31
-      ],
-      "catalogAssignmentConflict": true,
-      "ownershipVerified": false,
-      "recordsArePlayableLevels": false,
-      "fullGameRulesVerified": false,
-      "nativePayloadCount": 4,
-      "decodedPayloadCount": 4,
-      "payloads": [
-        {
-          "offset": 3654300,
-          "length": 45,
-          "family": "numeric-mixed",
-          "confidence": "unclassified",
-          "semanticsVerified": false,
-          "structure": {
-            "tupleCount": 15,
-            "cellWidth": 3,
-            "unrestrictedRange": true
-          },
-          "unitCount": 15,
-          "unitMin": 31,
-          "unitMax": 930,
-          "trailerLength": 0,
-          "sourceSha256": "faaefd0ed3053e434a654bff580c0411039895a2035978d13052ef1395c018cf",
-          "nativeUsageVerified": true,
-          "nativeHandlerRvas": [
-            29864128
-          ],
-          "nativeDispatcherIndexes": [
-            31
-          ],
-          "catalogAssignmentConflict": true,
-          "ownershipVerified": false
-        },
-        {
-          "offset": 3654396,
-          "length": 45,
-          "family": "numeric-mixed",
-          "confidence": "unclassified",
-          "semanticsVerified": false,
-          "structure": {
-            "tupleCount": 15,
-            "cellWidth": 3,
-            "unrestrictedRange": true
-          },
-          "unitCount": 15,
-          "unitMin": 30,
-          "unitMax": 520,
-          "trailerLength": 0,
-          "sourceSha256": "74f197e6b110ffc96f623564cb15fa26240cfbdde1abd9f49f88f3322ba07e34",
-          "nativeUsageVerified": true,
-          "nativeHandlerRvas": [
-            29864128
-          ],
-          "nativeDispatcherIndexes": [
-            31
-          ],
-          "catalogAssignmentConflict": true,
-          "ownershipVerified": false
-        },
-        {
-          "offset": 3654492,
-          "length": 45,
-          "family": "numeric-mixed",
-          "confidence": "unclassified",
-          "semanticsVerified": false,
-          "structure": {
-            "tupleCount": 15,
-            "cellWidth": 3,
-            "unrestrictedRange": true
-          },
-          "unitCount": 15,
-          "unitMin": 31,
-          "unitMax": 810,
-          "trailerLength": 0,
-          "sourceSha256": "366cd756a1e6fbe8e7c74842c7456dfbf80861c1a696b0aeda3688e49a3723f1",
-          "nativeUsageVerified": true,
-          "nativeHandlerRvas": [
-            29864128
-          ],
-          "nativeDispatcherIndexes": [
-            31
-          ],
-          "catalogAssignmentConflict": true,
-          "ownershipVerified": false
-        },
-        {
-          "offset": 3654588,
-          "length": 45,
-          "family": "numeric-mixed",
-          "confidence": "unclassified",
-          "semanticsVerified": false,
-          "structure": {
-            "tupleCount": 15,
-            "cellWidth": 3,
-            "unrestrictedRange": true
-          },
-          "unitCount": 15,
-          "unitMin": 30,
-          "unitMax": 920,
-          "trailerLength": 0,
-          "sourceSha256": "1054d39adac699d0ca79ff532c6299796821a7bb41ff7400adf63270e933314a",
-          "nativeUsageVerified": true,
-          "nativeHandlerRvas": [
-            29864128
-          ],
-          "nativeDispatcherIndexes": [
-            31
           ],
           "catalogAssignmentConflict": true,
           "ownershipVerified": false

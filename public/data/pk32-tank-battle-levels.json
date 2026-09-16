@@ -1,6 +1,5 @@
 {
   "name": "坦克大战",
-  "fullGameRulesVerified": false,
   "nativeLevelCount": null,
   "extractedPayloadCount": 1,
   "encoding": "native 15 by 10 decimal grid",

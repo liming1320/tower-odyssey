@@ -1,8 +1,5 @@
 {
   "name": "建筑制造",
-  "assignmentVerified": false,
-  "quarantineReason": "This file mixes 29 level descriptors with 16x12 boards and four objective fixtures.",
-  "fullGameRulesVerified": false,
   "nativeLevelCount": null,
   "extractedPayloadCount": 53,
   "payloadLengths": {
@@ -11,9 +8,9 @@
     "192": 24
   },
   "rules": [
-    "引爆所有的炸弹并且激活所有的传感器之后移动到出口",
-    "引爆所有的炸弹之后移动到出口",
-    "激活所有的传感器"
+    "激活所有的传感器之后移动到出口",
+    "哈！您失败了！请再来一次吧。",
+    "请您用键盘的<空格键>来控制人物往上跳跃，只要到达最高的100层即可过关。"
   ],
   "levels": [
     {
@@ -308,7 +305,7 @@
       "number": 49,
       "offset": 3852524,
       "cells": "05050999090009001009000909990",
-      "width": 5
+      "width": null
     },
     {
       "number": 50,

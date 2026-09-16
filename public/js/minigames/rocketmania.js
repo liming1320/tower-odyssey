@@ -105,113 +105,165 @@ window.MiniGames = window.MiniGames || {};
                 draw();
                 opts.onScore && opts.onScore(`⏱ ${Math.ceil(time)}s · 已发射 ${launched}/${quota} · 连击 ×${combo}`);
             }
+            // 夜空星点（预生成，闪烁）
+            const stars = [];
+            for (let i = 0; i < 64; i++) stars.push({ x: Math.random() * W, y: Math.random() * (Y0 - 10), r: Math.random() * 1.4 + 0.4, ph: Math.random() * 6.28 });
+            let lastSpark = false, lastPath = null, frame = 0, raf = 0, sparkFrame = -999;
             function draw(spark, path) {
+                if (spark !== undefined) {
+                    if (spark) { lastSpark = true; sparkFrame = frame; if (path && path.length) lastPath = path; }
+                    else lastSpark = false;
+                }
+                frame++;
+                // 夜空背景
                 const g = ctx.createLinearGradient(0, 0, 0, H);
-                g.addColorStop(0, '#1a2438'); g.addColorStop(1, '#0a0f1c');
+                g.addColorStop(0, '#0a0f28'); g.addColorStop(0.55, '#141a3c'); g.addColorStop(1, '#1d2342');
                 ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-                ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(X0 - 6, Y0 - 6, G * CS + 12, G * CS + 12);
+                // 月亮辉光
+                const mg = ctx.createRadialGradient(W - 58, 52, 4, W - 58, 52, 72);
+                mg.addColorStop(0, 'rgba(220,230,255,0.5)'); mg.addColorStop(1, 'rgba(220,230,255,0)');
+                ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(W - 58, 52, 72, 0, 6.29); ctx.fill();
+                ctx.fillStyle = '#eef3ff'; ctx.beginPath(); ctx.arc(W - 58, 52, 16, 0, 6.29); ctx.fill();
+                ctx.fillStyle = '#141a3c'; ctx.beginPath(); ctx.arc(W - 46, 46, 14, 0, 6.29); ctx.fill();
+                // 星星闪烁
+                for (const s of stars) {
+                    const a = 0.3 + 0.5 * (0.5 + 0.5 * Math.sin(frame * 0.05 + s.ph));
+                    ctx.fillStyle = `rgba(255,255,255,${a})`;
+                    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.29); ctx.fill();
+                }
+                // 控制面板底板
+                const bx = X0 - 10, by = Y0 - 10, bw = G * CS + 20, bh = G * CS + 20;
+                const pg = ctx.createLinearGradient(0, by, 0, by + bh);
+                pg.addColorStop(0, '#2a3350'); pg.addColorStop(1, '#1a2238');
+                ctx.fillStyle = pg; MG.ui.rr(ctx, bx, by, bw, bh, 10); ctx.fill();
+                ctx.strokeStyle = '#3d4a6e'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.fillStyle = '#566089';
+                for (const [cx2, cy2] of [[bx + 6, by + 6], [bx + bw - 6, by + 6], [bx + 6, by + bh - 6], [bx + bw - 6, by + bh - 6]]) {
+                    ctx.beginPath(); ctx.arc(cx2, cy2, 2.6, 0, 6.29); ctx.fill();
+                }
                 // 引信入口：点火起爆器（红箱 + T 型摇杆）
                 const fx = X0 - 26, fy = Y0 + fuseRow * CS + CS / 2;
-                ctx.fillStyle = '#b03028'; MG.ui.rr(ctx, fx - 16, fy - 14, 30, 26, 4); ctx.fill();
-                ctx.strokeStyle = '#5c1410'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.fillStyle = '#8c2018'; MG.ui.rr(ctx, fx - 12, fy - 10, 22, 8, 2); ctx.fill();
+                ctx.fillStyle = '#9c2a22'; MG.ui.rr(ctx, fx - 18, fy - 16, 34, 30, 5); ctx.fill();
+                ctx.strokeStyle = '#4a100c'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.fillStyle = '#c93a30'; MG.ui.rr(ctx, fx - 14, fy - 12, 26, 10, 2); ctx.fill();
                 ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-                ctx.beginPath(); ctx.moveTo(fx - 1, fy + 2); ctx.lineTo(fx - 1, fy - 14); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(fx - 7, fy - 14); ctx.lineTo(fx + 6, fy - 14); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(fx - 1, fy + 2); ctx.lineTo(fx - 1, fy - 16); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(fx - 8, fy - 16); ctx.lineTo(fx + 6, fy - 16); ctx.stroke();
                 ctx.font = '12px sans-serif'; ctx.fillStyle = '#ffd56b'; ctx.textAlign = 'center';
-                ctx.fillText('点火', fx - 1, fy + 22);
+                ctx.fillText('点火', fx - 1, fy + 24);
                 // 格子与管道
                 for (let r = 0; r < G; r++) for (let c = 0; c < G; c++) {
                     const px = X0 + c * CS, py = Y0 + r * CS;
-                    ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 1;
                     ctx.strokeRect(px + .5, py + .5, CS - 1, CS - 1);
                     drawPipes(px, py, grid[r][c]);
                 }
-                // 发射架 + 火箭
+                // 火箭（自带入发射台）
                 for (const rr of rocketRows) {
                     const cy = Y0 + rr * CS + CS / 2, cx = X0 + G * CS + 26;
-                    // 发射架
-                    ctx.fillStyle = '#2c3444'; ctx.fillRect(X0 + G * CS + 4, cy + 6, 44, 7);
-                    ctx.fillStyle = '#39445a';
-                    ctx.fillRect(cx - 12, cy + 13, 5, 10); ctx.fillRect(cx + 8, cy + 13, 5, 10);
-                    ctx.fillStyle = '#e8b23c';
-                    for (let k = 0; k < 5; k++) ctx.fillRect(X0 + G * CS + 5 + k * 9, cy + 7, 5, 3);
                     const launchedYet = launched > 0 && rocketRows.indexOf(rr) < launched;
                     ctx.globalAlpha = launchedYet ? 0.25 : 1;
                     drawRocket(cx, cy);
                     ctx.globalAlpha = 1;
                 }
-                // 发射火花动画路径
-                if (spark && path) {
-                    ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-                    ctx.beginPath();
-                    ctx.moveTo(X0 - 14, Y0 + fuseRow * CS + CS / 2);
-                    path.forEach(p => ctx.lineTo(X0 + p.c * CS + CS / 2, Y0 + p.r * CS + CS / 2));
-                    ctx.lineTo(X0 + G * CS + 8, Y0 + path[path.length - 1].r * CS + CS / 2);
-                    ctx.stroke();
-                    ctx.strokeStyle = '#fff6d8'; ctx.lineWidth = 2.4; ctx.stroke();
+                // 发射火花动画路径（带彗星头与拖尾）
+                if (lastSpark && lastPath && lastPath.length) {
+                    const pts = [{ x: X0 - 14, y: Y0 + fuseRow * CS + CS / 2 }];
+                    lastPath.forEach(p => pts.push({ x: X0 + p.c * CS + CS / 2, y: Y0 + p.r * CS + CS / 2 }));
+                    pts.push({ x: X0 + G * CS + 8, y: Y0 + lastPath[lastPath.length - 1].r * CS + CS / 2 });
+                    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                    ctx.strokeStyle = 'rgba(255,200,90,0.35)'; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+                    ctx.strokeStyle = '#ffd56b'; ctx.lineWidth = 4.5; ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+                    ctx.strokeStyle = '#fff6d8'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+                    const segs = pts.length - 1, head = (frame * 0.08) % segs, si = Math.floor(head), t = head - si;
+                    const hx = pts[si].x + (pts[si + 1].x - pts[si].x) * t, hy = pts[si].y + (pts[si + 1].y - pts[si].y) * t;
+                    const hg = ctx.createRadialGradient(hx, hy, 1, hx, hy, 12);
+                    hg.addColorStop(0, 'rgba(255,255,220,0.95)'); hg.addColorStop(1, 'rgba(255,200,90,0)');
+                    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, 12, 0, 6.29); ctx.fill();
                 }
             }
             function drawPipes(px, py, cell) {
                 const ops = openings(cell);
                 const cx = px + CS / 2, cy = py + CS / 2;
-                const colMain = cell.t === 'X' ? '#d8a24a' : '#7ab8d8';
-                // 底影 → 主管 → 高光 → 法兰
-                ctx.lineCap = 'butt';
-                for (const [w, col] of [[12, 'rgba(0,0,0,0.35)'], [8, colMain], [3, MG.gfx.lighten(colMain, 0.45)]]) {
-                    ctx.strokeStyle = col; ctx.lineWidth = w;
-                    for (const d of ops) {
-                        ctx.beginPath(); ctx.moveTo(cx, cy);
-                        ctx.lineTo(cx + DIRS[d][0] * CS / 2, cy + DIRS[d][1] * CS / 2); ctx.stroke();
-                    }
-                }
-                ctx.fillStyle = '#c8dcf0';
-                ctx.beginPath(); ctx.arc(cx, cy, 5.5, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
-                // 开口端法兰（垂直于管道的小横杆）
-                ctx.strokeStyle = MG.gfx.darken(colMain, 0.35); ctx.lineWidth = 3; ctx.lineCap = 'round';
+                const colMain = cell.t === 'X' ? '#e0b24e' : '#8fc4e6';
+                const colDark = MG.gfx.darken(colMain, 0.45), colLite = MG.gfx.lighten(colMain, 0.5);
+                ctx.lineCap = 'round';
+                // 底影
+                ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 13;
+                for (const d of ops) { ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + DIRS[d][0] * CS / 2, cy + DIRS[d][1] * CS / 2); ctx.stroke(); }
+                // 主管（金属纵向高光）+ 高光细线
                 for (const d of ops) {
-                    const ex = cx + DIRS[d][0] * (CS / 2 - 2), ey = cy + DIRS[d][1] * (CS / 2 - 2);
-                    const px2 = DIRS[d][1], py2 = DIRS[d][0];   // 法线方向
-                    ctx.beginPath(); ctx.moveTo(ex + px2 * 6, ey + py2 * 6); ctx.lineTo(ex - px2 * 6, ey - py2 * 6); ctx.stroke();
+                    const ex = cx + DIRS[d][0] * CS / 2, ey = cy + DIRS[d][1] * CS / 2;
+                    const pg = ctx.createLinearGradient(cx - 5, cy - 5, cx + 5, cy + 5);
+                    pg.addColorStop(0, colLite); pg.addColorStop(0.5, colMain); pg.addColorStop(1, colDark);
+                    ctx.strokeStyle = pg; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey); ctx.stroke();
+                    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey); ctx.stroke();
+                }
+                // 中心轮毂
+                const hg = ctx.createRadialGradient(cx - 1.5, cy - 1.5, 1, cx, cy, 6);
+                hg.addColorStop(0, colLite); hg.addColorStop(1, colDark);
+                ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(cx, cy, 5.5, 0, 6.29); ctx.fill();
+                ctx.strokeStyle = colDark; ctx.lineWidth = 1.4; ctx.stroke();
+                // 开口端法兰（带铆钉的套环）
+                for (const d of ops) {
+                    const ex = cx + DIRS[d][0] * (CS / 2 - 1), ey = cy + DIRS[d][1] * (CS / 2 - 1);
+                    const nx = DIRS[d][1], ny = DIRS[d][0]; // 法线方向
+                    ctx.strokeStyle = colDark; ctx.lineWidth = 5;
+                    ctx.beginPath(); ctx.moveTo(ex + nx * 6, ey + ny * 6); ctx.lineTo(ex - nx * 6, ey - ny * 6); ctx.stroke();
+                    ctx.strokeStyle = colLite; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(ex + nx * 6, ey + ny * 6); ctx.lineTo(ex - nx * 6, ey - ny * 6); ctx.stroke();
+                    ctx.fillStyle = '#cfd8e8';
+                    for (const tt of [-3.5, 3.5]) { ctx.beginPath(); ctx.arc(ex + nx * tt, ey + ny * tt, 1.3, 0, 6.29); ctx.fill(); }
                 }
             }
-            // 火箭（朝右：尖头朝发射方向）
+            // 火箭（朝右：尖头朝发射方向），自带发射台与动态尾焰
             function drawRocket(cx, cy) {
                 ctx.save(); ctx.translate(cx, cy);
+                // 发射台
+                ctx.fillStyle = '#3a4258';
+                ctx.beginPath(); ctx.moveTo(-18, 18); ctx.lineTo(18, 18); ctx.lineTo(13, 26); ctx.lineTo(-13, 26); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#4f5a78';
+                for (let k = -12; k <= 12; k += 6) ctx.fillRect(k - 1.5, 18, 3, 8);
+                // 尾焰（动态跳动）
+                const fl = 14 + Math.sin(frame * 0.4) * 4 + Math.random() * 3;
+                const fg = ctx.createLinearGradient(-16, 0, -16 - fl, 0);
+                fg.addColorStop(0, 'rgba(255,230,150,0.95)'); fg.addColorStop(0.5, 'rgba(255,150,40,0.9)'); fg.addColorStop(1, 'rgba(255,80,20,0)');
+                ctx.fillStyle = fg;
+                ctx.beginPath(); ctx.moveTo(-16, -5); ctx.quadraticCurveTo(-16 - fl * 0.6, -3, -16 - fl, 0); ctx.quadraticCurveTo(-16 - fl * 0.6, 3, -16, 5); ctx.closePath(); ctx.fill();
                 // 尾翼
                 ctx.fillStyle = '#d84040';
-                ctx.beginPath(); ctx.moveTo(-14, -8); ctx.lineTo(-20, -15); ctx.lineTo(-8, -9); ctx.closePath(); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(-14, 8); ctx.lineTo(-20, 15); ctx.lineTo(-8, 9); ctx.closePath(); ctx.fill();
-                // 箭体
+                ctx.beginPath(); ctx.moveTo(-14, -9); ctx.lineTo(-22, -16); ctx.lineTo(-9, -9); ctx.closePath(); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-14, 9); ctx.lineTo(-22, 16); ctx.lineTo(-9, 9); ctx.closePath(); ctx.fill();
+                // 箭体金属渐变
                 const bg = ctx.createLinearGradient(0, -9, 0, 9);
-                bg.addColorStop(0, '#ffffff'); bg.addColorStop(0.5, '#e8e8ee'); bg.addColorStop(1, '#b8bcc8');
+                bg.addColorStop(0, '#ffffff'); bg.addColorStop(0.45, '#eef0f6'); bg.addColorStop(1, '#aeb4c4');
                 ctx.fillStyle = bg;
-                MG.ui.rr(ctx, -16, -9, 26, 18, 8); ctx.fill();
-                ctx.strokeStyle = '#6a6f7c'; ctx.lineWidth = 1.4; ctx.stroke();
-                // 条纹环
+                MG.ui.rr(ctx, -16, -9, 26, 18, 9); ctx.fill();
+                ctx.strokeStyle = '#5d6473'; ctx.lineWidth = 1.4; ctx.stroke();
+                // 高光条
+                ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.fillRect(-14, -7, 3, 14);
+                // 红色条纹环
                 ctx.fillStyle = '#d84040';
-                ctx.fillRect(-12, -9, 4, 18); ctx.fillRect(2, -9, 4, 18);
+                ctx.fillRect(-12, -9, 4, 18); ctx.fillRect(1, -9, 4, 18);
                 // 舷窗
-                ctx.beginPath(); ctx.arc(-4, 0, 4, 0, Math.PI * 2);
-                ctx.fillStyle = '#7ec8e8'; ctx.fill();
-                ctx.strokeStyle = '#5c1410'; ctx.lineWidth = 1.6; ctx.stroke();
-                ctx.beginPath(); ctx.arc(-5.2, -1.2, 1.2, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+                const wg = ctx.createRadialGradient(-4, -1, 1, -4, 0, 5);
+                wg.addColorStop(0, '#cdeeff'); wg.addColorStop(1, '#3a8fc0');
+                ctx.beginPath(); ctx.arc(-4, 0, 4, 0, 6.29); ctx.fillStyle = wg; ctx.fill();
+                ctx.strokeStyle = '#4a1410'; ctx.lineWidth = 1.6; ctx.stroke();
+                ctx.beginPath(); ctx.arc(-5, -1, 1.3, 0, 6.29); ctx.fillStyle = '#fff'; ctx.fill();
                 // 尖锥
-                ctx.fillStyle = '#e05c50';
-                ctx.beginPath(); ctx.moveTo(10, -8); ctx.quadraticCurveTo(22, 0, 10, 8); ctx.closePath(); ctx.fill();
+                const ng = ctx.createLinearGradient(8, -8, 8, 8);
+                ng.addColorStop(0, '#ff8a72'); ng.addColorStop(1, '#c23a2c');
+                ctx.fillStyle = ng;
+                ctx.beginPath(); ctx.moveTo(10, -8); ctx.quadraticCurveTo(24, 0, 10, 8); ctx.closePath(); ctx.fill();
                 ctx.strokeStyle = '#8c2a22'; ctx.lineWidth = 1.4; ctx.stroke();
-                // 尾焰（待发射余火）
-                ctx.fillStyle = 'rgba(255,170,60,0.85)';
-                ctx.beginPath(); ctx.moveTo(-16, -4); ctx.lineTo(-24, 0); ctx.lineTo(-16, 4); ctx.closePath(); ctx.fill();
-                ctx.fillStyle = 'rgba(255,240,180,0.9)';
-                ctx.beginPath(); ctx.moveTo(-16, -2); ctx.lineTo(-20, 0); ctx.lineTo(-16, 2); ctx.closePath(); ctx.fill();
                 ctx.restore();
             }
-            reset(); draw();
+            function anim() { if (over) return; if (lastSpark && frame - sparkFrame > 55) lastSpark = false; draw(); raf = requestAnimationFrame(anim); }
+            reset(); draw(); anim();
             window.__rocketDbg = { findPath, tryLaunch, hasOpen, openings, get grid() { return grid; }, set grid(v) { grid = v; }, get fuseRow() { return fuseRow; }, set rocketRows(v) { rocketRows = v; } };
             const timer = setInterval(step, 250);
-            return { stop() { clearInterval(timer); } };
+            return { stop() { clearInterval(timer); cancelAnimationFrame(raf); } };
         },
     };
 })();

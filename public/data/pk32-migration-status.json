@@ -5289,7 +5289,7 @@
       "migrationEvidence": {
         "catalogRegistered": true,
         "rawPayloadsBound": true,
-        "structuredPayloadsBound": true,
+        "structuredPayloadsBound": false,
         "dedicatedAdapterBound": false,
         "contentComplete": false,
         "verificationComplete": false
@@ -6399,7 +6399,7 @@
       "migrationEvidence": {
         "catalogRegistered": true,
         "rawPayloadsBound": true,
-        "structuredPayloadsBound": true,
+        "structuredPayloadsBound": false,
         "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false

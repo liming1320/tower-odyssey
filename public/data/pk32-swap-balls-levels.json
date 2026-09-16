@@ -1,10 +1,8 @@
 {
   "name": "交换彩球",
-  "fullGameRulesVerified": false,
   "nativeLevelCount": null,
   "extractedPayloadCount": 1,
   "rules": [
-    "没有球碰到案边，对手自由球",
     "请您消去所有的彩球，只要选择三个以上的上下左右连续相同颜色的彩球即可，两个连续和白色炸弹相连的也可以消去。"
   ],
   "levels": [
