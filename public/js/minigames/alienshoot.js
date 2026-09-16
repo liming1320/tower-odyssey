@@ -61,8 +61,15 @@ window.MiniGames = window.MiniGames || {};
             // ---- 大地图：建筑 + 地表细节（确定性生成，随关卡布局变化） ----
             const buildings = [];
             const grass = [];
+            const barrels = [];
+            const paths = [];
+            const casings = [];
             const rng = mulberry32(1337 + idx * 97);
             (function genWorld() {
+                const cx0 = WORLD_W / 2, cy0 = WORLD_H / 2;
+                // 主干道（泥土地面，军用基地通道感）
+                paths.push({ x1: cx0, y1: 40, x2: cx0, y2: WORLD_H - 40, w: 48 });
+                paths.push({ x1: 40, y1: cy0, x2: WORLD_W - 40, y2: cy0, w: 48 });
                 const types = ['bunker', 'barracks', 'tent', 'crate', 'sandbag'];
                 const n = 8 + (idx % 4);
                 let placed = 0, guard = 0;
@@ -73,7 +80,16 @@ window.MiniGames = window.MiniGames || {};
                     const cx = x + w / 2, cy = y + h / 2;
                     if (Math.abs(cx - WORLD_W / 2) < 160 && Math.abs(cy - WORLD_H / 2) < 160) continue; // 避开出生点
                     buildings.push({ x, y, w, h, type: types[(rng() * types.length) | 0] });
+                    // 建筑连到主干道的支路
+                    paths.push({ x1: cx, y1: cy, x2: cx0 + (rng() - 0.5) * 140, y2: cy0 + (rng() - 0.5) * 140, w: 22 });
                     placed++;
+                }
+                // 油桶（可碰撞掩体）
+                const nb = 10 + (idx % 5);
+                for (let i = 0; i < nb; i++) {
+                    const x = 60 + rng() * (WORLD_W - 120), y = 60 + rng() * (WORLD_H - 120);
+                    if (Math.abs(x - cx0) < 90 && Math.abs(y - cy0) < 90) continue;
+                    barrels.push({ x, y, r: 11 });
                 }
                 // 地表：草叶 / 泥斑 / 碎石（散布整个世界，仅绘制可见部分）
                 const m = 1500;
@@ -84,12 +100,23 @@ window.MiniGames = window.MiniGames || {};
                     const s = type === 'blade' ? 3 + rng() * 4 : type === 'dirt' ? 5 + rng() * 12 : 1.5 + rng() * 2.5;
                     grass.push({ x: gx, y: gy, type, s, tone: rng() });
                 }
+                // 弹壳（静态散布，增加战地细节）
+                for (let i = 0; i < 220; i++) casings.push({ x: rng() * WORLD_W, y: rng() * WORLD_H, a: rng() * Math.PI });
             })();
 
             // 把对象 o（含 x,y）推出建筑 AABB（简单最小穿透轴回弹）
             function collide(o, r) {
                 for (const b of buildings) {
                     const ex0 = b.x - r, ey0 = b.y - r, ex1 = b.x + b.w + r, ey1 = b.y + b.h + r;
+                    if (o.x > ex0 && o.x < ex1 && o.y > ey0 && o.y < ey1) {
+                        const dl = o.x - ex0, dr = ex1 - o.x, dt = o.y - ey0, db = ey1 - o.y;
+                        const mm = Math.min(dl, dr, dt, db);
+                        if (mm === dl) o.x = ex0; else if (mm === dr) o.x = ex1;
+                        else if (mm === dt) o.y = ey0; else o.y = ey1;
+                    }
+                }
+                for (const b of barrels) {
+                    const ex0 = b.x - r, ey0 = b.y - r, ex1 = b.x + r, ey1 = b.y + r;
                     if (o.x > ex0 && o.x < ex1 && o.y > ey0 && o.y < ey1) {
                         const dl = o.x - ex0, dr = ex1 - o.x, dt = o.y - ey0, db = ey1 - o.y;
                         const mm = Math.min(dl, dr, dt, db);
@@ -261,6 +288,15 @@ window.MiniGames = window.MiniGames || {};
                 gg.addColorStop(0, '#3f5a32'); gg.addColorStop(1, '#324827');
                 ctx.fillStyle = gg; ctx.fillRect(vx0, vy0, W, H);
 
+                // 泥土地面通道（军用基地支路，带边线）
+                ctx.lineCap = 'round';
+                for (const p of paths) {
+                    ctx.strokeStyle = 'rgba(70,58,40,0.6)'; ctx.lineWidth = p.w + 6;
+                    ctx.beginPath(); ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke();
+                    ctx.strokeStyle = 'rgba(126,104,68,0.5)'; ctx.lineWidth = p.w;
+                    ctx.beginPath(); ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke();
+                }
+
                 // 地表细节（仅可见）
                 for (const d of grass) {
                     if (d.x < vx0 - 20 || d.x > vx1 + 20 || d.y < vy0 - 20 || d.y > vy1 + 20) continue;
@@ -277,11 +313,31 @@ window.MiniGames = window.MiniGames || {};
                     }
                 }
 
+                // 弹壳（静态散布，战地细节）
+                for (const c of casings) {
+                    if (c.x < vx0 - 10 || c.x > vx1 + 10 || c.y < vy0 - 10 || c.y > vy1 + 10) continue;
+                    ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.a);
+                    ctx.fillStyle = 'rgba(205,175,95,0.7)'; ctx.fillRect(-2, -0.8, 4, 1.6);
+                    ctx.restore();
+                }
+
                 // 世界边界（石墙围栏）
                 ctx.strokeStyle = 'rgba(60,55,45,0.9)'; ctx.lineWidth = 6;
                 ctx.strokeRect(0, 0, WORLD_W, WORLD_H);
                 ctx.strokeStyle = 'rgba(120,110,90,0.45)'; ctx.lineWidth = 2;
                 ctx.strokeRect(3, 3, WORLD_W - 6, WORLD_H - 6);
+
+                // 油桶（可碰撞掩体）
+                for (const b of barrels) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(b.x + 2, b.y + 4, b.r, b.r * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+                    const bg = ctx.createLinearGradient(b.x - b.r, b.y, b.x + b.r, b.y);
+                    bg.addColorStop(0, '#9a4b2e'); bg.addColorStop(0.5, '#c8703c'); bg.addColorStop(1, '#7a3a22');
+                    ctx.fillStyle = bg; ctx.beginPath(); ctx.ellipse(b.x, b.y, b.r, b.r * 0.92, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#3a1c10'; ctx.lineWidth = 1.4; ctx.stroke();
+                    ctx.strokeStyle = 'rgba(40,20,10,0.6)'; ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.ellipse(b.x, b.y - b.r * 0.3, b.r * 0.8, b.r * 0.7, 0, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.ellipse(b.x, b.y + b.r * 0.3, b.r * 0.8, b.r * 0.7, 0, 0, Math.PI * 2); ctx.stroke();
+                }
 
                 // 建筑
                 for (const b of buildings) drawBuilding(b);
@@ -415,6 +471,11 @@ window.MiniGames = window.MiniGames || {};
                 // 玩家：俯视士兵
                 drawSoldier(px, py, Math.atan2(aimWY - py, aimWX - px));
 
+                // 玩家手电/环境光：以玩家为中心的径向暗角，营造纵深
+                const fg = ctx.createRadialGradient(px, py, 80, px, py, 430);
+                fg.addColorStop(0, 'rgba(0,0,0,0)'); fg.addColorStop(1, 'rgba(0,0,0,0.42)');
+                ctx.fillStyle = fg; ctx.fillRect(px - 460, py - 460, 920, 920);
+
                 ctx.restore();  // 结束相机/抖动包裹
 
                 // ===== 屏幕 HUD =====
@@ -525,6 +586,8 @@ window.MiniGames = window.MiniGames || {};
                 bg.addColorStop(0, '#7e8f5e'); bg.addColorStop(1, '#3c482c');
                 ctx.fillStyle = bg; ctx.fill();
                 ctx.strokeStyle = '#232c19'; ctx.lineWidth = 1.6; ctx.stroke();
+                // 弹匣腰带
+                ctx.fillStyle = '#2a3320'; ctx.fillRect(-9, -2.5, 18, 5);
                 // 背心绑带 + 弹匣包
                 ctx.strokeStyle = '#2c3520'; ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.moveTo(-4, -8.5); ctx.lineTo(-4, 8.5); ctx.moveTo(4, -9); ctx.lineTo(4, 9); ctx.stroke();
