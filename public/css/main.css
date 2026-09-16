@@ -1035,6 +1035,10 @@ body.in-battle .avatar-btn { display: none; }
 .pk32-evidence-facts p { margin: 4px 0; overflow-wrap: anywhere; }
 .pk32-evidence-help { margin: 0; padding-left: 22px; }
 .pk32-evidence-payload { box-sizing: border-box; max-width: 100%; max-height: 320px; margin: 0; padding: 10px; overflow: auto; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.24); color: #d7f4df; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pk32-evidence-atlas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; min-width: 0; }
+.pk32-evidence-atlas { min-width: 0; margin: 0; padding: 6px; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.2); }
+.pk32-evidence-atlas img { display: block; width: 100%; max-height: 180px; object-fit: contain; background: #111827; }
+.pk32-evidence-atlas figcaption { margin-top: 4px; color: #b8c0cc; font-size: 11px; overflow-wrap: anywhere; }
 .emu-btn { border: none; border-radius: 8px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; flex: 0 0 auto; }
 .emu-btn-play { background: linear-gradient(160deg, #ffd56b, #d89a2a); color: #2a1e04; font-weight: bold; }
 .emu-btn-play:active { filter: brightness(.85); }

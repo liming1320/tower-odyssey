@@ -42,6 +42,10 @@ for (const file of fs.readdirSync(dataDir).filter(name => /^pk32-.*-levels\.json
 }
 const structuredFile = path.join(dataDir, 'pk32-structured-payloads.json');
 const structuredPayloads = fs.existsSync(structuredFile) ? JSON.parse(fs.readFileSync(structuredFile, 'utf8')) : null;
+const resourceManifestFile = path.join(dataDir, 'pk32-resource-manifest.json');
+const resourceManifest = fs.existsSync(resourceManifestFile) ? JSON.parse(fs.readFileSync(resourceManifestFile, 'utf8')) : null;
+const resourceById = new Map((resourceManifest && resourceManifest.records || []).map(record => [record.id, record]));
+const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球']);
 if (structuredPayloads) {
     for (const game of structuredPayloads.games || []) {
         if (dataByName.has(game.name) || candidateDataByName.has(game.name)) continue;
@@ -79,12 +83,13 @@ const rows = ledger.records.map(record => {
     const data = dataByName.get(record.name) || null;
     const candidateData = candidateDataByName.get(record.name) || null;
     const native = nativeByName.get(record.name) || null;
+    const resources = resourceById.get(record.id) || null;
     const nativePayloadCount = native && Array.isArray(native.nativePayloads) ? native.nativePayloads.length : 0;
     const renderer = rendererNames.has(record.name) ? 'dedicated-or-board' : record.launcher ? 'shared-mode-or-placeholder' : 'none';
     const migration = {
         assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true,
         levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true,
-        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true,
+        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(record.name),
         fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true
     };
     migration.migrationComplete = migration.assetsMigrated && migration.levelsMigrated && migration.rulesMigrated && migration.fullFlowMigrated;
@@ -101,9 +106,13 @@ const rows = ledger.records.map(record => {
         catalogRegistered: true,
         rawPayloadsBound: nativePayloadCount > 0 && ownershipRows.length === nativePayloadCount && ownershipRows.every(row => row.nativeUsageVerified === true),
         structuredPayloadsBound: !!candidateData,
+        resourcePackageBound: resources ? resources.resourcePackageBound === true : false,
+        sharedAtlasCount: resources ? resources.atlasIds.length : 0,
+        gameSpecificAssetMapping: resources ? resources.gameSpecificAssetMapping === true : false,
         dedicatedAdapterBound: renderer === 'dedicated-or-board',
         contentComplete: migration.migrationComplete,
-        verificationComplete: verification.verificationComplete
+        verificationComplete: verification.verificationComplete,
+        rulesMigratedByStructureFamily: structuredRulesMigrated.has(record.name) && candidateData ? candidateData.dataKind : null
     };
     const migrationPhase = verification.verificationComplete ? 'verification-complete'
         : migration.migrationComplete ? 'content-migration-complete'
@@ -130,6 +139,7 @@ const rows = ledger.records.map(record => {
         migrationStatus: status,
         data: data,
         candidateData,
+        resources,
         nativePayloadCount,
         nativePayloadLengths: native && native.payloadLengths || {},
         payloadFormatCandidate: native && native.payloadProfile || null,
@@ -176,6 +186,12 @@ const result = {
     engineGroups: inventory.engineGroups,
     payloadFormatGroups,
     structuredPayloadGroups: structuredPayloads && structuredPayloads.groups || [],
+    resourceManifest: resourceManifest ? {
+        file: 'public/data/pk32-resource-manifest.json',
+        atlases: resourceManifest.summary.availableAtlases,
+        sharedResourcePackagesBound: resourceManifest.summary.sharedResourcePackagesBound,
+        gameSpecificAssetMappings: resourceManifest.summary.gameSpecificAssetMappings
+    } : null,
     summary: {
         total: rows.length,
         originalComplete: rows.filter(row => row.originalComplete).length,
@@ -190,6 +206,8 @@ const result = {
         assignmentReview: rows.filter(row => row.migrationStatus === 'payload-assignment-review' || row.migrationStatus === 'structured-data-assignment-review').length,
         payloadFormatGroups: payloadFormatGroups.length,
         structuredPayloadGames: structuredPayloads ? structuredPayloads.gameCount : 0,
+        sharedResourcePackagesBound: rows.filter(row => row.migrationEvidence.resourcePackageBound).length,
+        gameSpecificAssetMappings: rows.filter(row => row.migrationEvidence.gameSpecificAssetMapping).length,
         dedicatedRenderer: rows.filter(row => row.renderer === 'dedicated-or-board').length,
         needsOriginalEvidence: rows.filter(row => row.migrationStatus !== 'original-complete').length
     },

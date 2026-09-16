@@ -11,6 +11,7 @@
     "pk32:queue": "node tools/build-pk32-migration-queue.js",
     "pk32:extract-dimension-grids": "node tools/extract-pk32-dimension-grids.js",
     "pk32:structure-payloads": "node tools/build-pk32-structured-payloads.js",
+    "pk32:resource-manifest": "node tools/build-pk32-resource-manifest.js",
     "pk32:native-ownership": "node tools/run-pk32-native-ownership.js",
     "pk32:migration-map": "node tools/build-pk32-native-migration-map.js",
     "pk32:migrate-all": "node tools/run-pk32-content-migration.js",

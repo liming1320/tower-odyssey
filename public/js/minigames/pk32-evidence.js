@@ -52,6 +52,10 @@
             ? '原版关卡/回合证据：' + native.levelCount + '（' + (native.levelCountBasis || '来源待补充') + '）'
             : '原版关卡/回合证据：待解码');
         add(facts, 'p', '', '原始数字载荷：' + (native ? native.payloadCount || 0 : 0) + ' 条');
+        if (record.resources) {
+            add(facts, 'p', '', '原始资源包：' + (record.resources.resourcePackageBound ? '已绑定' : '待绑定') + '；共享图集 ' + (record.resources.atlasIds || []).length + ' 张；结构化载荷 ' + (record.resources.structuredPayloadCount || 0) + ' 条。');
+            if (!record.resources.gameSpecificAssetMapping) add(facts, 'p', 'emu-tip', '当前图集来自 PK32 共用宿主资源区，已纳入项目资源包，但具体精灵归属和动画帧仍未逐游戏确认。');
+        }
         if (record.structured) {
             add(facts, 'p', '', '结构化解析：' + record.structured.decodedPayloadCount + ' 条；主结构族：' + record.structured.dominantFamily + '；游戏语义未验证。');
             add(facts, 'p', '', '原生代码引用：' + (record.structured.nativeUsageVerified ? '全部载荷已定位' : '仍有载荷待定位') + '；处理函数 ' + (record.structured.nativeHandlerRvas || []).length + ' 个；分发表 ' + (record.structured.nativeDispatcherIndexes || []).length + ' 个。');
@@ -72,6 +76,32 @@
         }
 
         const payloads = native && Array.isArray(native.nativePayloads) ? native.nativePayloads : [];
+        if (record.resources && Array.isArray(record.resources.atlasIds) && record.resources.atlasIds.length) {
+            add(root, 'h3', '', '原始美术图集');
+            const atlasGrid = add(root, 'div', 'pk32-evidence-atlas-grid');
+            const manifestController = typeof AbortController === 'function' ? new AbortController() : null;
+            fetch('/data/pk32-resource-manifest.json', manifestController ? { signal: manifestController.signal } : undefined)
+                .then(response => response.ok ? response.json() : Promise.reject(new Error('manifest unavailable')))
+                .then(manifest => {
+                    const byId = new Map((manifest.atlases || []).map(atlas => [atlas.id, atlas]));
+                    record.resources.atlasIds.forEach(id => {
+                        const atlas = byId.get(id);
+                        if (!atlas) return;
+                        const figure = document.createElement('figure');
+                        figure.className = 'pk32-evidence-atlas';
+                        const image = document.createElement('img');
+                        image.src = atlas.path;
+                        image.alt = record.name + ' 原始共享图集 ' + atlas.id;
+                        image.loading = 'lazy';
+                        figure.appendChild(image);
+                        const caption = document.createElement('figcaption');
+                        caption.textContent = atlas.id + ' · ' + atlas.width + '×' + atlas.height;
+                        figure.appendChild(caption);
+                        atlasGrid.appendChild(figure);
+                    });
+                })
+                .catch(() => {});
+        }
         add(root, 'h3', '', '完整原始载荷');
         if (!payloads.length) {
             add(root, 'p', 'emu-tip', '当前游戏没有识别出定长数字串；这不表示原版没有数据，数据也可能位于代码、资源或二进制结构中。');

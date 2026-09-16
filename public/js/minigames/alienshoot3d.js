@@ -1,20 +1,28 @@
-// 孤胆枪手3D：纯 Canvas 射线投射（raycasting）第一人称射击，零依赖
-// 真 3D 透视投影（Wolfenstein/Doom 式），俯仰固定，含墙体/精灵怪/手电光/小地图
+// 孤胆枪手3D：Three.js 真 3D 第一人称射击（懒加载，零运行时外部依赖）
+// 进游戏才注入本地 /js/lib/three.min.js，得到 window.THREE 后搭建场景。
+// 复用框架契约：opts.levelIdx / opts.onComplete / opts.onScore / api.stop()
 window.MiniGames = window.MiniGames || {};
 (function () {
     const W = 420, H = 560;
     const MW = 24, MH = 24;
-    const FOV = Math.PI / 3;                 // 60°
-    const PLANE = Math.tan(FOV / 2);         // 0.577
-    const PROJ = (H / 2) / PLANE;            // 投影平面距离
+    const EYE = 0.55;                 // 视点高度
+    const THREE_SRC = '/js/lib/three.min.js?v=20260916a';
     const NAMES = ['前哨遇袭', '隧道清剿', '巢穴深入', '钢铁风暴'];
 
-    function shade(hex, amt) {
-        const n = parseInt(hex.slice(1), 16);
-        let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-        if (amt >= 0) { r += (255 - r) * amt; g += (255 - g) * amt; b += (255 - b) * amt; }
-        else { const k = 1 + amt; r *= k; g *= k; b *= k; }
-        return `rgb(${r | 0},${g | 0},${b | 0})`;
+    // ---- Three.js 懒加载（全局只加载一次）----
+    let THREE = null, THREE_LOADING = null;
+    function ensureThree() {
+        if (THREE) return Promise.resolve(THREE);
+        if (THREE_LOADING) return THREE_LOADING;
+        THREE_LOADING = new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = THREE_SRC;
+            s.onload = () => res(window.THREE);
+            s.onerror = () => rej(new Error('Three.js 加载失败（请检查 /js/lib/three.min.js）'));
+            document.head.appendChild(s);
+        });
+        THREE_LOADING.then(t => { THREE = t; }).catch(() => {});
+        return THREE_LOADING;
     }
 
     function buildMap() {
@@ -28,37 +36,33 @@ window.MiniGames = window.MiniGames || {};
             for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++)
                 if (y > 0 && y < MH - 1 && x > 0 && x < MW - 1) g[y][x] = v;
         };
-        // 四角建筑 + 中边弹药/箱堆 + 中央开阔广场（10..13）
         rect(2, 2, 4, 4, 2); rect(18, 2, 4, 4, 3); rect(2, 18, 4, 4, 3); rect(18, 18, 4, 4, 2);
         rect(11, 2, 2, 3, 2); rect(11, 19, 2, 3, 2); rect(2, 11, 3, 2, 2); rect(19, 11, 3, 2, 3);
         return g;
-    }
-
-    function makeSprite(color) {
-        const c = document.createElement('canvas'); c.width = 48; c.height = 56;
-        const x = c.getContext('2d');
-        x.fillStyle = 'rgba(0,0,0,0.35)'; x.beginPath(); x.ellipse(24, 50, 16, 5, 0, 0, 7); x.fill();
-        x.strokeStyle = shade(color, -0.3); x.lineWidth = 4; x.lineCap = 'round';
-        x.beginPath(); x.moveTo(18, 46); x.lineTo(16, 54); x.moveTo(30, 46); x.lineTo(32, 54); x.stroke();
-        const g = x.createRadialGradient(20, 18, 3, 24, 26, 26);
-        g.addColorStop(0, shade(color, 0.4)); g.addColorStop(1, shade(color, -0.4));
-        x.fillStyle = g; x.beginPath(); x.ellipse(24, 26, 15, 18, 0, 0, 7); x.fill();
-        x.strokeStyle = 'rgba(0,0,0,0.4)'; x.lineWidth = 2; x.stroke();
-        x.strokeStyle = shade(color, -0.1); x.lineWidth = 5;
-        x.beginPath(); x.moveTo(12, 24); x.lineTo(6, 34); x.moveTo(36, 24); x.lineTo(42, 34); x.stroke();
-        x.fillStyle = '#2a0d12'; x.beginPath(); x.ellipse(24, 34, 8, 5, 0, 0, 7); x.fill();
-        x.fillStyle = '#e8dddd';
-        for (let i = -1; i <= 1; i++) { x.beginPath(); x.moveTo(24 + i * 5, 30); x.lineTo(24 + i * 5 - 2, 36); x.lineTo(24 + i * 5 + 2, 36); x.closePath(); x.fill(); }
-        x.save(); x.shadowColor = 'rgba(255,60,60,0.9)'; x.shadowBlur = 8;
-        x.fillStyle = '#ff3b3b'; x.beginPath(); x.arc(19, 18, 3.4, 0, 7); x.arc(29, 18, 3.4, 0, 7); x.fill(); x.restore();
-        x.fillStyle = '#ffd0d0'; x.beginPath(); x.arc(19.6, 17.4, 1.1, 0, 7); x.arc(29.6, 17.4, 1.1, 0, 7); x.fill();
-        return c;
     }
 
     const lv = [];
     for (let i = 0; i < 50; i++) {
         const quota = 10 + i * 2;
         lv.push({ name: NAMES[i % NAMES.length] + ' ' + (Math.floor(i / NAMES.length) + 1), desc: `击杀 ${quota} 只异形 · 首领每 ${Math.max(3, 8 - Math.floor(i / 10))} 波出现` });
+    }
+
+    // 程序化草地贴图（不依赖任何外部图片）
+    function grassTexture(THREE) {
+        const c = document.createElement('canvas'); c.width = c.height = 128;
+        const x = c.getContext('2d');
+        x.fillStyle = '#3f5a32'; x.fillRect(0, 0, 128, 128);
+        for (let i = 0; i < 1400; i++) {
+            const px = Math.random() * 128, py = Math.random() * 128;
+            const t = Math.random();
+            x.fillStyle = t < 0.5 ? 'rgba(70,100,50,0.5)' : t < 0.8 ? 'rgba(45,70,38,0.5)' : 'rgba(110,140,80,0.4)';
+            x.fillRect(px, py, 1.5, 1.5);
+        }
+        const t = new THREE.CanvasTexture(c);
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.repeat.set(MW, MH);
+        if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding;
+        return t;
     }
 
     MiniGames.alienshoot3d = {
@@ -68,263 +72,336 @@ window.MiniGames = window.MiniGames || {};
             const quota = 10 + idx * 2;
             const spawnInt = Math.max(0.5, 1.4 - idx * 0.018);
             const grid = buildMap();
-            const spriteCache = {
-                grunt: makeSprite('#7fae4a'), runner: makeSprite('#d8c24a'), tank: makeSprite('#b04ad8'),
-            };
 
-            let px = 12, py = 12, dir = 0, hp = 100, kills = 0, over = false, t = 0, wave = 0, score = 0;
-            let aliens = [], parts = [], decals = [], shake = 0, muzzle = 0;
-            let dirX = 1, dirY = 0, planeX = 0, planeY = PLANE;
-            const zbuf = new Float32Array(W);
+            // 游戏状态
+            let px = 12, py = 12, yaw = 0, pitch = 0, hp = 100, kills = 0, over = false, t = 0, wave = 0, score = 0;
+            let aliens = [], decals = [], shake = 0, muzzle = 0;
+            let dirX = 1, dirY = 0;
+            const canStand = (x, y) => { const cx = Math.floor(x), cy = Math.floor(y); return cx > 0 && cy > 0 && cx < MW - 1 && cy < MH - 1 && grid[cy][cx] === 0; };
 
+            // UI 舞台
             container.innerHTML = '';
-            const cvs = document.createElement('canvas');
-            cvs.width = W; cvs.height = H;
-            cvs.style.cssText = 'max-width:100%;max-height:100%;touch-action:none;cursor:crosshair;display:block;margin:0 auto;background:#000;';
-            container.appendChild(cvs);
-            const ctx = cvs.getContext('2d');
+            const stage = document.createElement('div');
+            stage.style.cssText = `position:relative;width:${W}px;height:${H}px;margin:0 auto;`;
+            container.appendChild(stage);
+            const loading = document.createElement('div');
+            loading.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#cfe3ff;font:14px sans-serif;text-align:center;background:#0a0e14;';
+            loading.textContent = '加载 3D 引擎…';
+            stage.appendChild(loading);
 
+            let stopped = false, raf = 0, cleanups = [];
             const done = (win, lines) => {
-                if (over) return; over = true; clearInterval(timer);
+                if (over) return; over = true;
+                if (raf) cancelAnimationFrame(raf);
                 try { document.exitPointerLock && document.exitPointerLock(); } catch (e) {}
                 opts.onComplete && opts.onComplete({ win, stars: win ? (hp >= 80 ? 3 : hp >= 45 ? 2 : 1) : 0, lines });
             };
 
-            const canStand = (x, y) => {
-                const cx = Math.floor(x), cy = Math.floor(y);
-                return cx > 0 && cy > 0 && cx < MW - 1 && cy < MH - 1 && grid[cy][cx] === 0;
-            };
-            function moveAxis(d, axis) {
-                if (d === 0) return;
-                const r = 0.22, s = Math.sign(d);
-                if (axis === 'x') { if (canStand(px + s * r + d, py)) px += d; }
-                else { if (canStand(px, py + s * r + d)) py += d; }
-            }
-            function turnView(d) { dir += d; dirX = Math.cos(dir); dirY = Math.sin(dir); planeX = -dirY * PLANE; planeY = dirX * PLANE; }
-
-            function spawn() {
-                wave++;
-                const boss = wave % Math.max(3, 8 - Math.floor(idx / 10)) === 0;
-                let x, y, tries = 0;
-                do {
-                    const a = Math.random() * Math.PI * 2, dist = 7 + Math.random() * 6;
-                    x = px + Math.cos(a) * dist; y = py + Math.sin(a) * dist; tries++;
-                } while ((!canStand(x, y) || Math.hypot(x - px, y - py) < 5) && tries < 50);
-                x = Math.max(1, Math.min(MW - 2, x)); y = Math.max(1, Math.min(MH - 2, y));
-                const type = boss ? 'tank' : Math.random() < 0.25 ? 'runner' : 'grunt';
-                const st = { grunt: { r: 0.35, hp: 1, v: 2.2, color: '#7fae4a' }, runner: { r: 0.28, hp: 1, v: 3.7, color: '#d8c24a' }, tank: { r: 0.6, hp: 5 + Math.floor(idx / 12), v: 1.3, color: '#b04ad8' } }[type];
-                aliens.push({ x, y, type, ...st, maxHp: st.hp, hitT: 0 });
-            }
-            function losClear(x0, y0, x1, y1) {
-                const dx = x1 - x0, dy = y1 - y0, dist = Math.hypot(dx, dy), steps = Math.ceil(dist / 0.3);
-                for (let i = 1; i < steps; i++) { const tt = i / steps, cx = Math.floor(x0 + dx * tt), cy = Math.floor(y0 + dy * tt); if (grid[cy] && grid[cy][cx] > 0) return false; }
-                return true;
-            }
-            function fire() {
-                muzzle = 0.06;
-                let best = null, bestD = 1e9;
-                for (const a of aliens) {
-                    const dx = a.x - px, dy = a.y - py, dist = Math.hypot(dx, dy);
-                    if (dist > 18) continue;
-                    let ang = Math.atan2(dy, dx) - dir; while (ang > Math.PI) ang -= 2 * Math.PI; while (ang < -Math.PI) ang += 2 * Math.PI;
-                    if (Math.abs(ang) > 0.2) continue;
-                    if (!losClear(px, py, a.x, a.y)) continue;
-                    if (dist < bestD) { bestD = dist; best = a; }
-                }
-                if (best) {
-                    best.hp--; best.hitT = 0.1;
-                    if (best.hp <= 0) {
-                        kills++; score += best.type === 'tank' ? 50 : best.type === 'runner' ? 25 : 10;
-                        const i = aliens.indexOf(best); if (i >= 0) aliens.splice(i, 1);
-                        if (kills >= quota && aliens.length === 0) return done(true, ['区域肃清！', `击杀 ${kills} · 剩余 HP ${Math.round(hp)}`]);
-                    }
-                }
-            }
-
-            // ---- 输入 ----
-            const keys = new Set();
-            let firing = false, ptrLock = false;
-            let joyId = null, joyVx = 0, joyVy = 0, joyOx = 0, joyOy = 0;
-            let turnId = null, turnOx = 0, isTouch = false;
-
-            const kd = e => { const k = e.key.toLowerCase(); if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'q', 'e', ' '].includes(k)) { keys.add(k); if (k === ' ') firing = true; e.preventDefault(); } };
-            const ku = e => { const k = e.key.toLowerCase(); keys.delete(k); if (k === ' ') firing = false; };
-            window.addEventListener('keydown', kd); window.addEventListener('keyup', ku);
-            cvs.addEventListener('click', () => { if (!isTouch && !ptrLock && cvs.requestPointerLock) cvs.requestPointerLock(); });
-            document.addEventListener('mousemove', e => { if (ptrLock) turnView(e.movementX * 0.0026); });
-            document.addEventListener('pointerlockchange', () => { ptrLock = document.pointerLockElement === cvs; });
-            cvs.addEventListener('mousedown', e => { if (e.pointerType === 'mouse' || e.pointerType === undefined) firing = true; });
-            window.addEventListener('mouseup', () => { firing = false; });
-            cvs.addEventListener('pointerdown', e => {
-                if (e.pointerType === 'mouse') return;
-                isTouch = true;
-                const r = cvs.getBoundingClientRect();
-                const lx = (e.clientX - r.left) * (W / r.width);
-                if (lx < W * 0.42) { joyId = e.pointerId; joyOx = e.clientX; joyOy = e.clientY; joyVx = 0; joyVy = 0; }
-                else { firing = true; turnId = e.pointerId; turnOx = e.clientX; }
+            ensureThree().then(THREE => {
+                if (stopped) return;
+                loading.remove();
+                buildGame(THREE);
+            }).catch(err => {
+                loading.textContent = '3D 引擎加载失败：' + err.message;
             });
-            cvs.addEventListener('pointermove', e => {
-                if (e.pointerType === 'mouse') return;
-                if (e.pointerId === joyId) {
-                    const dx = e.clientX - joyOx, dy = e.clientY - joyOy, d = Math.hypot(dx, dy) || 1, f = Math.min(1, d / 42);
-                    joyVx = dx / 42 * f; joyVy = dy / 42 * f;
-                } else if (e.pointerId === turnId) { const dx = e.clientX - turnOx; turnOx = e.clientX; turnView(dx * 0.005); }
-            });
-            const endPtr = e => {
-                if (e.pointerId === joyId) { joyId = null; joyVx = 0; joyVy = 0; }
-                if (e.pointerId === turnId) { turnId = null; firing = false; }
-                if (e.pointerType === 'mouse') firing = false;
-            };
-            cvs.addEventListener('pointerup', endPtr); cvs.addEventListener('pointercancel', endPtr);
-            cvs.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') firing = false; });
 
-            // ---- 主循环 ----
-            let spawnT = 0, cool = 0;
-            function step() {
-                if (over) return;
-                const dt = 0.03; t += dt; cool -= dt; muzzle -= dt; spawnT -= dt;
-                // 移动
-                let mvx = 0, mvy = 0;
-                if (keys.has('w') || keys.has('arrowup')) { mvx += dirX; mvy += dirY; }
-                if (keys.has('s') || keys.has('arrowdown')) { mvx -= dirX; mvy -= dirY; }
-                if (keys.has('a')) { mvx += -dirY; mvy += dirX; }
-                if (keys.has('d')) { mvx += dirY; mvy += -dirX; }
-                if (keys.has('arrowleft') || keys.has('q')) turnView(-2.4 * dt);
-                if (keys.has('arrowright') || keys.has('e')) turnView(2.4 * dt);
-                if (joyId !== null) { const fwd = -joyVy, str = joyVx; mvx += fwd * dirX + str * (-dirY); mvy += fwd * dirY + str * dirX; }
-                const ml = Math.hypot(mvx, mvy);
-                if (ml > 0.001) { const sp = 2.6 * dt; moveAxis(mvx / ml * sp, 'x'); moveAxis(mvy / ml * sp, 'y'); }
-                // 射击
-                if (firing && cool <= 0) { fire(); cool = 0.14; }
-                if (spawnT <= 0) { spawn(); spawnT = spawnInt * (0.7 + Math.random() * 0.6); }
-                // 异形
-                for (const a of aliens) {
-                    const dx = px - a.x, dy = py - a.y, d = Math.hypot(dx, dy) || 1, sp = a.v * dt;
-                    const mvx2 = (dx / d) * sp, mvy2 = (dy / d) * sp;
-                    if (canStand(a.x + mvx2 + Math.sign(mvx2) * 0.2, a.y)) a.x += mvx2;
-                    if (canStand(a.x, a.y + mvy2 + Math.sign(mvy2) * 0.2)) a.y += mvy2;
-                    a.hitT -= dt;
-                    if (d < a.r + 0.6) { hp -= (a.type === 'tank' ? 14 : 7) * dt * 3; shake = 4; if (hp <= 0) return done(false, ['你被异形吞没了…', `击杀 ${kills}/${quota}`]); }
+            function buildGame(THREE) {
+                // 渲染器
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                renderer.setSize(W, H, false);
+                if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+                renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;background:#000;';
+                stage.appendChild(renderer.domElement);
+
+                const hud = document.createElement('canvas');
+                hud.width = W; hud.height = H;
+                hud.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+                stage.appendChild(hud);
+                const hctx = hud.getContext('2d');
+
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x0e131c);
+                scene.fog = new THREE.Fog(0x0e131c, 7, 22);
+
+                const camera = new THREE.PerspectiveCamera(72, W / H, 0.1, 100);
+                scene.add(camera);
+
+                // 灯光（户外黄昏感）
+                scene.add(new THREE.HemisphereLight(0x88aadd, 0x334422, 0.75));
+                const sun = new THREE.DirectionalLight(0xffffff, 0.65);
+                sun.position.set(6, 14, 4);
+                scene.add(sun);
+
+                // 地面
+                const ground = new THREE.Mesh(
+                    new THREE.PlaneGeometry(MW, MH),
+                    new THREE.MeshStandardMaterial({ map: grassTexture(THREE), roughness: 1 })
+                );
+                ground.rotation.x = -Math.PI / 2;
+                ground.position.set(MW / 2, 0, MH / 2);
+                scene.add(ground);
+
+                // 墙体（单个 InstancedMesh，按类型上色，一次 draw call）
+                const wallCells = [];
+                for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (grid[y][x] > 0) wallCells.push({ x, y, v: grid[y][x] });
+                const wallGeo = new THREE.BoxGeometry(1, 1, 1);
+                const wallMat = new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0 });
+                const walls = new THREE.InstancedMesh(wallGeo, wallMat, wallCells.length);
+                const m4 = new THREE.Matrix4();
+                const col2 = new THREE.Color(0x6a4f2e), col3 = new THREE.Color(0x595563), col1 = new THREE.Color(0x444049);
+                wallCells.forEach((c, i) => {
+                    m4.makeTranslation(c.x + 0.5, 0.5, c.y + 0.5);
+                    walls.setMatrixAt(i, m4);
+                    walls.setColorAt(i, c.v === 2 ? col2 : c.v === 3 ? col3 : col1);
+                });
+                walls.instanceMatrix.needsUpdate = true;
+                if (walls.instanceColor) walls.instanceColor.needsUpdate = true;
+                scene.add(walls);
+
+                // 第一人称枪（挂在相机下，随视角移动）
+                const gun = new THREE.Group();
+                const gunMat = new THREE.MeshStandardMaterial({ color: 0x23262c, roughness: 0.6, metalness: 0.4 });
+                const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.42), gunMat); barrel.position.set(0, 0, -0.22);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.09, 0.22), gunMat); body.position.set(0, -0.02, 0.02);
+                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.13, 0.06), gunMat); grip.position.set(0, -0.1, 0.1); grip.rotation.x = 0.3;
+                gun.add(barrel); gun.add(body); gun.add(grip);
+                gun.position.set(0.2, -0.24, -0.5);
+                camera.add(gun);
+                const muzzleLight = new THREE.PointLight(0xffb060, 0, 4);
+                muzzleLight.position.set(0.2, -0.24, -0.75);
+                camera.add(muzzleLight);
+
+                // 异形资源（共享几何/材质）
+                const TYPE = {
+                    grunt: { r: 0.28, hp: 1, v: 2.2, color: 0x7fae4a },
+                    runner: { r: 0.22, hp: 1, v: 3.7, color: 0xd8c24a },
+                    tank: { r: 0.5, hp: 5 + Math.floor(idx / 12), v: 1.3, color: 0xb04ad8 },
+                };
+                const shared = {};
+                for (const k in TYPE) {
+                    const ty = TYPE[k];
+                    shared[k] = {
+                        body: new THREE.CapsuleGeometry(ty.r, ty.r * 1.2, 4, 12),
+                        mat: new THREE.MeshStandardMaterial({ color: ty.color, roughness: 0.7, emissive: ty.color, emissiveIntensity: 0.12 }),
+                        eyeMat: new THREE.MeshStandardMaterial({ color: 0xff3b3b, emissive: 0xff2020, emissiveIntensity: 1.0 }),
+                        eyeGeo: new THREE.SphereGeometry(ty.r * 0.18, 8, 8),
+                    };
                 }
-                draw();
-                opts.onScore && opts.onScore(`击杀 ${kills}/${quota} · HP ${Math.max(0, Math.round(hp))}`);
+                const hitMeshes = [];   // 用于射线射击的实体（胶囊体）
+                function spawnAlienMesh(a) {
+                    const s = shared[a.type];
+                    const g = new THREE.Group();
+                    const body = new THREE.Mesh(s.body, s.mat);
+                    body.userData.alien = a;
+                    g.add(body);
+                    for (const sgn of [-1, 1]) {
+                        const eye = new THREE.Mesh(s.eyeGeo, s.eyeMat);
+                        eye.position.set(sgn * a.r * 0.35, a.r * 0.7, -a.r * 0.9);
+                        g.add(eye);
+                    }
+                    g.position.set(a.x, a.r + 0.05, a.y);
+                    scene.add(g);
+                    a.mesh = g; a.bodyMesh = body;
+                    hitMeshes.push(body);
+                }
+                function removeAlienMesh(a) {
+                    if (a.mesh) scene.remove(a.mesh);
+                    const i = hitMeshes.indexOf(a.bodyMesh); if (i >= 0) hitMeshes.splice(i, 1);
+                }
+
+                function spawn() {
+                    wave++;
+                    const boss = wave % Math.max(3, 8 - Math.floor(idx / 10)) === 0;
+                    let x, y, tries = 0;
+                    do {
+                        const a = Math.random() * Math.PI * 2, dist = 7 + Math.random() * 6;
+                        x = px + Math.cos(a) * dist; y = py + Math.sin(a) * dist; tries++;
+                    } while ((!canStand(x, y) || Math.hypot(x - px, y - py) < 5) && tries < 50);
+                    x = Math.max(1, Math.min(MW - 2, x)); y = Math.max(1, Math.min(MH - 2, y));
+                    const type = boss ? 'tank' : Math.random() < 0.25 ? 'runner' : 'grunt';
+                    const st = TYPE[type];
+                    const a = { x, y, type, r: st.r, hp: st.hp, v: st.v, maxHp: st.hp, hitT: 0 };
+                    aliens.push(a); spawnAlienMesh(a);
+                }
+
+                const ray = new THREE.Raycaster();
+                const center = new THREE.Vector2(0, 0);
+                function fire() {
+                    muzzle = 0.06; muzzleLight.intensity = 3.2;
+                    ray.setFromCamera(center, camera);
+                    const objs = [walls].concat(hitMeshes);
+                    const hits = ray.intersectObjects(objs, false);
+                    if (hits.length) {
+                        const h = hits[0];
+                        const a = h.object.userData.alien;
+                        if (a && h.distance < 18) {
+                            a.hp--; a.hitT = 0.1;
+                            if (a.hp <= 0) {
+                                kills++; score += a.type === 'tank' ? 50 : a.type === 'runner' ? 25 : 10;
+                                removeAlienMesh(a);
+                                aliens = aliens.filter(z => z !== a);
+                                if (kills >= quota && aliens.length === 0) return done(true, ['区域肃清！', `击杀 ${kills} · 剩余 HP ${Math.round(hp)}`]);
+                            }
+                        }
+                    }
+                }
+
+                // ---- 输入 ----
+                const keys = new Set();
+                let firing = false, ptrLock = false, isTouch = false;
+                let joyId = null, joyVx = 0, joyVy = 0, joyOx = 0, joyOy = 0;
+                let turnId = null, turnOx = 0, turnOy = 0;
+                const cvs = renderer.domElement;
+
+                const kd = e => { const k = e.key.toLowerCase(); if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'q', 'e', ' '].includes(k)) { keys.add(k); if (k === ' ') firing = true; e.preventDefault(); } };
+                const ku = e => { const k = e.key.toLowerCase(); keys.delete(k); if (k === ' ') firing = false; };
+                window.addEventListener('keydown', kd); window.addEventListener('keyup', ku);
+                cleanups.push(() => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); });
+
+                cvs.addEventListener('click', () => { if (!isTouch && !ptrLock && cvs.requestPointerLock) cvs.requestPointerLock(); });
+                const onMM = e => { if (ptrLock) { yaw += e.movementX * 0.0026; pitch -= e.movementY * 0.0022; pitch = Math.max(-0.5, Math.min(0.5, pitch)); } };
+                document.addEventListener('mousemove', onMM);
+                cleanups.push(() => document.removeEventListener('mousemove', onMM));
+                const onPLC = () => { ptrLock = document.pointerLockElement === cvs; };
+                document.addEventListener('pointerlockchange', onPLC);
+                cleanups.push(() => document.removeEventListener('pointerlockchange', onPLC));
+                cvs.addEventListener('mousedown', e => { if (e.pointerType === 'mouse' || e.pointerType === undefined) firing = true; });
+                window.addEventListener('mouseup', () => { firing = false; });
+                cleanups.push(() => window.removeEventListener('mouseup', () => { firing = false; }));
+
+                cvs.addEventListener('pointerdown', e => {
+                    if (e.pointerType === 'mouse') return;
+                    isTouch = true;
+                    const r = cvs.getBoundingClientRect();
+                    const lx = (e.clientX - r.left) * (W / r.width);
+                    if (lx < W * 0.42) { joyId = e.pointerId; joyOx = e.clientX; joyOy = e.clientY; joyVx = 0; joyVy = 0; }
+                    else { firing = true; turnId = e.pointerId; turnOx = e.clientX; turnOy = e.clientY; }
+                });
+                cvs.addEventListener('pointermove', e => {
+                    if (e.pointerType === 'mouse') return;
+                    if (e.pointerId === joyId) {
+                        const dx = e.clientX - joyOx, dy = e.clientY - joyOy, d = Math.hypot(dx, dy) || 1, f = Math.min(1, d / 42);
+                        joyVx = dx / 42 * f; joyVy = dy / 42 * f;
+                    } else if (e.pointerId === turnId) {
+                        const dx = e.clientX - turnOx, dy = e.clientY - turnOy; turnOx = e.clientX; turnOy = e.clientY;
+                        yaw += dx * 0.005; pitch -= dy * 0.004; pitch = Math.max(-0.5, Math.min(0.5, pitch));
+                    }
+                });
+                const endPtr = e => {
+                    if (e.pointerId === joyId) { joyId = null; joyVx = 0; joyVy = 0; }
+                    if (e.pointerId === turnId) { turnId = null; firing = false; }
+                    if (e.pointerType === 'mouse') firing = false;
+                };
+                cvs.addEventListener('pointerup', endPtr); cvs.addEventListener('pointercancel', endPtr);
+                cleanups.push(() => { cvs.removeEventListener('pointerup', endPtr); cvs.removeEventListener('pointercancel', endPtr); });
+
+                // ---- 主循环 ----
+                let spawnT = 0, cool = 0, last = performance.now();
+                const SP = 2.6;
+                function step(now) {
+                    if (over) return;
+                    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+                    t += dt; cool -= dt; muzzle -= dt; spawnT -= dt;
+                    if (muzzleLight.intensity > 0) muzzleLight.intensity = Math.max(0, muzzleLight.intensity - dt * 40);
+
+                    // 移动
+                    let mvx = 0, mvy = 0;
+                    if (keys.has('w') || keys.has('arrowup')) { mvx += dirX; mvy += dirY; }
+                    if (keys.has('s') || keys.has('arrowdown')) { mvx -= dirX; mvy -= dirY; }
+                    if (keys.has('a')) { mvx += -dirY; mvy += dirX; }
+                    if (keys.has('d')) { mvx += dirY; mvy += -dirX; }
+                    if (keys.has('arrowleft') || keys.has('q')) yaw -= 2.4 * dt;
+                    if (keys.has('arrowright') || keys.has('e')) yaw += 2.4 * dt;
+                    if (joyId !== null) { const fwd = -joyVy, str = joyVx; mvx += fwd * dirX + str * (-dirY); mvy += fwd * dirY + str * dirX; }
+                    dirX = Math.cos(yaw); dirY = Math.sin(yaw);
+                    const ml = Math.hypot(mvx, mvy);
+                    if (ml > 0.001) {
+                        const sp = SP * dt, dx = mvx / ml * sp, dy = mvy / ml * sp, r = 0.26;
+                        if (canStand(px + dx + Math.sign(dx) * r, py)) px += dx;
+                        if (canStand(px, py + dy + Math.sign(dy) * r)) py += dy;
+                    }
+                    if (firing && cool <= 0) { fire(); cool = 0.14; }
+                    if (spawnT <= 0) { spawn(); spawnT = spawnInt * (0.7 + Math.random() * 0.6); }
+
+                    // 异形移动 + 渲染同步
+                    for (const a of aliens) {
+                        const dx = px - a.x, dy = py - a.y, d = Math.hypot(dx, dy) || 1, sp = a.v * dt;
+                        const mx = (dx / d) * sp, my = (dy / d) * sp;
+                        if (canStand(a.x + mx + Math.sign(mx) * 0.2, a.y)) a.x += mx;
+                        if (canStand(a.x, a.y + my + Math.sign(my) * 0.2)) a.y += my;
+                        a.hitT -= dt;
+                        a.mesh.position.set(a.x, a.r + 0.05 + Math.sin(t * 6 + a.x) * 0.04, a.y);
+                        a.mesh.lookAt(px, a.r + 0.05, py);
+                        if (a.hitT > 0) a.bodyMesh.material = flashMat; else a.bodyMesh.material = shared[a.type].mat;
+                        if (d < a.r + 0.6) { hp -= (a.type === 'tank' ? 14 : 7) * dt * 3; shake = 4; if (hp <= 0) return done(false, ['你被异形吞没了…', `击杀 ${kills}/${quota}`]); }
+                    }
+
+                    // 相机
+                    camera.position.set(px, EYE, py);
+                    const cp = Math.cos(pitch), sp2 = Math.sin(pitch);
+                    camera.lookAt(px + dirX * cp, EYE + sp2, py + dirY * cp);
+
+                    renderer.render(scene, camera);
+                    drawHUD();
+                    opts.onScore && opts.onScore(`击杀 ${kills}/${quota} · HP ${Math.max(0, Math.round(hp))}`);
+                    raf = requestAnimationFrame(step);
+                }
+
+                // 命中闪白材质（共享）
+                const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+                function drawHUD() {
+                    const x = hctx; x.clearRect(0, 0, W, H);
+                    // 暗角
+                    const vg = x.createRadialGradient(W / 2, H / 2, H * 0.32, W / 2, H / 2, H * 0.8);
+                    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.42)');
+                    x.fillStyle = vg; x.fillRect(0, 0, W, H);
+                    // 准星
+                    x.strokeStyle = 'rgba(255,255,255,0.85)'; x.lineWidth = 1.5;
+                    x.beginPath(); x.arc(W / 2, H / 2, 7, 0, Math.PI * 2); x.stroke();
+                    x.beginPath();
+                    x.moveTo(W / 2 - 11, H / 2); x.lineTo(W / 2 - 4, H / 2);
+                    x.moveTo(W / 2 + 4, H / 2); x.lineTo(W / 2 + 11, H / 2);
+                    x.moveTo(W / 2, H / 2 - 11); x.lineTo(W / 2, H / 2 - 4);
+                    x.moveTo(W / 2, H / 2 + 4); x.lineTo(W / 2, H / 2 + 11); x.stroke();
+                    // 血条
+                    x.fillStyle = '#333'; x.fillRect(8, 8, 120, 10);
+                    x.fillStyle = hp > 40 ? '#5ad48a' : '#ff7b7b'; x.fillRect(8, 8, 120 * Math.max(0, hp / 100), 10);
+                    x.fillStyle = 'rgba(255,255,255,0.8)'; x.font = '11px sans-serif'; x.textAlign = 'left'; x.fillText('HP', 8, 30);
+                    // 小地图
+                    const MM = 84, mx0 = W - MM - 6, my0 = 6, s = MM / MW;
+                    x.fillStyle = 'rgba(8,16,10,0.7)'; x.fillRect(mx0, my0, MM, MM);
+                    x.strokeStyle = 'rgba(255,255,255,0.25)'; x.lineWidth = 1; x.strokeRect(mx0 + .5, my0 + .5, MM - 1, MM - 1);
+                    for (let yy = 0; yy < MH; yy++) for (let xx = 0; xx < MW; xx++) if (grid[yy][xx] > 0) { x.fillStyle = grid[yy][xx] === 2 ? '#7a5a32' : '#6b6577'; x.fillRect(mx0 + xx * s, my0 + yy * s, s + 0.5, s + 0.5); }
+                    x.fillStyle = 'rgba(255,91,91,0.95)'; for (const a of aliens) x.fillRect(mx0 + a.x * s - 1, my0 + a.y * s - 1, 2.5, 2.5);
+                    x.fillStyle = '#7dff7d'; x.beginPath(); x.arc(mx0 + px * s, my0 + py * s, 2.5, 0, Math.PI * 2); x.fill();
+                    x.strokeStyle = '#7dff7d'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(mx0 + px * s, my0 + py * s); x.lineTo(mx0 + (px + dirX * 2) * s, my0 + (py + dirY * 2) * s); x.stroke();
+                    // 触屏提示
+                    if (isTouch) {
+                        x.save(); x.globalAlpha = 0.22; x.strokeStyle = '#cfe3ff'; x.lineWidth = 2; x.setLineDash([6, 6]);
+                        x.beginPath(); x.arc(60, H - 60, 42, 0, Math.PI * 2); x.stroke(); x.setLineDash([]);
+                        x.globalAlpha = 0.5; x.fillStyle = '#cfe3ff'; x.font = '12px sans-serif'; x.textAlign = 'center';
+                        x.fillText('✥ 移动', 60, H - 104); x.fillText('🎯 转向/射击', W - 70, H - 104); x.restore();
+                    }
+                    if (t < 5) {
+                        x.globalAlpha = Math.min(1, (5 - t) / 1.4);
+                        x.fillStyle = '#cfe3ff'; x.font = '12px sans-serif'; x.textAlign = 'center';
+                        x.fillText('PC：WASD 移动 · 点击锁定后鼠标转视角 · 左键射击 · 方向键/QE 转向', W / 2, H - 16);
+                        x.fillText('手机：左半屏摇杆移动 · 右半屏拖动转向+射击', W / 2, H - 4);
+                        x.globalAlpha = 1;
+                    }
+                }
+
+                spawn(); spawn();
+                raf = requestAnimationFrame(step);
             }
 
-            function draw() {
-                // 天花板 / 地面（带纵深渐变）
-                let cg = ctx.createLinearGradient(0, 0, 0, H / 2);
-                cg.addColorStop(0, '#0e131c'); cg.addColorStop(1, '#26313f'); ctx.fillStyle = cg; ctx.fillRect(0, 0, W, H / 2);
-                let fg = ctx.createLinearGradient(0, H / 2, 0, H);
-                fg.addColorStop(0, '#2a2016'); fg.addColorStop(1, '#0f0b07'); ctx.fillStyle = fg; ctx.fillRect(0, H / 2, W, H / 2);
-
-                // 墙体（逐列射线投射）
-                for (let x = 0; x < W; x++) {
-                    const cameraX = 2 * x / W - 1;
-                    const rdx = dirX + planeX * cameraX, rdy = dirY + planeY * cameraX;
-                    let mapX = Math.floor(px), mapY = Math.floor(py);
-                    const ddx = Math.abs(1 / rdx), ddy = Math.abs(1 / rdy);
-                    let stepX, stepY, sideX, sideY;
-                    if (rdx < 0) { stepX = -1; sideX = (px - mapX) * ddx; } else { stepX = 1; sideX = (mapX + 1 - px) * ddx; }
-                    if (rdy < 0) { stepY = -1; sideY = (py - mapY) * ddy; } else { stepY = 1; sideY = (mapY + 1 - py) * ddy; }
-                    let hit = 0, side = 0, tile = 0;
-                    while (!hit) {
-                        if (sideX < sideY) { sideX += ddx; mapX += stepX; side = 0; } else { sideY += ddy; mapY += stepY; side = 1; }
-                        if (mapX < 0 || mapY < 0 || mapX >= MW || mapY >= MH) { hit = 1; tile = 1; break; }
-                        if (grid[mapY][mapX] > 0) { hit = 1; tile = grid[mapY][mapX]; }
-                    }
-                    const pd = side === 0 ? (sideX - ddx) : (sideY - ddy);
-                    zbuf[x] = pd;
-                    const lineH = PROJ / (pd < 0.01 ? 0.01 : pd);
-                    let d0 = -lineH / 2 + H / 2; if (d0 < 0) d0 = 0;
-                    let d1 = lineH / 2 + H / 2; if (d1 > H) d1 = H;
-                    const base = tile === 2 ? [150, 100, 55] : tile === 3 ? [110, 105, 125] : [138, 130, 118];
-                    let f = 1 / (1 + pd * 0.06); if (side === 1) f *= 0.7;
-                    ctx.fillStyle = `rgb(${base[0] * f | 0},${base[1] * f | 0},${base[2] * f | 0})`;
-                    ctx.fillRect(x, d0, 1, d1 - d0);
-                }
-
-                // 精灵怪（按距离远→近，z-buffer 遮挡）
-                const order = aliens.slice().sort((a, b) => Math.hypot(b.x - px, b.y - py) - Math.hypot(a.x - px, a.y - py));
-                const inv = 1 / (planeX * dirY - dirX * planeY);
-                for (const a of order) {
-                    const dx = a.x - px, dy = a.y - py;
-                    const tX = inv * (dirY * dx - dirX * dy);
-                    const tY = inv * (-planeY * dx + planeX * dy);
-                    if (tY <= 0.1) continue;
-                    const screenX = (W / 2) * (1 + tX / tY);
-                    const sh = PROJ * 0.85 / tY, sw = sh * 0.78;
-                    const sx0 = Math.floor(screenX - sw / 2), sx1 = Math.floor(screenX + sw / 2);
-                    const sy0 = Math.floor(-sh / 2 + H / 2), sy1 = Math.floor(sh / 2 + H / 2);
-                    const spr = spriteCache[a.type];
-                    for (let cx = Math.max(0, sx0); cx <= Math.min(W - 1, sx1); cx++) {
-                        if (tY >= zbuf[cx]) continue;
-                        const texX = Math.max(0, Math.min(spr.width - 1, Math.floor((cx - sx0) / sw * spr.width)));
-                        ctx.drawImage(spr, texX, 0, 1, spr.height, cx, sy0, 1, sy1 - sy0);
-                    }
-                    if (a.maxHp > 1) { ctx.fillStyle = '#333'; ctx.fillRect(screenX - 14, sy0 - 8, 28, 3); ctx.fillStyle = '#e94f4f'; ctx.fillRect(screenX - 14, sy0 - 8, 28 * (a.hp / a.maxHp), 3); }
-                }
-
-                // 受击抖动
-                if (shake > 0) shake = Math.max(0, shake - 0.7);
-                // 第一人称枪 + 枪口焰
-                ctx.save();
-                if (muzzle > 0) { ctx.globalAlpha = Math.max(0, muzzle / 0.06); ctx.fillStyle = 'rgba(255,230,150,0.9)'; ctx.beginPath(); ctx.moveTo(W / 2 - 16, H); ctx.lineTo(W / 2 + 16, H); ctx.lineTo(W / 2, H - 80); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1; }
-                ctx.fillStyle = '#23262c'; ctx.fillRect(W / 2 - 9, H - 52, 18, 52);
-                ctx.fillStyle = '#33373f'; ctx.fillRect(W / 2 - 7, H - 50, 14, 30);
-                ctx.fillStyle = '#15171c'; ctx.fillRect(W / 2 + 8, H - 40, 26, 6);
-                ctx.fillStyle = '#2e3138'; ctx.fillRect(W / 2 - 7, H - 24, 6, 16);
-                ctx.restore();
-
-                // 暗角
-                const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.34, W / 2, H / 2, H * 0.8);
-                vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.4)');
-                ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-
-                // 准星
-                ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.arc(W / 2, H / 2, 7, 0, Math.PI * 2); ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(W / 2 - 11, H / 2); ctx.lineTo(W / 2 - 4, H / 2);
-                ctx.moveTo(W / 2 + 4, H / 2); ctx.lineTo(W / 2 + 11, H / 2);
-                ctx.moveTo(W / 2, H / 2 - 11); ctx.lineTo(W / 2, H / 2 - 4);
-                ctx.moveTo(W / 2, H / 2 + 4); ctx.lineTo(W / 2, H / 2 + 11); ctx.stroke();
-
-                // 小地图（右上）
-                const MM = 84, mx0 = W - MM - 6, my0 = 6, s = MM / MW;
-                ctx.fillStyle = 'rgba(8,16,10,0.7)'; ctx.fillRect(mx0, my0, MM, MM);
-                ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1; ctx.strokeRect(mx0 + .5, my0 + .5, MM - 1, MM - 1);
-                for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (grid[y][x] > 0) { ctx.fillStyle = grid[y][x] === 2 ? '#7a5a32' : '#6b6577'; ctx.fillRect(mx0 + x * s, my0 + y * s, s + 0.5, s + 0.5); }
-                ctx.fillStyle = 'rgba(255,91,91,0.95)'; for (const a of aliens) ctx.fillRect(mx0 + a.x * s - 1, my0 + a.y * s - 1, 2.5, 2.5);
-                ctx.fillStyle = '#7dff7d'; ctx.beginPath(); ctx.arc(mx0 + px * s, my0 + py * s, 2.5, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#7dff7d'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(mx0 + px * s, my0 + py * s); ctx.lineTo(mx0 + (px + dirX * 2) * s, my0 + (py + dirY * 2) * s); ctx.stroke();
-
-                // 触屏操作提示
-                if (isTouch) {
-                    ctx.save(); ctx.globalAlpha = 0.22; ctx.strokeStyle = '#cfe3ff'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
-                    ctx.beginPath(); ctx.arc(60, H - 60, 42, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-                    ctx.globalAlpha = 0.5; ctx.fillStyle = '#cfe3ff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
-                    ctx.fillText('✥ 移动', 60, H - 104); ctx.fillText('🎯 转向/射击', W - 70, H - 104); ctx.restore();
-                }
-                // 开场提示
-                if (t < 5) {
-                    ctx.globalAlpha = Math.min(1, (5 - t) / 1.4);
-                    ctx.fillStyle = '#cfe3ff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
-                    ctx.fillText('PC：WASD 移动 · 鼠标点击锁定后转视角 · 左键射击 · 方向键/QE 转向', W / 2, H - 16);
-                    ctx.fillText('手机：左半屏摇杆移动 · 右半屏拖动转向+射击', W / 2, H - 4);
-                    ctx.globalAlpha = 1;
-                }
-                // 血条
-                ctx.fillStyle = '#333'; ctx.fillRect(8, 8, 120, 10);
-                ctx.fillStyle = hp > 40 ? '#5ad48a' : '#ff7b7b'; ctx.fillRect(8, 8, 120 * Math.max(0, hp / 100), 10);
-                ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '11px sans-serif'; ctx.textAlign = 'left'; ctx.fillText('HP', 8, 30);
-            }
-
-            draw();
-            const timer = setInterval(step, 33);
             return {
                 stop() {
-                    clearInterval(timer);
-                    window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku);
+                    stopped = true;
+                    if (raf) cancelAnimationFrame(raf);
+                    cleanups.forEach(fn => { try { fn(); } catch (e) {} });
                     try { document.exitPointerLock && document.exitPointerLock(); } catch (e) {}
                 }
             };

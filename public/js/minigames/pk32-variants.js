@@ -275,6 +275,257 @@
                     if (Number.isFinite(n)) return colors[Math.abs(n) % colors.length];
                     return '#475569';
                 }
+                function colorKey(value) {
+                    const code = Number(value);
+                    if (!Number.isFinite(code)) return null;
+                    if (code >= 20) return code % 10;
+                    if ([2, 3, 4, 6, 8, 9].indexOf(code) >= 0) return code;
+                    return null;
+                }
+                function renderExtendLines(payload, nav, detail) {
+                    const width = payload.structure.width, height = payload.structure.height, original = (payload.units || []).map(Number);
+                    let cells = original.slice();
+                    const palette = [2, 4, 6, 8, 9];
+                    const fillable = function (code) { return code === 0 || code === 1 || code === 10; };
+                    function clueInfo(code) { return code >= 20 ? { target: Math.floor(code / 10), color: code % 10 } : null; }
+                    function neighborIndexes(index) {
+                        const x = index % width, y = Math.floor(index / width), result = [];
+                        for (let dy = -1; dy <= 1; dy += 1) for (let dx = -1; dx <= 1; dx += 1) {
+                            if (!dx && !dy) continue;
+                            const nx = x + dx, ny = y + dy;
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) result.push(ny * width + nx);
+                        }
+                        return result;
+                    }
+                    function clueCount(index, clue) {
+                        return 1 + neighborIndexes(index).filter(function (target) { return colorKey(cells[target]) === clue.color; }).length;
+                    }
+                    function solved() {
+                        return cells.every(function (code, index) { const clue = clueInfo(original[index]); return !clue || clueCount(index, clue) === clue.target; });
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(width, height, 'pk32-structured-payload-board');
+                        cells.forEach(function (code, index) {
+                            const clue = clueInfo(original[index]);
+                            const text = clue ? String(clue.target) : (fillable(original[index]) && !colorKey(code) ? '' : String(code));
+                            const cell = button(text, function () {
+                                if (!fillable(original[index])) return;
+                                const current = palette.indexOf(Number(cells[index]));
+                                cells[index] = current < 0 ? palette[0] : current + 1 < palette.length ? palette[current + 1] : 0;
+                                drawBoard();
+                            });
+                            const clueOk = clue && clueCount(index, clue) === clue.target;
+                            cell.dataset.code = String(code); cell.dataset.originalCode = String(original[index]); cell.dataset.cell = String(index);
+                            cell.style.cssText = 'min-width:28px;min-height:28px;padding:0;background:' + colorFor(clue ? clue.color : code) + ';color:#fff;font-size:12px;font-weight:700;line-height:1.1;overflow:hidden;outline:' + (clue ? (clueOk ? '2px solid #84e6ad' : '2px solid #ff7a8b') : 'none');
+                            if (fillable(original[index])) cell.title = '点击循环补入彩球颜色';
+                            else cell.disabled = true;
+                            grid.appendChild(cell);
+                        });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('清空补球', function () { cells = original.slice(); drawBoard(); }), button('检查本关', function () { if (solved()) finish('本关数字彩球约束全部满足。'); else prompt.textContent = '仍有数字彩球周围数量不匹配，继续补完缺少的彩球。'; }));
+                        panel.append(nav, grid, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；点击空格补彩球，数字彩球显示周围同色数量要求。';
+                    }
+                    drawBoard();
+                }
+                function renderKnightBoard(payload, nav, detail) {
+                    const width = (payload.structure && payload.structure.width) || chooseShape(payload).width, height = (payload.structure && payload.structure.height) || chooseShape(payload).height;
+                    const original = (payload.units || []).map(Number);
+                    let cells = original.slice(), player = Math.max(0, cells.indexOf(5)), points = Number(payload.trailer || 0) || 50, facing = 0;
+                    const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+                    function walkable(code) { return [1, 4, 5, 7, 8, 9].indexOf(code) >= 0; }
+                    function stoneCost(code) { return code === 6 || code >= 20 && code < 40 ? 5 : code === 10 || code >= 40 ? 7 : 0; }
+                    function addPoints(code) { return code === 8 ? 10 : code === 9 ? 20 : 0; }
+                    function move(dx, dy, jump) {
+                        if (ended || points <= 0) return;
+                        const x = player % width, y = Math.floor(player / width), nx = x + dx, ny = y + dy;
+                        if (nx < 0 || nx >= width || ny < 0 || ny >= height) return;
+                        const next = ny * width + nx, code = cells[next], cost = stoneCost(code);
+                        if (jump) {
+                            const landX = x + dx * 2, landY = y + dy * 2, land = landY * width + landX;
+                            if (!cost || landX < 0 || landX >= width || landY < 0 || landY >= height || !walkable(cells[land]) || points < 20) return;
+                            points -= 20; player = land;
+                        } else if (cost) {
+                            const pushX = nx + dx, pushY = ny + dy, push = pushY * width + pushX;
+                            if (pushX < 0 || pushX >= width || pushY < 0 || pushY >= height || !walkable(cells[push]) || points < cost) return;
+                            cells[push] = code; cells[next] = 1; points -= cost; player = next;
+                        } else {
+                            if (!walkable(code) || points < 1) return;
+                            points -= 1; player = next;
+                        }
+                        const bonus = addPoints(cells[player]);
+                        if (bonus) { points += bonus; cells[player] = 1; }
+                        if (cells[player] === 4) finish('到达深树叶终点，本关完成。');
+                        else if (points <= 0) finish('移动点数用完了，请重新开始本关。');
+                        drawBoard();
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(width, height, 'pk32-structured-payload-board');
+                        cells.slice(0, width * height).forEach(function (code, index) {
+                            const label = index === player ? '人' : code === 0 ? '' : code === 4 ? '终' : code === 6 ? '石' : code === 10 ? '塔' : code === 8 || code === 9 ? '宝' : code >= 20 ? String(Math.floor(code / 10)) : code >= 40 ? String(Math.floor(code / 10)) : '';
+                            const cell = button(label, function () { const dx = index % width - player % width, dy = Math.floor(index / width) - Math.floor(player / width); if (Math.abs(dx) + Math.abs(dy) === 1) move(dx, dy, false); });
+                            cell.dataset.code = String(code); cell.dataset.cell = String(index);
+                            cell.style.cssText = 'min-width:28px;min-height:28px;padding:0;background:' + (index === player ? '#facc15' : code === 0 ? '#0f172a' : code === 4 ? '#16a34a' : code === 6 || code >= 20 ? '#78716c' : code === 10 || code >= 40 ? '#57534e' : code === 8 || code === 9 ? '#38bdf8' : '#334155') + ';color:#fff;font-size:12px;font-weight:700;line-height:1.1;overflow:hidden';
+                            grid.appendChild(cell);
+                        });
+                        const controls = el('div', { className: 'pk32v-controls' });
+                        [['上', 0, -1], ['下', 0, 1], ['左', -1, 0], ['右', 1, 0]].forEach(function (item, index) { controls.append(button(item[0], function () { facing = index; move(item[1], item[2], false); })); });
+                        controls.append(button('跳跃', function () { const dir = dirs[facing]; move(dir[0], dir[1], true); }), button('重置本关', function () { cells = original.slice(); player = Math.max(0, cells.indexOf(5)); points = Number(payload.trailer || 0) || 50; ended = false; drawBoard(); }));
+                        panel.append(nav, grid, controls, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；移动点数 ' + points + '。方向移动，推石块/石塔或跳过障碍。';
+                    }
+                    drawBoard();
+                }
+                function renderSudoku(payload, nav, detail) {
+                    const original = (payload.units || []).map(Number), size = original.length >= 81 ? 9 : 6, boxW = 3, boxH = size === 9 ? 3 : 2;
+                    let cells = original.slice(0, size * size).map(function (value) { return Number(value) || 0; });
+                    function validGroup(values) { const seen = values.filter(Boolean); return seen.length === new Set(seen).size && seen.every(function (value) { return value >= 1 && value <= size; }); }
+                    function solved() {
+                        for (let y = 0; y < size; y += 1) if (!validGroup(cells.slice(y * size, y * size + size)) || cells.slice(y * size, y * size + size).some(function (value) { return !value; })) return false;
+                        for (let x = 0; x < size; x += 1) if (!validGroup(Array.from({ length: size }, function (_, y) { return cells[y * size + x]; }))) return false;
+                        for (let by = 0; by < size; by += boxH) for (let bx = 0; bx < size; bx += boxW) { const values = []; for (let y = 0; y < boxH; y += 1) for (let x = 0; x < boxW; x += 1) values.push(cells[(by + y) * size + bx + x]); if (!validGroup(values)) return false; }
+                        return true;
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(size, size, 'pk32-structured-payload-board');
+                        cells.forEach(function (value, index) { const fixed = original[index] > 0; const cell = button(value ? String(value) : '', function () { if (fixed) return; cells[index] = (cells[index] % size) + 1; drawBoard(); }); cell.dataset.code = String(value); cell.dataset.fixed = String(fixed); cell.style.cssText = 'min-width:34px;min-height:34px;padding:0;background:' + (fixed ? '#334155' : '#0f172a') + ';color:#fff;font-size:15px;font-weight:700;line-height:1.1;border-color:' + ((index % size) % boxW === 0 || Math.floor(index / size) % boxH === 0 ? '#eab308' : '#475569'); grid.appendChild(cell); });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('检查本关', function () { if (solved()) finish('数独本关完成。'); else prompt.textContent = '数独：仍有行、列或宫格重复/空格。'; }), button('重置本关', function () { cells = original.slice(0, size * size).map(function (value) { return Number(value) || 0; }); drawBoard(); }));
+                        panel.append(nav, grid, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；点击空格循环填写 1-' + size + '，检查行、列和宫格。';
+                    }
+                    drawBoard();
+                }
+                function renderFlatCube(payload, nav, detail) {
+                    const shape = chooseShape(payload), width = shape.width, height = shape.height || Math.ceil((payload.units || []).length / shape.width);
+                    let cells = (payload.units || []).slice(0, width * height).map(Number);
+                    function rotateRow(row, dir) { const start = row * width, values = cells.slice(start, start + width); if (dir > 0) values.unshift(values.pop()); else values.push(values.shift()); values.forEach(function (value, index) { cells[start + index] = value; }); drawBoard(); }
+                    function rotateCol(col, dir) { const values = Array.from({ length: height }, function (_, y) { return cells[y * width + col]; }); if (dir > 0) values.unshift(values.pop()); else values.push(values.shift()); values.forEach(function (value, y) { cells[y * width + col] = value; }); drawBoard(); }
+                    function solved() { return Array.from({ length: height }, function (_, y) { const row = cells.slice(y * width, y * width + width).filter(function (value) { return value !== 0 && value !== 2; }); return row.length === 0 || row.every(function (value) { return value === row[0]; }); }).every(Boolean); }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(width, height, 'pk32-structured-payload-board');
+                        cells.forEach(function (value, index) { const cell = button(String(value), function () { rotateRow(Math.floor(index / width), 1); }); cell.dataset.code = String(value); cell.style.cssText = 'min-width:22px;min-height:22px;padding:0;background:' + colorFor(value) + ';color:#fff;font-size:10px;font-weight:700;line-height:1.1;overflow:hidden'; grid.appendChild(cell); });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('左移首行', function () { rotateRow(0, -1); }), button('右移首行', function () { rotateRow(0, 1); }), button('上移首列', function () { rotateCol(0, -1); }), button('下移首列', function () { rotateCol(0, 1); }), button('检查', function () { if (solved()) finish('所有行图案已一致。'); else prompt.textContent = '平面魔方：继续旋转行列，使每一行图案相同。'; }));
+                        panel.append(nav, grid, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；点击任意格会右移该行，也可用按钮旋转首行/首列。';
+                    }
+                    drawBoard();
+                }
+                function renderPacDots(payload, nav, detail) {
+                    const shape = chooseShape(payload), width = shape.width, height = shape.height || Math.ceil((payload.units || []).length / shape.width);
+                    let cells = (payload.units || []).slice(0, width * height).map(Number), player = cells.findIndex(function (value) { return value >= 3 && value <= 6; });
+                    if (player < 0) player = cells.findIndex(function (value) { return value !== 1; });
+                    if (player < 0) player = 0;
+                    function dot(code) { return code === 0 || code === 8 || code === 9; }
+                    function wall(code) { return code === 1; }
+                    function move(delta) { if (ended) return; const next = player + delta; if (next < 0 || next >= cells.length) return; if ((delta === 1 || delta === -1) && Math.floor(next / width) !== Math.floor(player / width)) return; if (wall(cells[next])) return; if (dot(cells[next])) { setScore(score + (cells[next] === 0 ? 1 : 5)); cells[next] = 2; } player = next; drawBoard(); if (!cells.some(dot)) finish('豆子全部吃完，本关完成。'); }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(width, height, 'pk32-structured-payload-board');
+                        cells.forEach(function (value, index) { const cell = button(index === player ? '豆' : wall(value) ? '墙' : dot(value) ? '·' : '', function () { const delta = index - player; if ([1, -1, width, -width].indexOf(delta) >= 0) move(delta); }); cell.dataset.code = String(value); cell.dataset.cell = String(index); cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (index === player ? '#facc15' : wall(value) ? '#1d4ed8' : dot(value) ? '#0f172a' : '#334155') + ';color:#fff;font-size:10px;font-weight:700;line-height:1.1;overflow:hidden'; grid.appendChild(cell); });
+                        const controls = el('div', { className: 'pk32v-controls' });
+                        [['上', -width], ['下', width], ['左', -1], ['右', 1]].forEach(function (item) { controls.append(button(item[0], function () { move(item[1]); })); });
+                        panel.append(nav, grid, controls, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；方向移动并吃完所有豆子。';
+                    }
+                    drawBoard();
+                }
+                function renderColorLinks(payload, nav, detail) {
+                    const units = (payload.units || []).map(Number).filter(Number.isFinite), edges = [];
+                    for (let index = 0; index + 1 < units.length; index += 2) edges.push([units[index], units[index + 1]]);
+                    const nodes = Array.from(new Set(edges.flat())).sort(function (a, b) { return a - b; });
+                    let current = null, used = new Set();
+                    function edgeKey(a, b) { return [Math.min(a, b), Math.max(a, b)].join('-'); }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const board = el('div', { className: 'pk32v-grid pk32-structured-payload-board' });
+                        board.style.gridTemplateColumns = 'repeat(' + Math.max(2, Math.min(5, nodes.length)) + ', minmax(44px, 1fr))';
+                        nodes.forEach(function (node) {
+                            const cell = button(String(node), function () {
+                                if (current == null) { current = node; drawBoard(); return; }
+                                const key = edgeKey(current, node);
+                                if (current !== node && edges.some(function (edge) { return edgeKey(edge[0], edge[1]) === key; }) && !used.has(key)) {
+                                    used.add(key); current = node; setScore(used.size * 10);
+                                    if (used.size === edges.length) finish('彩球连线全部消去，本关完成。');
+                                }
+                                drawBoard();
+                            });
+                            const remain = edges.filter(function (edge) { return !used.has(edgeKey(edge[0], edge[1])) && (edge[0] === node || edge[1] === node); }).length;
+                            cell.dataset.node = String(node); cell.dataset.current = String(current === node);
+                            cell.style.cssText = 'min-width:44px;min-height:44px;padding:0;border-radius:50%;background:' + colorFor(node) + ';color:#fff;font-size:16px;font-weight:700;outline:' + (current === node ? '3px solid #facc15' : 'none');
+                            cell.title = '剩余连线 ' + remain + ' 条';
+                            board.appendChild(cell);
+                        });
+                        const edgesPanel = el('div', { className: 'pk32v-toolbar' });
+                        edges.forEach(function (edge) {
+                            const key = edgeKey(edge[0], edge[1]), item = el('span', { className: 'pk32v-status' }, edge[0] + ' - ' + edge[1]);
+                            item.style.cssText = 'opacity:' + (used.has(key) ? '.35' : '1') + ';padding:4px 8px;border:1px solid #475569;border-radius:6px';
+                            edgesPanel.appendChild(item);
+                        });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('重置本关', function () { current = null; used = new Set(); setScore(0); drawBoard(); }));
+                        panel.append(nav, board, edgesPanel, actions, detail);
+                        prompt.textContent = config.name + '：原始成对连线 ' + edges.length + ' 条；从任一彩球开始，沿未消去的连线依次点击端点。';
+                    }
+                    drawBoard();
+                }
+                function renderMoveBalls(payload, nav, detail) {
+                    const shape = chooseShape(payload), width = shape.width, height = shape.height || Math.ceil((payload.units || []).length / shape.width);
+                    const original = (payload.units || []).slice(0, width * height).map(Number);
+                    let cells = original.slice(), moves = 0, maxMoves = Math.max(12, original.filter(Boolean).length * 2);
+                    const directions = [[-1, 0, 1], [0, 1, 2], [1, 0, 4], [0, -1, 8]];
+                    function rotateMask(mask) {
+                        return directions.reduce(function (value, item) { return (mask & item[2]) ? value | directions[(directions.indexOf(item) + 1) % 4][2] : value; }, 0);
+                    }
+                    function connected() {
+                        const queue = [], seen = new Set();
+                        for (let y = 0; y < height; y += 1) {
+                            const index = y * width;
+                            if (cells[index] & 1) { queue.push(index); seen.add(index); }
+                        }
+                        while (queue.length) {
+                            const index = queue.shift(), x = index % width, y = Math.floor(index / width), mask = cells[index];
+                            if (x === width - 1 && mask & 2) return true;
+                            directions.forEach(function (item) {
+                                if (!(mask & item[2])) return;
+                                const nx = x + item[1], ny = y + item[0];
+                                if (nx < 0 || nx >= width || ny < 0 || ny >= height) return;
+                                const next = ny * width + nx, opposite = directions[(directions.indexOf(item) + 2) % 4][2];
+                                if ((cells[next] & opposite) && !seen.has(next)) { seen.add(next); queue.push(next); }
+                            });
+                        }
+                        return false;
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(width, height, 'pk32-structured-payload-board');
+                        cells.forEach(function (value, index) {
+                            const cell = button(value ? String(value) : '', function () {
+                                if (ended || !value) return;
+                                cells[index] = rotateMask(cells[index]); moves += 1; setScore(Math.max(0, maxMoves - moves));
+                                drawBoard();
+                                if (connected()) finish('左右电线已经连通，本关完成。');
+                                else if (moves >= maxMoves) finish('移动次数用完，请重置本关。');
+                            });
+                            cell.dataset.code = String(value);
+                            cell.dataset.cell = String(index);
+                            cell.style.cssText = 'min-width:34px;min-height:34px;padding:0;background:' + (value ? colorFor(value) : '#0f172a') + ';color:#fff;font-size:13px;font-weight:700;line-height:1.1;overflow:hidden';
+                            cell.title = value ? '点击顺时针旋转电线，方向码 ' + value : '空格';
+                            grid.appendChild(cell);
+                        });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('重置本关', function () { cells = original.slice(); moves = 0; setScore(maxMoves); ended = false; drawBoard(); }));
+                        panel.append(nav, grid, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；在 ' + maxMoves + ' 次移动内把最左和最右的电线连通，剩余 ' + Math.max(0, maxMoves - moves) + ' 次。';
+                    }
+                    setScore(maxMoves);
+                    drawBoard();
+                }
                 function draw() {
                     panel.innerHTML = '';
                     const payload = game.payloads[level], units = payload.units || [], shape = chooseShape(payload);
@@ -302,6 +553,13 @@
                         trailer: payload.trailer,
                         semanticsVerified: payload.semanticsVerified
                     }, null, 2)));
+                    if (config.name === '扩展线路' && /^dimension-prefix-paired-cell/.test(payload.family)) return renderExtendLines(payload, nav, detail);
+                    if (config.name === '马跳棋盘' && /^dimension-prefix-/.test(payload.family)) return renderKnightBoard(payload, nav, detail);
+                    if (config.name === '数独' && payload.family === 'fixed-area-candidate') return renderSudoku(payload, nav, detail);
+                    if (config.name === '平面魔方' && payload.family === 'fixed-area-candidate') return renderFlatCube(payload, nav, detail);
+                    if (config.name === '吃豆子' && payload.family === 'fixed-area-candidate') return renderPacDots(payload, nav, detail);
+                    if (config.name === '彩球连线' && payload.family === 'paired-code-candidate') return renderColorLinks(payload, nav, detail);
+                    if (config.name === '移彩球' && payload.family === 'fixed-area-candidate') return renderMoveBalls(payload, nav, detail);
                     panel.append(nav, grid, detail);
                     prompt.textContent = config.name + '：已绑定原始结构化载荷 ' + (level + 1) + ' / ' + game.payloads.length + '；当前只是内容迁移适配层，规则语义仍待按原程序确认。';
                 }

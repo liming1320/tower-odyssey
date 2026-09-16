@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-16T10:25:38.215Z",
+  "generatedAt": "2026-09-16T10:53:58.400Z",
   "input": {
     "file": "output\\pk32-reference\\module.bin",
     "bytes": 33767424,
@@ -1928,7 +1928,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 27,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2084,7 +2084,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 20,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2708,7 +2708,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 24,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2981,7 +2981,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 66,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3059,7 +3059,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 20,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3215,7 +3215,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 51,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3761,7 +3761,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 29,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3800,7 +3800,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 69,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -4735,7 +4735,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 63,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5047,7 +5047,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 25,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5086,7 +5086,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 21,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5125,7 +5125,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 27,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5164,7 +5164,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 24,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5359,7 +5359,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 91,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5593,7 +5593,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 24,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5671,7 +5671,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 21,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5710,7 +5710,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 34,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5749,7 +5749,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 165,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6255,7 +6255,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 39,
+      "launchVerifiedNodes": 31,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6333,7 +6333,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 51,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6372,7 +6372,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 18,
+      "launchVerifiedNodes": 17,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6411,7 +6411,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 104,
+      "launchVerifiedNodes": 95,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6567,7 +6567,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 25,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6606,7 +6606,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 54,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6762,7 +6762,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 128,
+      "launchVerifiedNodes": 118,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6879,7 +6879,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 35,
+      "launchVerifiedNodes": 27,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7035,7 +7035,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 25,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7074,7 +7074,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 28,
+      "launchVerifiedNodes": 18,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7113,7 +7113,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 34,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7191,7 +7191,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 72,
+      "launchVerifiedNodes": 65,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7230,7 +7230,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 26,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7347,7 +7347,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 47,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7971,7 +7971,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 26,
+      "launchVerifiedNodes": 23,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -8049,7 +8049,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 29,
+      "launchVerifiedNodes": 21,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -8088,7 +8088,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 31,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -8166,7 +8166,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 28,
+      "launchVerifiedNodes": 29,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -8244,7 +8244,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 64,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -8283,7 +8283,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 32,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },

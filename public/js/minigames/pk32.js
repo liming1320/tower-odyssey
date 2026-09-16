@@ -87,7 +87,8 @@
             : record.status === 'payload-assignment-review' ? '载荷归属待复核'
             : '内容待迁移';
         const verificationText = record.verificationComplete ? '原版验证完成' : '原版待验证';
-        return '<span class="emu-tag" style="color:#ffd56b;border-color:rgba(255,213,107,.35)">' + esc(migrationText) + '</span>' +
+        const resourceText = record.resources && record.resources.resourcePackageBound ? '<span class="emu-tag" style="color:#8fd8ff;border-color:rgba(143,216,255,.35)">原始资源包已绑定</span>' : '';
+        return resourceText + '<span class="emu-tag" style="color:#ffd56b;border-color:rgba(255,213,107,.35)">' + esc(migrationText) + '</span>' +
             '<span class="emu-tag" style="color:' + (record.verificationComplete ? '#84e6ad' : '#b8c0cc') + ';border-color:' + (record.verificationComplete ? 'rgba(132,230,173,.35)' : 'rgba(184,192,204,.25)') + '">' + esc(verificationText) + '</span>';
     }
     function looksLikeRawPayloadText(text) {
@@ -170,6 +171,13 @@
             record.migrationEvidence = status.migrationEvidence;
             record.migrationPhase = status.migrationPhase;
             record.originalComplete = status.originalComplete === true;
+        });
+    }
+    function applyResourceManifest(data) {
+        const rows = data && Array.isArray(data.records) ? data.records : [];
+        rows.forEach(resource => {
+            const record = CATALOG.find(item => item.id === resource.id);
+            if (record) record.resources = resource;
         });
     }
     // 按后台保存的顺序重排目录（顺序以 id 数组给定；未出现的排末尾）
@@ -379,6 +387,11 @@
             fetch('/data/pk32-migration-status.json').then(response => response.ok ? response.json() : null).then(data => {
                 if (!data || !alive) return;
                 applyMigrationStatus(data);
+                if (!activeSession) render();
+            }).catch(() => {});
+            fetch('/data/pk32-resource-manifest.json').then(response => response.ok ? response.json() : null).then(data => {
+                if (!data || !alive) return;
+                applyResourceManifest(data);
                 if (!activeSession) render();
             }).catch(() => {});
             // 后台 PK32 排序：拉到顺序后重排目录，玩家端展示顺序与后台一致

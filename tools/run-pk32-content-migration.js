@@ -62,6 +62,7 @@ try {
   for (const script of discoverExtractors()) steps.push(run(script));
   steps.push(run('tools/extract-pk32-dimension-grids.js'));
   steps.push(run('tools/build-pk32-structured-payloads.js'));
+  steps.push(run('tools/build-pk32-resource-manifest.js'));
   steps.push(run('tools/build-pk32-migration-queue.js'));
   if (fs.existsSync(path.join(root, 'output/pk32-reference/native-ownership.json'))) {
     steps.push(run('tools/build-pk32-native-migration-map.js'));
@@ -92,6 +93,8 @@ try {
       partialContentMigration: queue.summary.partialContentMigration,
       nativeData: queue.summary.nativeData,
       candidateData: queue.summary.candidateData,
+      sharedResourcePackagesBound: queue.summary.sharedResourcePackagesBound,
+      gameSpecificAssetMappings: queue.summary.gameSpecificAssetMappings,
       decodedDoc: 'docs/pk32-decoded-content.md',
       decodedIndex: 'output/pk32-reference/decoded-content-index.json',
       autoBindableContent: decoded.summary.canAutoBindContent,

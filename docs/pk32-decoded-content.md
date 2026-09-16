@@ -129,7 +129,7 @@
 | pk32-093 | 同色方块 | partial-content-migration | 1 |  | 5 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-094 | 同步移动 | partial-content-migration | 1 |  | 261 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-095 | 摘花朵 | partial-content-migration | 1 |  | 12 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-096 | 平面魔方 | partial-content-migration | 0 | fixed-area-candidate / 9 | 9 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
+| pk32-096 | 平面魔方 | partial-content-migration | 0 | fixed-area-candidate / 9 | 9 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-097 | 激光坦克 | partial-content-migration | 0 | paired-code-candidate / 50 | 50 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
 | pk32-098 | 华容道 | partial-content-migration | 1 |  | 11 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-099 | 强手棋 | partial-content-migration | 0 |  | 0 | no | no | no | no decoded content; rules not fully migrated; full flow not migrated |
@@ -201,8 +201,8 @@
 | pk32-165 | 推箱子四 | partial-content-migration | 0 |  | 59 | no | no | no | rules not fully migrated; full flow not migrated |
 | pk32-166 | 推箱子五 | partial-content-migration | 1 |  | 4 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-167 | 连结电线二 | partial-content-migration | 1 |  | 3 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-168 | 移彩球 | partial-content-migration | 0 | fixed-area-candidate / 1 | 1 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
-| pk32-169 | 数独 | partial-content-migration | 0 | fixed-area-candidate / 23 | 23 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
+| pk32-168 | 移彩球 | partial-content-migration | 0 | fixed-area-candidate / 1 | 1 | no | no | no | payload semantics not level-ready; full flow not migrated |
+| pk32-169 | 数独 | partial-content-migration | 0 | fixed-area-candidate / 23 | 23 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-170 | 智慧之光 | partial-content-migration | 1 |  | 75 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-171 | 禅宗花园 | payload-migration | 1 |  | 23 | no | no | no | no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-172 | 骰子王 | payload-migration | 1 |  | 52 | no | no | no | no dedicated adapter; rules not fully migrated; full flow not migrated |
@@ -218,10 +218,10 @@
 | pk32-182 | 拼疑犯 | partial-content-migration | 0 | paired-code-candidate / 14 | 14 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
 | pk32-183 | 十字绣 | catalog-migration | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-184 | 变色彩球 | payload-migration | 1 |  | 43 | no | no | no | no dedicated adapter; rules not fully migrated; full flow not migrated |
-| pk32-185 | 扩展线路 | partial-content-migration | 0 | dimension-prefix-paired-cell-with-trailer / 5 | 5 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
+| pk32-185 | 扩展线路 | partial-content-migration | 0 | dimension-prefix-paired-cell-with-trailer / 5 | 5 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-186 | 禅宗迷宫 | partial-content-migration | 1 |  | 7 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-187 | 飞镖王 | catalog-migration | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
-| pk32-188 | 马跳棋盘 | partial-content-migration | 0 | dimension-prefix-paired-cell-with-trailer / 19 | 19 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
+| pk32-188 | 马跳棋盘 | partial-content-migration | 0 | dimension-prefix-paired-cell-with-trailer / 19 | 19 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-189 | 打砖块 | partial-content-migration | 1 |  | 44 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-190 | 爆破彩球 | partial-content-migration | 1 |  | 29 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-191 | 爆破彩球二 | catalog-migration | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
@@ -244,6 +244,6 @@
 | pk32-208 | 反射镜 | partial-content-migration | 1 |  | 1 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-209 | 企鹅 | catalog-migration | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-210 | 立体魔方二 | partial-content-migration | 1 |  | 6 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-211 | 吃豆子 | partial-content-migration | 0 | fixed-area-candidate / 33 | 33 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
-| pk32-212 | 彩球连线 | partial-content-migration | 0 | paired-code-candidate / 1 | 1 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
+| pk32-211 | 吃豆子 | partial-content-migration | 0 | fixed-area-candidate / 33 | 33 | no | no | no | payload semantics not level-ready; full flow not migrated |
+| pk32-212 | 彩球连线 | partial-content-migration | 0 | paired-code-candidate / 1 | 1 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-213 | 建筑制造 | partial-content-migration | 1 |  | 53 | yes | no | no | rules not fully migrated; full flow not migrated |
