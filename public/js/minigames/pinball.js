@@ -57,9 +57,9 @@ window.MiniGames = window.MiniGames || {};
     const SAUCER = { x: 176, y: 452, r: 17 };
     // 翻牌 ×3（Space Cadet 式翻转徽章牌，集齐 3 张开大奖）
     const CARDS = [
-        { x: 140, y: 392, w: 30, h: 36 },
-        { x: 176, y: 392, w: 30, h: 36 },
-        { x: 212, y: 392, w: 30, h: 36 },
+        { x: 140, y: 354, w: 30, h: 36 },
+        { x: 176, y: 354, w: 30, h: 36 },
+        { x: 212, y: 354, w: 30, h: 36 },
     ];
     // 顶部滚道灯
     const LANES = [{ x: 140, y: 194 }, { x: 172, y: 178 }, { x: 214, y: 180 }, { x: 250, y: 198 }];
@@ -385,17 +385,17 @@ window.MiniGames = window.MiniGames || {};
                     g.fillStyle = mw; g.fillRect(-420, -140, 840, 280);
                     g.restore();
 
-                    // 星球 + 星环（暖色气体巨星，原版台面的行星丝印）
+                    // 星球 + 星环（蓝色行星，原版台面标志性的行星丝印）
                     g.globalAlpha = 0.4;
                     const plx = 246, ply = 268, plr = 44;
                     const pg = g.createRadialGradient(plx - plr * 0.35, ply - plr * 0.4, plr * 0.1, plx, ply, plr);
-                    pg.addColorStop(0, '#d8a86a'); pg.addColorStop(0.55, '#a06a3c');
-                    pg.addColorStop(0.85, '#5e3a20'); pg.addColorStop(1, '#2c1c10');
+                    pg.addColorStop(0, '#bfe6ff'); pg.addColorStop(0.55, '#4f9bdc');
+                    pg.addColorStop(0.85, '#1c5288'); pg.addColorStop(1, '#0c2342');
                     g.fillStyle = pg; g.beginPath(); g.arc(plx, ply, plr, 0, Math.PI * 2); g.fill();
                     g.save(); g.translate(plx, ply); g.rotate(-0.34); g.scale(1, 0.26);
-                    g.strokeStyle = 'rgba(255,215,160,0.35)'; g.lineWidth = 7;
+                    g.strokeStyle = 'rgba(190,225,255,0.40)'; g.lineWidth = 7;
                     g.beginPath(); g.arc(0, 0, plr * 1.55, 0, Math.PI * 2); g.stroke();
-                    g.strokeStyle = 'rgba(255,190,130,0.22)'; g.lineWidth = 3;
+                    g.strokeStyle = 'rgba(150,200,255,0.28)'; g.lineWidth = 3;
                     g.beginPath(); g.arc(0, 0, plr * 1.82, 0, Math.PI * 2); g.stroke();
                     g.restore();
                     g.globalAlpha = 1;
@@ -761,7 +761,7 @@ window.MiniGames = window.MiniGames || {};
                         score += 15000;
                         show('★ 徽章集齐 +15,000 ★', 2.0);
                         sfx('jackpot');
-                        spawn(176, 392, 30, 50, 1.4);
+                        spawn(176, 354, 30, 50, 1.4);
                         shake = Math.max(shake, 0.36); shakeMag = Math.max(shakeMag, 6);
                         startMultiball(2);
                     }
@@ -1131,69 +1131,106 @@ window.MiniGames = window.MiniGames || {};
             }
 
             function drawEmblem() {
-                const ex = 176, ey = 392, R = 62;
+                const ex = SAUCER.x, ey = SAUCER.y, R = 56;
                 ctx.save();
-                const gg = ctx.createRadialGradient(ex, ey, 8, ex, ey, R + 26);
-                gg.addColorStop(0, 'rgba(255,200,120,0.14)');
-                gg.addColorStop(0.6, 'rgba(230,150,70,0.05)');
+                // 外发光
+                const gg = ctx.createRadialGradient(ex, ey, 8, ex, ey, R + 38);
+                gg.addColorStop(0, 'rgba(255,205,130,0.16)');
+                gg.addColorStop(0.55, 'rgba(230,150,70,0.05)');
                 gg.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = gg;
-                ctx.beginPath(); ctx.arc(ex, ey, R + 26, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = 'rgba(255,214,120,0.30)'; ctx.lineWidth = 2.6;
-                ctx.beginPath(); ctx.arc(ex, ey, R, 0, Math.PI * 2); ctx.stroke();
-                ctx.strokeStyle = 'rgba(255,190,90,0.16)'; ctx.lineWidth = 1.4;
-                ctx.beginPath(); ctx.arc(ex, ey, R - 10, 0, Math.PI * 2); ctx.stroke();
-                // 部署灯环（原版部署目标：一圈黄灯绕中央，走马式点亮）
-                for (let i = 0; i < 14; i++) {
-                    const a = i / 14 * Math.PI * 2 - Math.PI / 2;
-                    const lx = ex + Math.cos(a) * (R + 12), ly = ey + Math.sin(a) * (R + 12);
+                ctx.beginPath(); ctx.arc(ex, ey, R + 38, 0, Math.PI * 2); ctx.fill();
+
+                // 部署灯环（原版：一圈黄灯绕中央，走马点亮）
+                for (let i = 0; i < 16; i++) {
+                    const a = i / 16 * Math.PI * 2 - Math.PI / 2;
+                    const lx = ex + Math.cos(a) * (R + 13), ly = ey + Math.sin(a) * (R + 13);
                     const on = (Math.floor(t * 5) + i) % 4 !== 0;
                     ctx.fillStyle = on ? 'rgba(255,214,80,0.95)' : 'rgba(120,85,20,0.5)';
                     if (on) { ctx.shadowColor = '#ffd45a'; ctx.shadowBlur = 6; }
-                    ctx.beginPath(); ctx.arc(lx, ly, 2.6, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(lx, ly, 2.8, 0, Math.PI * 2); ctx.fill();
                     ctx.shadowBlur = 0;
                 }
-                // 两侧金色飞翼（Space Cadet 翼章，从徽章后向外展开）
-                ctx.save(); ctx.translate(ex, ey);
-                for (let side = -1; side <= 1; side += 2) {
-                    ctx.save(); ctx.scale(side, 1);
-                    for (let f = 0; f < 4; f++) {
-                        const y0 = -26 + f * 13, len = 64 - f * 13, drop = 8 + f * 6;
-                        const wgn = ctx.createLinearGradient(14, y0, 14 + len, y0 + drop);
-                        wgn.addColorStop(0, '#ffe9a8'); wgn.addColorStop(0.5, '#e8b64c'); wgn.addColorStop(1, '#8a5a14');
-                        ctx.fillStyle = wgn;
-                        ctx.beginPath();
-                        ctx.moveTo(14, y0);
-                        ctx.quadraticCurveTo(14 + len * 0.55, y0 - 7, 14 + len, y0 + drop);
-                        ctx.quadraticCurveTo(14 + len * 0.5, y0 + drop * 0.55 + 5, 16, y0 + 10);
-                        ctx.closePath(); ctx.fill();
-                        ctx.strokeStyle = 'rgba(90,55,10,0.5)'; ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(14, y0);
-                        ctx.quadraticCurveTo(14 + len * 0.55, y0 - 7, 14 + len, y0 + drop);
-                        ctx.stroke();
-                    }
-                    ctx.restore();
+
+                // 黄铜外环
+                ctx.lineWidth = 7;
+                const br = ctx.createLinearGradient(ex - R, ey - R, ex + R, ey + R);
+                br.addColorStop(0, '#ffe9a8'); br.addColorStop(0.5, '#c79a4d'); br.addColorStop(1, '#7a5512');
+                ctx.strokeStyle = br;
+                ctx.beginPath(); ctx.arc(ex, ey, R, 0, Math.PI * 2); ctx.stroke();
+                ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                ctx.beginPath(); ctx.arc(ex, ey, R - 4, 0, Math.PI * 2); ctx.stroke();
+
+                // 内侧深色徽底（裁剪）
+                ctx.save();
+                ctx.beginPath(); ctx.arc(ex, ey, R - 7, 0, Math.PI * 2); ctx.clip();
+                const disc = ctx.createRadialGradient(ex, ey - 14, 4, ex, ey, R);
+                disc.addColorStop(0, '#1b2a52'); disc.addColorStop(0.6, '#0e1730'); disc.addColorStop(1, '#05080f');
+                ctx.fillStyle = disc;
+                ctx.beginPath(); ctx.arc(ex, ey, R, 0, Math.PI * 2); ctx.fill();
+
+                // 背景小星
+                for (let i = 0; i < 18; i++) {
+                    const a = i / 18 * Math.PI * 2 + t * 0.05;
+                    const rr2 = R - 16 - (i % 3) * 4;
+                    const sx = ex + Math.cos(a) * rr2 * 0.82, sy = ey + Math.sin(a) * rr2 * 0.72;
+                    ctx.fillStyle = `rgba(255,240,210,${0.25 + (i % 3) * 0.2})`;
+                    ctx.beginPath(); ctx.arc(sx, sy, 0.9, 0, Math.PI * 2); ctx.fill();
+                }
+
+                // 蓝色行星 + 星环（徽底上方装饰，露在计分洞上方）
+                const pgx = ex, pgy = ey - 30, pgr = 18;
+                const pg = ctx.createRadialGradient(pgx - 6, pgy - 7, 2, pgx, pgy, pgr);
+                pg.addColorStop(0, '#aee0ff'); pg.addColorStop(0.5, '#3f8fd6'); pg.addColorStop(1, '#123a66');
+                ctx.fillStyle = pg;
+                ctx.beginPath(); ctx.arc(pgx, pgy, pgr, 0, Math.PI * 2); ctx.fill();
+                ctx.save(); ctx.translate(pgx, pgy); ctx.rotate(-0.5); ctx.scale(1, 0.32);
+                ctx.strokeStyle = 'rgba(180,220,255,0.5)'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(0, 0, pgr * 1.7, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+
+                // 军校生小火箭（徽底下方，露在计分洞下方）
+                ctx.save();
+                ctx.translate(ex, ey + 30);
+                const fl = 0.6 + 0.4 * Math.sin(t * 12);
+                const fg = ctx.createLinearGradient(0, 12, 0, 26);
+                fg.addColorStop(0, `rgba(255,180,60,${0.85 * fl})`); fg.addColorStop(1, 'rgba(255,70,30,0)');
+                ctx.fillStyle = fg;
+                ctx.beginPath(); ctx.moveTo(-5, 12); ctx.lineTo(5, 12); ctx.lineTo(0, 26); ctx.closePath(); ctx.fill();
+                const body = ctx.createLinearGradient(-10, 0, 10, 0);
+                body.addColorStop(0, '#cdd6e6'); body.addColorStop(0.5, '#ffffff'); body.addColorStop(1, '#8a96ad');
+                ctx.fillStyle = body;
+                ctx.beginPath(); ctx.ellipse(0, 0, 9, 16, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#3a4256'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = '#d8484f';
+                ctx.beginPath(); ctx.moveTo(-7, -10); ctx.lineTo(7, -10); ctx.lineTo(0, -20); ctx.closePath(); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-9, 6); ctx.lineTo(-13, 16); ctx.lineTo(-7, 12); ctx.closePath(); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(9, 6); ctx.lineTo(13, 16); ctx.lineTo(7, 12); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#8ad4f0';
+                ctx.beginPath(); ctx.arc(0, -4, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#d8e8f4'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = '#f0c060';
+                ctx.beginPath(); ctx.arc(0, -4, 3.4, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+
+                // 弧形文字（上 SPACE CADET · 下 TOWER ODYSSEY）
+                ctx.fillStyle = 'rgba(255,225,160,0.85)';
+                ctx.font = 'bold 9px "Segoe UI",sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                const top = 'SPACE CADET', bot = 'TOWER ODYSSEY';
+                for (let i = 0; i < top.length; i++) {
+                    const a = Math.PI * 1.20 + i / (top.length - 1) * Math.PI * 0.60;
+                    ctx.save(); ctx.translate(ex + Math.cos(a) * (R - 15), ey + Math.sin(a) * (R - 15));
+                    ctx.rotate(a + Math.PI / 2); ctx.fillText(top[i], 0, 0); ctx.restore();
+                }
+                ctx.fillStyle = 'rgba(200,225,255,0.7)';
+                for (let i = 0; i < bot.length; i++) {
+                    const a = Math.PI * 0.20 + i / (bot.length - 1) * Math.PI * 0.60;
+                    ctx.save(); ctx.translate(ex + Math.cos(a) * (R - 15), ey + Math.sin(a) * (R - 15));
+                    ctx.rotate(a - Math.PI / 2); ctx.fillText(bot[i], 0, 0); ctx.restore();
                 }
                 ctx.restore();
-                // 中央星徽（Space Cadet 金红星章）
-                ctx.save(); ctx.translate(ex, ey);
-                const sg2 = ctx.createRadialGradient(0, -6, 2, 0, 0, 26);
-                sg2.addColorStop(0, '#ffe9a8'); sg2.addColorStop(0.55, '#f7b936'); sg2.addColorStop(1, '#b36b12');
-                ctx.fillStyle = sg2;
-                ctx.beginPath();
-                for (let i = 0; i < 10; i++) {
-                    const a = -Math.PI / 2 + i * Math.PI / 5;
-                    const rr2 = i % 2 ? 9 : 24;
-                    const px = Math.cos(a) * rr2, py = Math.sin(a) * rr2;
-                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-                }
-                ctx.closePath(); ctx.fill();
-                ctx.strokeStyle = 'rgba(120,60,10,0.55)'; ctx.lineWidth = 1.2; ctx.stroke();
-                // 星面高光
-                ctx.fillStyle = 'rgba(255,255,255,0.35)';
-                ctx.beginPath(); ctx.ellipse(-6, -8, 5, 3, -0.7, 0, Math.PI * 2); ctx.fill();
-                ctx.restore();
+
                 ctx.restore();
             }
 
@@ -1355,7 +1392,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.restore();
             }
 
-            /* ── 蘑菇头缓冲器（原版顶部 bumper 造型：金属座 + 奶油白菌盖 + 彩灯）── */
+            /* ── 顶部缓冲器（经典弹球 pop-bumper：深色护裙 + 彩色圆顶 + 中心灯）── */
             function drawMushroom(x, y, r, hue, hit, ph) {
                 ctx.save();
                 // 命中光晕
@@ -1365,47 +1402,49 @@ window.MiniGames = window.MiniGames || {};
                 gg.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = gg;
                 ctx.beginPath(); ctx.arc(x, y, gr, 0, Math.PI * 2); ctx.fill();
-                // 金属底座
-                ctx.fillStyle = '#1c1710';
-                ctx.beginPath(); ctx.ellipse(x, y + r * 0.62, r * 0.82, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
-                const st = ctx.createLinearGradient(x - r * 0.4, 0, x + r * 0.4, 0);
-                st.addColorStop(0, '#e8dfc8'); st.addColorStop(0.5, '#a89468'); st.addColorStop(1, '#5c4e30');
-                ctx.fillStyle = st;
-                rr(x - r * 0.34, y, r * 0.68, r * 0.66, 3); ctx.fill();
-                ctx.strokeStyle = 'rgba(40,30,14,0.7)'; ctx.lineWidth = 1; ctx.stroke();
-                // 奶油白菌盖（半球）
-                const cap = ctx.createRadialGradient(x - r * 0.35, y - r * 0.55, r * 0.1, x, y - r * 0.1, r * 1.25);
-                cap.addColorStop(0, '#fffdf4');
-                cap.addColorStop(0.45, `hsl(${hue},45%,${88 + hit * 8}%)`);
-                cap.addColorStop(0.8, `hsl(${hue},30%,68%)`);
-                cap.addColorStop(1, `hsl(${hue},25%,44%)`);
+                // 底座阴影
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.beginPath(); ctx.ellipse(x, y + r * 0.5, r + 4, r * 0.55, 0, 0, Math.PI * 2); ctx.fill();
+                // 护裙（金属，深色 + 色环）
+                const skirt = ctx.createLinearGradient(x, y - r, x, y + r);
+                skirt.addColorStop(0, '#3a3f4f'); skirt.addColorStop(1, '#15181f');
+                ctx.fillStyle = skirt;
+                ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.fill();
+                ctx.lineWidth = 2.4; ctx.strokeStyle = `hsl(${hue},75%,52%)`;
+                ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.stroke();
+                // 圆顶（彩色）
+                const cap = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+                cap.addColorStop(0, `hsl(${hue},85%,${82 + hit * 10}%)`);
+                cap.addColorStop(0.5, `hsl(${hue},80%,${62 + hit * 8}%)`);
+                cap.addColorStop(1, `hsl(${hue},70%,38%)`);
                 ctx.fillStyle = cap;
-                ctx.beginPath();
-                ctx.ellipse(x, y - r * 0.12, r, r * 0.78, 0, Math.PI, 0);
-                ctx.closePath(); ctx.fill();
-                ctx.strokeStyle = 'rgba(60,45,20,0.55)'; ctx.lineWidth = 1.1; ctx.stroke();
-                // 盖沿彩灯珠（旋转）
-                for (let i = 0; i < 6; i++) {
-                    const a = Math.PI + i / 6 * Math.PI + Math.sin(ph) * 0.1;
-                    const lx = x + Math.cos(a) * r * 0.9, ly = y - r * 0.12 + Math.sin(a) * r * 0.72;
-                    const on = (Math.floor(t * 6) + i) % 3 !== 0;
-                    ctx.fillStyle = on ? `hsl(${hue},95%,${62 + hit * 20}%)` : 'rgba(70,50,30,0.6)';
-                    if (on) { ctx.shadowColor = `hsl(${hue},95%,65%)`; ctx.shadowBlur = 4 + hit * 6; }
-                    ctx.beginPath(); ctx.arc(lx, ly, 1.8, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.beginPath(); ctx.ellipse(x - r * 0.3, y - r * 0.35, r * 0.34, r * 0.18, -0.5, 0, Math.PI * 2); ctx.fill();
+                // 中心灯
+                const cg = ctx.createRadialGradient(x, y - 1, 0.5, x, y, r * 0.4);
+                cg.addColorStop(0, '#ffffff');
+                cg.addColorStop(0.5, `hsl(${hue},95%,${72 + hit * 18}%)`);
+                cg.addColorStop(1, `hsla(${hue},90%,40%,0.9)`);
+                ctx.fillStyle = cg;
+                ctx.beginPath(); ctx.arc(x, y, r * 0.34, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.beginPath(); ctx.arc(x, y, 1.6, 0, Math.PI * 2); ctx.fill();
+                // 护裙上的小灯珠（走马）
+                for (let i = 0; i < 8; i++) {
+                    const a = i / 8 * Math.PI * 2 + ph * 0.3;
+                    const lx = x + Math.cos(a) * (r + 4), ly = y + Math.sin(a) * (r + 4);
+                    const on = (Math.floor(t * 6) + i) % 4 !== 0;
+                    ctx.fillStyle = on ? `hsl(${hue},95%,${64 + hit * 18}%)` : 'rgba(40,30,20,0.6)';
+                    if (on) { ctx.shadowColor = `hsl(${hue},95%,65%)`; ctx.shadowBlur = 4 + hit * 5; }
+                    ctx.beginPath(); ctx.arc(lx, ly, 1.6, 0, Math.PI * 2); ctx.fill();
                     ctx.shadowBlur = 0;
                 }
-                // 顶灯
-                const tg2 = ctx.createRadialGradient(x, y - r * 0.5, 0.5, x, y - r * 0.5, r * 0.3);
-                tg2.addColorStop(0, '#ffffff');
-                tg2.addColorStop(0.5, `hsl(${hue},100%,${66 + hit * 20}%)`);
-                tg2.addColorStop(1, `hsla(${hue},90%,40%,0.9)`);
-                ctx.fillStyle = tg2;
-                ctx.beginPath(); ctx.arc(x, y - r * 0.5, r * 0.22 + hit * 2, 0, Math.PI * 2); ctx.fill();
                 // 命中冲击环
                 if (hit > 0.02) {
-                    ctx.strokeStyle = `hsla(${hue},100%,78%,${hit})`;
+                    ctx.strokeStyle = `hsla(${hue},100%,80%,${hit})`;
                     ctx.lineWidth = 2 + hit * 3;
-                    ctx.beginPath(); ctx.arc(x, y - r * 0.1, r + (1 - hit) * 22, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(x, y, r + (1 - hit) * 22, 0, Math.PI * 2); ctx.stroke();
                 }
                 ctx.restore();
             }
@@ -1485,7 +1524,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.restore();
             }
 
-            /* ── 左侧火箭发射管道 ── */
+            /* ── 左侧火箭发射管道（铬合金 habitrail + 蓝焰能量口）── */
             function drawTubeLeft() {
                 const P = TUBE_PATH.pts;
                 ctx.save();
@@ -1493,37 +1532,49 @@ window.MiniGames = window.MiniGames || {};
                 ctx.beginPath();
                 ctx.moveTo(P[0][0], P[0][1]);
                 for (let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
-                ctx.lineWidth = 17; ctx.strokeStyle = 'rgba(6,10,20,0.88)'; ctx.stroke();
-                const g = ctx.createLinearGradient(30, 200, 60, 560);
-                g.addColorStop(0, 'rgba(196,130,255,0.34)');
-                g.addColorStop(0.5, 'rgba(130,70,220,0.18)');
-                g.addColorStop(1, 'rgba(196,130,255,0.34)');
+                // 底座深色
+                ctx.lineWidth = 18; ctx.strokeStyle = 'rgba(6,10,20,0.9)'; ctx.stroke();
+                // 铬金属管身
+                const g = ctx.createLinearGradient(28, 200, 60, 560);
+                g.addColorStop(0, 'rgba(224,232,244,0.62)');
+                g.addColorStop(0.5, 'rgba(150,165,190,0.42)');
+                g.addColorStop(1, 'rgba(96,110,135,0.55)');
                 ctx.lineWidth = 13; ctx.strokeStyle = g; ctx.stroke();
-                ctx.lineWidth = 2; ctx.strokeStyle = `rgba(226,190,255,${0.45 + flash.tube * 0.5})`; ctx.stroke();
-                ctx.lineWidth = 0.9; ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                // 高光细线
+                ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,255,255,${0.5 + flash.tube * 0.4})`; ctx.stroke();
+                // 内侧暗线（金属厚度感）
+                ctx.lineWidth = 0.9; ctx.strokeStyle = 'rgba(20,28,44,0.55)';
                 ctx.beginPath();
                 ctx.moveTo(P[0][0] - 3, P[0][1]);
                 for (let i = 1; i < P.length; i++) ctx.lineTo(P[i][0] - 3, P[i][1]);
                 ctx.stroke();
                 ctx.restore();
 
+                // 管内蓝色能量流
                 const flow = (t * (0.3 + flash.tube * 0.85)) % 1;
                 for (let k = 0; k < 4; k++) {
                     const p = TUBE_PATH.at((flow + k * 0.25) % 1);
-                    ctx.fillStyle = `rgba(216,170,255,${0.3 + flash.tube * 0.55})`;
+                    ctx.fillStyle = `rgba(150,200,255,${0.35 + flash.tube * 0.55})`;
                     ctx.beginPath(); ctx.arc(p.x, p.y, 2.1, 0, Math.PI * 2); ctx.fill();
                 }
-                // 底部喇叭口
+                // 底部喇叭口（铬 + 蓝焰）
                 ctx.save();
-                ctx.globalAlpha = 0.75 + 0.25 * Math.sin(t * 4);
-                ctx.fillStyle = '#c48aff';
+                ctx.globalAlpha = 0.8 + 0.2 * Math.sin(t * 4);
+                const ent = TUBE_PATH.at(0);
+                const eg = ctx.createRadialGradient(ent.x, ent.y, 1, ent.x, ent.y, 18);
+                eg.addColorStop(0, `rgba(150,200,255,${0.6 + flash.tube * 0.4})`);
+                eg.addColorStop(1, 'rgba(80,140,255,0)');
+                ctx.fillStyle = eg;
+                ctx.beginPath(); ctx.arc(ent.x, ent.y, 18, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#cfd8ea';
                 ctx.beginPath();
                 ctx.moveTo(TUBE_ENTRY[0] - 11, TUBE_ENTRY[1] + 9);
                 ctx.lineTo(TUBE_ENTRY[0] + 11, TUBE_ENTRY[1] + 9);
                 ctx.lineTo(TUBE_ENTRY[0] + 6, TUBE_ENTRY[1] - 3);
                 ctx.lineTo(TUBE_ENTRY[0] - 6, TUBE_ENTRY[1] - 3);
                 ctx.closePath(); ctx.fill();
-                ctx.fillStyle = '#f2eaff';
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = '#9fd0ff';
                 ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText('▲', TUBE_ENTRY[0], TUBE_ENTRY[1] + 17);
                 ctx.restore();
@@ -1532,7 +1583,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.save();
                 ctx.translate(pe.x, pe.y);
                 ctx.rotate(Math.atan2(pe.ty, pe.tx));
-                ctx.fillStyle = `rgba(236,214,255,${0.7 + flash.tube * 0.3})`;
+                ctx.fillStyle = `rgba(190,225,255,${0.7 + flash.tube * 0.3})`;
                 ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-3, -5); ctx.lineTo(-3, 5);
                 ctx.closePath(); ctx.fill();
                 ctx.restore();
@@ -1778,9 +1829,9 @@ window.MiniGames = window.MiniGames || {};
                     ctx.restore();
                     ctx.save();
                     ctx.lineCap = 'round';
-                    ctx.lineWidth = 5.5; ctx.strokeStyle = '#d8334f';
+                    ctx.lineWidth = 5.5; ctx.strokeStyle = '#e8a83c';
                     ctx.beginPath(); ctx.moveTo(sl.a[0], sl.a[1]); ctx.lineTo(sl.b[0], sl.b[1]); ctx.stroke();
-                    ctx.lineWidth = 1.6; ctx.strokeStyle = 'rgba(255,190,200,0.85)';
+                    ctx.lineWidth = 1.6; ctx.strokeStyle = 'rgba(255,236,180,0.9)';
                     ctx.beginPath(); ctx.moveTo(sl.a[0], sl.a[1] - 1.2); ctx.lineTo(sl.b[0] - 1, sl.b[1] - 1.2); ctx.stroke();
                     ctx.restore();
                     [sl.a, sl.b].forEach(p => {
@@ -1846,6 +1897,46 @@ window.MiniGames = window.MiniGames || {};
                     ctx.fillText('KB', x, y + 0.5);
                     ctx.restore();
                 });
+            }
+
+            /* ── 发射巷塔顶 + 挡板排水外壳（原版底部中央隆起 + 右巷顶端金属结构）── */
+            function drawStructures() {
+                ctx.save();
+                // 右巷顶端炮塔上盖
+                ctx.fillStyle = 'rgba(8,12,24,0.85)';
+                rr(LANE.l - 4, LANE.top - 10, LANE.r - LANE.l + 8, 28, 9); ctx.fill();
+                ctx.strokeStyle = '#c19a55'; ctx.lineWidth = 2; ctx.stroke();
+                const lp = (Math.floor(t * 3) % 2) === 0;
+                ctx.fillStyle = lp ? '#ff5a3c' : 'rgba(120,40,20,0.6)';
+                if (lp) { ctx.shadowColor = '#ff5a3c'; ctx.shadowBlur = 8; }
+                ctx.beginPath(); ctx.arc(LNCX, LANE.top - 3, 3, 0, Math.PI * 2); ctx.fill();
+                ctx.shadowBlur = 0;
+                // 右巷外侧细塔（贴着面板一侧的轨道立柱）
+                const txp = 410;
+                const tg = ctx.createLinearGradient(txp - 6, 0, txp + 6, 0);
+                tg.addColorStop(0, '#2a2030'); tg.addColorStop(0.5, '#6e5226'); tg.addColorStop(1, '#2a2030');
+                ctx.fillStyle = tg;
+                rr(txp - 6, 132, 12, 168, 4); ctx.fill();
+                ctx.strokeStyle = 'rgba(255,220,160,0.4)'; ctx.lineWidth = 1; ctx.stroke();
+                for (let i = 0; i < 4; i++) {
+                    const ly = 150 + i * 40;
+                    ctx.fillStyle = i % 2 ? 'rgba(255,150,90,0.85)' : 'rgba(120,200,255,0.85)';
+                    ctx.beginPath(); ctx.arc(txp, ly, 2, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
+
+                // 挡板下方排水槽外壳（原版底部中央隆起 + 中央排水口）
+                ctx.save();
+                ctx.fillStyle = 'rgba(22,17,11,0.9)';
+                ctx.beginPath();
+                ctx.moveTo(84, 630); ctx.lineTo(268, 630);
+                ctx.lineTo(252, GH - 12); ctx.lineTo(100, GH - 12);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = '#8a6f45'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.fillStyle = '#05070d';
+                rr(148, 634, 56, 44, 7); ctx.fill();
+                ctx.strokeStyle = 'rgba(255,210,150,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.restore();
             }
 
             // withTrail 只给主球开拖尾，避免多球时轨迹互相污染
@@ -2159,6 +2250,7 @@ window.MiniGames = window.MiniGames || {};
                 drawRamp();
                 drawLanes();
                 drawWalls();
+                drawStructures();
                 drawLaunchTube();
                 drawSaucer();
                 drawCards();

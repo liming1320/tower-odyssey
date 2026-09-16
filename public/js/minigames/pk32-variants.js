@@ -1257,7 +1257,71 @@
         }
         function renderNativeCastle2() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载魔法城堡二原生关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-            fetch('/data/pk32-castle2-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0, selected = 2; const select = el('select', { 'aria-label': '魔法城堡二原生关卡' }); data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); }); function shape(length) { let width = Math.ceil(Math.sqrt(length)); while (width < length && length % width !== 0) width += 1; return { width: width, height: Math.ceil(length / width) }; } function draw() { panel.innerHTML = ''; const item = data.levels[level], size = shape(item.cells.length), grid = renderGrid(size.width, size.height, 'pk32-castle2-board'); item.cells.split('').forEach(function (value, index) { const cell = button('', function () { if (value === '0') { cell.dataset.player = 'true'; } }); cell.dataset.cell = String(index); cell.dataset.value = value; cell.style.cssText = 'min-width:28px;min-height:28px;padding:0;border-radius:2px;background:' + ({ '0': '#1e293b', '1': '#64748b', '2': '#2563eb', '3': '#dc2626', '4': '#b91c1c' }[value] || '#a855f7') + ';color:#fff;font-size:12px'; cell.textContent = value === '0' ? '' : value === '2' ? '蓝' : value === '3' ? '红门' : value === '4' ? '红' : value; grid.appendChild(cell); }); panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select, grid); prompt.textContent = '魔法城堡二：原版 40 关；原生盘面 ' + (level + 1) + ' / ' + data.levels.length + '。蓝色方块可创建，红色方块不可消除，蓝门传送到红门，走到出口过关。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '魔法城堡二原生数据加载失败'; });
+            fetch('/data/pk32-castle2-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                let level = 0, width = 0, height = 0, cells = [], player = 0, exit = 0, facing = 1;
+                const select = el('select', { 'aria-label': '魔法城堡二原生关卡' });
+                data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); });
+                function shape(length) { let nextWidth = Math.ceil(Math.sqrt(length)); while (nextWidth < length && length % nextWidth !== 0) nextWidth += 1; return { width: nextWidth, height: Math.ceil(length / nextWidth) }; }
+                function open(value) { return value === '0' || value === '2' || value === '3'; }
+                function chooseExit() {
+                    const exits = cells.map(function (value, index) { return value === '3' || value === '0' ? index : -1; }).filter(function (index) { return index >= 0 && index !== player; });
+                    return exits.sort(function (a, b) { return Math.abs((b % width) - (player % width)) + Math.abs(Math.floor(b / width) - Math.floor(player / width)) - Math.abs((a % width) - (player % width)) - Math.abs(Math.floor(a / width) - Math.floor(player / width)); })[0] || player;
+                }
+                function reset() {
+                    const item = data.levels[level], size = shape(item.cells.length);
+                    width = size.width; height = size.height; cells = item.cells.padEnd(width * height, '1').split('');
+                    player = Math.max(0, cells.findIndex(open)); exit = chooseExit(); facing = 1; ended = false; draw();
+                }
+                function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                function teleport(index) {
+                    if (cells[index] !== '2') return index;
+                    const redDoors = cells.map(function (value, doorIndex) { return value === '3' ? doorIndex : -1; }).filter(function (doorIndex) { return doorIndex >= 0; });
+                    return redDoors.length ? redDoors[0] : index;
+                }
+                function move(delta) {
+                    const next = player + delta;
+                    facing = delta;
+                    if (ended || next < 0 || next >= cells.length || ((delta === 1 || delta === -1) && !sameRow(player, next)) || !open(cells[next])) return;
+                    player = teleport(next);
+                    setScore(score + 1);
+                    draw();
+                    if (player === exit) finish('魔法城堡二第 ' + (level + 1) + ' 关到达出口。');
+                }
+                function create(delta) {
+                    const target = player + delta;
+                    if (ended || target < 0 || target >= cells.length || ((delta === 1 || delta === -1) && !sameRow(player, target))) return;
+                    if (cells[player] === '2') { prompt.textContent = '站在蓝色方块上不能继续创建蓝色方块。'; return; }
+                    if (cells[target] === '0') cells[target] = '2';
+                    else if (cells[target] === '2') cells[target] = '0';
+                    else if (cells[target] === '4' || cells[target] === '1') { prompt.textContent = '红色方块不可消除。'; return; }
+                    setScore(score + 2); draw();
+                }
+                function draw() {
+                    panel.innerHTML = '';
+                    const grid = renderGrid(width, height, 'pk32-castle2-board');
+                    cells.forEach(function (value, index) {
+                        const text = index === player ? '精灵' : index === exit ? '出口' : value === '2' ? '蓝' : value === '3' ? '红门' : value === '4' || value === '1' ? '红' : '';
+                        const cell = button(text, function () { const delta = index - player; if (delta === 1 || delta === -1 || delta === width || delta === -width) move(delta); });
+                        cell.dataset.cell = String(index); cell.dataset.value = value; cell.dataset.player = String(index === player);
+                        cell.style.cssText = 'min-width:28px;min-height:28px;padding:0;border-radius:2px;background:' + (index === player ? '#22c55e' : index === exit ? '#facc15' : value === '0' ? '#1e293b' : value === '2' ? '#2563eb' : value === '3' ? '#dc2626' : value === '4' || value === '1' ? '#7f1d1d' : '#64748b') + ';color:#fff;font-size:11px;font-weight:700;line-height:1.1';
+                        grid.appendChild(cell);
+                    });
+                    const controls = el('div', { className: 'pk32v-controls' });
+                    [['上', -width], ['下', width], ['左', -1], ['右', 1]].forEach(function (item) { controls.appendChild(button(item[0], function () { move(item[1]); })); });
+                    controls.appendChild(button('前方造块', function () { create(facing); }));
+                    controls.appendChild(button('上方造块', function () { create(-width); }));
+                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); reset(); }), select, button('重置本关', reset), grid, controls);
+                    prompt.textContent = '魔法城堡二：原版声明 40 关，已提取 ' + data.levels.length + ' 关；移动精灵，创建/取消蓝块，红块不可消除，蓝门传红门，到出口过关。';
+                }
+                const keyHandler = function (event) {
+                    const map = { ArrowUp: -width, ArrowDown: width, ArrowLeft: -1, ArrowRight: 1 };
+                    if (map[event.key] != null) { event.preventDefault(); move(map[event.key]); }
+                    else if (event.key === ' ') { event.preventDefault(); create(facing); }
+                };
+                document.addEventListener('keydown', keyHandler); addCleanup(function () { document.removeEventListener('keydown', keyHandler); });
+                select.onchange = function () { level = Number(select.value) || 0; reset(); };
+                reset();
+            }).catch(function () { prompt.textContent = '魔法城堡二原生数据加载失败'; });
         }
         function renderNativeCastle() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载魔法城堡原生关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
@@ -1684,26 +1748,126 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
         }
         function renderNativePickFlowers() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载摘花朵原版关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-            fetch('/data/pk32-pick-flowers-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; function draw() { panel.innerHTML = ''; const item = data.levels[level], width = level === 0 ? 15 : 10, height = Math.ceil(item.cells.length / width), grid = renderGrid(width, height, 'pick-flowers-board'); item.cells.split('').forEach(function (value, index) { const cell = button(value, function () {}); cell.dataset.nativeCode = value; cell.style.cssText = 'min-width:26px;min-height:26px;padding:0;background:' + ({ '0': '#172033', '1': '#64748b', '2': '#22c55e', '3': '#ef4444', '4': '#eab308', '5': '#3b82f6', '6': '#a855f7' }[value] || '#334155') + ';color:#fff;font-size:11px'; grid.appendChild(cell); }); const select = el('select', { 'aria-label': '摘花朵原版关卡' }); data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原版关卡 ' + (index + 1))); }); select.value = String(level); select.onchange = function () { level = Number(select.value) || 0; draw(); }; panel.append(button('上一关', function () { level = Math.max(0, level - 1); draw(); }), button('下一关', function () { level = Math.min(data.count - 1, level + 1); draw(); }), select, grid); prompt.textContent = '摘花朵原版数据：第 ' + (level + 1) + ' / ' + data.count + '；已保留原始指令编码，守卫追击和黑洞传送规则解析中。'; } draw(); }).catch(function () { prompt.textContent = '摘花朵原版数据加载失败'; });
+            fetch('/data/pk32-pick-flowers-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                const mapRecord = data.levels[0], stages = data.levels.slice(1), width = 15, height = Math.ceil(mapRecord.cells.length / width), terrain = mapRecord.cells.padEnd(width * height, '1').slice(0, width * height).split('');
+                let level = 0, player = 0, guard = 0, flowers = new Set(), freeze = 0, speed = 1, timer = null;
+                const select = el('select', { 'aria-label': '摘花朵原版关卡' });
+                stages.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '原版对象组 ' + item.number)); });
+                function open(index) { return index >= 0 && index < terrain.length && terrain[index] !== '1'; }
+                function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                function coordPairs(raw) {
+                    const nums = raw.match(/\d{2}/g) || [];
+                    const pairs = [];
+                    for (let i = 0; i + 1 < nums.length; i += 2) {
+                        const x = Math.min(width - 1, Number(nums[i])), y = Math.min(height - 1, Number(nums[i + 1]));
+                        pairs.push(y * width + x);
+                    }
+                    return pairs.filter(open);
+                }
+                function firstOpen() { return terrain.findIndex(function (value) { return value !== '1'; }); }
+                function reset() {
+                    const points = coordPairs((stages[level] || mapRecord).cells);
+                    player = points[0] != null ? points[0] : firstOpen();
+                    guard = points[1] != null ? points[1] : Math.min(terrain.length - 1, player + width * 2);
+                    flowers = new Set(points.slice(2, 10));
+                    if (!flowers.size) terrain.forEach(function (value, index) { if (value === '4' || value === '5') flowers.add(index); });
+                    freeze = 0; speed = 1; ended = false; clearInterval(timer); timer = setInterval(tickGuard, 500); draw();
+                }
+                function draw() {
+                    panel.innerHTML = '';
+                    const grid = renderGrid(width, height, 'pick-flowers-board');
+                    terrain.forEach(function (value, index) {
+                        const text = index === player ? '人' : index === guard ? '守' : flowers.has(index) ? '花' : value === '0' ? '洞' : value === '4' ? '黄箱' : value === '5' ? '绿箱' : '';
+                        const cell = button(text, function () { const delta = index - player; if (delta === 1 || delta === -1 || delta === width || delta === -width) move(delta); });
+                        cell.dataset.nativeCode = value; cell.dataset.player = String(index === player);
+                        cell.style.cssText = 'min-width:26px;min-height:26px;padding:0;background:' + (index === player ? '#22c55e' : index === guard ? '#ef4444' : flowers.has(index) ? '#f472b6' : value === '0' ? '#111827' : value === '1' ? '#334155' : value === '4' ? '#eab308' : value === '5' ? '#3b82f6' : '#14532d') + ';color:#fff;font-size:10px;font-weight:700;line-height:1.1';
+                        grid.appendChild(cell);
+                    });
+                    const controls = el('div', { className: 'pk32v-controls' });
+                    [['上', -width], ['下', width], ['左', -1], ['右', 1], ['等待', 0]].forEach(function (item) { controls.appendChild(button(item[0], function () { if (item[1]) move(item[1]); else tickGuard(); })); });
+                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min(stages.length - 1, level + 1); select.value = String(level); reset(); }), select, button('重置本关', reset), grid, controls);
+                    prompt.textContent = '摘花朵：原版底图已接入，当前对象组 ' + (level + 1) + ' / ' + stages.length + '；剩余花朵 ' + flowers.size + '，黄箱暂停守卫，绿箱加速移动。';
+                }
+                function move(delta) {
+                    if (ended) return;
+                    for (let step = 0; step < speed; step += 1) {
+                        const next = player + delta;
+                        if ((delta === 1 || delta === -1) && !sameRow(player, next) || !open(next)) break;
+                        player = next;
+                        if (terrain[player] === '0') player = firstOpen();
+                        if (terrain[player] === '4') freeze = 5;
+                        if (terrain[player] === '5') speed = 2;
+                        if (flowers.has(player)) { flowers.delete(player); setScore(score + 10); }
+                    }
+                    draw();
+                    if (!flowers.size) finish('摘完所有花朵，本关完成。');
+                    else if (player === guard) finish('哈！您被抓住了！');
+                }
+                function tickGuard() {
+                    if (ended) return;
+                    if (freeze > 0) { freeze -= 1; draw(); return; }
+                    const options = [-1, 1, -width, width].filter(function (delta) { const next = guard + delta; return open(next) && (delta === width || delta === -width || sameRow(guard, next)); });
+                    options.sort(function (a, b) { return Math.abs(player - (guard + a)) - Math.abs(player - (guard + b)); });
+                    if (options.length) guard += options[0];
+                    if (player === guard) finish('哈！您被抓住了！');
+                    else draw();
+                }
+                const keyHandler = function (event) { const map = { ArrowUp: -width, ArrowDown: width, ArrowLeft: -1, ArrowRight: 1, ' ': 0 }; if (Object.prototype.hasOwnProperty.call(map, event.key)) { event.preventDefault(); if (map[event.key]) move(map[event.key]); else tickGuard(); } };
+                document.addEventListener('keydown', keyHandler); addCleanup(function () { clearInterval(timer); document.removeEventListener('keydown', keyHandler); });
+                select.onchange = function () { level = Number(select.value) || 0; reset(); };
+                reset();
+            }).catch(function () { prompt.textContent = '摘花朵原版数据加载失败'; });
         }
         function renderMummy() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载木乃伊原版盘面…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
             fetch('/data/pk32-mummy-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                let level = 0;
-                function draw() {
-                    panel.innerHTML = ''; const item = data.levels[level]; const pairs = item.cells.match(/\d{2}/g) || []; const grid = renderGrid(item.width, item.height, 'mummy-board');
-                    for (let index = 0; index < item.width * item.height; index++) {
-                        const row = Math.floor(index / item.width), col = index % item.width;
-                        const hits = pairs.map(function (pair, pairIndex) { const value = Number(pair); return Math.floor(value / 10) === row && value % 10 === col ? pairIndex + 1 : 0; }).filter(Boolean);
-                        const cell = button('', function () {}); cell.dataset.nativeCode = hits.length ? pairs[hits[0] - 1] : '00'; cell.title = '原版坐标 ' + row + ',' + col + (hits.length ? '；序号 ' + hits.join(',') : '');
-                        cell.style.cssText = 'min-width:32px;min-height:32px;padding:0;color:#fff;font-size:11px;font-weight:700;background:' + (hits.length ? (hits.length > 1 ? '#b45309' : '#2563eb') : '#172033');
-                        cell.textContent = hits.length ? (hits.length > 1 ? String(hits.length) : '·') : ''; grid.appendChild(cell);
-                    }
-                    const select = el('select', { 'aria-label': '木乃伊原版关卡' }); data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原版关卡 ' + (index + 1))); }); select.value = String(level); select.onchange = function () { level = Number(select.value) || 0; draw(); };
-                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); draw(); }), select, grid);
-                    prompt.textContent = '木乃伊原版盘面：第 ' + (level + 1) + ' / ' + data.count + '；' + item.width + '×' + item.height + '，已按原生坐标串绘制；重复坐标与尾部控制字节仍待语义确认。';
+                let level = 0, player = 0, exit = 0, mummies = [], traps = new Set();
+                function parse(item) {
+                    const points = (item.cells.match(/\d{2}/g) || []).map(function (pair) {
+                        const row = Number(pair[0]), col = Number(pair[1]);
+                        return row >= 0 && row < item.height && col >= 0 && col < item.width ? row * item.width + col : -1;
+                    }).filter(function (index) { return index >= 0; });
+                    const unique = Array.from(new Set(points));
+                    player = unique[0] || 0;
+                    exit = unique[unique.length - 1] || item.width * item.height - 1;
+                    mummies = unique.slice(1, 3).filter(function (index) { return index !== player && index !== exit; });
+                    traps = new Set(unique.slice(3, -1));
+                    ended = false;
                 }
-                draw();
+                function sameRow(a, b, item) { return Math.floor(a / item.width) === Math.floor(b / item.width); }
+                function open(index, item) { return index >= 0 && index < item.width * item.height && !traps.has(index); }
+                function stepMummies(item) {
+                    mummies = mummies.map(function (pos) {
+                        const options = [-1, 1, -item.width, item.width].filter(function (delta) { const next = pos + delta; return open(next, item) && (delta === item.width || delta === -item.width || sameRow(pos, next, item)); });
+                        options.sort(function (a, b) { return Math.abs(player - (pos + a)) - Math.abs(player - (pos + b)); });
+                        return options.length ? pos + options[0] : pos;
+                    });
+                }
+                function move(delta) {
+                    const item = data.levels[level], next = player + delta;
+                    if (ended || !open(next, item) || ((delta === 1 || delta === -1) && !sameRow(player, next, item))) return;
+                    player = next; setScore(score + 1); stepMummies(item); draw();
+                    if (mummies.indexOf(player) >= 0) finish('哈！冒险家被木乃伊追上了。');
+                    else if (player === exit) finish('冒险家已到达出口。');
+                }
+                function draw() {
+                    panel.innerHTML = ''; const item = data.levels[level]; const grid = renderGrid(item.width, item.height, 'mummy-board');
+                    for (let index = 0; index < item.width * item.height; index++) {
+                        const text = index === player ? '人' : mummies.indexOf(index) >= 0 ? '木' : index === exit ? '出口' : traps.has(index) ? '陷' : '';
+                        const cell = button(text, function () { const delta = index - player; if (delta === 1 || delta === -1 || delta === item.width || delta === -item.width) move(delta); });
+                        cell.dataset.cell = String(index); cell.dataset.player = String(index === player);
+                        cell.style.cssText = 'min-width:32px;min-height:32px;padding:0;color:#fff;font-size:11px;font-weight:700;background:' + (index === player ? '#22c55e' : mummies.indexOf(index) >= 0 ? '#ef4444' : index === exit ? '#facc15' : traps.has(index) ? '#7c2d12' : '#172033');
+                        grid.appendChild(cell);
+                    }
+                    const select = el('select', { 'aria-label': '木乃伊原版关卡' }); data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原版关卡 ' + (index + 1))); }); select.value = String(level); select.onchange = function () { level = Number(select.value) || 0; parse(data.levels[level]); draw(); };
+                    const controls = el('div', { className: 'pk32v-controls' });
+                    [['上', -item.width], ['下', item.width], ['左', -1], ['右', 1], ['等待', 0]].forEach(function (entry) { controls.appendChild(button(entry[0], function () { if (entry[1]) move(entry[1]); else { stepMummies(item); draw(); if (mummies.indexOf(player) >= 0) finish('哈！冒险家被木乃伊追上了。'); } })); });
+                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); parse(data.levels[level]); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); parse(data.levels[level]); draw(); }), select, button('重置本关', function () { parse(item); draw(); }), grid, controls);
+                    prompt.textContent = '木乃伊：原版声明 300 关，已提取 ' + data.count + ' 条；第 ' + (level + 1) + ' 关按坐标串生成冒险家、木乃伊、陷阱和出口。方向键移动，空格等待。';
+                }
+                const keyHandler = function (event) { const item = data.levels[level], map = { ArrowUp: -item.width, ArrowDown: item.width, ArrowLeft: -1, ArrowRight: 1, ' ': 0 }; if (Object.prototype.hasOwnProperty.call(map, event.key)) { event.preventDefault(); if (map[event.key]) move(map[event.key]); else { stepMummies(item); draw(); if (mummies.indexOf(player) >= 0) finish('哈！冒险家被木乃伊追上了。'); } } };
+                document.addEventListener('keydown', keyHandler); addCleanup(function () { document.removeEventListener('keydown', keyHandler); });
+                parse(data.levels[level]); draw();
             }).catch(function () { prompt.textContent = '木乃伊原版数据加载失败'; });
         }
         function renderNativeCollisionBalls() {
