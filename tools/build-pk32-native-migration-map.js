@@ -114,6 +114,7 @@ const result = {
         ownershipVerified: 0,
         assetsMigrated: records.filter(record => record.migration.assetsMigrated).length,
         levelsMigrated: records.filter(record => record.migration.levelsMigrated).length,
+        adapterPlayableMigrated: records.filter(record => record.migration.adapterPlayableMigrated).length,
         rulesMigrated: records.filter(record => record.migration.rulesMigrated).length,
         fullFlowMigrated: records.filter(record => record.migration.fullFlowMigrated).length,
         sharedResourcePackagesBound: records.filter(record => record.migrationEvidence && record.migrationEvidence.resourcePackageBound).length,

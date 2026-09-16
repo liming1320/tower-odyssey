@@ -91,6 +91,7 @@ try {
       originalComplete: queue.summary.originalComplete,
       assetsMigrated: queue.summary.assetsMigrated,
       levelsMigrated: queue.summary.levelsMigrated,
+      adapterPlayableMigrated: queue.summary.adapterPlayableMigrated,
       rulesMigrated: queue.summary.rulesMigrated,
       fullFlowMigrated: queue.summary.fullFlowMigrated,
       payloadMigration: queue.summary.payloadMigration,

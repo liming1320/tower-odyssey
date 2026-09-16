@@ -56,6 +56,10 @@ const nativeAdapterRulesMigrated = new Set([
     '推箱子', '推箱子四', '推箱子五', '连结电线二', '像素岛', '禅宗花园', '禅宗迷宫', '航海迷题', '下一百层', '打砖块', '海底寻宝',
     '爆破彩球', '七盏灯', '交换彩球', '碰撞彩球', '反射镜'
 ]);
+const nativeAdapterPlayableMigrated = new Set([
+    ...nativeAdapterRulesMigrated,
+    '建筑制造', '上一百层', '飞一百米', '魔法城堡二', '摘花朵', '木乃伊'
+]);
 if (structuredPayloads) {
     for (const game of structuredPayloads.games || []) {
         if (dataByName.has(game.name) || candidateDataByName.has(game.name)) continue;
@@ -99,6 +103,7 @@ const rows = ledger.records.map(record => {
     const migration = {
         assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || (resources && resources.resourcePackageBound === true),
         levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || !!(candidateData && structuredRulesMigrated.has(record.name)) || boardRulesMigrated.has(record.name),
+        adapterPlayableMigrated: nativeAdapterPlayableMigrated.has(record.name),
         rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(record.name) || boardRulesMigrated.has(record.name) || nativeAdapterRulesMigrated.has(record.name),
         fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true
     };
@@ -124,7 +129,8 @@ const rows = ledger.records.map(record => {
         verificationComplete: verification.verificationComplete,
         rulesMigratedByStructureFamily: structuredRulesMigrated.has(record.name) && candidateData ? candidateData.dataKind : null,
         rulesMigratedByBoardEngine: boardRulesMigrated.has(record.name),
-        rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(record.name)
+        rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(record.name),
+        playableNativeAdapterBound: nativeAdapterPlayableMigrated.has(record.name)
     };
     const migrationPhase = verification.verificationComplete ? 'verification-complete'
         : migration.migrationComplete ? 'content-migration-complete'
@@ -216,6 +222,7 @@ const result = {
         assetsMigrated: rows.filter(row => row.migration.assetsMigrated).length,
         levelsMigrated: rows.filter(row => row.migration.levelsMigrated).length,
         rulesMigrated: rows.filter(row => row.migration.rulesMigrated).length,
+        adapterPlayableMigrated: rows.filter(row => row.migration.adapterPlayableMigrated).length,
         fullFlowMigrated: rows.filter(row => row.migration.fullFlowMigrated).length,
         rawNativePayloads: rows.reduce((sum, row) => sum + row.nativePayloadCount, 0),
         awaitingAdapter: rows.filter(row => row.migrationStatus === 'native-payloads-awaiting-adapter').length,

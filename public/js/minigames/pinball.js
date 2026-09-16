@@ -72,10 +72,228 @@ window.MiniGames = window.MiniGames || {};
     const FLIP_L = { px: 108, py: 592, len: 58, rest: 0.52, up: -0.52 };
     const FLIP_R = { px: 244, py: 592, len: 58, rest: Math.PI - 0.52, up: Math.PI + 0.52 };
     // 外道导轨（把外道与内道分开）
-    const GUIDE_L = [[62, 558], [74, 592], [100, 602]];
-    const GUIDE_R = [[290, 558], [278, 592], [252, 602]];
+        const GUIDE_L = [[62, 558], [74, 592], [100, 602]];
+        const GUIDE_R = [[290, 558], [278, 592], [252, 602]];
 
-    // 美术全部程序化绘制（对齐原版 Space Cadet 配色：暗海军台面 + 金褐轨道 + 红橙引擎 + 金翼徽章）
+        /* ── 新增组件（对齐百科 55 项：落下靶组 / 指示灯 / 三色旋涡 / 黑洞 / 中央立柱 / 反弹器）── */
+        function mkBank(lbl, color, x0, y0, dx, dy, n, w, h) {
+            const subs = [];
+            for (let i = 0; i < n; i++) subs.push({ x: x0 + dx * i, y: y0 + dy * i, w: w || 8, h: h || 22, down: false });
+            return { lbl, color, subs, bonus: 4500 };
+        }
+        const FUEL = mkBank('燃料目标', '#5fd0ff', 46, 116, 0, 26, 3);
+        const EXPAND = mkBank('扩张战场', '#ffd166', 300, 470, 0, 26, 3);
+        const HAZ_L = mkBank('危险材料', '#ff6a4d', 46, 474, 0, 26, 3);
+        const HAZ_R = mkBank('危险材料', '#ff6a4d', 300, 116, 0, 26, 3);
+        const MEDAL = mkBank('奖章', '#b58bff', 120, 212, 26, 0, 3);
+        const MISSION = mkBank('使命目标', '#5fd0ff', 206, 212, 26, 0, 3);
+        const BOOST = mkBank('增强器', '#ff9a3d', 252, 300, 0, 26, 3);
+        const BANKS = [FUEL, EXPAND, HAZ_L, HAZ_R, MEDAL, MISSION, BOOST];
+
+        // 旗帜 ×2（原版：燃料指示灯上方 + 超空间入口）
+        const FLAGS = [{ x: 70, y: 104 }, { x: 300, y: 210 }];
+        // 三色旋涡（绿 / 红 / 黄），对应百科旋涡式星体
+        const VORT = [
+            { x: 64, y: 232, r: 15, color: '#46d97a', hue: 120, name: '绿' },
+            { x: 270, y: 250, r: 15, color: '#ff5a5a', hue: 0, name: '红' },
+            { x: 300, y: 300, r: 15, color: '#ffd23d', hue: 48, name: '黄' },
+        ];
+        // 黑洞
+        const BLACKHOLE = { x: 240, y: 176, r: 14 };
+        // 中央立柱（挡板正上方，防正中漏球）
+        const CPOST = { x: 176, y: 600, r: 6 };
+        // 反弹器 ×2（内道上方）
+        const REBOUND = [{ x: 132, y: 574 }, { x: 220, y: 574 }];
+        // 指示灯 / 滚道灯（重新上场灯 / 发射坡道灯 / 接受使命灯 / 超空间灯 / 加分球灯 / 调度灯 / 重玩灯）
+        const LAMPS = [
+            { id: 're1', x: 150, y: 150, r: 6, color: '#ff7a3d', group: 're', label: '重新上场' },
+            { id: 're2', x: 176, y: 144, r: 6, color: '#ff7a3d', group: 're', label: '重新上场' },
+            { id: 're3', x: 202, y: 150, r: 6, color: '#ff7a3d', group: 're', label: '重新上场' },
+            { id: 'rl1', x: 286, y: 400, r: 6, color: '#ffd166', group: 'rl', rollover: true, label: '发射坡道' },
+            { id: 'rl2', x: 300, y: 420, r: 6, color: '#ffd166', group: 'rl', rollover: true, label: '发射坡道' },
+            { id: 'rl3', x: 292, y: 440, r: 6, color: '#ffd166', group: 'rl', rollover: true, label: '发射坡道' },
+            { id: 'am', x: 312, y: 456, r: 6, color: '#3dff9e', label: '接受使命' },
+            { id: 'hs1', x: 102, y: 182, r: 5, color: '#c79bff', group: 'hs', label: '超空间' },
+            { id: 'hs2', x: 132, y: 212, r: 5, color: '#c79bff', group: 'hs', label: '超空间' },
+            { id: 'hs3', x: 102, y: 242, r: 5, color: '#c79bff', group: 'hs', label: '超空间' },
+            { id: 'hs4', x: 72, y: 212, r: 5, color: '#c79bff', group: 'hs', label: '超空间' },
+            { id: 'bb1', x: 54, y: 602, r: 6, color: '#3dff9e', group: 'bb', label: '加分球' },
+            { id: 'bb2', x: 298, y: 602, r: 6, color: '#3dff9e', group: 'bb', label: '加分球' },
+            { id: 'rp', x: 60, y: 560, r: 6, color: '#ff5a8a', label: '重玩' },
+            { id: 'd1', x: LNCX, y: 470, r: 5, color: '#ffd166', rollover: true, score: 600, label: '调度' },
+            { id: 'd2', x: LNCX, y: 420, r: 5, color: '#ffd166', rollover: true, score: 900, label: '调度' },
+            { id: 'd3', x: LNCX, y: 370, r: 5, color: '#ffd166', rollover: true, score: 1500, label: '调度' },
+            { id: 'd4', x: LNCX, y: 320, r: 5, color: '#ffd166', rollover: true, score: 900, label: '调度' },
+            { id: 'd5', x: LNCX, y: 270, r: 5, color: '#ffd166', rollover: true, score: 600, label: '调度' },
+            { id: 'd6', x: LNCX, y: 220, r: 5, color: '#ffd166', rollover: true, score: 300, label: '调度' },
+        ];
+
+        /* ── 新组件碰撞（落下靶组 / 指示灯 / 三色旋涡 / 黑洞入口 / 中央立柱 / 反弹器）── */
+        function collideNew() {
+            // 落下靶组
+            BANKS.forEach(B => {
+                B.subs.forEach(s => {
+                    if (s.down) return;
+                    const v = hitSeg(ball, { x1: s.x, y1: s.y - s.h / 2, x2: s.x, y2: s.y + s.h / 2, r: 3 }, 0.35, 50);
+                    if (v > 80) {
+                        s.down = true;
+                        addScore(700, 'target'); combo++; comboT = 2.2;
+                        flash.target = 1; sfx('target');
+                        spawn(s.x, s.y, 10, 40, 1);
+                        shake = Math.max(shake, 0.06); shakeMag = Math.max(shakeMag, 1.8);
+                        if (B.subs.every(z => z.down)) {
+                            addScore(B.bonus); show(B.lbl + ' 组全清 +' + B.bonus, 1.6); sfx('jackpot');
+                            shake = Math.max(shake, 0.28); shakeMag = Math.max(shakeMag, 5);
+                            const BB = B; setTimeout(() => BB.subs.forEach(z => z.down = false), 900);
+                        }
+                    }
+                });
+            });
+            // 指示灯 / 滚道灯
+            LAMPS.forEach(L => {
+                if (L.group && L.on) return;
+                if (Math.hypot(ball.x - L.x, ball.y - L.y) < L.r + 7 && canTrigger('lamp' + L.id, 0.35)) {
+                    if (L.rollover) { addScore(L.score || 300); sfx('rollover'); spawn(L.x, L.y, 6, 50, 0.7); }
+                    else { addScore(400); sfx('rollover'); spawn(L.x, L.y, 6, 50, 0.7); }
+                    if (L.group) LAMPS.forEach(z => { if (z.group === L.group) z.on = true; });
+                    else L.on = !L.on;
+                }
+            });
+            // 三色旋涡（击中得分，走马旋转）
+            VORT.forEach(v => {
+                if (hitCircle(ball, v.x, v.y, v.r, 0.5, 130) > 0 && canTrigger('vort' + v.name, 0.4)) {
+                    addScore(900, 'warp'); combo++; comboT = 2.2; sfx('saucer');
+                    spawn(v.x, v.y, 12, v.hue, 1.1);
+                    shake = Math.max(shake, 0.07); shakeMag = Math.max(shakeMag, 2);
+                }
+            });
+            // 黑洞入口：吸入（仅在非轨道、低速时）→ 暂存后高速反向弹出
+            if (!bhHold && !onRail && ball === live[0] &&
+                Math.hypot(ball.x - BLACKHOLE.x, ball.y - BLACKHOLE.y) < BLACKHOLE.r + 4 &&
+                Math.hypot(ball.vx, ball.vy) < 1700) {
+                bhHold = 0.46; ball.vx = ball.vy = 0;
+                addScore(1500, 'warp'); sfx('saucer'); show('黑洞吸入！', 1.2);
+                shake = Math.max(shake, 0.2); shakeMag = Math.max(shakeMag, 4);
+                spawn(BLACKHOLE.x, BLACKHOLE.y, 16, 280, 1.2);
+            }
+            // 中央立柱
+            if (hitCircle(ball, CPOST.x, CPOST.y, CPOST.r, 0.5, 60) > 0) sfx('click');
+            // 反弹器
+            REBOUND.forEach(rp => {
+                if (hitCircle(ball, rp.x, rp.y, 5, 0.6, 360) > 0) { sfx('sling'); spawn(rp.x, rp.y, 6, 30, 0.9); }
+            });
+        }
+
+        /* ── 新组件绘制 ── */
+        function drawNew() {
+            // 落下靶组
+            BANKS.forEach(B => {
+                ctx.save();
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.font = 'bold 7px "Segoe UI",sans-serif';
+                B.subs.forEach(s => {
+                    const x = s.x, y = s.y, w = s.w, h = s.h;
+                    if (s.down) {
+                        ctx.fillStyle = 'rgba(20,28,46,0.92)';
+                        rr(x - w / 2 - 1, y - h / 2, w + 2, h, 2); ctx.fill();
+                        ctx.strokeStyle = 'rgba(90,110,160,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+                    } else {
+                        const g = ctx.createLinearGradient(x + 5, y, x - 5, y);
+                        g.addColorStop(0, '#5c6a94'); g.addColorStop(0.32, B.color); g.addColorStop(1, '#fff3c4');
+                        ctx.fillStyle = g;
+                        rr(x - w / 2 - 1, y - h / 2, w + 2, h, 2.5); ctx.fill();
+                        ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.1; ctx.stroke();
+                        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                        ctx.fillRect(x - 1.4, y - h / 2 + 3, 1.4, h - 8);
+                    }
+                });
+                // 组名丝印
+                const cy = B.subs[0].y + (B.subs[B.subs.length - 1].y - B.subs[0].y) / 2;
+                const cx = B.subs[0].x + (B.subs[B.subs.length - 1].x - B.subs[0].x) / 2;
+                ctx.fillStyle = 'rgba(255,225,170,0.32)';
+                if (B.subs[0].x === B.subs[B.subs.length - 1].x) ctx.fillText(B.lbl, cx - 16, cy);
+                else ctx.fillText(B.lbl, cx, cy - 16);
+                ctx.restore();
+            });
+            // 旗帜
+            FLAGS.forEach(f => {
+                ctx.save();
+                ctx.strokeStyle = '#c9b48d'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(f.x, f.y + 14); ctx.lineTo(f.x, f.y - 12); ctx.stroke();
+                const wv = Math.sin(t * 4 + f.x) * 2;
+                ctx.fillStyle = '#ff5a3d';
+                ctx.beginPath();
+                ctx.moveTo(f.x, f.y - 12); ctx.lineTo(f.x + 16, f.y - 8 + wv); ctx.lineTo(f.x, f.y - 2);
+                ctx.closePath(); ctx.fill();
+                ctx.restore();
+            });
+            // 三色旋涡
+            VORT.forEach(v => {
+                ctx.save();
+                const gg = ctx.createRadialGradient(v.x, v.y, 1, v.x, v.y, v.r + 8);
+                gg.addColorStop(0, v.color);
+                gg.addColorStop(0.5, 'rgba(255,255,255,0.18)');
+                gg.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = gg;
+                ctx.beginPath(); ctx.arc(v.x, v.y, v.r + 8, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#05080f';
+                ctx.beginPath(); ctx.arc(v.x, v.y, v.r * 0.6, 0, Math.PI * 2); ctx.fill();
+                ctx.save(); ctx.translate(v.x, v.y); ctx.rotate(t * 3 + (v.name === '红' ? 1 : v.name === '黄' ? 2 : 0));
+                ctx.strokeStyle = v.color; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                for (let s = 0; s < 3; s++) {
+                    ctx.beginPath();
+                    const a0 = s / 3 * Math.PI * 2;
+                    for (let k = 0; k <= 22; k++) {
+                        const u = k / 22, ang = a0 + u * 3.4, rad = v.r * 0.62 * (1 - u * 0.8);
+                        const px = Math.cos(ang) * rad, py = Math.sin(ang) * rad;
+                        if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                    }
+                    ctx.stroke();
+                }
+                ctx.restore();
+                ctx.restore();
+            });
+            // 黑洞
+            ctx.save();
+            const bhg = ctx.createRadialGradient(BLACKHOLE.x, BLACKHOLE.y, 1, BLACKHOLE.x, BLACKHOLE.y, BLACKHOLE.r + 10);
+            bhg.addColorStop(0, '#000000'); bhg.addColorStop(0.6, '#1a0a2a'); bhg.addColorStop(1, 'rgba(120,60,200,0)');
+            ctx.fillStyle = bhg;
+            ctx.beginPath(); ctx.arc(BLACKHOLE.x, BLACKHOLE.y, BLACKHOLE.r + 10, 0, Math.PI * 2); ctx.fill();
+            ctx.save(); ctx.translate(BLACKHOLE.x, BLACKHOLE.y); ctx.rotate(-t * 2.4);
+            ctx.strokeStyle = 'rgba(180,120,255,0.8)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(0, 0, BLACKHOLE.r + 4, 0, Math.PI * 1.4); ctx.stroke();
+            ctx.restore();
+            ctx.restore();
+            // 中央立柱
+            ctx.fillStyle = '#caa24a';
+            ctx.beginPath(); ctx.arc(CPOST.x, CPOST.y, CPOST.r + 1, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#4a2c05'; ctx.lineWidth = 1.2; ctx.stroke();
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.beginPath(); ctx.arc(CPOST.x - 1.5, CPOST.y - 1.5, 1.6, 0, Math.PI * 2); ctx.fill();
+            // 反弹器
+            REBOUND.forEach(rp => {
+                ctx.fillStyle = '#3a4a78';
+                ctx.beginPath(); ctx.arc(rp.x, rp.y, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'rgba(160,190,240,0.7)'; ctx.lineWidth = 1.4; ctx.stroke();
+            });
+            // 指示灯 / 滚道灯
+            LAMPS.forEach(L => {
+                ctx.save();
+                if (L.on || (L.rollover)) {
+                    const gr = ctx.createRadialGradient(L.x, L.y, 0.5, L.x, L.y, L.r + 6);
+                    gr.addColorStop(0, L.color); gr.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = gr;
+                    ctx.beginPath(); ctx.arc(L.x, L.y, L.r + 6, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.fillStyle = L.on ? L.color : 'rgba(70,80,110,0.55)';
+                ctx.beginPath(); ctx.arc(L.x, L.y, L.r, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = L.on ? '#fff3c4' : 'rgba(150,175,225,0.6)';
+                ctx.lineWidth = 1.3; ctx.stroke();
+                ctx.restore();
+            });
+        }
+
+        // 美术全部程序化绘制（对齐原版 Space Cadet 配色：暗海军台面 + 金褐轨道 + 红橙引擎 + 金翼徽章）
 
     /* ══════════════════════ 2. 工具 ══════════════════════ */
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -269,8 +487,12 @@ window.MiniGames = window.MiniGames || {};
             let saucerHold = 0;
             let warpHold = 0, warpLock = 0, warpSpin = 0, warpPull = 0, warpFlash = 0;
             let cardReset = 0;
+            let bhHold = 0;                 // 黑洞吸入暂存计时
+            let dispatchHit = {};           // 本回合发射已点亮的调度灯（防重复计分）
             let mbCd = 0;                     // 多球冷却：防任务/翻牌连锁把台面刷成球海
             TARGETS.forEach(x => { x.down = false; });
+            BANKS.forEach(B => B.subs.forEach(s => s.down = false));
+            LAMPS.forEach(L => { L.on = false; });
             let toast = '', toastT = 0;
             const lanesOn = [false, false, false, false];
             const kickback = { L: true, R: true };
@@ -772,6 +994,7 @@ window.MiniGames = window.MiniGames || {};
                     canTrigger('tubeIn', 0.5)) {
                     enterTube(660);
                 }
+                collideNew();
                 hitFlipper(ball, FL);
                 hitFlipper(ball, FR);
             }
@@ -782,6 +1005,8 @@ window.MiniGames = window.MiniGames || {};
                 combo = 0; mult = 1;
                 for (let i = 0; i < lanesOn.length; i++) lanesOn[i] = false;
                 TARGETS.forEach(x => x.down = false);
+                BANKS.forEach(B => B.subs.forEach(s => s.down = false));
+                LAMPS.forEach(L => { L.on = false; });
                 if (balls === Infinity) { resetBall(); return; }
                 balls--;
                 if (balls <= 0) { finish(score >= P.goal); return; }
@@ -868,7 +1093,7 @@ window.MiniGames = window.MiniGames || {};
                         if (chargeSfx) { sfx('charge'); chargeSfx = false; }
                         plunger = Math.min(1, plunger + dt * 1.4);
                     } else if (plunger > 0.08) {
-                        onRail = true; railU = 0; railMode = RAIL.LAUNCH;
+                        onRail = true; railU = 0; railMode = RAIL.LAUNCH; dispatchHit = {};
                         railSpeed = 1150 + 620 * plunger;
                         launched = true; plunger = 0; chargeSfx = true;
                         sfx('launch'); shake = Math.max(shake, 0.12); shakeMag = Math.max(shakeMag, 3);
@@ -891,6 +1116,16 @@ window.MiniGames = window.MiniGames || {};
                     const p = path.at(railU);
                     ball.x = p.x; ball.y = p.y;
                     ball.vx = p.tx * railSpeed; ball.vy = p.ty * railSpeed;
+                    // 发射巷调度灯（球沿发射道上行经过即计分，原版“高技能发射”）
+                    if (railMode === RAIL.LAUNCH) {
+                        LAMPS.forEach(L => {
+                            if (!L.score) return;
+                            if (!dispatchHit[L.id] && Math.hypot(ball.x - L.x, ball.y - L.y) < 11) {
+                                dispatchHit[L.id] = true; addScore(L.score); sfx('rollover');
+                                spawn(L.x, L.y, 5, 50, 0.6);
+                            }
+                        });
+                    }
                     if (railU >= 1) {
                         onRail = false;
                         const pl = path.at(1);
@@ -939,6 +1174,17 @@ window.MiniGames = window.MiniGames || {};
                         mainFrozen = true;
                     }
 
+                    // 黑洞：吸入暂存 → 高速反向弹出（原版“球也会随即弹出，且反向一定”）
+                    if (bhHold > 0) {
+                        bhHold -= dt;
+                        ball.x = BLACKHOLE.x; ball.y = BLACKHOLE.y; ball.vx = ball.vy = 0;
+                        if (bhHold <= 0) {
+                            ball.vy = -940; ball.vx = (Math.random() - 0.5) * 260;
+                            sfx('kick'); spawn(ball.x, ball.y, 14, 280, 1.1);
+                        }
+                        mainFrozen = true;
+                    }
+
                 // 多球冷却倒计时
                 mbCd = Math.max(0, mbCd - dt);
 
@@ -959,6 +1205,13 @@ window.MiniGames = window.MiniGames || {};
                         }
                         collide();
                     }
+                }
+                // 引力井（中央轻微吸引，模拟原版引力井；主球冻结/在轨时跳过）
+                for (let bi = 0; bi < live.length; bi++) {
+                    const b = live[bi];
+                    if (bi === 0 && (mainFrozen || onRailNow)) continue;
+                    const dxw = SAUCER.x - b.x, dyw = SAUCER.y - b.y, dw = Math.hypot(dxw, dyw);
+                    if (dw < 72 && dw > 6) { const f = 240 / dw; b.vx += dxw * f * hd; b.vy += dyw * f * hd; }
                 }
                 const drag = 1 - 0.22 * dt;
                 for (let bi = 0; bi < live.length; bi++) {
@@ -2259,6 +2512,7 @@ window.MiniGames = window.MiniGames || {};
                 drawBumpers();
                 drawJets();
                 drawWarpJet();
+                drawNew();
                 drawPosts();
                 drawSlings();
                 drawKickback();

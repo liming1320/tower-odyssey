@@ -14,6 +14,7 @@
 | Games with game-specific asset mapping | 0 |
 | Assets migrated | 213 |
 | Levels migrated | 53 |
+| Playable native adapters migrated | 29 |
 | Rules migrated | 41 |
 | Full flow migrated | 0 |
 | Auto-bindable content games | 35 |

@@ -12,6 +12,7 @@
     "ownershipVerified": 0,
     "assetsMigrated": 213,
     "levelsMigrated": 53,
+    "adapterPlayableMigrated": 29,
     "rulesMigrated": 41,
     "fullFlowMigrated": 0,
     "sharedResourcePackagesBound": 213,
@@ -29,6 +30,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -54,7 +56,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -65,6 +68,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -90,7 +94,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -101,6 +106,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -126,7 +132,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -137,6 +144,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -162,7 +170,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -173,6 +182,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -198,7 +208,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -209,6 +220,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -234,7 +246,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -245,6 +258,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -270,7 +284,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -281,6 +296,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -306,7 +322,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -317,6 +334,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -342,7 +360,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -353,6 +372,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -378,7 +398,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -389,6 +410,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -414,7 +436,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -425,6 +448,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -450,7 +474,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -461,6 +486,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -486,7 +512,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -497,6 +524,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -522,7 +550,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -533,6 +562,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -558,7 +588,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -569,6 +600,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -594,7 +626,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -605,6 +638,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -630,7 +664,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -641,6 +676,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -666,7 +702,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -677,6 +714,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -702,7 +740,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -713,6 +752,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -738,7 +778,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -749,6 +790,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -774,7 +816,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -785,6 +828,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -810,7 +854,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -821,6 +866,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -846,7 +892,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -857,6 +904,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -882,7 +930,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -893,6 +942,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -918,7 +968,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -929,6 +980,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -954,7 +1006,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -965,6 +1018,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -990,7 +1044,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1001,6 +1056,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1026,7 +1082,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1037,6 +1094,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1062,7 +1120,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1073,6 +1132,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1098,7 +1158,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1109,6 +1170,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1134,7 +1196,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1145,6 +1208,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1170,7 +1234,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1181,6 +1246,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1206,7 +1272,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1217,6 +1284,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1242,7 +1310,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1253,6 +1322,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1278,7 +1348,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1289,6 +1360,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1314,7 +1386,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1325,6 +1398,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1350,7 +1424,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": true,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -1361,6 +1436,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1386,7 +1462,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1397,6 +1474,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1422,7 +1500,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1433,6 +1512,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1458,7 +1538,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1469,6 +1550,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1494,7 +1576,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1505,6 +1588,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1530,7 +1614,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1541,6 +1626,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1566,7 +1652,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1577,6 +1664,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1602,7 +1690,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1613,6 +1702,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1638,7 +1728,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1649,6 +1740,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1674,7 +1766,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1685,6 +1778,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1710,7 +1804,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -1721,6 +1816,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1746,7 +1842,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -1757,6 +1854,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1782,7 +1880,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -1793,6 +1892,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1818,7 +1918,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1829,6 +1930,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1854,7 +1956,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1865,6 +1968,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1890,7 +1994,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1901,6 +2006,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1926,7 +2032,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -1937,6 +2044,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1962,7 +2070,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -1973,6 +2082,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -1998,7 +2108,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2009,6 +2120,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2034,7 +2146,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2045,6 +2158,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2070,7 +2184,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2081,6 +2196,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2106,7 +2222,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2117,6 +2234,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2142,7 +2260,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2153,6 +2272,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2178,7 +2298,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -2189,6 +2310,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2214,7 +2336,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2225,6 +2348,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2250,7 +2374,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2261,6 +2386,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2286,7 +2412,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2297,6 +2424,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2322,7 +2450,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2333,6 +2462,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2358,7 +2488,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2369,6 +2500,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2394,7 +2526,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2405,6 +2538,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2430,7 +2564,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2441,6 +2576,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2466,7 +2602,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2477,6 +2614,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2502,7 +2640,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -2513,6 +2652,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2538,7 +2678,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2549,6 +2690,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2574,7 +2716,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2585,6 +2728,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2610,7 +2754,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2621,6 +2766,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2646,7 +2792,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2657,6 +2804,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2682,7 +2830,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2693,6 +2842,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2718,7 +2868,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2729,6 +2880,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2754,7 +2906,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -2765,6 +2918,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2790,7 +2944,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2801,6 +2956,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2826,7 +2982,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -2837,6 +2994,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2862,7 +3020,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -2873,6 +3032,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2898,7 +3058,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -2909,6 +3070,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2934,7 +3096,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -2945,6 +3108,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -2970,7 +3134,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -2981,6 +3146,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3006,7 +3172,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3017,6 +3184,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3042,7 +3210,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3053,6 +3222,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3078,7 +3248,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3089,6 +3260,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3114,7 +3286,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3125,6 +3298,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3150,7 +3324,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3161,6 +3336,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3186,7 +3362,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3197,6 +3374,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3222,7 +3400,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3233,6 +3412,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3258,7 +3438,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3269,6 +3450,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3294,7 +3476,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3305,6 +3488,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3330,7 +3514,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": true,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3341,6 +3526,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3366,7 +3552,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3377,6 +3564,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3402,7 +3590,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3413,6 +3602,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3438,7 +3628,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3449,6 +3640,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3474,7 +3666,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3485,6 +3678,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3510,7 +3704,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3521,6 +3716,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3546,7 +3742,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3557,6 +3754,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3582,7 +3780,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3593,6 +3792,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3618,7 +3818,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3629,6 +3830,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3654,7 +3856,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": true,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3665,6 +3868,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3690,7 +3894,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3701,6 +3906,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3726,7 +3932,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": true,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3737,6 +3944,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3762,7 +3970,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3773,6 +3982,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3798,7 +4008,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3809,6 +4020,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3834,7 +4046,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3845,6 +4058,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3870,7 +4084,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3881,6 +4096,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3906,7 +4122,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": true,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3917,6 +4134,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3942,7 +4160,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3953,6 +4172,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -3978,7 +4198,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -3989,6 +4210,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4014,7 +4236,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4025,6 +4248,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4050,7 +4274,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4061,6 +4286,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4086,7 +4312,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4097,6 +4324,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4122,7 +4350,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4133,6 +4362,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4158,7 +4388,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4169,6 +4400,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4194,7 +4426,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4205,6 +4438,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4230,7 +4464,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4241,6 +4476,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4266,7 +4502,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4277,6 +4514,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4302,7 +4540,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4313,6 +4552,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4338,7 +4578,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4349,6 +4590,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4374,7 +4616,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4385,6 +4628,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4410,7 +4654,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4421,6 +4666,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4446,7 +4692,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4457,6 +4704,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4482,7 +4730,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4493,6 +4742,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4518,7 +4768,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4529,6 +4780,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4554,7 +4806,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4565,6 +4818,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4590,7 +4844,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4601,6 +4856,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4626,7 +4882,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4637,6 +4894,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4662,7 +4920,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4673,6 +4932,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4698,7 +4958,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4709,6 +4970,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4734,7 +4996,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4745,6 +5008,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4770,7 +5034,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4781,6 +5046,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4806,7 +5072,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4817,6 +5084,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4842,7 +5110,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4853,6 +5122,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4878,7 +5148,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4889,6 +5160,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4914,7 +5186,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4925,6 +5198,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4950,7 +5224,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4961,6 +5236,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -4986,7 +5262,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -4997,6 +5274,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5022,7 +5300,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5033,6 +5312,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5058,7 +5338,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5069,6 +5350,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5094,7 +5376,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5105,6 +5388,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5130,7 +5414,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5141,6 +5426,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5166,7 +5452,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5177,6 +5464,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5202,7 +5490,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5213,6 +5502,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5238,7 +5528,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5249,6 +5540,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5274,7 +5566,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5285,6 +5578,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5310,7 +5604,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5321,6 +5616,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5346,7 +5642,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5357,6 +5654,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5382,7 +5680,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5393,6 +5692,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5418,7 +5718,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5429,6 +5730,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5454,7 +5756,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5465,6 +5768,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5490,7 +5794,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5501,6 +5806,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5526,7 +5832,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -5537,6 +5844,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5562,7 +5870,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5573,6 +5882,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5598,7 +5908,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -5609,6 +5920,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5634,7 +5946,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5645,6 +5958,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5670,7 +5984,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5681,6 +5996,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5706,7 +6022,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5717,6 +6034,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5742,7 +6060,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5753,6 +6072,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5778,7 +6098,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -5789,6 +6110,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5814,7 +6136,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5825,6 +6148,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5850,7 +6174,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5861,6 +6186,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5886,7 +6212,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -5897,6 +6224,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5922,7 +6250,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -5933,6 +6262,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5958,7 +6288,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5969,6 +6300,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -5994,7 +6326,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6005,6 +6338,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6030,7 +6364,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6041,6 +6376,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6066,7 +6402,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6077,6 +6414,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6102,7 +6440,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6113,6 +6452,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6138,7 +6478,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6149,6 +6490,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6174,7 +6516,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6185,6 +6528,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6210,7 +6554,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -6221,6 +6566,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6246,7 +6592,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -6257,6 +6604,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6282,7 +6630,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6293,6 +6642,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6318,7 +6668,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6329,6 +6680,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6354,7 +6706,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -6365,6 +6718,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6390,7 +6744,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6401,6 +6756,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6426,7 +6782,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -6437,6 +6794,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6462,7 +6820,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -6473,6 +6832,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6498,7 +6858,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6509,6 +6870,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6534,7 +6896,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -6545,6 +6908,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6570,7 +6934,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6581,6 +6946,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6606,7 +6972,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -6617,6 +6984,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6642,7 +7010,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "payload-migration",
       "originalComplete": false
@@ -6653,6 +7022,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6678,7 +7048,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6689,6 +7060,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6714,7 +7086,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6725,6 +7098,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6750,7 +7124,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -6761,6 +7136,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6786,7 +7162,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6797,6 +7174,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6822,7 +7200,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6833,6 +7212,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6858,7 +7238,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6869,6 +7250,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6894,7 +7276,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -6905,6 +7288,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6930,7 +7314,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -6941,6 +7326,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -6966,7 +7352,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -6977,6 +7364,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7002,7 +7390,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -7013,6 +7402,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7038,7 +7428,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7049,6 +7440,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7074,7 +7466,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7085,6 +7478,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7110,7 +7504,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7121,6 +7516,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7146,7 +7542,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7157,6 +7554,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7182,7 +7580,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7193,6 +7592,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7218,7 +7618,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7229,6 +7630,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7254,7 +7656,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7265,6 +7668,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7290,7 +7694,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7301,6 +7706,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7326,7 +7732,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7337,6 +7744,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7362,7 +7770,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7373,6 +7782,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7398,7 +7808,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": true,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7409,6 +7820,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7434,7 +7846,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -7445,6 +7858,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7470,7 +7884,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7481,6 +7896,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7506,7 +7922,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": true
+        "rulesMigratedByNativeAdapter": true,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7517,6 +7934,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": false,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7542,7 +7960,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "catalog-migration",
       "originalComplete": false
@@ -7553,6 +7972,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7578,7 +7998,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7589,6 +8010,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7614,7 +8036,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7625,6 +8048,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7650,7 +8074,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7661,6 +8086,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "migrationComplete": false
@@ -7686,7 +8112,8 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": false,
+        "playableNativeAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
