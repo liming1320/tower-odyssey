@@ -14,9 +14,9 @@
 | Games with game-specific asset mapping | 0 |
 | Assets migrated | 213 |
 | Levels migrated | 53 |
-| Rules migrated | 36 |
+| Rules migrated | 41 |
 | Full flow migrated | 0 |
-| Auto-bindable content games | 34 |
+| Auto-bindable content games | 35 |
 | Content migration complete | 0 |
 | Original verification complete | 0 |
 | Original complete | 0 |
@@ -27,7 +27,7 @@
 | --- | ---: | ---: | ---: |
 | no-payload | 133 | 0 | 0 |
 | fixed-area-candidate | 27 | 711 | 16 |
-| paired-code-candidate | 20 | 811 | 11 |
+| paired-code-candidate | 20 | 811 | 12 |
 | three-digit-index-candidate | 8 | 275 | 1 |
 | legacy-100-stream | 7 | 71 | 0 |
 | dimension-prefix-single-cell | 6 | 213 | 2 |
@@ -128,7 +128,7 @@
 | pk32-086 | 飞行棋 | catalog-migration | shared atlases 28 | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-087 | 贪吃蛇 | catalog-migration | shared atlases 28 | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-088 | 独粒钻石 | partial-content-migration | shared atlases 28 | 1 |  | 209 | no | no | no | full flow not migrated |
-| pk32-089 | 推箱子 | payload-migration | shared atlases 28 | 1 |  | 82 | no | no | no | no dedicated adapter; rules not fully migrated; full flow not migrated |
+| pk32-089 | 推箱子 | partial-content-migration | shared atlases 28 | 1 |  | 82 | yes | no | no | full flow not migrated |
 | pk32-090 | 火箭大战 | catalog-migration | shared atlases 28 | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-091 | 打地鼠 | catalog-migration | shared atlases 28 | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-092 | 黑白棋 | partial-content-migration | shared atlases 28 | 1 |  | 18 | yes | no | no | full flow not migrated |
@@ -183,7 +183,7 @@
 | pk32-141 | 扫雷二 | catalog-migration | shared atlases 28 | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-142 | 泡泡彩球 | catalog-migration | shared atlases 28 | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-143 | 跳跃棋 | partial-content-migration | shared atlases 28 | 0 | three-digit-index-candidate / 2 | 2 | no | no | no | payload semantics not level-ready; full flow not migrated |
-| pk32-144 | 像素岛 | partial-content-migration | shared atlases 28 | 1 |  | 6 | yes | no | no | rules not fully migrated; full flow not migrated |
+| pk32-144 | 像素岛 | partial-content-migration | shared atlases 28 | 1 |  | 6 | yes | no | no | full flow not migrated |
 | pk32-145 | 找不同 | partial-content-migration | shared atlases 28 | 0 | three-digit-index-candidate / 1 | 1 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
 | pk32-146 | 找彩球 | partial-content-migration | shared atlases 28 | 0 | three-digit-index-candidate / 6 | 6 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
 | pk32-147 | 变化彩球 | partial-content-migration | shared atlases 28 | 0 | three-digit-index-candidate / 137 | 137 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
@@ -206,7 +206,7 @@
 | pk32-164 | 推箱子三 | payload-migration | shared atlases 28 | 1 |  | 73 | no | no | no | no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-165 | 推箱子四 | partial-content-migration | shared atlases 28 | 1 |  | 59 | yes | no | no | full flow not migrated |
 | pk32-166 | 推箱子五 | partial-content-migration | shared atlases 28 | 1 |  | 4 | yes | no | no | full flow not migrated |
-| pk32-167 | 连结电线二 | partial-content-migration | shared atlases 28 | 1 |  | 3 | yes | no | no | rules not fully migrated; full flow not migrated |
+| pk32-167 | 连结电线二 | partial-content-migration | shared atlases 28 | 1 |  | 3 | yes | no | no | full flow not migrated |
 | pk32-168 | 移彩球 | partial-content-migration | shared atlases 28 | 0 | fixed-area-candidate / 1 | 1 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-169 | 数独 | partial-content-migration | shared atlases 28 | 0 | fixed-area-candidate / 23 | 23 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-170 | 智慧之光 | partial-content-migration | shared atlases 28 | 1 |  | 75 | yes | no | no | full flow not migrated |
@@ -237,12 +237,12 @@
 | pk32-195 | 七盏灯 | partial-content-migration | shared atlases 28 | 1 |  | 10 | yes | no | no | full flow not migrated |
 | pk32-196 | 交换彩球 | partial-content-migration | shared atlases 28 | 1 |  | 1 | yes | no | no | full flow not migrated |
 | pk32-197 | 上一百层 | partial-content-migration | shared atlases 28 | 1 |  | 1 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-198 | 下一百层 | partial-content-migration | shared atlases 28 | 1 |  | 4 | yes | no | no | rules not fully migrated; full flow not migrated |
+| pk32-198 | 下一百层 | partial-content-migration | shared atlases 28 | 1 |  | 4 | yes | no | no | full flow not migrated |
 | pk32-199 | 宇宙黑洞 | partial-content-migration | shared atlases 28 | 1 |  | 41 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-200 | 飞一百米 | partial-content-migration | shared atlases 28 | 1 |  | 3 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-201 | 七巧板 | partial-content-migration | shared atlases 28 | 1 |  | 37 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-202 | 坦克大战 | partial-content-migration | shared atlases 28 | 1 |  | 1 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-203 | 海底寻宝 | partial-content-migration | shared atlases 28 | 1 |  | 1 | yes | no | no | rules not fully migrated; full flow not migrated |
+| pk32-203 | 海底寻宝 | partial-content-migration | shared atlases 28 | 1 |  | 1 | yes | no | no | full flow not migrated |
 | pk32-204 | 碰撞彩球 | partial-content-migration | shared atlases 28 | 1 |  | 2 | yes | no | no | full flow not migrated |
 | pk32-205 | 四子棋 | partial-content-migration | shared atlases 28 | 0 |  | 7 | no | no | no | full flow not migrated |
 | pk32-206 | 立体魔方 | catalog-migration | shared atlases 28 | 0 |  | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-16T17:43:48.243Z",
+  "generatedAt": "2026-09-16T18:07:04.271Z",
   "input": {
     "file": "output\\pk32-reference\\module.bin",
     "bytes": 33767424,
@@ -3458,7 +3458,7 @@
       "index": 89,
       "name": "推箱子",
       "group": "棋类与益智",
-      "launcher": "casual",
+      "launcher": "variant",
       "launcherVerified": true,
       "assetsMigrated": false,
       "levelsMigrated": false,

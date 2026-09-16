@@ -12,14 +12,14 @@
     "ownershipVerified": 0,
     "assetsMigrated": 213,
     "levelsMigrated": 53,
-    "rulesMigrated": 36,
+    "rulesMigrated": 41,
     "fullFlowMigrated": 0,
     "sharedResourcePackagesBound": 213,
     "gameSpecificAssetMappings": 0,
     "migrationComplete": 0,
     "verificationComplete": 0,
-    "payloadMigration": 12,
-    "partialContentMigration": 73,
+    "payloadMigration": 11,
+    "partialContentMigration": 74,
     "originalComplete": 0
   },
   "records": [
@@ -3197,7 +3197,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
       },
@@ -3217,14 +3217,14 @@
         "resourcePackageBound": true,
         "sharedAtlasCount": 28,
         "gameSpecificAssetMapping": false,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": true
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -5177,7 +5177,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
       },
@@ -5202,7 +5202,7 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6005,7 +6005,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
       },
@@ -6030,7 +6030,7 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7121,7 +7121,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
       },
@@ -7146,7 +7146,7 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7301,7 +7301,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "migrationComplete": false
       },
@@ -7326,7 +7326,7 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false
+        "rulesMigratedByNativeAdapter": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false

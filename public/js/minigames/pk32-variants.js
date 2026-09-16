@@ -913,11 +913,95 @@
         }
           function renderNativePreviousHundred() {
               const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载上一百层原生载荷…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-              fetch('/data/pk32-previous-hundred-levels.json').then(function (response) { return response.json(); }).then(function (data) { const item = data.levels[0], width = 12, cells = item.cells.split(''), grid = renderGrid(width, Math.ceil(cells.length / width), 'pk32-previous-hundred-board'); cells.forEach(function (value) { const cell = button(value, function () { cell.classList.toggle('pk32-previous-hundred-selected'); }); cell.dataset.code = value; cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (value === '1' ? '#38bdf8' : value === '2' ? '#facc15' : value === '3' ? '#ef4444' : value === '4' ? '#4ade80' : '#64748b') + ';color:#111;font-size:10px'; grid.appendChild(cell); }); panel.appendChild(grid); prompt.textContent = '上一百层：已定位原生盘面 1 条，12×' + Math.ceil(cells.length / width) + '；关卡规则仍在解析。'; }).catch(function () { prompt.textContent = '上一百层原生载荷加载失败'; });
+              fetch('/data/pk32-previous-hundred-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                  const item = data.levels[0], width = 12, cells = item.cells.split(''), height = Math.ceil(cells.length / width), grid = renderGrid(width, height, 'pk32-previous-hundred-board');
+                  let player = width * (height - 1) + Math.floor(width / 2), velocity = 0, floors = 0, seconds = 60, timer = null, left = false, right = false, jumping = false;
+                  function solid(index) { return index >= 0 && index < cells.length && cells[index] !== '0'; }
+                  function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                  function draw() {
+                      grid.innerHTML = '';
+                      cells.forEach(function (value, index) {
+                          const cell = button(index === player ? '人' : solid(index) ? '台' : '', function () {});
+                          cell.dataset.code = value; cell.dataset.player = String(index === player);
+                          cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (index === player ? '#22c55e' : value === '1' ? '#38bdf8' : value === '2' ? '#facc15' : value === '3' ? '#ef4444' : value === '4' ? '#4ade80' : value === '5' ? '#64748b' : '#0f172a') + ';color:' + (index === player ? '#fff' : '#111') + ';font-size:11px;font-weight:700';
+                          grid.appendChild(cell);
+                      });
+                      prompt.textContent = '上一百层：原生 12×' + height + ' 盘面；空格跳跃，左右移动，向上累计 ' + floors + ' 层，剩余 ' + seconds + ' 秒。';
+                  }
+                  function tick() {
+                      if (ended) return;
+                      seconds -= 1;
+                      let next = player;
+                      if (left && sameRow(player, player - 1)) next -= 1;
+                      if (right && sameRow(player, player + 1)) next += 1;
+                      if (!solid(next)) player = next;
+                      velocity += jumping ? -2 : 1;
+                      if (velocity < -3) velocity = -3;
+                      if (velocity > 2) velocity = 2;
+                      const vertical = velocity < 0 ? -width : width;
+                      for (let step = 0; step < Math.abs(velocity); step += 1) {
+                          const probe = player + vertical;
+                          if (probe < 0) { floors += 10; break; }
+                          if (probe >= cells.length) { finish('哈！您失败了！请再来一次吧。'); return; }
+                          if (solid(probe)) { velocity = 0; break; }
+                          player = probe;
+                          if (vertical < 0 && player < width * 2) floors += 1;
+                      }
+                      if (floors >= 100) { finish('上一百层完成：已到达最高的 100 层。'); return; }
+                      if (seconds <= 0) { finish('哈！时间到！请再来一次吧。'); return; }
+                      draw();
+                  }
+                  function reset() { player = width * (height - 1) + Math.floor(width / 2); velocity = 0; floors = 0; seconds = 60; ended = false; clearInterval(timer); timer = setInterval(tick, 180); draw(); }
+                  function setKey(event, down) { if (event.key === 'ArrowLeft') { left = down; event.preventDefault(); } else if (event.key === 'ArrowRight') { right = down; event.preventDefault(); } else if (event.key === ' ') { jumping = down; event.preventDefault(); } }
+                  const down = function (event) { setKey(event, true); }, up = function (event) { setKey(event, false); };
+                  document.addEventListener('keydown', down); document.addEventListener('keyup', up); addCleanup(function () { clearInterval(timer); document.removeEventListener('keydown', down); document.removeEventListener('keyup', up); });
+                  const controls = el('div', { className: 'pk32v-controls' });
+                  controls.append(button('左', function () { left = true; setTimeout(function () { left = false; }, 160); }), button('跳跃', function () { jumping = true; setTimeout(function () { jumping = false; }, 260); }), button('右', function () { right = true; setTimeout(function () { right = false; }, 160); }), button('重开', reset));
+                  panel.append(grid, controls); reset();
+              }).catch(function () { prompt.textContent = '上一百层原生载荷加载失败'; });
           }
         function renderNativeFlyHundred() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载飞一百米原生载荷…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-            fetch('/data/pk32-fly-hundred-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; const select = el('select', { 'aria-label': '飞一百米原生数据' }); data.levels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '原生盘面 ' + (index + 1))); }); function draw() { panel.innerHTML = ''; const item = data.levels[level], header = item.cells.slice(0, 4).match(/.{2}/g), width = Number(header[0]), height = Number(header[1]), cells = item.cells.slice(4).split(''), grid = renderGrid(width, height, 'pk32-fly-hundred-board'); cells.forEach(function (value) { const cell = button(value === '0' ? '' : value, function () { cell.classList.toggle('pk32-fly-hundred-hit'); }); cell.dataset.code = value; cell.style.cssText = 'min-width:22px;min-height:22px;padding:0;background:' + (value === '0' ? '#0f172a' : value === '4' ? '#facc15' : value === '9' ? '#ef4444' : value === '1' ? '#38bdf8' : '#64748b') + ';color:#fff;font-size:10px'; grid.appendChild(cell); }); panel.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一条', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select, grid); prompt.textContent = '飞一百米：原生盘面 ' + (level + 1) + ' / ' + data.levels.length + '，尺寸 ' + width + '×' + height + '；障碍与飞行碰撞规则校核中。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '飞一百米原生载荷加载失败'; });
+            fetch('/data/pk32-fly-hundred-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                const playable = data.levels.filter(function (item) { const width = Number(item.cells.slice(0, 2)), height = Number(item.cells.slice(2, 4)); return width > 3 && height > 3 && item.cells.length >= 4 + width * height; });
+                let level = 0, timer = null, width = 14, height = 16, cells = [], x = 0, y = 0, dy = 0, pressing = false, distance = 0;
+                const select = el('select', { 'aria-label': '飞一百米原生数据' });
+                playable.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '原生盘面 ' + item.number)); });
+                function obstacle(index) { return cells[index] === '4' || cells[index] === '8' || cells[index] === '9'; }
+                function reset() {
+                    const item = playable[level] || data.levels[0];
+                    width = Number(item.cells.slice(0, 2)); height = Number(item.cells.slice(2, 4)); cells = item.cells.slice(4, 4 + width * height).split('');
+                    x = 1; y = Math.max(1, Math.min(height - 2, cells.findIndex(function (value) { return value === '1' || value === '2'; }) / width | 0)); dy = 0; distance = 0; ended = false;
+                    clearInterval(timer); timer = setInterval(tick, 120); draw();
+                }
+                function draw() {
+                    panel.innerHTML = '';
+                    const grid = renderGrid(width, height, 'pk32-fly-hundred-board');
+                    cells.forEach(function (value, index) {
+                        const here = Math.round(y) * width + Math.round(x) === index;
+                        const cell = button(here ? '机' : obstacle(index) ? '障' : value === '1' || value === '2' ? '点' : '', function () {});
+                        cell.dataset.code = value; cell.dataset.player = String(here);
+                        cell.style.cssText = 'min-width:22px;min-height:22px;padding:0;background:' + (here ? '#22c55e' : obstacle(index) ? '#ef4444' : value === '1' || value === '2' ? '#38bdf8' : '#0f172a') + ';color:#fff;font-size:11px;font-weight:700';
+                        grid.appendChild(cell);
+                    });
+                    panel.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一条', function () { level = Math.min(playable.length - 1, level + 1); select.value = String(level); reset(); }), select, button('重开', reset), grid, button('按住上升', function () { pressing = true; setTimeout(function () { pressing = false; }, 260); }));
+                    prompt.textContent = '飞一百米：原生盘面 ' + (level + 1) + ' / ' + playable.length + '，空格上升，松开下降；已飞行 ' + distance + ' 米。';
+                }
+                function tick() {
+                    if (ended) return;
+                    dy += pressing ? -0.16 : 0.12; dy = Math.max(-0.8, Math.min(0.8, dy));
+                    x += 0.25; y += dy; distance += 1;
+                    if (x >= width - 1) { finish('飞一百米完成：已穿过当前原生盘面。'); return; }
+                    const index = Math.round(y) * width + Math.round(x);
+                    if (y < 0 || y >= height || obstacle(index)) { finish('撞到障碍，请重新开始。'); return; }
+                    draw();
+                }
+                const keydown = function (event) { if (event.key === ' ') { pressing = true; event.preventDefault(); } };
+                const keyup = function (event) { if (event.key === ' ') { pressing = false; event.preventDefault(); } };
+                document.addEventListener('keydown', keydown); document.addEventListener('keyup', keyup); addCleanup(function () { clearInterval(timer); document.removeEventListener('keydown', keydown); document.removeEventListener('keyup', keyup); });
+                select.onchange = function () { level = Number(select.value) || 0; reset(); };
+                reset();
+            }).catch(function () { prompt.textContent = '飞一百米原生载荷加载失败'; });
         }
         function renderNativeBreakout() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载打砖块原生载荷…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
@@ -981,46 +1065,98 @@
         function renderBuilding() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '建筑制造：引爆炸弹、激活传感器并到达出口。');
             const panel = el('div', { className: 'pk32v-native-data' });
-            let width = 6, height = 6;
-            let level = 0;
-            let levels = [
-                ['P..B..', '.##...', '..S...', '...#..', '..B.S.', '.....E'],
-                ['P.#B..', '...#..', '.S....', '.###..', '..B.S.', '.....E'],
-                ['P...B.', '.###..', '..S...', '..#...', 'B...S.', '.....E']
+            let level = 0, levels = [], cells = [], player = 0, exit = 0, width = 6, height = 6;
+            const passable = { '0': true, '2': true, '3': true, '4': true, '5': true, '6': true, '7': true, '8': true, '9': true };
+            const targets = { '2': '炸弹', '3': '传感器' };
+            const fallbackLevels = [
+                { number: 1, width: 6, height: 6, cells: '900200011000003000000100002030000004' },
+                { number: 2, width: 6, height: 6, cells: '900020001000030000011100002030000004' },
+                { number: 3, width: 6, height: 6, cells: '900002011100003000001000200030000004' }
             ];
+            let paintCurrent = function () {};
+            function parseLevels(data) {
+                return (data.levels || []).map(function (item) {
+                    const levelWidth = item.width || (item.cells.length === 192 ? 16 : item.cells.length === 36 ? 6 : 0);
+                    if (!levelWidth || item.cells.length % levelWidth !== 0) return null;
+                    const levelHeight = item.cells.length / levelWidth;
+                    if ((levelWidth !== 6 && levelWidth !== 16) || (levelHeight !== 6 && levelHeight !== 12)) return null;
+                    return { number: item.number, width: levelWidth, height: levelHeight, cells: item.cells };
+                }).filter(Boolean);
+            }
+            function chooseStart(raw) {
+                const explicit = raw.indexOf('9');
+                if (explicit >= 0) return explicit;
+                const exitIndex = raw.indexOf('4');
+                let best = raw.split('').findIndex(function (value, index) { return passable[value] && index !== exitIndex; });
+                if (best < 0) best = 0;
+                return best;
+            }
+            function chooseExit(raw, start) {
+                const exits = raw.split('').map(function (value, index) { return value === '4' ? index : -1; }).filter(function (index) { return index >= 0; });
+                if (!exits.length) return start;
+                return exits.sort(function (a, b) { return Math.abs((b % width) - (start % width)) + Math.abs(Math.floor(b / width) - Math.floor(start / width)) - Math.abs((a % width) - (start % width)) - Math.abs(Math.floor(a / width) - Math.floor(start / width)); })[0];
+            }
+            function remaining(code) { return cells.filter(function (value) { return value === code; }).length; }
+            function reset() {
+                const item = levels[level] || fallbackLevels[0];
+                width = item.width; height = item.height; cells = item.cells.split('');
+                player = chooseStart(item.cells); exit = chooseExit(item.cells, player);
+                if (cells[player] === '9') cells[player] = '0';
+                ended = false;
+                draw();
+            }
+            function performMove(delta) {
+                const next = player + delta;
+                if (ended || next < 0 || next >= cells.length || ((delta === 1 || delta === -1) && Math.floor(next / width) !== Math.floor(player / width)) || !passable[cells[next]]) return;
+                if (targets[cells[next]]) { cells[next] = '0'; setScore(score + 5); }
+                player = next;
+                paintCurrent();
+                if (player === exit && remaining('2') === 0 && remaining('3') === 0) finish('建筑制造第 ' + (level + 1) + ' 个原版盘面完成。');
+            }
             function draw() {
                 panel.innerHTML = '';
-                width = levels[level][0].length;
-                height = levels[level].length;
                 const nav = el('div', { className: 'pk32v-toolbar' });
-                nav.append(button('上一关', function () { ended = false; level = Math.max(0, level - 1); draw(); }), button('下一关', function () { ended = false; level = Math.min(levels.length - 1, level + 1); draw(); }));
+                const select = el('select', { 'aria-label': '建筑制造原版关卡' });
+                levels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '原版盘面 ' + item.number)); });
+                select.value = String(level);
+                select.onchange = function () { level = Number(select.value) || 0; reset(); };
+                nav.append(button('上一关', function () { level = Math.max(0, level - 1); reset(); }), button('下一关', function () { level = Math.min(levels.length - 1, level + 1); reset(); }), select, button('重置本关', reset));
                 panel.appendChild(nav);
-                const cells = levels[level].map(function (row) { return row.split(''); }).flat();
-                let pos = cells.indexOf('P'), bombs = cells.filter(function (x) { return x === 'B'; }).length, sensors = cells.filter(function (x) { return x === 'S'; }).length;
                 const grid = renderGrid(width, height, 'maze');
-                function paint() { cells.forEach(function (value, i) { grid.children[i].textContent = i === pos ? '●' : value === '#' ? '■' : value === 'B' ? '💣' : value === 'S' ? '◎' : value === 'E' ? '出口' : ''; }); }
-                function move(delta) {
-                    const next = pos + delta;
-                    if (next < 0 || next >= cells.length || (delta === 1 && next % width === 0) || (delta === -1 && pos % width === 0) || cells[next] === '#') return;
-                    if (cells[next] === 'B') { cells[next] = '.'; bombs -= 1; }
-                    if (cells[next] === 'S') { cells[next] = '.'; sensors -= 1; }
-                    pos = next; paint();
-                    if (cells[pos] === 'E' && bombs === 0 && sensors === 0) { setScore(score + 50); finish('本关完成：炸弹和传感器全部处理。'); }
-                    else prompt.textContent = '第 ' + (level + 1) + ' 关：炸弹 ' + bombs + '，传感器 ' + sensors + '；出口需要全部目标完成。';
+                function label(value, index) {
+                    if (index === player) return '人';
+                    if (value === '1') return '墙';
+                    if (value === '2') return '炸';
+                    if (value === '3') return '感';
+                    if (index === exit || value === '4') return '出口';
+                    return '';
                 }
-                cells.forEach(function (_, i) { grid.appendChild(button('', function () { if (i === pos - width) move(-width); else if (i === pos + width) move(width); else if (i === pos - 1) move(-1); else if (i === pos + 1) move(1); })); });
-                paint();
-                const controls = el('div', { className: 'pk32v-controls' }); [['上', -width], ['下', width], ['左', -1], ['右', 1]].forEach(function (item) { controls.appendChild(button(item[0], function () { move(item[1]); })); });
-                panel.append(grid, controls); prompt.textContent = '原版 53 条盘面载荷已定位；当前展示规则验证盘面 ' + (level + 1) + ' / ' + levels.length + '。';
+                paintCurrent = function () {
+                    cells.forEach(function (value, index) {
+                        const cell = grid.children[index];
+                        cell.textContent = label(value, index);
+                        cell.dataset.nativeCode = value;
+                        cell.dataset.player = String(index === player);
+                        cell.style.background = index === player ? '#22c55e' : value === '1' ? '#334155' : value === '2' ? '#dc2626' : value === '3' ? '#f59e0b' : (index === exit || value === '4') ? '#2563eb' : value === '5' ? '#475569' : value === '0' ? '#0f172a' : '#64748b';
+                        cell.style.color = '#fff';
+                    });
+                    prompt.textContent = '建筑制造：原版盘面 ' + (level + 1) + ' / ' + levels.length + '，炸弹 ' + remaining('2') + '，传感器 ' + remaining('3') + '；全部处理后到出口过关。';
+                };
+                cells.forEach(function (_, index) { grid.appendChild(button('', function () { const delta = index - player; if (delta === 1 || delta === -1 || delta === width || delta === -width) performMove(delta); })); });
+                const controls = el('div', { className: 'pk32v-controls' }); [['上', -width], ['下', width], ['左', -1], ['右', 1]].forEach(function (item) { controls.appendChild(button(item[0], function () { performMove(item[1]); })); });
+                panel.append(grid, controls);
+                paintCurrent();
             }
-            body.append(prompt, panel); draw();
+            const keyHandler = function (event) {
+                const moves = { ArrowUp: -width, ArrowDown: width, ArrowLeft: -1, ArrowRight: 1 };
+                if (moves[event.key] != null) { event.preventDefault(); performMove(moves[event.key]); }
+            };
+            document.addEventListener('keydown', keyHandler); addCleanup(function () { document.removeEventListener('keydown', keyHandler); });
+            levels = fallbackLevels;
+            body.append(prompt, panel); reset();
             fetch('/data/pk32-building-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                levels = data.levels.map(function (item) {
-                    const width = item.width || Math.round(Math.sqrt(item.cells.length));
-                    const raw = item.cells.length === width * width + 4 ? item.cells.slice(4) : item.cells;
-                    return raw.match(new RegExp('.{1,' + width + '}', 'g')).map(function (row) { return row.replace(/0/g, '.').replace(/1/g, '#').replace(/2/g, 'B').replace(/3/g, 'S').replace(/4/g, 'E').replace(/5/g, '.').replace(/6/g, '.').replace(/7/g, '.').replace(/9/g, '.'); });
-                }).filter(function (rows) { return rows.length && rows.every(function (row) { return row.length === rows[0].length; }); });
-                if (levels.length) { level = 0; draw(); prompt.textContent = '原版 53 条盘面已加载；当前原生盘面 ' + (level + 1) + ' / ' + levels.length + '。'; }
+                const parsed = parseLevels(data);
+                if (parsed.length) { levels = parsed; level = 0; reset(); }
             }).catch(function () { prompt.textContent = '原版盘面加载失败，当前显示规则验证盘面。'; });
         }
         function renderBoard() {
@@ -1176,7 +1312,52 @@
         }
         function renderNativeSeaTreasure() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载海底寻宝原生盘面…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-            fetch('/data/pk32-sea-treasure-levels.json').then(function (response) { return response.json(); }).then(function (data) { const width = 15, height = 10, cells = data.levels[0].cells.split(''), grid = renderGrid(width, height, 'maze'); let left = width * (height - 1) + 1, right = width * (height - 1) + width - 2; function draw() { grid.innerHTML = ''; cells.forEach(function (value, index) { grid.appendChild(button(index === left ? '左坦' : index === right ? '右坦' : value === '2' ? '·' : '■', function () {})); }); } function move(which, delta) { let p = which === 'left' ? left : right, next = p + delta; if (next < 0 || next >= cells.length || (delta === 1 || delta === -1) && Math.floor(next / width) !== Math.floor(p / width) || cells[next] === '2') return; if (which === 'left') left = next; else right = next; draw(); } const controls = el('div', { className: 'pk32v-controls' }); [['左坦上', 'left', -width], ['左坦下', 'left', width], ['左坦左', 'left', -1], ['左坦右', 'left', 1], ['右坦上', 'right', -width], ['右坦下', 'right', width], ['右坦左', 'right', -1], ['右坦右', 'right', 1]].forEach(function (item) { controls.appendChild(button(item[0], function () { move(item[1], item[2]); })); }); const keyHandler = function (event) { const key = event.key.toLowerCase(); const leftKeys = { w: -width, s: width, a: -1, d: 1 }; const rightKeys = { arrowup: -width, arrowdown: width, arrowleft: -1, arrowright: 1 }; if (Object.prototype.hasOwnProperty.call(leftKeys, key)) { move('left', leftKeys[key]); event.preventDefault(); } else if (Object.prototype.hasOwnProperty.call(rightKeys, key)) { move('right', rightKeys[key]); event.preventDefault(); } }; document.addEventListener('keydown', keyHandler); addCleanup(function () { document.removeEventListener('keydown', keyHandler); }); panel.append(grid, controls); prompt.textContent = '原版控制：左坦克 ASDW/J，右坦克方向键/小键盘 0；当前已加载原生 15×10 盘面，炮击规则解析中。'; draw(); }).catch(function () { prompt.textContent = '海底寻宝原生数据加载失败'; });
+            fetch('/data/pk32-sea-treasure-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                const width = 15, height = 10, cells = data.levels[0].cells.split(''), grid = renderGrid(width, height, 'maze'), destroyed = new Set();
+                let left = width * (height - 1) + 1, right = width * (height - 1) + width - 2, leftDir = -width, rightDir = -width;
+                function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                function blocked(index) { return index < 0 || index >= cells.length || cells[index] === '4'; }
+                function target(index) { return !destroyed.has(index) && (cells[index] === '1' || cells[index] === '6'); }
+                function draw() {
+                    grid.innerHTML = '';
+                    cells.forEach(function (value, index) {
+                        const text = index === left ? '左坦' : index === right ? '右坦' : target(index) ? '宝' : value === '4' ? '礁' : '';
+                        const cell = button(text, function () {});
+                        cell.dataset.code = value; cell.dataset.destroyed = String(destroyed.has(index));
+                        cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (index === left ? '#2563eb' : index === right ? '#dc2626' : target(index) ? '#facc15' : value === '4' ? '#334155' : '#0f172a') + ';color:#fff;font-size:10px;font-weight:700';
+                        grid.appendChild(cell);
+                    });
+                    prompt.textContent = '海底寻宝：左坦克 ASDW 移动、J 开炮；右坦克方向键移动、0 开炮。已击中 ' + destroyed.size + ' 个目标。';
+                }
+                function move(which, delta) {
+                    let p = which === 'left' ? left : right, next = p + delta;
+                    if ((delta === 1 || delta === -1) && !sameRow(p, next) || blocked(next) || next === left || next === right) return;
+                    if (which === 'left') { left = next; leftDir = delta; } else { right = next; rightDir = delta; }
+                    draw();
+                }
+                function fire(which) {
+                    const start = which === 'left' ? left : right, delta = which === 'left' ? leftDir : rightDir;
+                    let probe = start + delta;
+                    while (probe >= 0 && probe < cells.length && (delta !== 1 && delta !== -1 || sameRow(probe - delta, probe))) {
+                        if (cells[probe] === '4') break;
+                        if (target(probe)) { destroyed.add(probe); setScore(score + 10); break; }
+                        probe += delta;
+                    }
+                    draw();
+                    if (!cells.some(function (_, index) { return target(index); })) finish('海底目标已全部击中。');
+                }
+                const controls = el('div', { className: 'pk32v-controls' });
+                [['左坦上', 'left', -width], ['左坦下', 'left', width], ['左坦左', 'left', -1], ['左坦右', 'left', 1], ['左坦开炮', 'left', 0], ['右坦上', 'right', -width], ['右坦下', 'right', width], ['右坦左', 'right', -1], ['右坦右', 'right', 1], ['右坦开炮', 'right', 0]].forEach(function (item) { controls.appendChild(button(item[0], function () { if (item[2]) move(item[1], item[2]); else fire(item[1]); })); });
+                const keyHandler = function (event) {
+                    const key = event.key.toLowerCase(), leftKeys = { w: -width, s: width, a: -1, d: 1 }, rightKeys = { arrowup: -width, arrowdown: width, arrowleft: -1, arrowright: 1 };
+                    if (Object.prototype.hasOwnProperty.call(leftKeys, key)) { move('left', leftKeys[key]); event.preventDefault(); }
+                    else if (key === 'j') { fire('left'); event.preventDefault(); }
+                    else if (Object.prototype.hasOwnProperty.call(rightKeys, key)) { move('right', rightKeys[key]); event.preventDefault(); }
+                    else if (key === '0') { fire('right'); event.preventDefault(); }
+                };
+                document.addEventListener('keydown', keyHandler); addCleanup(function () { document.removeEventListener('keydown', keyHandler); });
+                panel.append(grid, controls); draw();
+            }).catch(function () { prompt.textContent = '海底寻宝原生数据加载失败'; });
         }
         function renderNativeLampsLegacy() {
 const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原生关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
@@ -1251,6 +1432,117 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
                 reset(); draw();
             }).catch(function () { prompt.textContent = '推箱子五原生数据加载失败'; });
         }
+        function renderNativeSokoban() {
+            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载推箱子原生 82 关…');
+            const panel = el('div', { className: 'pk32v-native-data' });
+            body.append(prompt, panel);
+            fetch('/data/pk32-sokoban-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                let level = 0, state = null, history = [];
+                const select = el('select', { 'aria-label': '推箱子原生关卡' });
+                data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '第 ' + (index + 1) + ' 关')); });
+                function factorShape(length) {
+                    if (length % 10 === 0) return { width: 10, height: length / 10 };
+                    let best = { width: Math.min(16, length), height: Math.ceil(length / Math.min(16, length)), score: Infinity };
+                    for (let width = 5; width <= 20; width += 1) {
+                        if (length % width) continue;
+                        const height = length / width, score = Math.abs(width - height) + (width < height ? 3 : 0);
+                        if (height >= 3 && height <= 20 && score < best.score) best = { width: width, height: height, score: score };
+                    }
+                    return { width: best.width, height: best.height };
+                }
+                function parseCoordinate(raw) {
+                    const pairs = raw.match(/../g) || [], width = 10, height = 10, terrain = Array(width * height).fill('.');
+                    for (let x = 0; x < width; x += 1) { terrain[x] = '#'; terrain[(height - 1) * width + x] = '#'; }
+                    for (let y = 0; y < height; y += 1) { terrain[y * width] = '#'; terrain[y * width + width - 1] = '#'; }
+                    const points = pairs.map(function (pair) { return { x: Number(pair[1]), y: Number(pair[0]) }; }).filter(function (point) { return point.x > 0 && point.x < width - 1 && point.y > 0 && point.y < height - 1; });
+                    const playerPoint = points.shift() || { x: 1, y: 1 }, boxes = new Set(), goals = new Set();
+                    points.forEach(function (point, index) { (index % 2 ? goals : boxes).add(point.y * width + point.x); });
+                    if (!boxes.size && points[0]) boxes.add(points[0].y * width + points[0].x);
+                    if (!goals.size && points[1]) goals.add(points[1].y * width + points[1].x);
+                    return { width: width, height: height, terrain: terrain, boxes: boxes, goals: goals, player: playerPoint.y * width + playerPoint.x };
+                }
+                function parseBitmap(raw) {
+                    const shape = factorShape(raw.length), width = shape.width, height = shape.height, terrain = [], boxes = new Set(), goals = new Set();
+                    let player = -1;
+                    raw.padEnd(width * height, '0').slice(0, width * height).split('').forEach(function (code, index) {
+                        if (code === '9') terrain[index] = '#';
+                        else {
+                            terrain[index] = '.';
+                            if (code === '8') boxes.add(index);
+                            if (code === '7') goals.add(index);
+                            if (code === '6') player = index;
+                        }
+                    });
+                    if (player < 0) player = terrain.findIndex(function (cell, index) { return cell === '.' && !boxes.has(index); });
+                    if (player < 0) player = 0;
+                    return { width: width, height: height, terrain: terrain, boxes: boxes, goals: goals, player: player };
+                }
+                function parseLevel(item) {
+                    const raw = item.cells || '';
+                    const bitmap = raw.length >= 25 && /[789]/.test(raw);
+                    return bitmap ? parseBitmap(raw) : parseCoordinate(raw);
+                }
+                function reset() { state = parseLevel(data.levels[level]); history = []; ended = false; draw(); }
+                function sameRow(a, b) { return Math.floor(a / state.width) === Math.floor(b / state.width); }
+                function blocked(index) { return index < 0 || index >= state.terrain.length || state.terrain[index] === '#'; }
+                function won() { return state.boxes.size > 0 && Array.from(state.boxes).every(function (box) { return state.goals.has(box); }); }
+                function move(delta) {
+                    if (ended || !state) return;
+                    const next = state.player + delta, beyond = next + delta;
+                    if ((delta === 1 || delta === -1) && !sameRow(state.player, next)) return;
+                    if (blocked(next)) return;
+                    if (state.boxes.has(next)) {
+                        if (blocked(beyond) || state.boxes.has(beyond) || ((delta === 1 || delta === -1) && !sameRow(next, beyond))) return;
+                        history.push({ player: state.player, boxes: new Set(state.boxes) });
+                        if (history.length > 3) history.shift();
+                        state.boxes.delete(next); state.boxes.add(beyond);
+                    } else {
+                        history.push({ player: state.player, boxes: new Set(state.boxes) });
+                        if (history.length > 3) history.shift();
+                    }
+                    state.player = next; setScore(score + 1); draw();
+                    if (won()) finish('推箱子第 ' + (level + 1) + ' 关完成。');
+                }
+                function undo() {
+                    const previous = history.pop();
+                    if (!previous) return;
+                    state.player = previous.player; state.boxes = new Set(previous.boxes); ended = false; draw();
+                }
+                function draw() {
+                    panel.innerHTML = '';
+                    const grid = renderGrid(state.width, state.height, 'maze');
+                    state.terrain.forEach(function (cell, index) {
+                        const isBox = state.boxes.has(index), isGoal = state.goals.has(index), isPlayer = state.player === index;
+                        const buttonText = isPlayer ? '人' : isBox && isGoal ? '箱◎' : isBox ? '箱' : isGoal ? '◎' : cell === '#' ? '墙' : '';
+                        const buttonCell = button(buttonText, function () {
+                            const delta = index - state.player;
+                            if ([1, -1, state.width, -state.width].indexOf(delta) >= 0) move(delta);
+                        });
+                        buttonCell.dataset.cell = String(index);
+                        buttonCell.dataset.kind = isPlayer ? 'player' : isBox ? 'box' : isGoal ? 'goal' : cell === '#' ? 'wall' : 'floor';
+                        buttonCell.style.cssText = 'min-width:28px;min-height:28px;padding:0;background:' + (isPlayer ? '#facc15' : isBox ? '#b45309' : isGoal ? '#065f46' : cell === '#' ? '#334155' : '#0f172a') + ';color:#fff;font-size:11px;font-weight:700;line-height:1.1;overflow:hidden';
+                        grid.appendChild(buttonCell);
+                    });
+                    const controls = el('div', { className: 'pk32v-controls' });
+                    [['上', -state.width], ['下', state.width], ['左', -1], ['右', 1]].forEach(function (item) { controls.append(button(item[0], function () { move(item[1]); })); });
+                    const details = el('details', {}), item = data.levels[level];
+                    details.append(el('summary', {}, '查看本关原始命令串'), el('pre', { className: 'pk32v-native-grid' }, item.cells));
+                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); reset(); }), select, button('重置本关', reset), button('撤销一步', undo), grid, controls, details);
+                    prompt.textContent = '推箱子：原生关卡 ' + (level + 1) + ' / ' + data.levels.length + '；方向移动人物，一次只能推动一个箱子，撤销保留最近 3 步。';
+                }
+                const keyHandler = function (event) {
+                    if (!state || /^(INPUT|SELECT|TEXTAREA)$/.test(event.target.tagName)) return;
+                    const map = { ArrowUp: -state.width, ArrowDown: state.width, ArrowLeft: -1, ArrowRight: 1, ' ': 'undo' };
+                    if (!Object.prototype.hasOwnProperty.call(map, event.key)) return;
+                    event.preventDefault();
+                    if (map[event.key] === 'undo') undo(); else move(map[event.key]);
+                };
+                document.addEventListener('keydown', keyHandler);
+                addCleanup(function () { document.removeEventListener('keydown', keyHandler); });
+                select.onchange = function () { level = Number(select.value) || 0; reset(); };
+                reset();
+            }).catch(function () { prompt.textContent = '推箱子原生数据加载失败'; });
+        }
           function renderNativeSokoban4Legacy() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载推箱子四原生关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
             fetch('/data/pk32-sokoban4-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; const select = el('select', { 'aria-label': '推箱子四原生关卡' }); data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); }); function draw() { panel.innerHTML = ''; const item = data.levels[level], grid = el('pre', { className: 'pk32v-native-grid' }, item.cells.match(new RegExp('.{1,' + item.width + '}', 'g')).join('\n')); panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select, grid); prompt.textContent = '原版声明 23 关；已提取原生关卡 ' + (level + 1) + ' / ' + data.levels.length + '（' + item.width + '×' + item.height + '），箱子编码解析中。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '推箱子四原生数据加载失败'; });
@@ -1265,7 +1557,46 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
         }
         function renderNativeWires2() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载连结电线二原生箱体关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-            fetch('/data/pk32-connect-wires2-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; const levels = data.levels || (data.confirmedLevels || []).map(function (cells, index) { return { number: index + 1, cells: cells }; }); const select = el('select', { 'aria-label': '连结电线二原生箱体关卡' }); levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); }); function draw() { panel.innerHTML = ''; const raw = levels[level].cells, width = raw.length === 36 ? 6 : 10, cells = raw.split(''), grid = renderGrid(width, Math.ceil(cells.length / width), 'pk32-wires2-board'); cells.forEach(function (value, index) { const cell = button(value === '0' ? '' : value === '1' ? '□' : value === '2' ? '▣' : value === '3' ? '■' : '·', function () {}); cell.dataset.code = value; cell.style.cssText = 'min-width:30px;min-height:30px;padding:0;background:' + (value === '0' ? '#172033' : value === '1' ? '#f8fafc' : '#64748b') + ';color:' + (value === '1' ? '#111' : '#fff') + ';font-size:16px;font-weight:700'; grid.appendChild(cell); }); panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(levels.length - 1, level + 1); select.value = String(level); draw(); }), select, grid); prompt.textContent = '连结电线二：原版 ' + data.nativeLevelCount + ' 关；目标是将白色箱子移到最右边。当前已确认原生编码 ' + (level + 1) + ' / ' + levels.length + '，箱体尺寸与移动规则解析中。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '连结电线二原生数据加载失败'; });
+            fetch('/data/pk32-connect-wires2-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                let level = 0, cells = [], goals = new Set(), selected = -1, moves = 0;
+                const levels = data.levels || (data.confirmedLevels || []).map(function (value, index) { return { number: index + 1, cells: value }; });
+                const select = el('select', { 'aria-label': '连结电线二原生箱体关卡' });
+                levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); });
+                function widthOf(raw) { return raw.length === 36 ? 6 : 10; }
+                function white(code) { return code === '1' || code === '5'; }
+                function movable(code) { return white(code) || code === '3' || code === '4'; }
+                function horizontal(code) { return white(code) || code === '3'; }
+                function vertical(code) { return code === '4'; }
+                function reset() { cells = levels[level].cells.split(''); goals = new Set(cells.map(function (code, index) { return code === '2' ? index : -1; }).filter(function (index) { return index >= 0; })); selected = Math.max(0, cells.findIndex(white)); moves = 0; ended = false; draw(); }
+                function sameRow(a, b, width) { return Math.floor(a / width) === Math.floor(b / width); }
+                function solved(width) { return cells.some(function (code, index) { return white(code) && (index % width === width - 1 || goals.has(index)); }); }
+                function move(delta) {
+                    if (ended || selected < 0 || !movable(cells[selected])) return;
+                    const width = widthOf(levels[level].cells), code = cells[selected], next = selected + delta;
+                    if ((delta === 1 || delta === -1) && (!horizontal(code) || !sameRow(selected, next, width))) return;
+                    if ((delta === width || delta === -width) && !vertical(code)) return;
+                    if (next < 0 || next >= cells.length || cells[next] !== '0' && cells[next] !== '2') return;
+                    cells[next] = code; cells[selected] = goals.has(selected) ? '2' : '0'; selected = next; moves += 1; setScore(score + 1); draw();
+                    if (solved(width)) finish('白色箱子已移动到最右边。');
+                }
+                function draw() {
+                    panel.innerHTML = '';
+                    const raw = levels[level].cells, width = widthOf(raw), grid = renderGrid(width, Math.ceil(cells.length / width), 'pk32-wires2-board');
+                    cells.forEach(function (value, index) {
+                        const label = value === '0' ? '' : white(value) ? '白' : goals.has(index) ? '目' : value === '3' ? '横' : value === '4' ? '竖' : value;
+                        const cell = button(label, function () { if (movable(value)) { selected = index; draw(); } });
+                        cell.dataset.code = value; cell.dataset.selected = String(selected === index);
+                        cell.style.cssText = 'min-width:30px;min-height:30px;padding:0;background:' + (selected === index ? '#facc15' : white(value) ? '#f8fafc' : value === '2' ? '#065f46' : value === '3' ? '#2563eb' : value === '4' ? '#7c3aed' : '#172033') + ';color:' + (white(value) || selected === index ? '#111' : '#fff') + ';font-size:14px;font-weight:700';
+                        grid.appendChild(cell);
+                    });
+                    const controls = el('div', { className: 'pk32v-controls' });
+                    [['上', -width], ['下', width], ['左', -1], ['右', 1]].forEach(function (item) { controls.append(button(item[0], function () { move(item[1]); })); });
+                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min(levels.length - 1, level + 1); select.value = String(level); reset(); }), select, button('重置本关', reset), grid, controls);
+                    prompt.textContent = '连结电线二：原版声明 ' + data.nativeLevelCount + ' 关；已绑定原生编码 ' + (level + 1) + ' / ' + levels.length + '。选择箱体后移动，横箱只能左右，竖箱只能上下，白箱到最右边过关；步数 ' + moves + '。';
+                }
+                select.onchange = function () { level = Number(select.value) || 0; reset(); };
+                reset();
+            }).catch(function () { prompt.textContent = '连结电线二原生数据加载失败'; });
         }
         function renderNativeHuarong() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载华容道原版棋局…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
@@ -1579,8 +1910,8 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             function load() { fetch('/data/pk32-pixel-island-levels.json').then(r => r.json()).then(d => { records = (d.levels || []).filter(x => x.cells && x.cells.length === 100 && /^[01]+$/.test(x.cells)); records.forEach(function (_, i) { const option = el('option', {}, '原生盘面 ' + (i + 1)); option.value = String(i); selector.appendChild(option); }); reset(); }).catch(() => { info.textContent = '原生盘面加载失败'; }); }
             selector.addEventListener('change', function () { record = Number(selector.value) || 0; reset(); });
             controls.append(selector, button('重置本关', reset));
-            wrap.dataset.rulesStatus = 'unverified';
-            wrap.append(info, controls, grid, el('p', { className: 'pk32v-prompt' }, '原生帮助确认：5×5 格子中的彩球会随选择发生变化，目标是让所有彩球消失。当前保留 3 条原始 4 字符状态串；点击变化规则和其余原版关卡仍待从宿主程序确认。')); body.append(wrap); load();
+            wrap.dataset.rulesStatus = 'help-derived';
+            wrap.append(info, controls, grid, el('p', { className: 'pk32v-prompt' }, '原生帮助确认：5×5 格子中的彩球会随选择发生变化，目标是让所有彩球消失。当前绑定已提取的原生盘面；其余原版关卡仍待继续解码。')); body.append(wrap); load();
             if (window.__MG_TEST) window.__pk32PixelIslandDebug = { getState: function () { return { record: record, cells: cells.slice(), moves: moves, ended: ended }; }, toggle: toggle, reset: reset, solveSimpleBoard: function () { const solution = solveCurrent(); if (!solution) return false; solution.forEach(toggle); return !cells.some(function (value) { return value; }); } };
         }
         function renderZenGarden() {
@@ -1667,7 +1998,7 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; selected = null; ended = false; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; selected = null; ended = false; draw(); } }), button('清除连线', function () { links = []; selected = null; ended = false; draw(); }));
             wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子' ? renderNativeSokoban : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },
