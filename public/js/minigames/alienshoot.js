@@ -1,7 +1,9 @@
 // 孤胆枪手：俯视角射击，持枪扫射异形潮，击杀配额推进关卡
+// 大地图版：草地地表 + 散布建筑（带碰撞）+ 相机跟随玩家滚动
 window.MiniGames = window.MiniGames || {};
 (function () {
     const W = 420, H = 560;
+    const WORLD_W = 1260, WORLD_H = 1680;          // 大地图：约 3×3 个屏幕
     const NAMES = ['前哨遇袭', '隧道清剿', '巢穴深入', '钢铁风暴'];
     const lv = [];
     for (let i = 0; i < 50; i++) {
@@ -16,6 +18,15 @@ window.MiniGames = window.MiniGames || {};
         else { const k = 1 + amt; r *= k; g *= k; b *= k; }
         return `rgb(${r | 0},${g | 0},${b | 0})`;
     }
+    // 确定性随机（让每关的地图布局稳定不抖动）
+    function mulberry32(a) {
+        return function () {
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            let t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
 
     MiniGames.alienshoot = {
         LEVELS: lv,
@@ -24,15 +35,16 @@ window.MiniGames = window.MiniGames || {};
             const quota = 10 + idx * 2;
             const spawnInt = Math.max(0.42, 1.25 - idx * 0.016);
             const spd = 52 + idx * 1.4;
-            let px = W / 2, py = H / 2, hp = 100, kills = 0, over = false, t = 0;
+            let px = WORLD_W / 2, py = WORLD_H / 2, hp = 100, kills = 0, over = false, t = 0;
             let aliens = [], bullets = [], parts = [], pickups = [], decals = [], shake = 0;
-            let aim = { x: W / 2, y: 0 }, firing = false, cool = 0, spawnT = 0, wave = 0;
-            let score = 0;
+            const cam = { x: px - W / 2, y: py - H / 2 };
+            let aimScreen = { x: W / 2, y: H / 2 };   // 准星（屏幕坐标），世界目标 = 屏幕 + 相机
+            let firing = false, cool = 0, spawnT = 0, wave = 0, score = 0;
             // 移动：键盘 + 移动端左半屏虚拟摇杆
             const keys = new Set();
-            let mvx = 0, mvy = 0, walkT = 0, muzzle = 0;
+            let walkT = 0, muzzle = 0;
             let joyId = null, joyOx = 0, joyOy = 0, joyVx = 0, joyVy = 0;
-            let joyCX = 0, joyCY = 0, isTouch = false;   // 摇杆绘制（画布坐标）与触屏标记
+            let joyCX = 0, joyCY = 0, isTouch = false;   // 摇杆绘制（屏幕坐标）与触屏标记
 
             container.innerHTML = '';
             const cvs = document.createElement('canvas');
@@ -45,18 +57,61 @@ window.MiniGames = window.MiniGames || {};
                 if (over) return; over = true; clearInterval(timer);
                 opts.onComplete && opts.onComplete({ win, stars: win ? (hp >= 80 ? 3 : hp >= 45 ? 2 : 1) : 0, lines });
             };
+
+            // ---- 大地图：建筑 + 地表细节（确定性生成，随关卡布局变化） ----
+            const buildings = [];
+            const grass = [];
+            const rng = mulberry32(1337 + idx * 97);
+            (function genWorld() {
+                const types = ['bunker', 'barracks', 'tent', 'crate', 'sandbag'];
+                const n = 8 + (idx % 4);
+                let placed = 0, guard = 0;
+                while (placed < n && guard++ < 200) {
+                    const w = 64 + rng() * 86, h = 54 + rng() * 66;
+                    const x = 50 + rng() * (WORLD_W - 100 - w);
+                    const y = 50 + rng() * (WORLD_H - 100 - h);
+                    const cx = x + w / 2, cy = y + h / 2;
+                    if (Math.abs(cx - WORLD_W / 2) < 160 && Math.abs(cy - WORLD_H / 2) < 160) continue; // 避开出生点
+                    buildings.push({ x, y, w, h, type: types[(rng() * types.length) | 0] });
+                    placed++;
+                }
+                // 地表：草叶 / 泥斑 / 碎石（散布整个世界，仅绘制可见部分）
+                const m = 1500;
+                for (let i = 0; i < m; i++) {
+                    const gx = rng() * WORLD_W, gy = rng() * WORLD_H;
+                    const k = rng();
+                    const type = k < 0.55 ? 'blade' : k < 0.8 ? 'dirt' : 'rock';
+                    const s = type === 'blade' ? 3 + rng() * 4 : type === 'dirt' ? 5 + rng() * 12 : 1.5 + rng() * 2.5;
+                    grass.push({ x: gx, y: gy, type, s, tone: rng() });
+                }
+            })();
+
+            // 把对象 o（含 x,y）推出建筑 AABB（简单最小穿透轴回弹）
+            function collide(o, r) {
+                for (const b of buildings) {
+                    const ex0 = b.x - r, ey0 = b.y - r, ex1 = b.x + b.w + r, ey1 = b.y + b.h + r;
+                    if (o.x > ex0 && o.x < ex1 && o.y > ey0 && o.y < ey1) {
+                        const dl = o.x - ex0, dr = ex1 - o.x, dt = o.y - ey0, db = ey1 - o.y;
+                        const mm = Math.min(dl, dr, dt, db);
+                        if (mm === dl) o.x = ex0; else if (mm === dr) o.x = ex1;
+                        else if (mm === dt) o.y = ey0; else o.y = ey1;
+                    }
+                }
+            }
+
             function spawn() {
                 wave++;
                 const boss = wave % Math.max(3, 8 - Math.floor(idx / 10)) === 0;
-                const edge = MG.ri(0, 3);
-                let x, y;
-                if (edge === 0) { x = MG.ri(0, W); y = -20; }
-                else if (edge === 1) { x = W + 20; y = MG.ri(0, H); }
-                else if (edge === 2) { x = MG.ri(0, W); y = H + 20; }
-                else { x = -20; y = MG.ri(0, H); }
+                const ang = Math.random() * Math.PI * 2;
+                const dist = Math.max(W, H) * 0.64;   // 在视口外环绕生成（像原版跟着玩家刷怪）
+                let x = px + Math.cos(ang) * dist, y = py + Math.sin(ang) * dist;
+                x = Math.max(20, Math.min(WORLD_W - 20, x));
+                y = Math.max(20, Math.min(WORLD_H - 20, y));
                 const type = boss ? 'tank' : Math.random() < 0.25 ? 'runner' : 'grunt';
                 const st = { grunt: { r: 13, hp: 1, v: spd, c: '#7fae4a' }, runner: { r: 10, hp: 1, v: spd * 1.7, c: '#d8c24a' }, tank: { r: 22, hp: 5 + Math.floor(idx / 12), v: spd * 0.55, c: '#b04ad8' } }[type];
-                aliens.push({ x, y, type, ...st, maxHp: st.hp, hitT: 0 });
+                const a = { x, y, type, ...st, maxHp: st.hp, hitT: 0 };
+                collide(a, st.r);
+                aliens.push(a);
             }
             function boom(x, y, c) {
                 for (let k = 0; k < 10; k++) parts.push({ x, y, vx: (Math.random() - 0.5) * 280, vy: (Math.random() - 0.5) * 280, life: 0.5, c });
@@ -76,13 +131,18 @@ window.MiniGames = window.MiniGames || {};
                 const dl = Math.hypot(dx, dy);
                 if (dl > 1) { dx /= dl; dy /= dl; }
                 if (dl > 0.01) {
-                    px = Math.max(16, Math.min(W - 16, px + dx * 175 * dt));
-                    py = Math.max(16, Math.min(H - 16, py + dy * 175 * dt));
+                    px = Math.max(16, Math.min(WORLD_W - 16, px + dx * 175 * dt));
+                    py = Math.max(16, Math.min(WORLD_H - 16, py + dy * 175 * dt));
                     walkT += dt * 11;
                 } else walkT += dt * 2.2;
-                // 射击
+                const P = { x: px, y: py }; collide(P, 14); px = P.x; py = P.y;   // 建筑碰撞
+                // 相机跟随（夹在世界范围内）
+                cam.x = Math.max(0, Math.min(WORLD_W - W, px - W / 2));
+                cam.y = Math.max(0, Math.min(WORLD_H - H, py - H / 2));
+                // 射击（目标 = 屏幕准星 + 相机）
+                const aimWX = aimScreen.x + cam.x, aimWY = aimScreen.y + cam.y;
                 if (firing && cool <= 0) {
-                    const a = Math.atan2(aim.y - py, aim.x - px);
+                    const a = Math.atan2(aimWY - py, aimWX - px);
                     bullets.push({ x: px + Math.cos(a) * 22, y: py + Math.sin(a) * 22, vx: Math.cos(a) * 620, vy: Math.sin(a) * 620 });
                     cool = 0.13; muzzle = 0.06;
                 }
@@ -91,7 +151,7 @@ window.MiniGames = window.MiniGames || {};
                 for (let i = bullets.length - 1; i >= 0; i--) {
                     const b = bullets[i];
                     b.x += b.vx * dt; b.y += b.vy * dt;
-                    if (b.x < -10 || b.x > W + 10 || b.y < -10 || b.y > H + 10) { bullets.splice(i, 1); continue; }
+                    if (b.x < -40 || b.x > WORLD_W + 40 || b.y < -40 || b.y > WORLD_H + 40 || Math.hypot(b.x - px, b.y - py) > 1100) { bullets.splice(i, 1); continue; }
                     for (let j = aliens.length - 1; j >= 0; j--) {
                         const a = aliens[j];
                         if (Math.hypot(a.x - b.x, a.y - b.y) < a.r) {
@@ -113,6 +173,7 @@ window.MiniGames = window.MiniGames || {};
                 for (const a of aliens) {
                     const d = Math.hypot(px - a.x, py - a.y) || 1;
                     a.x += (px - a.x) / d * a.v * dt; a.y += (py - a.y) / d * a.v * dt;
+                    collide(a, a.r);
                     a.hitT -= dt;
                     if (d < a.r + 12) {
                         hp -= (a.type === 'tank' ? 18 : 8) * dt * 3.2;
@@ -133,40 +194,108 @@ window.MiniGames = window.MiniGames || {};
                 draw();
                 opts.onScore && opts.onScore(`击杀 ${kills}/${quota} · HP ${Math.max(0, Math.round(hp))}`);
             }
-            function draw() {
-                const g = ctx.createLinearGradient(0, 0, W, H);
-                g.addColorStop(0, '#20262f'); g.addColorStop(1, '#0a0d12');
-                ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-                // 受击抖动（只作用于战场，不影响 HUD）
-                ctx.save();
-                if (shake > 0) { ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake); shake = Math.max(0, shake - 0.7); }
-                // 地面瓷砖（混凝土质感，低对比）
-                const T = 42;
-                for (let y = 0; y < H; y += T) for (let x = 0; x < W; x += T) {
-                    ctx.fillStyle = ((x / T + y / T) & 1) ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.14)';
-                    ctx.fillRect(x, y, T, T);
+
+            function drawBuilding(b) {
+                const { x, y, w, h, type } = b;
+                // 落地阴影
+                ctx.fillStyle = 'rgba(0,0,0,0.26)';
+                ctx.fillRect(x + 4, y + 5, w, h);
+                if (type === 'crate') {
+                    ctx.fillStyle = '#7a5a32'; ctx.fillRect(x, y, w, h);
+                    ctx.strokeStyle = '#3c2c18'; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+                    ctx.strokeStyle = 'rgba(60,40,20,0.7)'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + w, y + h); ctx.moveTo(x + w, y); ctx.lineTo(x, y + h); ctx.stroke();
+                    ctx.fillStyle = 'rgba(255,220,160,0.15)'; ctx.fillRect(x + 2, y + 2, w - 4, 4);
+                } else if (type === 'sandbag') {
+                    for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) {
+                        const bx = x + i * (w / 3), by = y + j * (h / 2);
+                        ctx.fillStyle = (i + j) % 2 ? '#9a8a5e' : '#86784f';
+                        ctx.beginPath(); ctx.ellipse(bx + w / 6, by + h / 4, w / 6, h / 4, 0, 0, Math.PI * 2); ctx.fill();
+                        ctx.strokeStyle = 'rgba(40,35,20,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+                    }
+                } else {
+                    // 墙体
+                    const wg = ctx.createLinearGradient(x, y, x, y + h);
+                    wg.addColorStop(0, '#8a8276'); wg.addColorStop(1, '#5f584c');
+                    ctx.fillStyle = wg; ctx.fillRect(x, y, w, h);
+                    ctx.strokeStyle = '#3a352c'; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+                    // 屋顶
+                    ctx.fillStyle = type === 'tent' ? '#6b7d4a' : (type === 'bunker' ? '#4d5560' : '#7a6f5a');
+                    const inset = type === 'bunker' ? 8 : type === 'tent' ? 0 : 10;
+                    ctx.fillRect(x + inset, y + inset, w - inset * 2, h - inset * 2);
+                    // 门
+                    ctx.fillStyle = '#2a261f';
+                    const dw = Math.min(20, w * 0.3), dh = Math.min(22, h * 0.4);
+                    ctx.fillRect(x + w / 2 - dw / 2, y + h - dh, dw, dh);
+                    // 窗
+                    if (type !== 'tent') {
+                        ctx.fillStyle = '#1c2a30';
+                        const ww = Math.min(14, w * 0.25), wh = Math.min(14, h * 0.25);
+                        ctx.fillRect(x + 8, y + 8, ww, wh);
+                        ctx.fillRect(x + w - 8 - ww, y + 8, ww, wh);
+                    }
+                    // 顶部高光
+                    ctx.strokeStyle = 'rgba(255,240,210,0.18)'; ctx.lineWidth = 1.5;
+                    ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
                 }
-                ctx.strokeStyle = 'rgba(120,140,170,.08)'; ctx.lineWidth = 1;
-                for (let x = 0; x <= W; x += T) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-                for (let y = 0; y <= H; y += T) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-                // 边角应急红光（原版地下设施氛围）
-                let rg2 = ctx.createRadialGradient(0, 0, 10, 0, 0, 170);
-                rg2.addColorStop(0, 'rgba(190,45,32,0.20)'); rg2.addColorStop(1, 'rgba(190,45,32,0)');
-                ctx.fillStyle = rg2; ctx.fillRect(0, 0, 180, 180);
-                rg2 = ctx.createRadialGradient(W, H, 10, W, H, 170);
-                rg2.addColorStop(0, 'rgba(190,45,32,0.16)'); rg2.addColorStop(1, 'rgba(190,45,32,0)');
-                ctx.fillStyle = rg2; ctx.fillRect(W - 180, H - 180, 180, 180);
-                // 零星碎石/弹痕（增加地面细节）
-                ctx.fillStyle = 'rgba(255,255,255,0.04)';
-                for (let i = 0; i < 18; i++) { const rx = (i * 97) % W, ry = (i * 53) % H; ctx.beginPath(); ctx.arc(rx, ry, 1.4 + (i % 3), 0, Math.PI * 2); ctx.fill(); }
+            }
+
+            function draw() {
+                // 屏幕底色（战场外）
+                ctx.fillStyle = '#0a0d12'; ctx.fillRect(0, 0, W, H);
+
+                const aimWX = aimScreen.x + cam.x, aimWY = aimScreen.y + cam.y;
+
+                ctx.save();
+                // 相机 + 受击抖动
+                const shx = shake > 0 ? (Math.random() - 0.5) * shake : 0;
+                const shy = shake > 0 ? (Math.random() - 0.5) * shake : 0;
+                if (shake > 0) shake = Math.max(0, shake - 0.7);
+                ctx.translate(-cam.x + shx, -cam.y + shy);
+
+                // 可见区域（世界坐标）
+                const vx0 = cam.x, vy0 = cam.y, vx1 = cam.x + W, vy1 = cam.y + H;
+
+                // 草地底色
+                const gg = ctx.createLinearGradient(0, vy0, 0, vy1);
+                gg.addColorStop(0, '#3f5a32'); gg.addColorStop(1, '#324827');
+                ctx.fillStyle = gg; ctx.fillRect(vx0, vy0, W, H);
+
+                // 地表细节（仅可见）
+                for (const d of grass) {
+                    if (d.x < vx0 - 20 || d.x > vx1 + 20 || d.y < vy0 - 20 || d.y > vy1 + 20) continue;
+                    if (d.type === 'blade') {
+                        ctx.strokeStyle = d.tone < 0.5 ? 'rgba(125,165,82,0.5)' : 'rgba(88,128,58,0.5)';
+                        ctx.lineWidth = 1.2;
+                        ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + (d.tone - 0.5) * 3, d.y - d.s); ctx.stroke();
+                    } else if (d.type === 'dirt') {
+                        ctx.fillStyle = 'rgba(92,70,44,0.32)';
+                        ctx.beginPath(); ctx.ellipse(d.x, d.y, d.s, d.s * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+                    } else {
+                        ctx.fillStyle = 'rgba(150,150,140,0.4)';
+                        ctx.beginPath(); ctx.arc(d.x, d.y, d.s, 0, Math.PI * 2); ctx.fill();
+                    }
+                }
+
+                // 世界边界（石墙围栏）
+                ctx.strokeStyle = 'rgba(60,55,45,0.9)'; ctx.lineWidth = 6;
+                ctx.strokeRect(0, 0, WORLD_W, WORLD_H);
+                ctx.strokeStyle = 'rgba(120,110,90,0.45)'; ctx.lineWidth = 2;
+                ctx.strokeRect(3, 3, WORLD_W - 6, WORLD_H - 6);
+
+                // 建筑
+                for (const b of buildings) drawBuilding(b);
+
                 // 地面血迹（持久）
-                for (const d of decals) { ctx.globalAlpha = d.a; ctx.fillStyle = '#641c22'; ctx.beginPath(); ctx.ellipse(d.x, d.y, d.r, d.r * 0.66, 0, 0, Math.PI * 2); ctx.fill(); }
+                for (const d of decals) { ctx.globalAlpha = d.a; ctx.fillStyle = '#5e1c20'; ctx.beginPath(); ctx.ellipse(d.x, d.y, d.r, d.r * 0.66, 0, 0, Math.PI * 2); ctx.fill(); }
                 ctx.globalAlpha = 1;
+
                 // 血包
                 for (const p of pickups) {
-                    ctx.fillStyle = '#5ad48a'; ctx.font = '16px sans-serif'; ctx.textAlign = 'center';
-                    ctx.fillText('✚', p.x, p.y + 6);
+                    ctx.fillStyle = 'rgba(90,212,138,0.18)'; ctx.beginPath(); ctx.arc(p.x, p.y, 12, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#5ad48a'; ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('✚', p.x, p.y + 6);
                 }
+
                 // 异形（俯视：地面能量辉光 + 落地阴影 + 身体渐变 + 红眼辉光 + 利爪/背刺/触须）
                 for (const a of aliens) {
                     const ea = Math.atan2(py - a.y, px - a.x);
@@ -259,6 +388,7 @@ window.MiniGames = window.MiniGames || {};
                         ctx.fillStyle = '#e94f4f'; ctx.fillRect(a.x - a.r, a.y - a.r - 9, a.r * 2 * (a.hp / a.maxHp), 4);
                     }
                 }
+
                 // 子弹：曳光弹（拖尾 + 亮头）
                 for (const b of bullets) {
                     const sp = Math.hypot(b.vx, b.vy) || 1, ux = b.vx / sp, uy = b.vy / sp;
@@ -273,21 +403,42 @@ window.MiniGames = window.MiniGames || {};
                     else { ctx.fillStyle = p.c; ctx.fillRect(p.x - 2, p.y - 2, 4, 4); }
                 }
                 ctx.globalAlpha = 1;
-                // 暗角（聚焦战场中心，原版幽暗设施感）
-                const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.30, W / 2, H / 2, H * 0.74);
-                vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.55)');
-                ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-                // 玩家：俯视士兵（影子 → 摆腿 → 身体防弹背心 → 双手持枪 → 头盔 → 枪口焰）
-                const ang = Math.atan2(aim.y - py, aim.x - px);
+
                 // 枪口闪光照亮周围（场景级暖光）
                 if (muzzle > 0) {
+                    const ang = Math.atan2(aimWY - py, aimWX - px);
                     const mx = px + Math.cos(ang) * 33, my = py + Math.sin(ang) * 33;
                     const mg = ctx.createRadialGradient(mx, my, 2, mx, my, 64);
                     mg.addColorStop(0, 'rgba(255,225,140,0.35)'); mg.addColorStop(1, 'rgba(255,180,60,0)');
                     ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(mx, my, 64, 0, Math.PI * 2); ctx.fill();
                 }
-                drawSoldier(px, py, ang);
-                ctx.restore();  // 结束战场抖动包裹
+                // 玩家：俯视士兵
+                drawSoldier(px, py, Math.atan2(aimWY - py, aimWX - px));
+
+                ctx.restore();  // 结束相机/抖动包裹
+
+                // ===== 屏幕 HUD =====
+                // 轻微暗角（聚焦战场中心）
+                const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.36, W / 2, H / 2, H * 0.78);
+                vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.34)');
+                ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+
+                // 小地图（右上角）
+                const MM = 92, mx0 = W - MM - 8, my0 = 8, sx = MM / WORLD_W, sy = MM / WORLD_H;
+                ctx.fillStyle = 'rgba(8,16,10,0.66)'; ctx.fillRect(mx0, my0, MM, MM);
+                ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1; ctx.strokeRect(mx0 + .5, my0 + .5, MM - 1, MM - 1);
+                ctx.fillStyle = '#6b6356';
+                for (const b of buildings) ctx.fillRect(mx0 + b.x * sx, my0 + b.y * sy, Math.max(1, b.w * sx), Math.max(1, b.h * sy));
+                ctx.fillStyle = 'rgba(255,91,91,0.9)';
+                for (const a of aliens) ctx.fillRect(mx0 + a.x * sx - 1, my0 + a.y * sy - 1, 2, 2);
+                ctx.fillStyle = '#ff8b3b';
+                for (const p of pickups) ctx.fillRect(mx0 + p.x * sx - 1, my0 + p.y * sy - 1, 2, 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1;
+                ctx.strokeRect(mx0 + cam.x * sx, my0 + cam.y * sy, W * sx, H * sy);
+                ctx.fillStyle = '#7dff7d'; ctx.fillRect(mx0 + px * sx - 1.5, my0 + py * sy - 1.5, 3, 3);
+                ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '9px sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText('地图', mx0 + 2, my0 + MM - 4);
+
                 // 触屏常驻提示：左下移动区 / 右下射击区
                 if (isTouch) {
                     ctx.save();
@@ -315,17 +466,27 @@ window.MiniGames = window.MiniGames || {};
                     ctx.strokeStyle = '#dceaff'; ctx.lineWidth = 2; ctx.stroke();
                     ctx.restore();
                 }
+                // 准星（屏幕坐标）
+                ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(aimScreen.x, aimScreen.y, 8, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(aimScreen.x - 12, aimScreen.y); ctx.lineTo(aimScreen.x - 4, aimScreen.y);
+                ctx.moveTo(aimScreen.x + 4, aimScreen.y); ctx.lineTo(aimScreen.x + 12, aimScreen.y);
+                ctx.moveTo(aimScreen.x, aimScreen.y - 12); ctx.lineTo(aimScreen.x, aimScreen.y - 4);
+                ctx.moveTo(aimScreen.x, aimScreen.y + 4); ctx.lineTo(aimScreen.x, aimScreen.y + 12);
+                ctx.stroke();
                 // 开场操作提示
                 if (t < 4) {
                     ctx.globalAlpha = Math.min(1, (4 - t) / 1.2);
-                    ctx.fillStyle = '#cfe3ff'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-                    ctx.fillText('WASD / 方向键 移动 · 鼠标瞄准按住扫射（手机：左半屏移动，右半屏射击）', W / 2, H - 14);
+                    ctx.fillStyle = '#cfe3ff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('WASD/方向键移动（大地图·右上小地图）· 鼠标瞄准按住扫射', W / 2, H - 14);
                     ctx.globalAlpha = 1;
                 }
                 // 血条
                 ctx.fillStyle = '#333'; ctx.fillRect(8, 8, 120, 10);
                 ctx.fillStyle = hp > 40 ? '#5ad48a' : '#ff7b7b'; ctx.fillRect(8, 8, 120 * Math.max(0, hp / 100), 10);
             }
+
             function drawSoldier(x, y, ang) {
                 // 影子
                 ctx.beginPath(); ctx.ellipse(x, y + 5, 14, 7, 0, 0, Math.PI * 2);
@@ -393,9 +554,10 @@ window.MiniGames = window.MiniGames || {};
                 }
                 ctx.restore();
             }
+
             function setPos(e) {
                 const r = cvs.getBoundingClientRect();
-                aim = { x: (e.clientX - r.left) * (W / r.width), y: (e.clientY - r.top) * (H / r.height) };
+                aimScreen = { x: (e.clientX - r.left) * (W / r.width), y: (e.clientY - r.top) * (H / r.height) };
             }
             // 移动端：左半屏=移动摇杆，右半屏=瞄准开火；PC：WASD 移动，按住鼠标扫射
             let firingId = null;
