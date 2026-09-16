@@ -745,7 +745,10 @@ function writeDegraded(res, body, reason) {
     res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store',
-        'X-Tavern-Degraded': String(reason).slice(0, 120),
+        // 响应头只接受 ASCII：reason 里可能含中文（如「ST 响应超时」），
+        // 直接写会触发 ERR_INVALID_CHAR 让整个降级响应崩溃 → ST 初始化中断。
+        // 剥掉非打印 ASCII 字符，只留安全内容。
+        'X-Tavern-Degraded': String(reason).replace(/[^\x20-\x7E]/g, '').slice(0, 120),
     });
     res.end(JSON.stringify(body));
 }

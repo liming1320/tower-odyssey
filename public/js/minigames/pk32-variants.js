@@ -130,7 +130,8 @@
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载接水管原版关卡…');
             const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
             fetch('/data/pk32-pipe-connect-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                let level = 0;
+                let level = 0, remaining = 60, countdown = null;
+                addCleanup(function () { if (countdown) clearInterval(countdown); });
                 function draw() {
                     panel.innerHTML = '';
                     const playableLevels = data.levels.slice(0, data.nativeLevelCount);
@@ -152,33 +153,52 @@
                     points.forEach(function (point) {
                         let mask = 0;
                         links.forEach(function (link) { if (adjacent(point, link[0], link[1])) mask |= link[2]; });
-                        masks[point] = mask || 3; turns[point] = 0;
+                        masks[point] = mask || 3; turns[point] = -1;
                     });
                     function rotated(mask, count) { for (let i = 0; i < count; i += 1) mask = ((mask << 1) & 15) | ((mask >> 3) & 1); return mask; }
                     function solved() {
                         const start = points[0], goal = points[points.length - 1], seen = new Set([start]), queue = [start];
-                        while (queue.length) { const point = queue.shift(), mask = rotated(masks[point], turns[point]); links.forEach(function (link) { if (!(mask & link[2])) return; const next = point + link[0] + link[1] * 16; if (!path.has(next) || seen.has(next)) return; const back = link[2] === 1 ? 4 : link[2] === 4 ? 1 : link[2] === 2 ? 8 : 2; if (rotated(masks[next], turns[next]) & back) { seen.add(next); queue.push(next); } }); }
+                        while (queue.length) { const point = queue.shift(), mask = turns[point] < 0 ? 0 : rotated(masks[point], turns[point]); links.forEach(function (link) { if (!(mask & link[2])) return; const next = point + link[0] + link[1] * 16; if (!path.has(next) || seen.has(next)) return; const back = link[2] === 1 ? 4 : link[2] === 4 ? 1 : link[2] === 2 ? 8 : 2; if (turns[next] >= 0 && (rotated(masks[next], turns[next]) & back)) { seen.add(next); queue.push(next); } }); }
                         return seen.has(goal);
                     }
-                    const glyph = { 1: '╴', 2: '╵', 3: '┌', 4: '╶', 5: '─', 6: '┐', 7: '┬', 8: '╷', 9: '└', 10: '│', 11: '├', 12: '┘', 13: '┴', 14: '┤', 15: '┼' };
+                    function pipeFrame(mask) {
+                        const branches = [1, 2, 4, 8].filter(function (bit) { return mask & bit; }).length;
+                        if (branches <= 1) return [0, 2];
+                        if (branches === 2 && (mask === 5 || mask === 10)) return [0, 1];
+                        if (branches === 2) return [2, 0];
+                        if (branches === 3) return [4, 0];
+                        return [4, 1];
+                    }
+                    function drawPipe(cell, mask, turn) {
+                        cell.classList.toggle('pipe-connect-placed', turn >= 0);
+                        if (turn < 0) return;
+                        const frame = pipeFrame(mask);
+                        cell.style.setProperty('--pipe-sheet-x', frame[0] * 100 / 7 + '%');
+                        cell.style.setProperty('--pipe-sheet-y', frame[1] * 100 / 8 + '%');
+                        cell.style.transform = 'rotate(' + (turn * 90) + 'deg)';
+                    }
                     const grid = renderGrid(16, 16, 'pipe-connect-native-board');
-                    function updatePrompt(done) { prompt.textContent = '接水管原版关卡提示为 1-' + data.nativeLevelCount + '；当前关卡 ' + (level + 1) + ' / ' + playableLevels.length + '。' + (data.levels.length > playableLevels.length ? '另有待确认载荷未开放。' : '') + (done ? '管路已连通。' : '点击管片旋转，连接起点与终点。'); }
+                    function updatePrompt(done) { prompt.textContent = '原版提示：中央水源，60 秒内接通管道。当前 ' + (level + 1) + ' / ' + playableLevels.length + ' 关，剩余 ' + remaining + ' 秒。' + (done ? '管路已连通。' : '左键放下管片，右键取消并扣除 10 秒。'); }
                     for (let index = 0; index < 256; index += 1) {
-                        const x = index % 16, y = Math.floor(index / 16);
-                        const cell = button(path.has(index) ? glyph[rotated(masks[index], turns[index])] : '', function () { if (!path.has(index)) return; turns[index] = (turns[index] + 1) % 4; cell.textContent = glyph[rotated(masks[index], turns[index])] || '·'; const done = solved(); updatePrompt(done); if (done) finish('本局管路已连通。'); });
+                        const point = index;
+                        const cell = button('', function () { if (!path.has(point) || turns[point] >= 0 || ended) return; turns[point] = 0; drawPipe(cell, masks[point], turns[point]); const done = solved(); updatePrompt(done); if (done) finish('本局管路已连通。'); });
                         cell.dataset.nativeCode = String(index).padStart(3, '0');
                         cell.title = '原版坐标 ' + String(index).padStart(3, '0');
-                        const linked = path.has(index) && links.some(function (link) { return adjacent(index, link[0], link[1]); });
-                        cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (linked ? '#38bdf8' : '#172033') + ';color:#fff;font-size:16px;font-weight:700';
+                        cell.classList.add('pipe-connect-tile');
+                        if (index === 136) cell.classList.add('pipe-connect-source');
+                        if (path.has(point)) drawPipe(cell, masks[point], turns[point]);
+                        cell.oncontextmenu = function (event) { event.preventDefault(); if (!path.has(point) || turns[point] < 0 || ended) return; turns[point] = -1; remaining = Math.max(0, remaining - 10); cell.style.removeProperty('transform'); drawPipe(cell, masks[point], turns[point]); updatePrompt(false); if (!remaining) finish('时间到，请重新开始本关。'); };
                         grid.appendChild(cell);
                     }
                     const select = el('select', { ariaLabel: '接水管原版关卡' });
                     playableLevels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原版关卡 ' + (index + 1))); });
-                    select.value = String(level); select.onchange = function () { ended = false; level = Number(select.value) || 0; draw(); };
-                    panel.append(button('上一关', function () { ended = false; level = Math.max(0, level - 1); draw(); }), button('下一关', function () { ended = false; level = Math.min(playableLevels.length - 1, level + 1); draw(); }), select, grid);
+                    function restartLevel() { ended = false; remaining = 60; if (countdown) clearInterval(countdown); countdown = setInterval(function () { if (ended) return; remaining = Math.max(0, remaining - 1); updatePrompt(false); if (!remaining) finish('时间到，请重新开始本关。'); }, 1000); draw(); }
+                    select.value = String(level); select.onchange = function () { level = Number(select.value) || 0; restartLevel(); };
+                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); restartLevel(); }), button('下一关', function () { level = Math.min(playableLevels.length - 1, level + 1); restartLevel(); }), select, grid);
                     updatePrompt(solved());
                 }
                 draw();
+                countdown = setInterval(function () { if (ended) return; remaining = Math.max(0, remaining - 1); const prompt = panel.previousElementSibling; if (prompt) prompt.textContent = prompt.textContent.replace(/剩余 \d+ 秒/, '剩余 ' + remaining + ' 秒'); if (!remaining) finish('时间到，请重新开始本关。'); }, 1000);
             }).catch(function () { prompt.textContent = '接水管原版数据加载失败'; });
         }
         function renderReaction() {

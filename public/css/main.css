@@ -882,6 +882,35 @@ body.in-battle .avatar-btn { display: none; }
     #pk32-mask .pk32v-ships-board { width: max(100%, 350px); margin-left: 0; margin-right: 0; overflow-x: auto; }
     #pk32-mask .pk32v-ships-board .ships-board { width: 350px; }
 }
+#pk32-mask .pipe-connect-native-board {
+    grid-template-columns: repeat(16, minmax(0, 1fr)) !important;
+    width: min(100%, 576px);
+    max-width: none !important;
+    gap: 0;
+    padding: 0;
+    border: 3px solid #7b7531;
+    background: #54511f;
+}
+#pk32-mask .pipe-connect-native-board button.pipe-connect-tile {
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #3f551d;
+    transform-origin: center;
+    transition: transform .14s ease, filter .14s ease;
+}
+#pk32-mask .pipe-connect-native-board button.pipe-connect-tile.pipe-connect-placed,
+#pk32-mask .pipe-connect-native-board button.pipe-connect-tile.pipe-connect-source {
+    background-image: url('/img/pk32/original/sheet-9acb24.png');
+    background-repeat: no-repeat;
+    background-size: 800% 900%;
+    background-position: var(--pipe-sheet-x, 57.142857%) var(--pipe-sheet-y, 12.5%);
+}
+#pk32-mask .pipe-connect-native-board button.pipe-connect-tile.pipe-connect-placed:hover { filter: brightness(1.16); }
+#pk32-mask .pipe-connect-native-board button.pipe-connect-source { outline: 2px solid #fff3a6; outline-offset: -2px; }
 .mini-stage canvas, .mini-stage > div:not(.mg-dom) { display: block; }
 /* 2026-09-10 升级：mini-stage 用机柜风格外壳（和 MG.gfx.scene 配套）
    canvas 类游戏的背景由 MG.gfx.scene 预渲染（带网格+暗角+顶亮底暗），此兜底
