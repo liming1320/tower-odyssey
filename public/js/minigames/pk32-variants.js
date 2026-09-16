@@ -526,6 +526,250 @@
                     setScore(maxMoves);
                     drawBoard();
                 }
+                function renderCheckers2(payload, nav, detail) {
+                    const size = 8;
+                    let cells = Array(size * size).fill(null), selected = -1, turn = 'black';
+                    for (let y = 0; y < 3; y += 1) for (let x = 0; x < size; x += 1) if ((x + y) % 2) cells[y * size + x] = { side: 'black', king: false };
+                    for (let y = 5; y < size; y += 1) for (let x = 0; x < size; x += 1) if ((x + y) % 2) cells[y * size + x] = { side: 'white', king: false };
+                    function pos(index) { return { x: index % size, y: Math.floor(index / size) }; }
+                    function dirs(piece) {
+                        if (piece.king) return [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+                        return piece.side === 'black' ? [[-1, 1], [1, 1]] : [[-1, -1], [1, -1]];
+                    }
+                    function legalMoves(index) {
+                        const piece = cells[index], p = pos(index), result = [];
+                        if (!piece) return result;
+                        dirs(piece).forEach(function (dir) {
+                            const nx = p.x + dir[0], ny = p.y + dir[1], step = ny * size + nx;
+                            if (nx >= 0 && nx < size && ny >= 0 && ny < size && !cells[step]) result.push({ to: step, capture: -1 });
+                            const jx = p.x + dir[0] * 2, jy = p.y + dir[1] * 2, mid = (p.y + dir[1]) * size + p.x + dir[0], jump = jy * size + jx;
+                            if (jx >= 0 && jx < size && jy >= 0 && jy < size && cells[mid] && cells[mid].side !== piece.side && !cells[jump]) result.push({ to: jump, capture: mid });
+                        });
+                        return result;
+                    }
+                    function sideCanMove(side) {
+                        return cells.some(function (piece, index) { return piece && piece.side === side && legalMoves(index).length; });
+                    }
+                    function choose(index) {
+                        if (ended) return;
+                        const piece = cells[index];
+                        if (selected < 0) { if (piece && piece.side === turn) selected = index; drawBoard(); return; }
+                        const move = legalMoves(selected).find(function (item) { return item.to === index; });
+                        if (!move) { selected = piece && piece.side === turn ? index : -1; drawBoard(); return; }
+                        cells[index] = cells[selected]; cells[selected] = null;
+                        if (move.capture >= 0) cells[move.capture] = null;
+                        if (cells[index].side === 'black' && pos(index).y === size - 1 || cells[index].side === 'white' && pos(index).y === 0) cells[index].king = true;
+                        selected = -1; turn = turn === 'black' ? 'white' : 'black'; setScore(score + 1);
+                        drawBoard();
+                        if (!cells.some(function (piece) { return piece && piece.side === turn; }) || !sideCanMove(turn)) finish((turn === 'black' ? '白方' : '黑方') + '获胜。');
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(size, size, 'pk32-structured-payload-board');
+                        cells.forEach(function (piece, index) {
+                            const dark = (pos(index).x + pos(index).y) % 2 === 1;
+                            const cell = button(piece ? (piece.side === 'black' ? '黑' : '白') + (piece.king ? '王' : '') : '', function () { choose(index); });
+                            cell.dataset.cell = String(index); cell.dataset.side = piece ? piece.side : '';
+                            cell.style.cssText = 'min-width:34px;min-height:34px;padding:0;background:' + (selected === index ? '#facc15' : dark ? '#475569' : '#cbd5e1') + ';color:' + (piece && piece.side === 'black' ? '#111827' : '#fff') + ';font-size:12px;font-weight:700;line-height:1.1;overflow:hidden;border-color:' + (dark ? '#0f172a' : '#94a3b8');
+                            grid.appendChild(cell);
+                        });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('重置本局', function () { ended = false; renderCheckers2(payload, nav, detail); }));
+                        panel.append(nav, grid, actions, detail);
+                        prompt.textContent = config.name + '：按原帮助文本接入跳棋规则；当前轮到' + (turn === 'black' ? '黑方' : '白方') + '，斜走或跳吃，到底线加冕。原始载荷 ' + (payload.units || []).length + ' 个单位已绑定。';
+                    }
+                    drawBoard();
+                }
+                function renderJumpChess(payload, nav, detail) {
+                    const size = 15, total = size * size;
+                    const units = (payload.units || []).map(Number).filter(function (value) { return Number.isFinite(value) && value >= 0 && value < total; });
+                    const traps = new Set(units);
+                    const redCells = new Set(game.payloads.reduce(function (all, item) {
+                        return all.concat((item.units || []).map(Number).filter(function (value) { return Number.isFinite(value) && value >= 0 && value < total; }));
+                    }, []));
+                    let cells = Array(total).fill(null), selected = -1, turn = 'human', dice = [roll(), roll()], dieIndex = 0, moved = 0;
+                    for (let x = 2; x < 12; x += 1) { cells[(size - 1) * size + x] = { side: 'human' }; cells[x] = { side: 'ai' }; }
+                    function roll() { return 1 + randomInt(6); }
+                    function addBasePiece(side) {
+                        const row = side === 'human' ? size - 1 : 0;
+                        for (let x = 2; x < 12; x += 1) {
+                            const index = row * size + x;
+                            if (!cells[index]) { cells[index] = { side: side }; return true; }
+                        }
+                        return false;
+                    }
+                    function direction(side) { return side === 'human' ? -1 : 1; }
+                    function pos(index) { return { x: index % size, y: Math.floor(index / size) }; }
+                    function pathBetween(from, to) {
+                        const a = pos(from), b = pos(to), dx = Math.sign(b.x - a.x), dy = Math.sign(b.y - a.y);
+                        if (a.x !== b.x && a.y !== b.y && Math.abs(b.x - a.x) !== Math.abs(b.y - a.y)) return [];
+                        const steps = Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)), path = [];
+                        for (let step = 1; step < steps; step += 1) path.push((a.y + dy * step) * size + a.x + dx * step);
+                        return path;
+                    }
+                    function legalMoves(index) {
+                        const piece = cells[index], p = pos(index), steps = dice[dieIndex] || 1, result = [];
+                        if (!piece || piece.side !== turn) return result;
+                        [[0, direction(piece.side)], [-1, direction(piece.side)], [1, direction(piece.side)]].forEach(function (dir) {
+                            const x = p.x + dir[0] * steps, y = p.y + dir[1] * steps, to = y * size + x;
+                            if (x >= 0 && x < size && y >= 0 && y < size && (!cells[to] || cells[to].red)) result.push(to);
+                        });
+                        return result;
+                    }
+                    function finishTurn() {
+                        selected = -1; dieIndex = 0; moved = 0; turn = turn === 'human' ? 'ai' : 'human'; dice = [roll(), roll()];
+                        drawBoard();
+                        if (turn === 'ai') setTimeout(aiMove, 350);
+                    }
+                    function sideCount(side) { return cells.filter(function (piece) { return piece && piece.side === side && !piece.red; }).length; }
+                    function moveTo(index) {
+                        if (ended || selected < 0 || legalMoves(selected).indexOf(index) < 0) return;
+                        const piece = cells[selected], jumped = pathBetween(selected, index).filter(function (cell) { return cells[cell] && cells[cell].side !== piece.side && !cells[cell].red; });
+                        jumped.forEach(function (cell) { cells[cell] = { red: true }; redCells.add(cell); });
+                        if (traps.has(index)) { cells[selected] = null; selected = -1; }
+                        else {
+                            if (cells[index] && cells[index].red) addBasePiece(piece.side);
+                            redCells.delete(index); cells[index] = piece; cells[selected] = null; selected = index;
+                        }
+                        setScore(score + 1); moved += 1; dieIndex += 1;
+                        if (!sideCount('human') || !sideCount('ai')) return finish((sideCount('human') ? '玩家' : '电脑') + '获胜。');
+                        if (moved >= 2) finishTurn(); else drawBoard();
+                    }
+                    function choose(index) {
+                        if (ended || turn !== 'human') return;
+                        const piece = cells[index];
+                        if (selected < 0) { if (piece && piece.side === turn) selected = index; drawBoard(); return; }
+                        if (legalMoves(selected).indexOf(index) >= 0) moveTo(index);
+                        else { selected = piece && piece.side === turn ? index : -1; drawBoard(); }
+                    }
+                    function aiMove() {
+                        if (ended || turn !== 'ai') return;
+                        const pieces = cells.map(function (piece, index) { return piece && piece.side === 'ai' ? index : -1; }).filter(function (index) { return index >= 0; });
+                        const candidate = pieces.map(function (index) { return { from: index, moves: legalMoves(index) }; }).find(function (item) { return item.moves.length; });
+                        if (!candidate) return finish('玩家获胜。');
+                        selected = candidate.from; moveTo(candidate.moves[0]);
+                        if (turn === 'ai') setTimeout(aiMove, 250);
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(size, size, 'pk32-structured-payload-board');
+                        const legal = selected >= 0 ? legalMoves(selected) : [];
+                        for (let index = 0; index < total; index += 1) {
+                            const piece = cells[index], trap = traps.has(index), red = redCells.has(index) || piece && piece.red;
+                            const label = piece && piece.red ? '红' : piece ? (piece.side === 'human' ? '我' : '对') : trap ? '陷' : red ? '红' : '';
+                            const cell = button(label, function () { choose(index); });
+                            cell.dataset.cell = String(index); cell.dataset.trap = String(trap); cell.dataset.red = String(red); cell.dataset.side = piece && piece.side || '';
+                            cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (selected === index ? '#facc15' : legal.indexOf(index) >= 0 ? '#16a34a' : piece && piece.side === 'human' ? '#2563eb' : piece && piece.side === 'ai' ? '#7c3aed' : red ? '#dc2626' : trap ? '#57534e' : '#0f172a') + ';color:#fff;font-size:10px;font-weight:700;line-height:1.1;overflow:hidden';
+                            grid.appendChild(cell);
+                        }
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('重掷本局', function () { ended = false; renderJumpChess(payload, nav, detail); }));
+                        panel.append(nav, grid, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；' + (turn === 'human' ? '玩家' : '电脑') + '回合，骰点 ' + dice.join('、') + '，正在移动第 ' + (dieIndex + 1) + ' 子。跃过对方变红，踩陷阱损失，落到红棋补回底线。';
+                    }
+                    drawBoard();
+                    if (turn === 'ai') setTimeout(aiMove, 350);
+                }
+                function renderSuspectSokoban(payload, nav, detail) {
+                    const units = (payload.units || []).map(Number).filter(Number.isFinite);
+                    const paired = payload.family === 'paired-code-candidate';
+                    const width = paired && units.length >= 50 ? 10 : Math.round(Math.sqrt(units.length));
+                    const height = paired && units.length >= 50 ? 5 : width;
+                    const baseCount = Math.min(width * height, units.length);
+                    const raw = units.slice(0, baseCount);
+                    const tail = paired ? units.slice(baseCount).filter(function (value) { return value >= 0 && value < 100; }) : [];
+                    let player = raw.findIndex(function (value) { return value === 9; });
+                    if (player < 0) player = raw.findIndex(function (value) { return value === 0 || value === 90 || value % 10 === 9; });
+                    if (player < 0) player = 0;
+                    const boxes = new Map(), goals = new Map();
+                    raw.forEach(function (value, index) {
+                        if (value > 0 && value < 90 && value % 10 === 9) goals.set(index, Math.floor(value / 10) || 0);
+                        if (value === 90) goals.set(index, 0);
+                        if (value > 0 && value < 90 && value % 10 === 0) boxes.set(index, Math.floor(value / 10) || 0);
+                    });
+                    tail.forEach(function (value, index) {
+                        const x = value % 10, y = Math.floor(value / 10), pos = y * width + x;
+                        if (x >= 0 && x < width && y >= 0 && y < height && raw[pos] !== 99 && !boxes.has(pos)) boxes.set(pos, index + 1);
+                    });
+                    function wall(index) { return raw[index] === 99; }
+                    function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                    function solved() {
+                        if (!boxes.size || !goals.size) return false;
+                        return Array.from(boxes).every(function (entry) {
+                            const goal = goals.get(entry[0]);
+                            return goal != null && (goal === 0 || goal === entry[1]);
+                        });
+                    }
+                    function move(delta) {
+                        if (ended) return;
+                        const next = player + delta, beyond = next + delta;
+                        if (next < 0 || next >= baseCount || wall(next)) return;
+                        if ((delta === 1 || delta === -1) && !sameRow(player, next)) return;
+                        if (boxes.has(next)) {
+                            if (beyond < 0 || beyond >= baseCount || wall(beyond) || boxes.has(beyond)) return;
+                            if ((delta === 1 || delta === -1) && !sameRow(next, beyond)) return;
+                            const color = boxes.get(next); boxes.delete(next); boxes.set(beyond, color);
+                        }
+                        player = next; setScore(score + 1); drawBoard();
+                        if (solved()) finish('所有箱子已经推到相同颜色花朵上。');
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(width, height, 'pk32-structured-payload-board');
+                        for (let index = 0; index < baseCount; index += 1) {
+                            const box = boxes.get(index), goal = goals.get(index), isWall = wall(index);
+                            const label = index === player ? '人' : box != null ? '箱' + box : goal != null ? '花' + goal : isWall ? '墙' : '';
+                            const cell = button(label, function () { const delta = index - player; if ([1, -1, width, -width].indexOf(delta) >= 0) move(delta); });
+                            cell.dataset.code = String(raw[index]); cell.dataset.box = box == null ? '' : String(box); cell.dataset.goal = goal == null ? '' : String(goal);
+                            cell.style.cssText = 'min-width:30px;min-height:30px;padding:0;background:' + (index === player ? '#facc15' : box != null ? colorFor(box) : goal != null ? '#065f46' : isWall ? '#1f2937' : '#0f172a') + ';color:#fff;font-size:10px;font-weight:700;line-height:1.1;overflow:hidden';
+                            grid.appendChild(cell);
+                        }
+                        const controls = el('div', { className: 'pk32v-controls' });
+                        [['上', -width], ['下', width], ['左', -1], ['右', 1]].forEach(function (item) { controls.append(button(item[0], function () { move(item[1]); })); });
+                        panel.append(nav, grid, controls, detail);
+                        prompt.textContent = config.name + '：按原帮助文本接入推箱子规则；第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条载荷，推动箱子到相同颜色花朵。';
+                    }
+                    drawBoard();
+                }
+                function renderMemoryPairsNative(payload, nav, detail) {
+                    const units = (payload.units || []).map(Number).filter(Number.isFinite);
+                    const pairCount = Math.max(6, Math.min(18, Math.floor(((payload.structure && payload.structure.headerValue) || units.length || 24) / 4)));
+                    const base = Array.from({ length: pairCount }, function (_, index) { return (Math.abs(units[index] || index) % 16) + 1; });
+                    let cards = base.concat(base).map(function (value, index) { return { value: value, open: false, done: false, seed: units[index % Math.max(1, units.length)] || index }; });
+                    cards.sort(function (a, b) { return a.seed - b.seed || a.value - b.value; });
+                    let opened = [], misses = 0;
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const width = Math.ceil(Math.sqrt(cards.length));
+                        const grid = renderGrid(width, Math.ceil(cards.length / width), 'pk32-structured-payload-board');
+                        cards.forEach(function (card, index) {
+                            const visible = card.open || card.done;
+                            const cell = button(visible ? String(card.value) : '?', function () {
+                                if (ended || card.done || card.open || opened.length >= 2) return;
+                                card.open = true; opened.push(index); drawBoard();
+                                if (opened.length === 2) {
+                                    const a = cards[opened[0]], b = cards[opened[1]];
+                                    if (a.value === b.value) {
+                                        a.done = true; b.done = true; opened = []; setScore(score + 20);
+                                        if (cards.every(function (item) { return item.done; })) finish('所有相同图案已经消去。');
+                                        else drawBoard();
+                                    } else {
+                                        misses += 1; setScore(Math.max(0, score - 1));
+                                        setTimeout(function () { a.open = false; b.open = false; opened = []; drawBoard(); }, 450);
+                                    }
+                                }
+                            });
+                            cell.dataset.value = String(card.value);
+                            cell.style.cssText = 'min-width:38px;min-height:38px;padding:0;background:' + (card.done ? '#065f46' : visible ? colorFor(card.value) : '#1f2937') + ';color:#fff;font-size:14px;font-weight:700;line-height:1.1;overflow:hidden';
+                            grid.appendChild(cell);
+                        });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('重置本关', function () { ended = false; cards.forEach(function (card) { card.open = false; card.done = false; }); opened = []; misses = 0; setScore(0); drawBoard(); }));
+                        panel.append(nav, grid, actions, detail);
+                        prompt.textContent = config.name + '：按原帮助文本接入翻牌配对消除；第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条载荷，错误 ' + misses + ' 次。';
+                    }
+                    drawBoard();
+                }
                 function draw() {
                     panel.innerHTML = '';
                     const payload = game.payloads[level], units = payload.units || [], shape = chooseShape(payload);
@@ -560,6 +804,10 @@
                     if (config.name === '吃豆子' && payload.family === 'fixed-area-candidate') return renderPacDots(payload, nav, detail);
                     if (config.name === '彩球连线' && payload.family === 'paired-code-candidate') return renderColorLinks(payload, nav, detail);
                     if (config.name === '移彩球' && payload.family === 'fixed-area-candidate') return renderMoveBalls(payload, nav, detail);
+                    if (config.name === '跳跃棋' && payload.family === 'three-digit-index-candidate') return renderJumpChess(payload, nav, detail);
+                    if (config.name === '跳棋二' && payload.family === 'paired-code-candidate') return renderCheckers2(payload, nav, detail);
+                    if (config.name === '拼疑犯' && (payload.family === 'paired-code-candidate' || payload.family === 'numeric-mixed')) return renderSuspectSokoban(payload, nav, detail);
+                    if (config.name === '反应测试' && payload.family === 'legacy-100-stream') return renderMemoryPairsNative(payload, nav, detail);
                     panel.append(nav, grid, detail);
                     prompt.textContent = config.name + '：已绑定原始结构化载荷 ' + (level + 1) + ' / ' + game.payloads.length + '；当前只是内容迁移适配层，规则语义仍待按原程序确认。';
                 }

@@ -25,10 +25,14 @@ const dataDir = path.join(root, 'public', 'data');
 const dataByName = new Map();
 const candidateDataByName = new Map();
 const nativeByName = new Map(nativeCatalog.records.map(record => [record.name, record]));
+const levelFileNameFallbacks = new Map([
+    ['pk32-sokoban4-levels.json', '推箱子四']
+]);
 for (const file of fs.readdirSync(dataDir).filter(name => /^pk32-.*-levels\.json$/.test(name))) {
     try {
         const data = JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'));
-        if (data.name) (data.assignmentVerified === false ? candidateDataByName : dataByName).set(data.name, {
+        const dataName = data.name || levelFileNameFallbacks.get(file);
+        if (dataName) (data.assignmentVerified === false ? candidateDataByName : dataByName).set(dataName, {
             file,
             levelCount: Array.isArray(data.levels) ? data.levels.length : 0,
             recordCount: Array.isArray(data.levels) ? data.levels.length : 0,
@@ -45,7 +49,13 @@ const structuredPayloads = fs.existsSync(structuredFile) ? JSON.parse(fs.readFil
 const resourceManifestFile = path.join(dataDir, 'pk32-resource-manifest.json');
 const resourceManifest = fs.existsSync(resourceManifestFile) ? JSON.parse(fs.readFileSync(resourceManifestFile, 'utf8')) : null;
 const resourceById = new Map((resourceManifest && resourceManifest.records || []).map(record => [record.id, record]));
-const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球']);
+const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试']);
+const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '斗兽棋', '四子棋']);
+const nativeAdapterRulesMigrated = new Set([
+    '强手棋', '接水管', '同色方块', '华容道', '智慧之光', '电磁彩球', '魔法城堡',
+    '推箱子四', '推箱子五', '禅宗花园', '禅宗迷宫', '航海迷题', '打砖块',
+    '爆破彩球', '七盏灯', '交换彩球', '碰撞彩球', '反射镜'
+]);
 if (structuredPayloads) {
     for (const game of structuredPayloads.games || []) {
         if (dataByName.has(game.name) || candidateDataByName.has(game.name)) continue;
@@ -87,9 +97,9 @@ const rows = ledger.records.map(record => {
     const nativePayloadCount = native && Array.isArray(native.nativePayloads) ? native.nativePayloads.length : 0;
     const renderer = rendererNames.has(record.name) ? 'dedicated-or-board' : record.launcher ? 'shared-mode-or-placeholder' : 'none';
     const migration = {
-        assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true,
-        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true,
-        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(record.name),
+        assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || (resources && resources.resourcePackageBound === true),
+        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || !!(candidateData && structuredRulesMigrated.has(record.name)) || boardRulesMigrated.has(record.name),
+        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(record.name) || boardRulesMigrated.has(record.name) || nativeAdapterRulesMigrated.has(record.name),
         fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true
     };
     migration.migrationComplete = migration.assetsMigrated && migration.levelsMigrated && migration.rulesMigrated && migration.fullFlowMigrated;
@@ -112,7 +122,9 @@ const rows = ledger.records.map(record => {
         dedicatedAdapterBound: renderer === 'dedicated-or-board',
         contentComplete: migration.migrationComplete,
         verificationComplete: verification.verificationComplete,
-        rulesMigratedByStructureFamily: structuredRulesMigrated.has(record.name) && candidateData ? candidateData.dataKind : null
+        rulesMigratedByStructureFamily: structuredRulesMigrated.has(record.name) && candidateData ? candidateData.dataKind : null,
+        rulesMigratedByBoardEngine: boardRulesMigrated.has(record.name),
+        rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(record.name)
     };
     const migrationPhase = verification.verificationComplete ? 'verification-complete'
         : migration.migrationComplete ? 'content-migration-complete'
@@ -201,6 +213,10 @@ const result = {
         partialContentMigration: rows.filter(row => row.migrationPhase === 'partial-content-migration').length,
         nativeData: rows.filter(row => row.data).length,
         candidateData: rows.filter(row => row.candidateData).length,
+        assetsMigrated: rows.filter(row => row.migration.assetsMigrated).length,
+        levelsMigrated: rows.filter(row => row.migration.levelsMigrated).length,
+        rulesMigrated: rows.filter(row => row.migration.rulesMigrated).length,
+        fullFlowMigrated: rows.filter(row => row.migration.fullFlowMigrated).length,
         rawNativePayloads: rows.reduce((sum, row) => sum + row.nativePayloadCount, 0),
         awaitingAdapter: rows.filter(row => row.migrationStatus === 'native-payloads-awaiting-adapter').length,
         assignmentReview: rows.filter(row => row.migrationStatus === 'payload-assignment-review' || row.migrationStatus === 'structured-data-assignment-review').length,

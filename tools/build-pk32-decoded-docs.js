@@ -26,11 +26,15 @@ function escapeCell(value) {
 function listLevelFiles() {
   if (!fs.existsSync(dataDir)) return new Map();
   const result = new Map();
+  const nameFallbacks = new Map([
+    ['pk32-sokoban4-levels.json', '推箱子四']
+  ]);
   for (const file of fs.readdirSync(dataDir).filter(name => /^pk32-.*-levels\.json$/.test(name))) {
     const data = readJson(path.join(dataDir, file), null);
-    if (!data || !data.name) continue;
-    if (!result.has(data.name)) result.set(data.name, []);
-    result.get(data.name).push({
+    const dataName = data && (data.name || nameFallbacks.get(file));
+    if (!dataName) continue;
+    if (!result.has(dataName)) result.set(dataName, []);
+    result.get(dataName).push({
       file: 'public/data/' + file,
       count: Array.isArray(data.levels) ? data.levels.length : data.count || data.extractedLevelCount || data.extractedPayloadCount || null,
       recordsArePlayableLevels: data.recordsArePlayableLevels !== false,
@@ -58,6 +62,7 @@ const records = (queue.records || []).map(record => {
   const levelFiles = levelFilesByName.get(record.name) || [];
   const playableLevelFiles = levelFiles.filter(file => file.recordsArePlayableLevels && file.assignmentVerified);
   const hasDedicatedAdapter = record.renderer === 'dedicated-or-board';
+  const hasResourcePackage = record.migrationEvidence && record.migrationEvidence.resourcePackageBound === true;
   const hasDecodedLevels = playableLevelFiles.length > 0;
   const hasStructuredPayloads = !!structuredRecord;
   const canAutoBindContent = hasDecodedLevels && hasDedicatedAdapter;
@@ -86,6 +91,11 @@ const records = (queue.records || []).map(record => {
       payloadCount: native.payloadCount || 0,
       payloadProfile: native.payloadProfile || null,
       payloadAssignment: native.payloadAssignment || null
+    },
+    resources: {
+      packageBound: hasResourcePackage,
+      sharedAtlasCount: record.migrationEvidence && record.migrationEvidence.sharedAtlasCount || 0,
+      gameSpecificAssetMapping: record.migrationEvidence && record.migrationEvidence.gameSpecificAssetMapping === true
     },
     structuredPayloads: structuredRecord ? {
       file: 'public/data/pk32-structured-payloads.json',
@@ -139,6 +149,12 @@ const result = {
     withLevelFiles: records.filter(record => record.levelFiles.length).length,
     withStructuredPayloads: records.filter(record => record.structuredPayloads).length,
     withNativePayloads: records.filter(record => record.native.payloadCount > 0).length,
+    withResourcePackages: records.filter(record => record.resources.packageBound).length,
+    gameSpecificAssetMappings: records.filter(record => record.resources.gameSpecificAssetMapping).length,
+    assetsMigrated: records.filter(record => record.migration.assetsMigrated).length,
+    levelsMigrated: records.filter(record => record.migration.levelsMigrated).length,
+    rulesMigrated: records.filter(record => record.migration.rulesMigrated).length,
+    fullFlowMigrated: records.filter(record => record.migration.fullFlowMigrated).length,
     canAutoBindContent: records.filter(record => record.automation.canAutoBindContent).length,
     migrationComplete: records.filter(record => record.migration.migrationComplete).length,
     verificationComplete: records.filter(record => record.verification.verificationComplete).length,
@@ -171,6 +187,12 @@ const docLines = [
   '| Games with level data files | ' + result.summary.withLevelFiles + ' |',
   '| Games with structured payloads | ' + result.summary.withStructuredPayloads + ' |',
   '| Games with native payloads | ' + result.summary.withNativePayloads + ' |',
+  '| Games with resource packages | ' + result.summary.withResourcePackages + ' |',
+  '| Games with game-specific asset mapping | ' + result.summary.gameSpecificAssetMappings + ' |',
+  '| Assets migrated | ' + result.summary.assetsMigrated + ' |',
+  '| Levels migrated | ' + result.summary.levelsMigrated + ' |',
+  '| Rules migrated | ' + result.summary.rulesMigrated + ' |',
+  '| Full flow migrated | ' + result.summary.fullFlowMigrated + ' |',
   '| Auto-bindable content games | ' + result.summary.canAutoBindContent + ' |',
   '| Content migration complete | ' + result.summary.migrationComplete + ' |',
   '| Original verification complete | ' + result.summary.verificationComplete + ' |',
@@ -184,12 +206,13 @@ const docLines = [
   '',
   '## Game readiness',
   '',
-  '| ID | Name | Phase | Level files | Structured payloads | Native payloads | Auto-bind | Migration complete | Verification complete | Blockers |',
-  '| --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |',
+  '| ID | Name | Phase | Resource package | Level files | Structured payloads | Native payloads | Auto-bind | Migration complete | Verification complete | Blockers |',
+  '| --- | --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |',
   ...records.map(record => '| ' + [
     record.id,
     record.name,
     record.migrationPhase,
+    record.resources.packageBound ? 'shared atlases ' + record.resources.sharedAtlasCount : '',
     record.levelFiles.length,
     record.structuredPayloads ? record.structuredPayloads.family + ' / ' + record.structuredPayloads.payloads : '',
     record.native.payloadCount,

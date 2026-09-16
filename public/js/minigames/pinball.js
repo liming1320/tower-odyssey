@@ -32,15 +32,15 @@ window.MiniGames = window.MiniGames || {};
 
     // 顶部涡轮引擎 ×3（倒三角布置，原版 turbo bumper 位）
     const BUMPERS = [
-        { x: 120, y: 250, r: 23, hue: 8 },
-        { x: 232, y: 250, r: 23, hue: 48 },
-        { x: 176, y: 314, r: 23, hue: 200 },
+        { x: 120, y: 250, r: 23, hue: 5 },
+        { x: 232, y: 250, r: 23, hue: 22 },
+        { x: 176, y: 314, r: 23, hue: 40 },
     ];
     // 左侧涡轮引擎 ×3（竖排，原版左路引擎带）
     const JETS = [
-        { x: 76, y: 292, r: 18, hue: 168 },
-        { x: 76, y: 344, r: 18, hue: 268 },
-        { x: 76, y: 396, r: 18, hue: 320 },
+        { x: 76, y: 292, r: 18, hue: 145 },
+        { x: 76, y: 344, r: 18, hue: 180 },
+        { x: 76, y: 396, r: 18, hue: 210 },
     ];
     // 左上角第 7 只引擎：涡轮虫洞（吸入 → 送进左侧火箭管道重新发射）
     const WARP = { x: 102, y: 212, r: 16 };
@@ -73,27 +73,7 @@ window.MiniGames = window.MiniGames || {};
     const GUIDE_L = [[62, 558], [74, 592], [100, 602]];
     const GUIDE_R = [[290, 558], [278, 592], [252, 602]];
 
-    /* ── 美术资源（生成式位图，贴近 Windows 原版质感）── */
-    let bgImg = null, ballSprite = null;
-    (function loadPinballAssets() {
-        const bi = new Image();
-        bi.onload = () => { bgImg = bi; };
-        bi.src = '/img/pinball/bg.png';
-        const pi = new Image();
-        pi.onload = () => {
-            try {
-                // 素材底色非透明：离屏圆形裁剪抠出金属球本体
-                const s = 256, cv = document.createElement('canvas');
-                cv.width = s; cv.height = s;
-                const g = cv.getContext('2d');
-                if (!g) return;
-                g.beginPath(); g.arc(s / 2, s / 2, s * 0.40, 0, Math.PI * 2); g.clip();
-                g.drawImage(pi, 0, 0, s, s);
-                ballSprite = cv;
-            } catch (e) { /* 降级用程序化球 */ }
-        };
-        pi.src = '/img/pinball/ball.png';
-    })();
+    // 美术全部程序化绘制（对齐原版 Space Cadet 配色：暗海军台面 + 金褐轨道 + 红橙引擎 + 金翼徽章）
 
     /* ══════════════════════ 2. 工具 ══════════════════════ */
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -371,8 +351,8 @@ window.MiniGames = window.MiniGames || {};
                     g.scale(2, 2);
 
                     const base = g.createLinearGradient(0, 90, 0, GH);
-                    base.addColorStop(0, '#0d1430'); base.addColorStop(0.45, '#0a1028');
-                    base.addColorStop(1, '#05070f');
+                    base.addColorStop(0, '#131a2e'); base.addColorStop(0.45, '#0b101f');
+                    base.addColorStop(1, '#05070d');
                     g.fillStyle = base; g.fillRect(0, 90, GW, GH - 90);
 
                     g.save();
@@ -384,11 +364,10 @@ window.MiniGames = window.MiniGames || {};
                     g.closePath();
                     g.clip();
 
-                    // 星云
-                    [[120, 300, 190, 'rgba(88,44,180,0.30)'],
-                    [280, 250, 170, 'rgba(20,110,190,0.26)'],
-                    [180, 520, 200, 'rgba(160,30,120,0.20)'],
-                    [60, 160, 130, 'rgba(30,160,150,0.18)']].forEach(([x, y, r, col]) => {
+                    // 深空云气（压暗、偏暖，贴近原版暗调台面）
+                    [[210, 260, 200, 'rgba(160,95,35,0.10)'],
+                    [110, 430, 190, 'rgba(40,70,140,0.10)'],
+                    [255, 545, 180, 'rgba(140,45,55,0.07)']].forEach(([x, y, r, col]) => {
                         const rg = g.createRadialGradient(x, y, 0, x, y, r);
                         rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(0,0,0,0)');
                         g.fillStyle = rg; g.fillRect(x - r, y - r, r * 2, r * 2);
@@ -398,23 +377,23 @@ window.MiniGames = window.MiniGames || {};
                     g.save();
                     g.translate(176, 360); g.rotate(-0.42);
                     const mw = g.createLinearGradient(0, -140, 0, 140);
-                    mw.addColorStop(0, 'rgba(120,150,255,0)');
-                    mw.addColorStop(0.5, 'rgba(150,180,255,0.10)');
-                    mw.addColorStop(1, 'rgba(120,150,255,0)');
+                    mw.addColorStop(0, 'rgba(255,200,130,0)');
+                    mw.addColorStop(0.5, 'rgba(255,200,130,0.06)');
+                    mw.addColorStop(1, 'rgba(255,200,130,0)');
                     g.fillStyle = mw; g.fillRect(-420, -140, 840, 280);
                     g.restore();
 
-                    // 星球 + 星环
-                    g.globalAlpha = 0.5;
+                    // 星球 + 星环（暖色气体巨星，原版台面的行星丝印）
+                    g.globalAlpha = 0.4;
                     const plx = 246, ply = 268, plr = 44;
                     const pg = g.createRadialGradient(plx - plr * 0.35, ply - plr * 0.4, plr * 0.1, plx, ply, plr);
-                    pg.addColorStop(0, '#6d8fd8'); pg.addColorStop(0.55, '#3b5aa0');
-                    pg.addColorStop(0.85, '#22356b'); pg.addColorStop(1, '#131c38');
+                    pg.addColorStop(0, '#d8a86a'); pg.addColorStop(0.55, '#a06a3c');
+                    pg.addColorStop(0.85, '#5e3a20'); pg.addColorStop(1, '#2c1c10');
                     g.fillStyle = pg; g.beginPath(); g.arc(plx, ply, plr, 0, Math.PI * 2); g.fill();
                     g.save(); g.translate(plx, ply); g.rotate(-0.34); g.scale(1, 0.26);
-                    g.strokeStyle = 'rgba(190,215,255,0.45)'; g.lineWidth = 7;
+                    g.strokeStyle = 'rgba(255,215,160,0.35)'; g.lineWidth = 7;
                     g.beginPath(); g.arc(0, 0, plr * 1.55, 0, Math.PI * 2); g.stroke();
-                    g.strokeStyle = 'rgba(120,160,230,0.30)'; g.lineWidth = 3;
+                    g.strokeStyle = 'rgba(255,190,130,0.22)'; g.lineWidth = 3;
                     g.beginPath(); g.arc(0, 0, plr * 1.82, 0, Math.PI * 2); g.stroke();
                     g.restore();
                     g.globalAlpha = 1;
@@ -422,38 +401,62 @@ window.MiniGames = window.MiniGames || {};
                     // 星点
                     for (let i = 0; i < 190; i++) {
                         const x = 20 + Math.random() * 320, y = 96 + Math.random() * 560;
-                        g.fillStyle = `rgba(255,255,255,${0.20 + Math.random() * 0.6})`;
+                        g.fillStyle = `rgba(255,242,225,${0.14 + Math.random() * 0.44})`;
                         g.beginPath(); g.arc(x, y, Math.random() * 1.3 + 0.3, 0, Math.PI * 2); g.fill();
                     }
 
-                    // 透视网格
-                    g.strokeStyle = 'rgba(90,150,255,0.055)'; g.lineWidth = 1;
-                    for (let i = 0; i <= 12; i++) {
-                        const y = 120 + i * 46;
-                        g.beginPath(); g.moveTo(20, y); g.lineTo(340, y); g.stroke();
+                    // 台面板接缝 + 顶部微光（暗金丝印板件，模拟原版台面分区）
+                    g.strokeStyle = 'rgba(214,170,90,0.08)'; g.lineWidth = 1;
+                    [232, 470].forEach(y => {
+                        g.beginPath(); g.moveTo(30, y); g.lineTo(322, y); g.stroke();
+                    });
+                    for (let i = -3; i <= 3; i++) {
+                        g.beginPath(); g.moveTo(176 + i * 26, 158); g.lineTo(176 + i * 52, 636); g.stroke();
                     }
-                    for (let i = -6; i <= 6; i++) {
-                        g.beginPath(); g.moveTo(176 + i * 26, 96); g.lineTo(176 + i * 86, GH); g.stroke();
-                    }
+                    const spot = g.createRadialGradient(176, 150, 10, 176, 150, 260);
+                    spot.addColorStop(0, 'rgba(255,220,170,0.07)');
+                    spot.addColorStop(1, 'rgba(0,0,0,0)');
+                    g.fillStyle = spot; g.fillRect(0, 90, GW, 400);
+
+                    // 金色丝印箭头（原版台面引导箭头：右侧轨道向上 + 顶部直入滚道）
+                    g.strokeStyle = 'rgba(240,195,105,0.22)'; g.lineWidth = 2.4; g.lineCap = 'round'; g.lineJoin = 'round';
+                    const chev = (x, y, s, a) => {
+                        g.save(); g.translate(x, y); g.rotate(a);
+                        g.beginPath(); g.moveTo(-s, s * 0.7); g.lineTo(0, -s * 0.7); g.lineTo(s, s * 0.7);
+                        g.stroke(); g.restore();
+                    };
+                    chev(306, 336, 9, 0); chev(306, 364, 9, 0);
+                    chev(176, 224, 9, 0);
+
+                    // 外道警示斜纹（出球区，红纹）
+                    [[34, 586], [284, 586]].forEach(([zx, zy]) => {
+                        g.save();
+                        g.beginPath(); g.rect(zx, zy, 34, 44); g.clip();
+                        g.strokeStyle = 'rgba(255,120,80,0.18)'; g.lineWidth = 2;
+                        for (let i = 0; i < 9; i++) {
+                            g.beginPath(); g.moveTo(zx - 6 + i * 8, zy + 50); g.lineTo(zx + 10 + i * 8, zy - 6); g.stroke();
+                        }
+                        g.restore();
+                    });
 
                     // 丝印
                     g.textAlign = 'center'; g.textBaseline = 'middle';
                     g.font = 'bold 15px "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif';
-                    g.fillStyle = 'rgba(120,200,255,0.20)';
+                    g.fillStyle = 'rgba(255,205,120,0.30)';
                     g.fillText('S P A C E   C A D E T', 176, 528);
                     g.font = '9px "Segoe UI",sans-serif';
-                    g.fillStyle = 'rgba(140,180,255,0.16)';
+                    g.fillStyle = 'rgba(255,220,170,0.16)';
                     g.fillText('· T O W E R   O D Y S S E Y ·', 176, 546);
 
                     g.font = 'bold 8px "Segoe UI",sans-serif';
                     g.fillStyle = 'rgba(255,190,90,0.30)'; g.fillText('TARGETS', 276, 428);
                     g.fillStyle = 'rgba(255,190,90,0.30)'; g.fillText('SPINNER', 128, 460);
-                    g.fillStyle = 'rgba(170,255,225,0.32)'; g.fillText('JETS', 76, 246);
-                    g.fillStyle = 'rgba(120,255,200,0.28)'; g.fillText('RAMP', 296, 448);
-                    g.fillStyle = 'rgba(255,120,160,0.26)'; g.fillText('JACKPOT', 176, 488);
-                    g.fillStyle = 'rgba(180,200,255,0.22)'; g.fillText('KICKBACK', 40, 612);
+                    g.fillStyle = 'rgba(255,200,120,0.28)'; g.fillText('JETS', 76, 246);
+                    g.fillStyle = 'rgba(255,200,120,0.28)'; g.fillText('RAMP', 296, 448);
+                    g.fillStyle = 'rgba(255,150,90,0.30)'; g.fillText('JACKPOT', 176, 488);
+                    g.fillStyle = 'rgba(255,200,130,0.22)'; g.fillText('KICKBACK', 40, 612);
                     g.save(); g.translate(316, 612); g.rotate(Math.PI / 2);
-                    g.fillStyle = 'rgba(180,200,255,0.22)'; g.fillText('KICKBACK', 0, 0); g.restore();
+                    g.fillStyle = 'rgba(255,200,130,0.22)'; g.fillText('KICKBACK', 0, 0); g.restore();
 
                     g.restore();
                     return cv;
@@ -1024,17 +1027,17 @@ window.MiniGames = window.MiniGames || {};
 
             function drawCabinet() {
                 const g0 = ctx.createLinearGradient(0, 0, GW, GH);
-                g0.addColorStop(0, '#20263c'); g0.addColorStop(0.4, '#121828'); g0.addColorStop(1, '#070a12');
+                g0.addColorStop(0, '#242019'); g0.addColorStop(0.4, '#16130e'); g0.addColorStop(1, '#0a0806');
                 ctx.fillStyle = g0;
                 rr(4, 4, GW - 8, GH - 8, 16); ctx.fill();
-                ctx.strokeStyle = '#4a5a86'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = 1;
+                ctx.strokeStyle = '#8a6f45'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,235,200,0.10)'; ctx.lineWidth = 1;
                 rr(8, 8, GW - 16, GH - 16, 13); ctx.stroke();
                 [[18, 92], [GW - 18, 92], [18, GH - 18], [GW - 18, GH - 18]].forEach(([sx, sy]) => {
                     const sg = ctx.createRadialGradient(sx - 1, sy - 1, 0, sx, sy, 5);
-                    sg.addColorStop(0, '#aab6d0'); sg.addColorStop(1, '#39425c');
+                    sg.addColorStop(0, '#d8c8a8'); sg.addColorStop(1, '#4a3d28');
                     ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = '#1a2033'; ctx.lineWidth = 1.2;
+                    ctx.strokeStyle = '#241c10'; ctx.lineWidth = 1.2;
                     ctx.beginPath(); ctx.moveTo(sx - 3, sy); ctx.lineTo(sx + 3, sy); ctx.stroke();
                 });
             }
@@ -1094,8 +1097,8 @@ window.MiniGames = window.MiniGames || {};
                 const ex = 176, ey = 392, R = 62;
                 ctx.save();
                 const gg = ctx.createRadialGradient(ex, ey, 8, ex, ey, R + 26);
-                gg.addColorStop(0, 'rgba(120,200,255,0.14)');
-                gg.addColorStop(0.6, 'rgba(90,150,230,0.05)');
+                gg.addColorStop(0, 'rgba(255,200,120,0.14)');
+                gg.addColorStop(0.6, 'rgba(230,150,70,0.05)');
                 gg.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = gg;
                 ctx.beginPath(); ctx.arc(ex, ey, R + 26, 0, Math.PI * 2); ctx.fill();
@@ -1103,6 +1106,29 @@ window.MiniGames = window.MiniGames || {};
                 ctx.beginPath(); ctx.arc(ex, ey, R, 0, Math.PI * 2); ctx.stroke();
                 ctx.strokeStyle = 'rgba(255,190,90,0.16)'; ctx.lineWidth = 1.4;
                 ctx.beginPath(); ctx.arc(ex, ey, R - 10, 0, Math.PI * 2); ctx.stroke();
+                // 两侧金色飞翼（Space Cadet 翼章，从徽章后向外展开）
+                ctx.save(); ctx.translate(ex, ey);
+                for (let side = -1; side <= 1; side += 2) {
+                    ctx.save(); ctx.scale(side, 1);
+                    for (let f = 0; f < 4; f++) {
+                        const y0 = -26 + f * 13, len = 64 - f * 13, drop = 8 + f * 6;
+                        const wgn = ctx.createLinearGradient(14, y0, 14 + len, y0 + drop);
+                        wgn.addColorStop(0, '#ffe9a8'); wgn.addColorStop(0.5, '#e8b64c'); wgn.addColorStop(1, '#8a5a14');
+                        ctx.fillStyle = wgn;
+                        ctx.beginPath();
+                        ctx.moveTo(14, y0);
+                        ctx.quadraticCurveTo(14 + len * 0.55, y0 - 7, 14 + len, y0 + drop);
+                        ctx.quadraticCurveTo(14 + len * 0.5, y0 + drop * 0.55 + 5, 16, y0 + 10);
+                        ctx.closePath(); ctx.fill();
+                        ctx.strokeStyle = 'rgba(90,55,10,0.5)'; ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(14, y0);
+                        ctx.quadraticCurveTo(14 + len * 0.55, y0 - 7, 14 + len, y0 + drop);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+                ctx.restore();
                 // 中央星徽（Space Cadet 金红星章）
                 ctx.save(); ctx.translate(ex, ey);
                 const sg2 = ctx.createRadialGradient(0, -6, 2, 0, 0, 26);
@@ -1136,15 +1162,15 @@ window.MiniGames = window.MiniGames || {};
                 ctx.lineTo(PF.r, GH - 6);
                 ctx.lineWidth = 5.5;
                 const wg = ctx.createLinearGradient(0, 140, 0, GH);
-                wg.addColorStop(0, '#cfe0ff'); wg.addColorStop(0.35, '#7d94c8'); wg.addColorStop(1, '#3d4a70');
+                wg.addColorStop(0, '#f2e0ae'); wg.addColorStop(0.35, '#c19a55'); wg.addColorStop(1, '#6e5226');
                 ctx.strokeStyle = wg; ctx.stroke();
                 ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.stroke();
                 ctx.restore();
 
                 // 台面顶部受光（让台面像被聚光灯照亮）
                 const lg = ctx.createLinearGradient(0, 100, 0, 360);
-                lg.addColorStop(0, 'rgba(150,180,255,0.10)');
-                lg.addColorStop(1, 'rgba(150,180,255,0)');
+                lg.addColorStop(0, 'rgba(255,215,160,0.10)');
+                lg.addColorStop(1, 'rgba(255,215,160,0)');
                 ctx.fillStyle = lg; ctx.fillRect(20, 100, GW - 40, 280);
 
                 drawEmblem();
@@ -1164,7 +1190,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.strokeStyle = 'rgba(8,12,24,0.9)'; ctx.stroke();
                 ctx.lineWidth = wdt;
                 const g = ctx.createLinearGradient(0, 140, 0, 640);
-                g.addColorStop(0, '#e6eeff'); g.addColorStop(0.4, '#9db0d8'); g.addColorStop(1, '#5a6c96');
+                g.addColorStop(0, '#f5e6bb'); g.addColorStop(0.4, '#c19a55'); g.addColorStop(1, '#6e5226');
                 ctx.strokeStyle = g; ctx.stroke();
                 ctx.lineWidth = Math.max(1, wdt * 0.3);
                 ctx.strokeStyle = 'rgba(255,255,255,0.7)';
@@ -1204,12 +1230,12 @@ window.MiniGames = window.MiniGames || {};
             }
 
             function drawLaunchTube() {
-                drawTube(LAUNCH_PATH, 22, 205);
+                drawTube(LAUNCH_PATH, 22, 35);
                 const p = LAUNCH_PATH.at(1);
                 ctx.save();
                 ctx.translate(p.x, p.y);
                 ctx.rotate(Math.atan2(p.ty, p.tx));
-                ctx.fillStyle = 'rgba(150,220,255,0.9)';
+                ctx.fillStyle = 'rgba(255,214,150,0.95)';
                 ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(-4, -6); ctx.lineTo(-4, 6);
                 ctx.closePath(); ctx.fill();
                 ctx.restore();
@@ -1225,9 +1251,9 @@ window.MiniGames = window.MiniGames || {};
                 ctx.fillStyle = gg;
                 ctx.beginPath(); ctx.arc(x, y, gr, 0, Math.PI * 2); ctx.fill();
 
-                ctx.fillStyle = '#161f38';
+                ctx.fillStyle = '#241a10';
                 ctx.beginPath(); ctx.ellipse(x, y + 7, r + 4, r * 0.6, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#5f74a8'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.strokeStyle = '#8a6c44'; ctx.lineWidth = 1.5; ctx.stroke();
 
                 const sk = ctx.createLinearGradient(x, y - r, x, y + r);
                 sk.addColorStop(0, '#e8eefc'); sk.addColorStop(0.42, '#93a6cc');
@@ -1269,7 +1295,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.beginPath(); ctx.arc(x, y - 1, r * 0.9, -2.4, -0.7); ctx.stroke();
                 for (let i = 0; i < 3; i++) {
                     const a = i / 3 * Math.PI * 2 + 0.5;
-                    ctx.fillStyle = '#c9d6f0';
+                    ctx.fillStyle = '#d9cdae';
                     ctx.beginPath();
                     ctx.arc(x + Math.cos(a) * (r + 3), y + Math.sin(a) * (r + 3), 2.2, 0, Math.PI * 2);
                     ctx.fill();
@@ -1296,8 +1322,8 @@ window.MiniGames = window.MiniGames || {};
                 const x = WARP.x, y = WARP.y, r = WARP.r;
                 ctx.save();
                 const gg = ctx.createRadialGradient(x, y, r * 0.3, x, y, r + 16 + warpFlash * 14);
-                gg.addColorStop(0, `rgba(170,120,255,${0.40 + warpFlash * 0.45})`);
-                gg.addColorStop(0.55, 'rgba(120,70,220,0.18)');
+                gg.addColorStop(0, `rgba(255,140,90,${0.40 + warpFlash * 0.45})`);
+                gg.addColorStop(0.55, 'rgba(200,60,30,0.18)');
                 gg.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = gg;
                 ctx.beginPath(); ctx.arc(x, y, r + 16 + warpFlash * 14, 0, Math.PI * 2); ctx.fill();
@@ -1313,7 +1339,7 @@ window.MiniGames = window.MiniGames || {};
                     ctx.save();
                     ctx.translate(x + Math.cos(a) * r * 0.86, y + Math.sin(a) * r * 0.86);
                     ctx.rotate(a);
-                    ctx.fillStyle = 'rgba(205,185,255,0.55)';
+                    ctx.fillStyle = 'rgba(255,190,150,0.55)';
                     ctx.beginPath(); ctx.ellipse(0, 0, r * 0.2, r * 0.09, 0, 0, Math.PI * 2); ctx.fill();
                     ctx.restore();
                 }
@@ -1333,26 +1359,26 @@ window.MiniGames = window.MiniGames || {};
                         const px = Math.cos(ang) * rad, py = Math.sin(ang) * rad;
                         if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
                     }
-                    ctx.strokeStyle = `rgba(${150 + s * 26},${110 + s * 32},255,${0.5 + warpFlash * 0.45})`;
+                    ctx.strokeStyle = `rgba(255,${100 + s * 40},${60 + s * 25},${0.5 + warpFlash * 0.45})`;
                     ctx.lineWidth = 2.1; ctx.stroke();
                 }
                 ctx.restore();
 
                 const cg = ctx.createRadialGradient(x, y, 0.5, x, y, r * 0.32);
                 cg.addColorStop(0, '#ffffff');
-                cg.addColorStop(0.4, `rgba(190,150,255,${0.8 + warpFlash * 0.2})`);
-                cg.addColorStop(1, 'rgba(60,20,120,0)');
+                cg.addColorStop(0.4, `rgba(255,170,120,${0.8 + warpFlash * 0.2})`);
+                cg.addColorStop(1, 'rgba(120,30,10,0)');
                 ctx.fillStyle = cg;
                 ctx.beginPath(); ctx.arc(x, y, r * 0.32, 0, Math.PI * 2); ctx.fill();
 
-                ctx.strokeStyle = `rgba(205,185,255,${0.5 + flash.warp * 0.5})`;
+                ctx.strokeStyle = `rgba(255,190,150,${0.5 + flash.warp * 0.5})`;
                 ctx.lineWidth = 1.6;
                 ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
                 ctx.restore();
                 ctx.save();
                 ctx.font = 'bold 7px "Segoe UI",sans-serif';
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillStyle = `rgba(190,160,255,${0.45 + flash.warp * 0.5})`;
+                ctx.fillStyle = `rgba(255,160,110,${0.45 + flash.warp * 0.5})`;
                 ctx.fillText('WARP', x, y + r + 9);
                 ctx.restore();
             }
@@ -1367,11 +1393,11 @@ window.MiniGames = window.MiniGames || {};
                 for (let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
                 ctx.lineWidth = 17; ctx.strokeStyle = 'rgba(6,10,20,0.88)'; ctx.stroke();
                 const g = ctx.createLinearGradient(30, 200, 60, 560);
-                g.addColorStop(0, 'rgba(165,125,255,0.30)');
-                g.addColorStop(0.5, 'rgba(120,90,220,0.16)');
-                g.addColorStop(1, 'rgba(165,125,255,0.30)');
+                g.addColorStop(0, 'rgba(255,150,70,0.30)');
+                g.addColorStop(0.5, 'rgba(220,90,40,0.16)');
+                g.addColorStop(1, 'rgba(255,150,70,0.30)');
                 ctx.lineWidth = 13; ctx.strokeStyle = g; ctx.stroke();
-                ctx.lineWidth = 2; ctx.strokeStyle = `rgba(210,190,255,${0.45 + flash.tube * 0.5})`; ctx.stroke();
+                ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,205,150,${0.45 + flash.tube * 0.5})`; ctx.stroke();
                 ctx.lineWidth = 0.9; ctx.strokeStyle = 'rgba(255,255,255,0.5)';
                 ctx.beginPath();
                 ctx.moveTo(P[0][0] - 3, P[0][1]);
@@ -1382,20 +1408,20 @@ window.MiniGames = window.MiniGames || {};
                 const flow = (t * (0.3 + flash.tube * 0.85)) % 1;
                 for (let k = 0; k < 4; k++) {
                     const p = TUBE_PATH.at((flow + k * 0.25) % 1);
-                    ctx.fillStyle = `rgba(205,175,255,${0.3 + flash.tube * 0.55})`;
+                    ctx.fillStyle = `rgba(255,190,120,${0.3 + flash.tube * 0.55})`;
                     ctx.beginPath(); ctx.arc(p.x, p.y, 2.1, 0, Math.PI * 2); ctx.fill();
                 }
                 // 底部喇叭口
                 ctx.save();
                 ctx.globalAlpha = 0.75 + 0.25 * Math.sin(t * 4);
-                ctx.fillStyle = '#b79bff';
+                ctx.fillStyle = '#ff9d4a';
                 ctx.beginPath();
                 ctx.moveTo(TUBE_ENTRY[0] - 11, TUBE_ENTRY[1] + 9);
                 ctx.lineTo(TUBE_ENTRY[0] + 11, TUBE_ENTRY[1] + 9);
                 ctx.lineTo(TUBE_ENTRY[0] + 6, TUBE_ENTRY[1] - 3);
                 ctx.lineTo(TUBE_ENTRY[0] - 6, TUBE_ENTRY[1] - 3);
                 ctx.closePath(); ctx.fill();
-                ctx.fillStyle = '#efe6ff';
+                ctx.fillStyle = '#fff2dc';
                 ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText('▲', TUBE_ENTRY[0], TUBE_ENTRY[1] + 17);
                 ctx.restore();
@@ -1404,7 +1430,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.save();
                 ctx.translate(pe.x, pe.y);
                 ctx.rotate(Math.atan2(pe.ty, pe.tx));
-                ctx.fillStyle = `rgba(190,220,255,${0.7 + flash.tube * 0.3})`;
+                ctx.fillStyle = `rgba(255,224,170,${0.7 + flash.tube * 0.3})`;
                 ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-3, -5); ctx.lineTo(-3, 5);
                 ctx.closePath(); ctx.fill();
                 ctx.restore();
@@ -1490,18 +1516,18 @@ window.MiniGames = window.MiniGames || {};
                 ctx.lineWidth = 19; ctx.strokeStyle = 'rgba(6,12,24,0.85)'; ctx.stroke();
                 // 半透明塑料感
                 const g = ctx.createLinearGradient(60, 200, 320, 440);
-                g.addColorStop(0, 'rgba(170,230,255,0.22)');
-                g.addColorStop(0.5, 'rgba(120,190,255,0.14)');
-                g.addColorStop(1, 'rgba(170,230,255,0.22)');
+                g.addColorStop(0, 'rgba(255,225,150,0.20)');
+                g.addColorStop(0.5, 'rgba(255,190,90,0.12)');
+                g.addColorStop(1, 'rgba(255,225,150,0.20)');
                 ctx.lineWidth = 15; ctx.strokeStyle = g; ctx.stroke();
                 // 两侧金属轨
-                ctx.lineWidth = 2.2; ctx.strokeStyle = 'rgba(200,230,255,0.55)'; ctx.stroke();
+                ctx.lineWidth = 2.2; ctx.strokeStyle = 'rgba(255,232,170,0.55)'; ctx.stroke();
                 ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.stroke();
                 ctx.restore();
                 // 入口箭头（节拍闪烁）
                 ctx.save();
                 ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t * 4.5);
-                ctx.fillStyle = '#7dffcf';
+                ctx.fillStyle = '#ffd166';
                 ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
                 ctx.fillText('▲', RAMP_ENTRY[0], RAMP_ENTRY[1] + 26);
                 ctx.restore();
@@ -1783,8 +1809,8 @@ window.MiniGames = window.MiniGames || {};
                 const ww = ctx.measureText(toast).width + 30;
                 ctx.fillStyle = 'rgba(6,10,22,0.88)';
                 rr(176 - ww / 2, 128, ww, 34, 9); ctx.fill();
-                ctx.strokeStyle = 'rgba(120,200,255,0.7)'; ctx.lineWidth = 1.6; ctx.stroke();
-                ctx.shadowColor = '#7cd4ff'; ctx.shadowBlur = 12;
+                ctx.strokeStyle = 'rgba(255,195,120,0.7)'; ctx.lineWidth = 1.6; ctx.stroke();
+                ctx.shadowColor = '#ffc46a'; ctx.shadowBlur = 12;
                 ctx.fillStyle = '#eaf6ff'; ctx.fillText(toast, 176, 145);
                 ctx.restore();
             }
@@ -1795,7 +1821,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.globalAlpha = 0.32 + 0.12 * Math.sin(t * 3);
                 ctx.font = '9px "Segoe UI","PingFang SC",sans-serif';
                 ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-                ctx.fillStyle = '#9fb6e0';
+                ctx.fillStyle = '#c9b48d';
                 ctx.fillText('← / → 挡板 · 空格 发射 · R 重发本球', 14, GH - 8);
                 ctx.restore();
                 if (launched) return;
@@ -1803,7 +1829,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t * 3.5);
                 ctx.font = 'bold 12px "Segoe UI","PingFang SC",sans-serif';
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillStyle = '#9fe8ff';
+                ctx.fillStyle = '#ffd9a0';
                 ctx.fillText('按住 空格 / ↓ 蓄力  ·  松手发射', 176, 478);
                 ctx.restore();
             }
@@ -1816,7 +1842,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.fillStyle = 'rgba(10,16,30,0.7)';
                 rr(x - 11, y - 11, 22, 22, 5); ctx.fill();
                 ctx.strokeStyle = 'rgba(150,190,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
-                ctx.fillStyle = muted ? '#7a8aa8' : '#9fe8ff';
+                ctx.fillStyle = muted ? '#8a7a64' : '#ffcf8a';
                 ctx.beginPath();
                 ctx.moveTo(x - 6, y - 2.5); ctx.lineTo(x - 2.5, y - 2.5); ctx.lineTo(x + 1, y - 6);
                 ctx.lineTo(x + 1, y + 6); ctx.lineTo(x - 2.5, y + 2.5); ctx.lineTo(x - 6, y + 2.5);
@@ -1825,7 +1851,7 @@ window.MiniGames = window.MiniGames || {};
                     ctx.strokeStyle = '#ff7a7a'; ctx.lineWidth = 1.6;
                     ctx.beginPath(); ctx.moveTo(x + 3, y - 4); ctx.lineTo(x + 8, y + 4); ctx.stroke();
                 } else {
-                    ctx.strokeStyle = '#9fe8ff'; ctx.lineWidth = 1.3;
+                    ctx.strokeStyle = '#ffcf8a'; ctx.lineWidth = 1.3;
                     ctx.beginPath(); ctx.arc(x + 2, y, 4, -0.9, 0.9); ctx.stroke();
                 }
                 ctx.restore();
