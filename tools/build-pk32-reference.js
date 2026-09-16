@@ -41,6 +41,7 @@ const ledgerFile = path.join(output, 'migration-ledger.json');
 if (!fs.existsSync(ledgerFile)) run(process.execPath, [path.join(root, 'tools', 'build-pk32-ledger.js')]);
 
 let nativeStatus = { attempted: false, verified: false, error: null };
+let nativePython = null;
 if (!skipNative) {
   nativeStatus.attempted = true;
   const bundledPython = path.resolve(path.dirname(process.execPath), '..', '..', 'python', 'python.exe');
@@ -54,6 +55,7 @@ if (!skipNative) {
     try {
       run(python, [path.join(root, 'tools', 'inspect-pk32-native.py')]);
       nativeStatus.verified = true;
+      nativePython = python;
       lastError = null;
       break;
     } catch (error) {
@@ -64,6 +66,20 @@ if (!skipNative) {
 }
 run(process.execPath, [path.join(root, 'tools', 'audit-pk32-extraction.js')]);
 run(process.execPath, [path.join(root, 'tools', 'build-pk32-native-catalog.js')]);
+if (nativePython) {
+  run(nativePython, [
+    path.join(root, 'tools', 'build-pk32-native-ownership.py'),
+    '--module', input,
+    '--catalog', path.join(root, 'public', 'data', 'pk32-native-catalog.json'),
+    '--strings', path.join(output, 'strings.json'),
+    '--output', path.join(output, 'native-ownership.json')
+  ]);
+}
+run(process.execPath, [path.join(root, 'tools', 'extract-pk32-dimension-grids.js')]);
+run(process.execPath, [path.join(root, 'tools', 'build-pk32-migration-queue.js')]);
+run(process.execPath, [path.join(root, 'tools', 'build-pk32-structured-payloads.js')]);
+run(process.execPath, [path.join(root, 'tools', 'build-pk32-migration-queue.js')]);
+run(process.execPath, [path.join(root, 'tools', 'build-pk32-native-migration-map.js')]);
 if (!skipLauncher) run(process.execPath, [path.join(root, 'tools', 'verify-pk32-startup.js')]);
 
 const runtime = { window: { MiniGames: {} } };
@@ -140,6 +156,10 @@ const records = catalog.map(record => {
     group: record.group,
     launcher: launcher(record),
     launcherVerified: old.launcherVerified === true,
+    assetsMigrated: old.assetsMigrated === true || evidence.asset.verified,
+    levelsMigrated: old.levelsMigrated === true || evidence.levels.verified,
+    rulesMigrated: old.rulesMigrated === true || evidence.rules.verified,
+    fullFlowMigrated: old.fullFlowMigrated === true || old.originalComplete === true,
     originalAssetsVerified: evidence.asset.verified,
     originalLevelsVerified: evidence.levels.verified,
     originalRulesVerified: evidence.rules.verified,

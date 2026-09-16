@@ -1,0 +1,519 @@
+{
+  "version": 1,
+  "name": "推箱子三",
+  "source": "PK32 native numeric strings; exact dimension formula only",
+  "dataKind": "native-grid-record-candidate",
+  "assignmentVerified": false,
+  "assignmentConfidence": "candidate",
+  "assignmentRequires": "native code reference from game dispatcher to payload offset",
+  "recordsArePlayableLevels": false,
+  "fullGameRulesVerified": false,
+  "nativePayloadCount": 73,
+  "extractedLevelCount": 50,
+  "unmatchedPayloadCount": 23,
+  "acceptedFamilies": [
+    "compact-dimension-grid"
+  ],
+  "levels": [
+    {
+      "number": 1,
+      "sourceOffset": 3094828,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000000000000010000001000010000001000000100000000000000000000100000000001"
+    },
+    {
+      "number": 2,
+      "sourceOffset": 3095292,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000001000000001000000000000100000010000000000011000001000000000000000000000000"
+    },
+    {
+      "number": 3,
+      "sourceOffset": 3095756,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000010000001010000000000000000101000000100000000000000000000010000000000"
+    },
+    {
+      "number": 4,
+      "sourceOffset": 3096220,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "001100000000001000000000000000000000000110000000010000000000100000000000000000000"
+    },
+    {
+      "number": 5,
+      "sourceOffset": 3096684,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000000000000000000000000000000010000000000100000110001010000000000000000"
+    },
+    {
+      "number": 6,
+      "sourceOffset": 3097148,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000011000100000000000000001010000000000000000100000000000000000000000000000000"
+    },
+    {
+      "number": 7,
+      "sourceOffset": 3097612,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "100000000000000000000000000000000000000000000001000000001010000000000000110000000"
+    },
+    {
+      "number": 8,
+      "sourceOffset": 3098076,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000000000001000000000001000000101000000000000000000100000000000000000000"
+    },
+    {
+      "number": 9,
+      "sourceOffset": 3098540,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000100010000100000000000000010000000000000000001000000000000000000000000000000"
+    },
+    {
+      "number": 10,
+      "sourceOffset": 3099004,
+      "sourceLength": 83,
+      "width": 9,
+      "height": 9,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000000000000000001000001001000001000000000010000000000000000000000000000"
+    },
+    {
+      "number": 11,
+      "sourceOffset": 3099468,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000100000000000000100000100000001000110000000000000000000000"
+    },
+    {
+      "number": 12,
+      "sourceOffset": 3099952,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000010000000001000010000000000010000010000010000000000000"
+    },
+    {
+      "number": 13,
+      "sourceOffset": 3100436,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000000000000000000110000000001100000000000100001000000000"
+    },
+    {
+      "number": 14,
+      "sourceOffset": 3100924,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0010000000100000100100000000000001100000000000000000000000000000"
+    },
+    {
+      "number": 15,
+      "sourceOffset": 3101412,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0011000000000000000010000000001000000000000000010000000000000000"
+    },
+    {
+      "number": 16,
+      "sourceOffset": 3101900,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000001000010010000100000000000000100000000000000000000000000"
+    },
+    {
+      "number": 17,
+      "sourceOffset": 3102384,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000000000100100000001000000000000000011000000000000000000"
+    },
+    {
+      "number": 18,
+      "sourceOffset": 3102868,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000000000000100000100000000000000001000000000000000000100"
+    },
+    {
+      "number": 19,
+      "sourceOffset": 3103368,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000001000000000000001000000000000001000000000000000000100"
+    },
+    {
+      "number": 20,
+      "sourceOffset": 3103856,
+      "sourceLength": 66,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0010000000000000000001000001000000000000000000000100000000000000"
+    },
+    {
+      "number": 21,
+      "sourceOffset": 3104348,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000100000000000000000000011000001000000001"
+    },
+    {
+      "number": 22,
+      "sourceOffset": 3104808,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "1000000100000000000000101000000000000100000000000"
+    },
+    {
+      "number": 23,
+      "sourceOffset": 3105276,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000001000110000000000001000000001000000000"
+    },
+    {
+      "number": 24,
+      "sourceOffset": 3105732,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000000000100001000000110000000000100000000"
+    },
+    {
+      "number": 25,
+      "sourceOffset": 3106196,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000000000100000010000000001000000000000001"
+    },
+    {
+      "number": 26,
+      "sourceOffset": 3106660,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0001100000000000000000000000000000000000001100000"
+    },
+    {
+      "number": 27,
+      "sourceOffset": 3107120,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000001000010000000000100000000000000100000000000"
+    },
+    {
+      "number": 28,
+      "sourceOffset": 3107600,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0010000000010000000000000000000000000010000000000"
+    },
+    {
+      "number": 29,
+      "sourceOffset": 3108076,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000001000000001000000000000000000010000000000"
+    },
+    {
+      "number": 30,
+      "sourceOffset": 3108536,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000011000000010000010000000001001"
+    },
+    {
+      "number": 31,
+      "sourceOffset": 3108620,
+      "sourceLength": 51,
+      "width": 7,
+      "height": 7,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000001000010000100000000000000000000000000"
+    },
+    {
+      "number": 32,
+      "sourceOffset": 3109020,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "100000001000000000000100000000100000"
+    },
+    {
+      "number": 33,
+      "sourceOffset": 3109104,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "100000000000010001000000000010100000"
+    },
+    {
+      "number": 34,
+      "sourceOffset": 3109480,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000100000001000010000000000"
+    },
+    {
+      "number": 35,
+      "sourceOffset": 3109564,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "100000000000000100000100000000001000"
+    },
+    {
+      "number": 36,
+      "sourceOffset": 3109940,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000001000000000011000000000"
+    },
+    {
+      "number": 37,
+      "sourceOffset": 3110024,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "001000000000010000000100000000000000"
+    },
+    {
+      "number": 38,
+      "sourceOffset": 3110400,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000000000000100000001000000"
+    },
+    {
+      "number": 39,
+      "sourceOffset": 3110484,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000000000000010001000000000"
+    },
+    {
+      "number": 40,
+      "sourceOffset": 3110860,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "1000010000100000000100001"
+    },
+    {
+      "number": 41,
+      "sourceOffset": 3110920,
+      "sourceLength": 38,
+      "width": 6,
+      "height": 6,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "000000000000010000000000001000000000"
+    },
+    {
+      "number": 42,
+      "sourceOffset": 3111356,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000001000000000110000000"
+    },
+    {
+      "number": 43,
+      "sourceOffset": 3111416,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "1100000000000010010000000"
+    },
+    {
+      "number": 44,
+      "sourceOffset": 3111476,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "1000000100000010000000010"
+    },
+    {
+      "number": 45,
+      "sourceOffset": 3111828,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000000000000100100"
+    },
+    {
+      "number": 46,
+      "sourceOffset": 3111888,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0010000000000000110000000"
+    },
+    {
+      "number": 47,
+      "sourceOffset": 3111948,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000000010000010010"
+    },
+    {
+      "number": 48,
+      "sourceOffset": 3112300,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000000000000000000000"
+    },
+    {
+      "number": 49,
+      "sourceOffset": 3112360,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000001000000000000000000"
+    },
+    {
+      "number": 50,
+      "sourceOffset": 3112420,
+      "sourceLength": 27,
+      "width": 5,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "compact-dimension-grid",
+      "cells": "0000000100000000001000000"
+    }
+  ]
+}

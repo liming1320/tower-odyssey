@@ -883,8 +883,8 @@ body.in-battle .avatar-btn { display: none; }
     #pk32-mask .pk32v-ships-board .ships-board { width: 350px; }
 }
 #pk32-mask .pipe-connect-native-board {
-    grid-template-columns: repeat(16, minmax(0, 1fr)) !important;
-    width: min(100%, 576px);
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    width: min(100%, 528px);
     max-width: none !important;
     gap: 0;
     padding: 0;
@@ -911,6 +911,7 @@ body.in-battle .avatar-btn { display: none; }
 }
 #pk32-mask .pipe-connect-native-board button.pipe-connect-tile.pipe-connect-placed:hover { filter: brightness(1.16); }
 #pk32-mask .pipe-connect-native-board button.pipe-connect-source { outline: 2px solid #fff3a6; outline-offset: -2px; }
+#pk32-mask .pipe-connect-native-board button.pipe-connect-water { filter: brightness(1.28) saturate(1.22); }
 .mini-stage canvas, .mini-stage > div:not(.mg-dom) { display: block; }
 /* 2026-09-10 升级：mini-stage 用机柜风格外壳（和 MG.gfx.scene 配套）
    canvas 类游戏的背景由 MG.gfx.scene 预渲染（带网格+暗角+顶亮底暗），此兜底
@@ -1009,6 +1010,11 @@ body.in-battle .avatar-btn { display: none; }
 .emu-item-info { flex: 1; min-width: 0; }
 .emu-item-name { font-size: 13.5px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .emu-item-meta { font-size: 11px; color: #8f96b8; margin-top: 2px; }
+.pk32-evidence { display: grid; gap: 10px; min-width: 0; color: #e9e7f4; }
+.pk32-evidence h3 { margin: 4px 0 0; font-size: 14px; }
+.pk32-evidence-facts p { margin: 4px 0; overflow-wrap: anywhere; }
+.pk32-evidence-help { margin: 0; padding-left: 22px; }
+.pk32-evidence-payload { box-sizing: border-box; max-width: 100%; max-height: 320px; margin: 0; padding: 10px; overflow: auto; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.24); color: #d7f4df; white-space: pre-wrap; overflow-wrap: anywhere; }
 .emu-btn { border: none; border-radius: 8px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; flex: 0 0 auto; }
 .emu-btn-play { background: linear-gradient(160deg, #ffd56b, #d89a2a); color: #2a1e04; font-weight: bold; }
 .emu-btn-play:active { filter: brightness(.85); }

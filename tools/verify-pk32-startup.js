@@ -3,9 +3,12 @@ const vm = require('vm');
 const Stub = require('./mg-dom-stub');
 
 const S = Stub.install();
-const files = ['pk32.js', 'pk32-board.js', 'pk32-sokoban4.js', 'pk32-casual.js', 'pk32-action.js', 'pk32-strategy.js', 'pk32-tower.js', 'pk32-richman.js', 'pk32-light-core.js', 'pk32-light.js', 'pk32-card.js', 'pk32-puzzle.js', 'pk32-variants.js', 'richman.js'];
+const files = ['pk32.js', 'pk32-board.js', 'pk32-sokoban4.js', 'pk32-casual.js', 'pk32-action.js', 'pk32-strategy.js', 'pk32-tower.js', 'pk32-richman.js', 'pk32-light-core.js', 'pk32-light.js', 'pk32-card.js', 'pk32-puzzle.js', 'pk32-variants.js', 'pk32-evidence.js', 'richman.js'];
 files.forEach(file => S.loadGameFile(file));
 const catalog = global.PK32Catalog;
+const nativeCatalog = JSON.parse(fs.readFileSync(require('path').join(__dirname, '..', 'public', 'data', 'pk32-native-catalog.json'), 'utf8'));
+const nativeById = new Map(nativeCatalog.records.map(record => [record.id, record]));
+catalog.forEach(record => { record.native = nativeById.get(record.id) || null; });
 const failures = [];
 const results = [];
 function elementCount(node) {
@@ -17,14 +20,11 @@ for (const record of catalog) {
     const host = S.makeEl('div');
     let session;
     try {
-        if (record.module) session = global.PK32Board.startUI(host, record.module.id, {});
+        if (!record.dedicatedLauncher) session = global.PK32Evidence.start(host, record);
+        else if (record.dedicatedLauncher === 'module') session = global.PK32Board.startUI(host, record.module.id, {});
+        else if (record.dedicatedLauncher === 'puzzle') session = global.PK32Puzzle.startGame(host, record.puzzle, {});
+        else if (record.dedicatedLauncher === 'variant') session = global.PK32Variants.startGame(host, record.variant, {});
         else if (record.playable && record.playable.gameId === 'pk32-sokoban4') session = global.PK32Sokoban4.start(host, {});
-        else if (record.casual) session = global.PK32Casual.startGame(host, record.casual, {});
-        else if (record.action) session = global.PK32Action.startGame(host, record.action, {});
-        else if (record.strategy) session = global.PK32Strategy.startGame(host, record.strategy, {});
-        else if (record.card) session = global.PK32Card.startGame(host, record.card, {});
-        else if (record.puzzle) session = global.PK32Puzzle.startGame(host, record.puzzle, {});
-        else if (record.variant) session = global.PK32Variants.startGame(host, record.variant, {});
         else if (record.playable && record.playable.gameId === 'tower') session = global.PK32Tower.startUI(host, {});
         else if (record.playable && record.playable.gameId === 'pk32-richman') session = global.PK32Richman.start(host, {});
         else if (record.playable && record.playable.gameId === 'pk32-light') session = global.PK32Light.start(host, {});
@@ -32,7 +32,7 @@ for (const record of catalog) {
         else throw new Error('no launcher');
         const rendered = elementCount(host);
         if (!rendered) throw new Error('launcher rendered an empty host');
-        const launcher = record.module ? 'board' : (record.playable && record.playable.gameId === 'pk32-sokoban4') ? 'pk32-sokoban4' : record.casual ? 'casual' : record.action ? 'action' : record.strategy ? 'strategy' : record.card ? 'card' : record.puzzle ? 'puzzle' : record.variant ? 'variant' : record.playable ? record.playable.gameId : 'none';
+        const launcher = !record.dedicatedLauncher ? 'evidence' : record.dedicatedLauncher === 'module' ? 'board' : record.dedicatedLauncher === 'puzzle' ? 'puzzle' : record.dedicatedLauncher === 'variant' ? 'variant' : (record.playable && record.playable.gameId === 'pk32-sokoban4') ? 'pk32-sokoban4' : record.playable ? record.playable.gameId : 'none';
         results.push({ index: record.index, name: record.name, launcher, rendered });
         if (session && typeof session.stop === 'function') session.stop();
         else if (session && typeof session.destroy === 'function') session.destroy();

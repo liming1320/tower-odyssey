@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "name": "魅力之球",
+  "source": "PK32 native numeric strings; exact dimension formula only",
+  "dataKind": "native-grid-record-candidate",
+  "assignmentVerified": false,
+  "assignmentConfidence": "candidate",
+  "assignmentRequires": "native code reference from game dispatcher to payload offset",
+  "recordsArePlayableLevels": false,
+  "fullGameRulesVerified": false,
+  "nativePayloadCount": 8,
+  "extractedLevelCount": 4,
+  "unmatchedPayloadCount": 4,
+  "acceptedFamilies": [
+    "dimension-prefix-single-cell"
+  ],
+  "levels": [
+    {
+      "number": 1,
+      "sourceOffset": 2993096,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0004000440600400065060004006400006030604030000000646006000030350"
+    },
+    {
+      "number": 2,
+      "sourceOffset": 2993576,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "4000400203500030040040000000000000530000000000200566600000000305"
+    },
+    {
+      "number": 3,
+      "sourceOffset": 2994068,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "4000000005036350040640400603600003004060005000040030600030604546"
+    },
+    {
+      "number": 4,
+      "sourceOffset": 2994560,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000040023400600066006000000060000030636400000000002000306640"
+    }
+  ]
+}

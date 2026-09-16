@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { profilePayloads } = require('./lib/pk32-payload-profile');
 
 const root = path.resolve(__dirname, '..');
 const reference = path.join(root, 'output', 'pk32-reference');
@@ -35,10 +36,10 @@ function explicitLevelMax(rows) {
   return max;
 }
 
-function numericPayloads(rows, includeValues) {
+function numericPayloads(rows) {
   return rows.filter(row => /^\d+$/.test(row.text) && row.text.length >= 18).map(row => {
     const payload = { offset: row.offset, length: row.text.length, sample: row.text.slice(0, 48) };
-    if (includeValues) payload.value = row.text;
+    payload.value = row.text;
     return payload;
   });
 }
@@ -54,16 +55,24 @@ const records = games.map(game => {
       help: [],
       payloadCount: 0,
       payloadLengths: {},
+      payloadProfile: profilePayloads([]),
+      payloadAssignment: { method: 'title-section', confidence: 'none', warnings: ['original title not found'] },
       levelCount: null,
       levelCountBasis: null
     };
   }
   const rows = sectionRows(title);
-  const payloads = numericPayloads(rows, game.name === '独粒钻石');
+  const payloads = numericPayloads(rows);
   const payloadLengths = {};
   payloads.forEach(row => { payloadLengths[row.length] = (payloadLengths[row.length] || 0) + 1; });
   const help = rows.filter(row => row.text !== title.text && !/^\d+$/.test(row.text) && row.text.length >= 8)
     .slice(0, 12).map(row => row.text.slice(0, 240));
+  const crossGameMentions = games.filter(other => other.name !== game.name && other.name.length >= 3 && help.some(text => text.includes(other.name))).map(other => other.name);
+  const payloadAssignment = {
+    method: 'exact title to next PK32 title offset',
+    confidence: crossGameMentions.length ? 'low' : 'candidate',
+    warnings: crossGameMentions.length ? ['section text mentions other games: ' + crossGameMentions.join(', ')] : []
+  };
   let levelCount = null;
   let levelCountBasis = null;
   if (game.name === '魔塔') {
@@ -87,7 +96,9 @@ const records = games.map(game => {
     help,
     payloadCount: payloads.length,
     payloadLengths,
-    payloads: game.name === '独粒钻石' ? payloads : undefined,
+    payloadProfile: profilePayloads(payloads),
+    payloadAssignment,
+    nativePayloads: payloads,
     payloadSamples: payloads.slice(0, 24).map(row => ({ offset: row.offset, length: row.length, sample: row.sample })),
     levelCount,
     levelCountBasis

@@ -12,7 +12,7 @@
         '独粒钻石': '17 个原生初始化棋盘、横纵连续跳吃与中心终局评分已接入；原生绘制和演示仍待确认',
         '同色方块': '3 张 12×16 原生盘面与至少两个连续同色消除规则已接入；原版关数和美术仍待确认',
         '强手棋': '原版棋盘、四名角色和地产美术已还原；完整规则仍在迁移',
-        '接水管': '原生提示确认 1-5 关；关卡 payload 已提取，布局编码仍在还原',
+        '接水管': '12×8 原生棋盘、难度 1-5、60 秒倒计时、随机管件与扣时规则已接入；6 条原始载荷待继续解码',
         '同步移动': '261 条原生载荷已提取；坐标分组与白黑棋状态规则待核对',
         '木乃伊': '222 条原生载荷、宽高和坐标序列已提取；人物、木乃伊与出口映射待核对',
         '电磁彩球': '160 个 16×16 原生盘面和移动彩球/固定球规则已接入；原版美术仍待绑定',
@@ -64,6 +64,11 @@
     const GROUPS = [
         [0, 80, '扑克与纸牌'], [80, 147, '棋类与益智'], [147, 196, '休闲与解谜'], [196, NAMES.length, '其他原版游戏'],
     ];
+    const DEDICATED_VARIANT_NAMES = '接水管|同色方块|同步移动|木乃伊|电磁彩球|建筑制造|航海迷题|立体魔方二|反射镜|交换彩球|爆破彩球|坦克大战|海底寻宝|七盏灯|推箱子五|禅宗迷宫|跟花二|魔法城堡二|魔法城堡|连结电线二|七巧板|宇宙黑洞|下一百层|上一百层|飞一百米|打砖块|魔塔二|魔塔三|魔塔四'.split('|');
+    DEDICATED_VARIANT_NAMES.forEach(name => { VARIANT_CONFIG[name] = name; });
+    const DEDICATED_NAMES = new Set([
+        ...Object.keys(PLAYABLE), ...Object.keys(MODULE_CONFIG), '独粒钻石', ...DEDICATED_VARIANT_NAMES,
+    ]);
 
     function esc(s) {
         return String(s == null ? '' : s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
@@ -76,7 +81,9 @@
         return NAMES.map((name, index) => ({
             id: 'pk32-' + String(index + 1).padStart(3, '0'),
             name, index: index + 1, group: groupOf(index),
-            status: PLAYABLE[name] || MODULE_CONFIG[name] || CASUAL_CONFIG[name] || ACTION_CONFIG[name] || STRATEGY_CONFIG[name] || CARD_CONFIG[name] || PUZZLE_CONFIG[name] || VARIANT_CONFIG[name] ? 'rules-partial' : 'catalogued',
+            status: DEDICATED_NAMES.has(name) ? 'rules-partial' : 'evidence-bound',
+            dedicated: DEDICATED_NAMES.has(name),
+            dedicatedLauncher: PLAYABLE[name] ? 'playable' : MODULE_CONFIG[name] ? 'module' : name === '独粒钻石' ? 'puzzle' : DEDICATED_NAMES.has(name) ? 'variant' : null,
             originalComplete: false,
             levelText: name === '魔塔' ? '原版地图：22 层' : name === '强手棋' ? '原版棋盘：40 格' : name === '接水管' ? '原版关数：5（原生提示）' : '原版关数：待核对',
             evidence: EVIDENCE[name] || '已从 PK32 原版菜单识别，等待资源与规则迁移',
@@ -100,9 +107,39 @@
             record.native = native;
             if (native.levelCount != null) record.levelText = '原版关数：' + native.levelCount;
             else if (native.payloadCount) record.levelText = '原版数据串：' + native.payloadCount + ' 条，关数待核对';
+            if (!record.dedicated) {
+                record.status = record.structured
+                    ? 'structured-assignment-review'
+                    : native.payloadCount && native.payloadAssignment && native.payloadAssignment.confidence === 'low'
+                    ? 'payload-assignment-review'
+                    : native.payloadProfile && /^(dimension-prefix|compact-dimension)/.test(native.payloadProfile.dominantFamily || '')
+                        ? 'structured-assignment-review'
+                    : native.payloadCount ? 'payload-awaiting-adapter' : 'evidence-bound';
+            }
             if (native.help && native.help.length && record.name !== '魔塔' && record.name !== '强手棋') {
                 record.evidence = native.help[0];
             }
+        });
+    }
+    function applyStructuredCatalog(data) {
+        const rows = data && Array.isArray(data.games) ? data.games : [];
+        rows.forEach(structured => {
+            const record = CATALOG.find(item => item.id === structured.id);
+            if (!record) return;
+            record.structured = structured;
+            if (!record.dedicated) record.status = 'structured-assignment-review';
+        });
+    }
+    function applyMigrationStatus(data) {
+        const rows = data && Array.isArray(data.records) ? data.records : [];
+        rows.forEach(status => {
+            const record = CATALOG.find(item => item.id === status.id);
+            if (!record) return;
+            record.migration = status.migration;
+            record.verification = status.verification;
+            record.migrationComplete = status.migrationComplete === true;
+            record.verificationComplete = status.verificationComplete === true;
+            record.originalComplete = status.originalComplete === true;
         });
     }
     // 按后台保存的顺序重排目录（顺序以 id 数组给定；未出现的排末尾）
@@ -167,15 +204,12 @@
                     '<div class="emu-item-info"><div class="emu-item-name">' + esc(x.index + '. ' + x.name) + '</div>' +
                     '<div class="emu-item-meta">' + esc(x.group) + ' · ' + esc(x.levelText) + '</div>' +
                     '<div class="emu-item-meta">' + esc(x.evidence) + '</div></div>' +
-            (x.playable ? '<button class="btn ghost pk32-launch" data-pk32-launch="' + esc(x.id) + '">' + esc(x.playable.label) + '</button>' : '') +
-                    (x.module ? '<button class="btn ghost pk32-module-launch" data-pk32-module="' + esc(x.id) + '">独立启动</button>' : '') +
-                    (x.casual ? '<button class="btn ghost pk32-casual-launch" data-pk32-casual="' + esc(x.id) + '">独立启动</button>' : '') +
-                    (x.action ? '<button class="btn ghost pk32-action-launch" data-pk32-action="' + esc(x.id) + '">独立启动</button>' : '') +
-                    (x.strategy ? '<button class="btn ghost pk32-strategy-launch" data-pk32-strategy="' + esc(x.id) + '">独立启动</button>' : '') +
-                    (x.card ? '<button class="btn ghost pk32-card-launch" data-pk32-card="' + esc(x.id) + '">独立启动</button>' : '') +
-                    (x.puzzle ? '<button class="btn ghost pk32-puzzle-launch" data-pk32-puzzle="' + esc(x.id) + '">独立启动</button>' : '') +
-                    (x.variant ? '<button class="btn ghost pk32-variant-launch" data-pk32-variant="' + esc(x.id) + '">独立启动</button>' : '') +
-                    '<span class="emu-tag" style="color:#ffd56b;border-color:rgba(255,213,107,.35)">' + esc(x.status === 'rules-partial' ? '规则接入中' : '迁移中') + '</span></div>'
+            (x.dedicatedLauncher === 'playable' ? '<button class="btn ghost pk32-launch" data-pk32-launch="' + esc(x.id) + '">' + esc(x.playable.label) + '</button>' : '') +
+                    (x.dedicatedLauncher === 'module' ? '<button class="btn ghost pk32-module-launch" data-pk32-module="' + esc(x.id) + '">独立启动</button>' : '') +
+                    (x.dedicatedLauncher === 'puzzle' ? '<button class="btn ghost pk32-puzzle-launch" data-pk32-puzzle="' + esc(x.id) + '">独立启动</button>' : '') +
+                    (x.dedicatedLauncher === 'variant' ? '<button class="btn ghost pk32-variant-launch" data-pk32-variant="' + esc(x.id) + '">独立启动</button>' : '') +
+                    '<button class="btn ghost pk32-evidence-launch" data-pk32-evidence="' + esc(x.id) + '">原始迁移资料</button>' +
+                    '<span class="emu-tag" style="color:#ffd56b;border-color:rgba(255,213,107,.35)">' + esc(x.status === 'rules-partial' ? '规则接入中' : x.status === 'structured-assignment-review' ? '结构已解析，归属待复核' : x.status === 'payload-assignment-review' ? '载荷归属待复核' : x.status === 'payload-awaiting-adapter' ? '原始载荷待解码' : '迁移资料已绑定') + '</span></div>'
                 ).join('');
                 list.querySelectorAll('[data-pk32-launch]').forEach(btn => btn.onclick = () => launch(all.find(x => x.id === btn.dataset.pk32Launch)));
                 list.querySelectorAll('[data-pk32-module]').forEach(btn => btn.onclick = () => launchModule(all.find(x => x.id === btn.dataset.pk32Module)));
@@ -185,6 +219,7 @@
                 list.querySelectorAll('[data-pk32-card]').forEach(btn => btn.onclick = () => launchCard(all.find(x => x.id === btn.dataset.pk32Card)));
                 list.querySelectorAll('[data-pk32-puzzle]').forEach(btn => btn.onclick = () => launchPuzzle(all.find(x => x.id === btn.dataset.pk32Puzzle)));
                 list.querySelectorAll('[data-pk32-variant]').forEach(btn => btn.onclick = () => launchVariant(all.find(x => x.id === btn.dataset.pk32Variant)));
+                list.querySelectorAll('[data-pk32-evidence]').forEach(btn => btn.onclick = () => launchEvidence(all.find(x => x.id === btn.dataset.pk32Evidence)));
             }
             function mount(record, title, start, note) {
                 stopActiveSession();
@@ -266,6 +301,10 @@
                 }
                 if (window.PK32Variants) mount(record, 'PK32 独立版', host => window.PK32Variants.startGame(host, record.variant || record.name, { onScore: opts.onScore }));
             }
+            function launchEvidence(record) {
+                if (!record || !window.PK32Evidence) return;
+                mount(record, '原始迁移资料', host => window.PK32Evidence.start(host, record), '只读展示原始名称、文本、载荷和关卡证据；不执行未验证规则。');
+            }
             function launch(record) {
                 const spec = record && record.playable;
                 if (spec && spec.gameId === 'tower') {
@@ -301,6 +340,16 @@
                 applyNativeCatalog(data);
                 if (!activeSession) render();
                 if (window.__MG_TEST) window.__pk32Dbg = { catalog: all, records, groupOf };
+            }).catch(() => {});
+            fetch('/data/pk32-structured-payloads.json').then(response => response.ok ? response.json() : null).then(data => {
+                if (!data || !alive) return;
+                applyStructuredCatalog(data);
+                if (!activeSession) render();
+            }).catch(() => {});
+            fetch('/data/pk32-migration-status.json').then(response => response.ok ? response.json() : null).then(data => {
+                if (!data || !alive) return;
+                applyMigrationStatus(data);
+                if (!activeSession) render();
             }).catch(() => {});
             // 后台 PK32 排序：拉到顺序后重排目录，玩家端展示顺序与后台一致
             if (typeof fetch === 'function') {

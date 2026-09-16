@@ -87,10 +87,15 @@ const allSteps = [
   { phase: 'inventory', script: 'tools/verify-pk32-catalog.js' },
   { phase: 'inventory', script: 'tools/verify-pk32-catalog-coverage.js' },
   { phase: 'inventory', script: 'tools/verify-pk32-level-boundaries.js' },
+  { phase: 'inventory', script: 'tools/verify-pk32-evidence-layer.js' },
   { phase: 'evidence', script: 'tools/verify-pk32-native-data-manifest.js' },
   { phase: 'evidence', script: 'tools/verify-pk32-native-data.js' },
+  { phase: 'evidence', script: 'tools/verify-pk32-native-ownership.js' },
+  { phase: 'evidence', script: 'tools/verify-pk32-dimension-grids.js' },
+  { phase: 'evidence', script: 'tools/verify-pk32-structured-payloads.js' },
   ...selected.flatMap(name => groups[name].evidence.map(script => ({ phase: 'evidence', group: name, script }))),
   { phase: 'implementation', script: 'tools/verify-pk32-startup.js' },
+  { phase: 'browser', script: 'tools/verify-pk32-evidence-browser.js' },
   ...selected.flatMap(name => groups[name].browser.map(script => ({ phase: 'browser', group: name, script })))
 ];
 const seenSteps = new Set();

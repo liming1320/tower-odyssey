@@ -54,8 +54,12 @@ function install() {
         });
     }
     function makeEl(tag) {
+        const style = {
+            setProperty(name, value) { style[name] = value; },
+            removeProperty(name) { delete style[name]; }
+        };
         const el = {
-            tagName: tag, style: {}, dataset: {}, children: [], __h: {},
+            tagName: tag, style, dataset: {}, children: [], __h: {},
             classList: { add() { }, remove() { }, toggle() { }, contains: () => false },
             addEventListener(t, f) { (el.__h[t] = el.__h[t] || []).push(f); },
             removeEventListener(t, f) { const a = el.__h[t] || []; const i = a.indexOf(f); if (i >= 0) a.splice(i, 1); },

@@ -1,0 +1,399 @@
+{
+  "version": 1,
+  "name": "骰子王",
+  "source": "PK32 native numeric strings; exact dimension formula only",
+  "dataKind": "native-grid-record-candidate",
+  "assignmentVerified": false,
+  "assignmentConfidence": "candidate",
+  "assignmentRequires": "native code reference from game dispatcher to payload offset",
+  "recordsArePlayableLevels": false,
+  "fullGameRulesVerified": false,
+  "nativePayloadCount": 52,
+  "extractedLevelCount": 38,
+  "unmatchedPayloadCount": 14,
+  "acceptedFamilies": [
+    "dimension-prefix-single-cell"
+  ],
+  "levels": [
+    {
+      "number": 1,
+      "sourceOffset": 3547440,
+      "sourceLength": 24,
+      "width": 10,
+      "height": 2,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "28150239070339040439"
+    },
+    {
+      "number": 2,
+      "sourceOffset": 3547500,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "2050000002004000325005450000000030300000502000020664203000500004"
+    },
+    {
+      "number": 3,
+      "sourceOffset": 3547644,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0200020204000400000000020204020002000203340004000000400032303230"
+    },
+    {
+      "number": 4,
+      "sourceOffset": 3547788,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "3000000060036060300000300065060000040004060000600306000000503600"
+    },
+    {
+      "number": 5,
+      "sourceOffset": 3547988,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "2000000204000000500000500400000002000000300000300200000060500056"
+    },
+    {
+      "number": 6,
+      "sourceOffset": 3548132,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0004004503000000200020245005400000000000002340000300664000053000"
+    },
+    {
+      "number": 7,
+      "sourceOffset": 3548276,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "4045060460000000000060030640000600063005620000000060260300003006"
+    },
+    {
+      "number": 8,
+      "sourceOffset": 3548476,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "6200230005000000200035000040005040620060000000600500000000000000"
+    },
+    {
+      "number": 9,
+      "sourceOffset": 3548620,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0300000405035400000000000000000000000000002300040000040200340004"
+    },
+    {
+      "number": 10,
+      "sourceOffset": 3548764,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0006046206000030025006000000030003600002003002000000060030360045"
+    },
+    {
+      "number": 11,
+      "sourceOffset": 3548908,
+      "sourceLength": 24,
+      "width": 4,
+      "height": 5,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "28100539130530140528"
+    },
+    {
+      "number": 12,
+      "sourceOffset": 3548964,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000000042450000000000000430000340000005000000042400000005005"
+    },
+    {
+      "number": 13,
+      "sourceOffset": 3549108,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000003000020200400300302040450000006060500002000004006030000"
+    },
+    {
+      "number": 14,
+      "sourceOffset": 3549252,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "4000340005600600063000060000500300500000003036030650640600000004"
+    },
+    {
+      "number": 15,
+      "sourceOffset": 3549452,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000002400000000005000000004663004600000006050000000000302000004"
+    },
+    {
+      "number": 16,
+      "sourceOffset": 3549596,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000402600023006000400060460000600006003000000200342043000004"
+    },
+    {
+      "number": 17,
+      "sourceOffset": 3549740,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000032004350030000004000030200000506040000030300020004230000003"
+    },
+    {
+      "number": 18,
+      "sourceOffset": 3549940,
+      "sourceLength": 68,
+      "width": 8,
+      "height": 8,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000000200600003000000600406000000000002060300500006500040000"
+    },
+    {
+      "number": 19,
+      "sourceOffset": 3550084,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000000020000000000000000000004004000000053000000003200000004004000000000000000000000500000000000"
+    },
+    {
+      "number": 20,
+      "sourceOffset": 3550408,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000001000040000000000001206000200000340000030000000000002030535000002002666030000000402004020000302"
+    },
+    {
+      "number": 21,
+      "sourceOffset": 3550624,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "4000005024002060006005606200600300000000000005600000060000600000000060036030600000002060564303603004"
+    },
+    {
+      "number": 22,
+      "sourceOffset": 3550908,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000002000062306006000062406400000000005360066000600046606000500000020002600000046000260600006000000"
+    },
+    {
+      "number": 23,
+      "sourceOffset": 3551124,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0030000000002050000000000020000000000000000004230000000000000000000000024000400003000466000052000032"
+    },
+    {
+      "number": 24,
+      "sourceOffset": 3551396,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "2000000000500060340000600006000000000000000026000004000004030000600000000000300040605060032000006002"
+    },
+    {
+      "number": 25,
+      "sourceOffset": 3551612,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000000063000005000000000000400000400000000060000404006000000030620003000060002005003000004000004"
+    },
+    {
+      "number": 26,
+      "sourceOffset": 3551884,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0060000000006000006060304000606006666000400300604030000360606060600060606400600050000065600000000000"
+    },
+    {
+      "number": 27,
+      "sourceOffset": 3552100,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000400065260600006006060040600606000000060606000626060602000020060066604002000000200005000400000"
+    },
+    {
+      "number": 28,
+      "sourceOffset": 3552372,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000002060000640400002000000060650640202000030030000600000062000000050000600000060004602000060000"
+    },
+    {
+      "number": 29,
+      "sourceOffset": 3552588,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "2000000002043000323000000000005000006000060630000000000030322060600000400005260002400000000000200004"
+    },
+    {
+      "number": 30,
+      "sourceOffset": 3552856,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000020026300003000646060000060000000006060060040604000000004630360006000062000636000302060006000"
+    },
+    {
+      "number": 31,
+      "sourceOffset": 3553072,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "4000630400006000060000002000000000602060600000006005000600000006000000006006260000000006300050020000"
+    },
+    {
+      "number": 32,
+      "sourceOffset": 3553344,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000400040020000600005650000600006000604005460000000000000600000600620050000000006006003600030056005"
+    },
+    {
+      "number": 33,
+      "sourceOffset": 3553560,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000000000200005000000030000200000000000000020400045030000030000002000030300003000024000040060002"
+    },
+    {
+      "number": 34,
+      "sourceOffset": 3553844,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000054004060200000006600400450000000000004000062000005006000000003600000000540402640030000000000002"
+    },
+    {
+      "number": 35,
+      "sourceOffset": 3554060,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "5000000004000050000000200050000000000000040203020003050405000000000000003000400000005000002000000003"
+    },
+    {
+      "number": 36,
+      "sourceOffset": 3554332,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000005002004040000300030004065020000000000004004000003000000003630006002066000320050000020200405000"
+    },
+    {
+      "number": 37,
+      "sourceOffset": 3554548,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "0000000000000002005004060006000006000000000300000065000360000006000600006000060003000400300002000000"
+    },
+    {
+      "number": 38,
+      "sourceOffset": 3554820,
+      "sourceLength": 104,
+      "width": 10,
+      "height": 10,
+      "cellWidth": 1,
+      "encodingFamily": "dimension-prefix-single-cell",
+      "cells": "6200030004600000000060000000036000006000600006362060004000006000000000630000000060000000006000000000"
+    }
+  ]
+}

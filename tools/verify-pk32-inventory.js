@@ -22,7 +22,7 @@ assert.equal(inventory.engineGroups[0].games, 213);
 assert.equal(queue.summary.total, 213);
 assert.equal(queue.records.length, ledger.records.length);
 assert.equal(queue.summary.originalComplete, 0);
-assert.equal(queue.summary.dedicatedRenderer, 39);
+assert.equal(queue.summary.dedicatedRenderer, queue.records.filter(record => record.renderer === 'dedicated-or-board').length);
 assert.equal(queue.records.filter(record => record.originalComplete).length, 0);
 for (const record of queue.records) {
     assert.equal(record.engineGroup, 'vb5-pk32-shared-host');
