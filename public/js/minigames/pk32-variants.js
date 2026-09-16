@@ -263,8 +263,9 @@
         function renderNativeBlackHole() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载宇宙黑洞原生载荷…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
             fetch('/data/pk32-black-hole-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                let level = 0; const select = el('select', { 'aria-label': '宇宙黑洞原生数据' }); data.levels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '已定位数据 ' + (index + 1))); });
-                function draw() { panel.innerHTML = ''; const nav = el('div', { className: 'pk32v-toolbar' }); nav.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一条', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select); panel.appendChild(nav); const item = data.levels[level]; const width = item.cells.length === 676 ? 26 : item.cells.length === 168 ? 14 : item.cells.length === 36 ? 6 : item.cells.length; const rows = item.cells.match(new RegExp('.{1,' + width + '}', 'g')) || [], grid = renderGrid(width, rows.length, 'pk32-black-hole-board'); rows.join('').split('').forEach(function (value) { const cell = button(value === '0' ? '' : value, function () { cell.classList.toggle('pk32-black-hole-selected'); }); cell.dataset.code = value; cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (value === '0' ? '#0f172a' : value === '1' ? '#38bdf8' : value === '2' ? '#f59e0b' : value === '5' ? '#ef4444' : '#64748b') + ';color:#fff;font-size:10px'; grid.appendChild(cell); }); panel.appendChild(grid); prompt.textContent = '宇宙黑洞：原版 30 关；原生数据 ' + (level + 1) + ' / ' + data.levels.length + '。当前显示原始打捞盘面，物品碰撞规则仍在校核。'; }
+                const playableLevels = data.levels.slice(0, data.nativeLevelCount || data.levels.length);
+                let level = 0; const select = el('select', { 'aria-label': '宇宙黑洞原生数据' }); playableLevels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '原版关卡 ' + (index + 1))); });
+                function draw() { panel.innerHTML = ''; const nav = el('div', { className: 'pk32v-toolbar' }); nav.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(playableLevels.length - 1, level + 1); select.value = String(level); draw(); }), select); panel.appendChild(nav); const item = playableLevels[level]; const width = item.cells.length === 676 ? 26 : item.cells.length === 168 ? 14 : item.cells.length === 36 ? 6 : item.cells.length; const rows = item.cells.match(new RegExp('.{1,' + width + '}', 'g')) || [], grid = renderGrid(width, rows.length, 'pk32-black-hole-board'); rows.join('').split('').forEach(function (value) { const cell = button(value === '0' ? '' : value, function () { cell.classList.toggle('pk32-black-hole-selected'); }); cell.dataset.code = value; cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (value === '0' ? '#0f172a' : value === '1' ? '#38bdf8' : value === '2' ? '#f59e0b' : value === '5' ? '#ef4444' : '#64748b') + ';color:#fff;font-size:10px'; grid.appendChild(cell); }); panel.appendChild(grid); prompt.textContent = '宇宙黑洞：原版 30 关；原生关卡 ' + (level + 1) + ' / ' + playableLevels.length + '。另有 ' + Math.max(0, data.levels.length - playableLevels.length) + ' 条待确认载荷未开放，物品碰撞规则仍在校核。'; }
                 select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw();
             }).catch(function () { prompt.textContent = '宇宙黑洞原生载荷加载失败'; });
         }
@@ -984,25 +985,51 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             const wrap = el('div', { className: 'pk32v-native-ships' });
             const controls = el('div', { className: 'pk32v-controls' });
             const board = el('div', { className: 'pk32v-ships-board' }); const grid = renderGrid(10, 10, 'ships-board'); const svg = el('svg', { className: 'pk32v-ships-lines' }); svg.setAttribute('viewBox', '0 0 10 10'); svg.setAttribute('aria-hidden', 'true'); board.append(svg, grid);
-            let levels = [], level = 0, selected = null, links = [];
+            let levels = [], layouts = [], level = 0, selected = null, links = [];
             function orientation(a, b, c) { const value = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x); return value > 0 ? 1 : value < 0 ? -1 : 0; }
             function intersects(a, b, c, d) { const ab1 = orientation(a, b, c), ab2 = orientation(a, b, d), cd1 = orientation(c, d, a), cd2 = orientation(c, d, b); return ab1 * ab2 < 0 && cd1 * cd2 < 0; }
             function onSegment(a, b, p) { return p.x >= Math.min(a.x, b.x) && p.x <= Math.max(a.x, b.x) && p.y >= Math.min(a.y, b.y) && p.y <= Math.max(a.y, b.y); }
             function draw() {
                 grid.innerHTML = '';
                 const raw = levels[level] && levels[level].cells || '';
-                const cells = Array.from({ length: 100 }, () => []);
-                for (let i = 0, pair = 0; i + 3 < raw.length; i += 4, pair += 1) { const a = parseInt(raw.slice(i, i + 2), 10), b = parseInt(raw.slice(i + 2, i + 4), 10), ax = a % 10, ay = Math.floor(a / 10), bx = b % 10, by = Math.floor(b / 10); if ([ax, ay, bx, by].every(n => n >= 0 && n < 10)) { cells[ay * 10 + ax].push({ pair: pair, end: 0 }); cells[by * 10 + bx].push({ pair: pair, end: 1 }); } }
-                const totalPairs = new Set(cells.flat().map(function (item) { return item.pair; })).size;
-                for (let i = 0; i < 100; i += 1) {
-                    const endpoint = cells[i][0]; const b = button(endpoint ? (endpoint.end ? '海怪' : '船') : '', function () { if (!endpoint) return; if (selected == null) selected = i; else if (selected !== i) { const a = selected, x = i, first = cells[a][0]; const start = { x: a % 10, y: Math.floor(a / 10) }, end = { x: x % 10, y: Math.floor(x / 10) }; const blocked = cells.some(function (items, index) { const point = { x: index % 10, y: Math.floor(index / 10) }; return index !== a && index !== x && items.length && orientation(start, end, point) === 0 && onSegment(start, end, point); }); const crossing = links.some(function (link) { return intersects(start, end, { x: link.a % 10, y: Math.floor(link.a / 10) }, { x: link.b % 10, y: Math.floor(link.b / 10) }); }); if (first && first.pair === endpoint.pair && first.end !== endpoint.end && !links.some(p => p.pair === endpoint.pair) && !blocked && !crossing) links.push({ a: a, b: x, pair: endpoint.pair }); selected = null; draw(); } });
-                    b.dataset.cell = String(i); if (selected === i) b.classList.add('selected'); if (endpoint) b.classList.add(endpoint.end ? 'monster' : 'ship'); grid.appendChild(b);
+                const layout = layouts[level] || { width: 10, height: 10, cells: '' };
+                const offsetX = Math.floor((10 - layout.width) / 2), offsetY = Math.floor((10 - layout.height) / 2);
+                const layoutAt = function (x, y) { const lx = x - offsetX, ly = y - offsetY; return lx >= 0 && lx < layout.width && ly >= 0 && ly < layout.height ? layout.cells[ly * layout.width + lx] || '0' : '0'; };
+                const points = (raw.match(/.{2}/g) || []).map(function (value) { return { x: Number(value[0]), y: Number(value[1]) }; });
+                const cells = Array.from({ length: 100 }, () => []), byColor = {};
+                points.forEach(function (point) { const color = layoutAt(point.x, point.y), index = point.y * 10 + point.x; if (color !== '0') { (byColor[color] = byColor[color] || []).push({ index: index, color: color }); } else cells[index].push({ kind: 'vortex' }); });
+                Object.keys(byColor).forEach(function (color) { const group = byColor[color]; group.forEach(function (point, index) { const pair = color + '-' + Math.floor(index / 2); cells[point.index].push({ kind: 'endpoint', pair: pair, color: color, end: index % 2 }); }); });
+                const totalPairs = new Set(cells.flat().filter(function (item) { return item.kind === 'endpoint'; }).map(function (item) { return item.pair; })).size;
+                const occupied = new Set(links.flatMap(function (link) { return link.cells || [link.a, link.b]; }));
+                function findPath(start, end) {
+                    const previous = Array(100).fill(-2), queue = [start]; previous[start] = -1;
+                    for (let head = 0; head < queue.length; head += 1) {
+                        const current = queue[head]; if (current === end) break;
+                        const x = current % 10, y = Math.floor(current / 10);
+                        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+                            const nx = x + dx, ny = y + dy, next = ny * 10 + nx;
+                            if (nx < 0 || nx >= 10 || ny < 0 || ny >= 10 || previous[next] !== -2) continue;
+                            if (next !== start && next !== end && (cells[next].length || occupied.has(next))) continue;
+                            previous[next] = current; queue.push(next);
+                        }
+                    }
+                    if (previous[end] === -2) return null;
+                    const path = []; for (let current = end; current !== -1; current = previous[current]) path.push(current);
+                    return path.reverse();
                 }
-                svg.innerHTML = ''; links.forEach(function (p) { const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', p.a % 10 + .5); line.setAttribute('y1', Math.floor(p.a / 10) + .5); line.setAttribute('x2', p.b % 10 + .5); line.setAttribute('y2', Math.floor(p.b / 10) + .5); line.setAttribute('stroke', '#f4c95d'); line.setAttribute('stroke-width', '.16'); svg.appendChild(line); });
+                grid.dataset.layoutWidth = String(layout.width); grid.dataset.layoutHeight = String(layout.height);
+                grid.dataset.endpointCount = String(cells.flat().filter(function (item) { return item.kind === 'endpoint'; }).length);
+                grid.dataset.vortexCount = String(cells.flat().filter(function (item) { return item.kind === 'vortex'; }).length);
+                for (let i = 0; i < 100; i += 1) {
+                    const endpoint = cells[i].find(function (item) { return item.kind === 'endpoint'; }), vortex = cells[i].some(function (item) { return item.kind === 'vortex'; });
+                    const b = button(endpoint ? '' : vortex ? '旋涡' : '', function () { if (!endpoint) return; if (selected == null) { selected = i; draw(); return; } if (selected !== i) { const a = selected, first = cells[a].find(function (item) { return item.kind === 'endpoint'; }); const path = first && first.pair === endpoint.pair && first.end !== endpoint.end && !links.some(function (link) { return link.pair === endpoint.pair; }) ? findPath(a, i) : null; if (path) links.push({ a: a, b: i, pair: endpoint.pair, cells: path }); } selected = null; draw(); });
+                    b.dataset.cell = String(i); if (selected === i) b.classList.add('selected'); if (endpoint) { b.classList.add(endpoint.end ? 'monster' : 'ship'); b.dataset.color = endpoint.color; b.dataset.assetSource = 'sheet-8c5aa6.png'; const sprite = el('span', { className: 'pk32-ship-sprite' }); const column = Math.max(0, Number(endpoint.color) - 1); const spriteX = (column * -35) + 'px'; const spriteY = (endpoint.end ? -25 : 0) + 'px'; sprite.style.setProperty('--pk32-ship-x', spriteX); sprite.style.setProperty('--pk32-ship-y', spriteY); sprite.style.backgroundImage = "url('/img/pk32/ships-original.png')"; sprite.style.backgroundRepeat = 'no-repeat'; sprite.style.backgroundSize = '280px 290.5px'; sprite.style.backgroundPosition = spriteX + ' ' + spriteY; sprite.dataset.kind = endpoint.end ? 'monster' : 'ship'; sprite.dataset.color = endpoint.color; sprite.dataset.assetSource = 'ships-original.png'; sprite.setAttribute('aria-hidden', 'true'); b.appendChild(sprite); b.setAttribute('aria-label', (endpoint.end ? '海怪 ' : '船 ') + endpoint.color); } if (vortex) b.classList.add('vortex'); grid.appendChild(b);
+                }
+                svg.innerHTML = ''; links.forEach(function (p) { const path = p.cells || [p.a, p.b], line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline'); line.setAttribute('points', path.map(function (index) { return (index % 10 + .5) + ',' + (Math.floor(index / 10) + .5); }).join(' ')); line.dataset.pair = p.pair; line.dataset.pathLength = String(path.length); line.setAttribute('fill', 'none'); line.setAttribute('stroke', '#f4c95d'); line.setAttribute('stroke-width', '.16'); line.setAttribute('stroke-linecap', 'round'); line.setAttribute('stroke-linejoin', 'round'); svg.appendChild(line); });
                 status.textContent = levels.length ? '第 ' + (level + 1) + ' / 52 关；已定位 ' + levels.length + ' 关；路径 ' + links.length + ' / ' + totalPairs + ' 条' : '正在读取原生关卡';
                 if (links.length === totalPairs && totalPairs > 0) finish('航海迷题第 ' + (level + 1) + ' 关完成。');
             }
-            function load() { fetch('/data/pk32-ships-puzzle-levels.json').then(r => r.json()).then(d => { levels = d.levels || []; draw(); }).catch(() => { status.textContent = '原生关卡加载失败'; }); }
+            function load() { fetch('/data/pk32-ships-puzzle-levels.json').then(r => r.json()).then(d => { levels = d.levels || []; layouts = d.layouts || []; draw(); }).catch(() => { status.textContent = '原生关卡加载失败'; }); }
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; selected = null; ended = false; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; selected = null; ended = false; draw(); } }), button('清除连线', function () { links = []; selected = null; ended = false; draw(); }));
             wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }

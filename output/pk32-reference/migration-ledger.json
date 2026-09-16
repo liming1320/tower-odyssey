@@ -841,7 +841,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 20
+      "launchVerifiedNodes": 22
     },
     {
       "id": "pk32-057",
@@ -895,12 +895,12 @@
       "group": "扑克与纸牌",
       "launcher": "casual",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
       "originalAssetsVerified": false,
       "originalComplete": false,
-      "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
-      "notes": "",
+      "evidence": "已从原生目录和 module.bin 验证 1-5 共 5 个可玩关卡；第 6 条载荷保留为待确认且未开放",
+      "notes": "tools/verify-pk32-pipe-connect-data.js + tools/verify-pk32-pipe-connect-flow.js + tools/verify-pk32-pipe-connect-cdp.js；旋转规则与原始美术仍待认证",
       "launchVerifiedNodes": 12
     },
     {
@@ -1126,7 +1126,7 @@
       "originalComplete": false,
       "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
       "notes": "",
-      "launchVerifiedNodes": 22
+      "launchVerifiedNodes": 20
     },
     {
       "id": "pk32-076",
@@ -1375,12 +1375,12 @@
       "group": "棋类与益智",
       "launcher": "board",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
       "originalAssetsVerified": false,
       "originalComplete": false,
-      "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
-      "notes": "",
+      "evidence": "已从 PK32 原生模块提取并逐个切换验证 18 组黑白棋原生开局；第 13 局无合法黑步时自动跳过到白方",
+      "notes": "tools/verify-pk32-reversi-data.js + tools/verify-pk32-reversi-cdp.js；完整终局规则、原 EXE 逐动作差分和原始美术仍待认证",
       "launchVerifiedNodes": 73
     },
     {
@@ -1465,12 +1465,12 @@
       "group": "棋类与益智",
       "launcher": "puzzle",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
       "originalAssetsVerified": false,
       "originalComplete": false,
-      "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
-      "notes": "",
+      "evidence": "已提取并逐局验证 PK32 原生 11 局华容道布局；按同一块形、边界和单格移动规则逐局求解到曹操出口；原始美术仍待认证",
+      "notes": "tools/verify-pk32-huarong-data.js + tools/verify-pk32-huarong-solvability.js + tools/verify-pk32-huarong-cdp.js；规则与原 EXE 逐动作差分仍待认证",
       "launchVerifiedNodes": 12
     },
     {
@@ -1480,12 +1480,12 @@
       "group": "棋类与益智",
       "launcher": "pk32-richman",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
-      "originalAssetsVerified": false,
+      "originalAssetsVerified": true,
       "originalComplete": false,
-      "evidence": "原版棋盘、四名角色和地产美术已还原；完整规则仍在迁移",
-      "notes": "",
+      "evidence": "原版 40 格棋盘、四名角色、单骰和地产布局已通过原生图集像素比对；完整规则仍在迁移",
+      "notes": "tools/verify-pk32-richman-art.js：13 组 differentPixels=0；tools/verify-pk32-richman-flow.js：28 项通过；tools/verify-richman.js：14 项通过；仍缺原 EXE 全部事件逐动作差分",
       "launchVerifiedNodes": 113
     },
     {
@@ -2365,12 +2365,12 @@
       "group": "休闲与解谜",
       "launcher": "variant",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
-      "originalAssetsVerified": false,
+      "originalAssetsVerified": true,
       "originalComplete": false,
-      "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
-      "notes": "",
+      "evidence": "原版帮助明确关数为 1-160；160 条 16×16 原生盘面和 sheet-d3525b.png 资源通过数据与浏览器取证",
+      "notes": "规则仍未宣称完整：已验证方向移动、固定球、同色连接和撤销的可观察行为，完整原版胜负流程与全部边界状态仍待逐关差分",
       "launchVerifiedNodes": 28
     },
     {
@@ -2468,14 +2468,14 @@
       "index": 165,
       "name": "推箱子四",
       "group": "休闲与解谜",
-      "launcher": "casual",
+      "launcher": "pk32-sokoban4",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
-      "originalAssetsVerified": false,
+      "originalAssetsVerified": true,
       "originalComplete": false,
-      "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
-      "notes": "",
+      "evidence": "已从 PK32 原生分发表提取 23 个关卡；浏览器逐视口验证原生 99 格棋盘、原始图块图集和 3 个原版演示",
+      "notes": "原始关卡与图块资源已认证；完整规则（包括所有原版边界行为）仍待认证，originalComplete 保持 false",
       "launchVerifiedNodes": 18
     },
     {
@@ -2605,12 +2605,12 @@
       "group": "休闲与解谜",
       "launcher": "variant",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
       "originalAssetsVerified": false,
       "originalComplete": false,
-      "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
-      "notes": "",
+      "evidence": "已按 PK32 原生 52 项关卡分发表提取坐标串，并通过数据与浏览器入口验证；另确认 5×5、8×8、10×10 三组原生布局表",
+      "notes": "tools/verify-pk32-ships-data.js + tools/verify-pk32-ships-cdp.js；规则与原始图集仍未认证",
       "launchVerifiedNodes": 19
     },
     {
@@ -2980,12 +2980,12 @@
       "group": "其他原版游戏",
       "launcher": "variant",
       "launcherVerified": true,
-      "originalLevelsVerified": false,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
       "originalAssetsVerified": false,
       "originalComplete": false,
-      "evidence": "已从 PK32 原版菜单识别，等待资源与规则迁移",
-      "notes": "",
+      "evidence": "原版帮助明确关数为 1-30；页面只开放前 30 条原生关卡载荷，另外 11 条待确认载荷未开放",
+      "notes": "tools/verify-pk32-black-hole.js + tools/verify-pk32-native-cdp.js；打捞碰撞、道具效果、双人流程和原始美术仍待认证",
       "launchVerifiedNodes": 12
     },
     {
@@ -3199,5 +3199,5 @@
       "launchVerifiedNodes": 57
     }
   ],
-  "lastLauncherVerification": "2026-09-15T15:20:13.444Z"
+  "lastLauncherVerification": "2026-09-16T02:11:57.021Z"
 }

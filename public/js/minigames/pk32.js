@@ -34,7 +34,7 @@
         '接龙': 'solitaire', '接龙二': 'solitaire', '空当接龙': 'freecell', '蜘蛛纸牌': 'spider',
         '21点': 'blackjack', '21点二': 'blackjack', '比大小': 'highlow', '扫雷': 'minesweeper',
         '扫雷二': 'minesweeper', '扑克扫雷': 'minesweeper', '连连看': 'mahjong-connect',
-        '推箱子': 'sokoban', '推箱子二': 'sokoban', '推箱子三': 'sokoban', '推箱子四': '推箱子四',
+        '推箱子': 'sokoban', '推箱子二': 'sokoban', '推箱子三': 'sokoban',
         '推箱子五': 'sokoban', '推箱子六': 'sokoban',
         '泡泡彩球': 'bubble-match', '多彩泡泡': 'bubble-match',
         '爆破彩球二': 'bubble-match', '变色彩球': 'bubble-match', '交换彩球': 'bubble-match',
@@ -158,6 +158,7 @@
 
             function render() {
                 if (!alive || activeSession) return;
+                wrap.classList.remove('pk32-playing');
                 const keyword = q.value.trim().toLowerCase();
                 const filtered = all.filter(x => (!keyword || x.name.toLowerCase().includes(keyword)) && (!group.value || x.group === group.value));
                 count.textContent = filtered.length + ' / ' + all.length + ' 项';
@@ -188,6 +189,7 @@
             function mount(record, title, start, note) {
                 stopActiveSession();
                 opts.onCatalogState && opts.onCatalogState(false);
+                wrap.classList.add('pk32-playing');
                 list.innerHTML = '<div class="emu-note"><b>' + esc(record.name) + ' · ' + esc(title) + '</b><br>' + esc(note || '独立 PK32 迁移玩法；不使用 50 关模板。') + '</div>';
                 const host = document.createElement('div'); host.style.cssText = 'min-height:420px;margin-top:12px;'; list.appendChild(host);
                 const back = document.createElement('button'); back.className = 'btn ghost'; back.textContent = '返回 PK32 目录'; back.style.marginTop = '10px'; back.onclick = () => { stopActiveSession(); render(); opts.onCatalogState && opts.onCatalogState(true); }; list.appendChild(back);

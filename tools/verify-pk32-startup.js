@@ -18,6 +18,7 @@ for (const record of catalog) {
     let session;
     try {
         if (record.module) session = global.PK32Board.startUI(host, record.module.id, {});
+        else if (record.playable && record.playable.gameId === 'pk32-sokoban4') session = global.PK32Sokoban4.start(host, {});
         else if (record.casual) session = global.PK32Casual.startGame(host, record.casual, {});
         else if (record.action) session = global.PK32Action.startGame(host, record.action, {});
         else if (record.strategy) session = global.PK32Strategy.startGame(host, record.strategy, {});
@@ -31,7 +32,7 @@ for (const record of catalog) {
         else throw new Error('no launcher');
         const rendered = elementCount(host);
         if (!rendered) throw new Error('launcher rendered an empty host');
-        const launcher = record.module ? 'board' : record.casual ? 'casual' : record.action ? 'action' : record.strategy ? 'strategy' : record.card ? 'card' : record.puzzle ? 'puzzle' : record.variant ? 'variant' : record.playable ? record.playable.gameId : 'none';
+        const launcher = record.module ? 'board' : (record.playable && record.playable.gameId === 'pk32-sokoban4') ? 'pk32-sokoban4' : record.casual ? 'casual' : record.action ? 'action' : record.strategy ? 'strategy' : record.card ? 'card' : record.puzzle ? 'puzzle' : record.variant ? 'variant' : record.playable ? record.playable.gameId : 'none';
         results.push({ index: record.index, name: record.name, launcher, rendered });
         if (session && typeof session.stop === 'function') session.stop();
         else if (session && typeof session.destroy === 'function') session.destroy();

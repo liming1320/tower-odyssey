@@ -46,7 +46,9 @@
         } else {
             b[3][3] = 2; b[3][4] = 1; b[4][3] = 1; b[4][4] = 2;
         }
-        return { type: 'reversi', rows: 8, cols: 8, board: b, turn: 1, moveCount: 0, passCount: 0, phase: 'playing' };
+        let turn = 1, passCount = 0;
+        if (!legalReversi({ board: b }, 1).length && legalReversi({ board: b }, 2).length) { turn = 2; passCount = 1; }
+        return { type: 'reversi', rows: 8, cols: 8, board: b, turn, moveCount: 0, passCount, phase: 'playing' };
     }
 
     function checkersState() {
@@ -296,15 +298,14 @@
         const playerNames = opts.playerNames || { 1: '玩家 1', 2: '玩家 2' };
         const labels = opts.labels || { 1: '黑', 2: '白' };
 
-        rootEl.className = 'pk32-board-ui';
+        rootEl.className = 'pk32-board-ui' + (session.state.type === 'animal-chess' ? ' pk32-animal-ui' : '');
         boardEl.className = 'pk32-board-grid';
         controls.className = 'pk32-board-controls';
         const boardShell = document.createElement('div');
         boardShell.className = 'pk32-board-scroll';
         boardShell.appendChild(boardEl);
         const style = document.createElement('style');
-        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:hidden}.pk32-board-scroll{width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.pk32-board-grid{width:max-content;min-width:100%;gap:2px;touch-action:pan-x pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:52px;min-height:52px;padding:3px;touch-action:manipulation}.pk32-board-grid:has(.pk32-animal-cell){min-width:378px;gap:0;border:5px solid #765126;background:#6f9f48;box-shadow:0 4px 12px rgba(0,0,0,.35)}.pk32-animal-cell{position:relative;display:grid;place-items:center;min-width:54px;min-height:54px;border:1px solid rgba(42,78,34,.45);background:#83b85c;color:#315d35}.pk32-animal-cell:nth-child(odd){background:#8abc62}.pk32-animal-cell[data-terrain="river"]{background:repeating-linear-gradient(0deg,rgba(255,255,255,.2) 0 2px,transparent 2px 15px),linear-gradient(#54b5dd,#2689bd);color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:radial-gradient(circle,transparent 0 28%,rgba(135,55,43,.8) 29% 32%,transparent 33%),repeating-linear-gradient(45deg,transparent 0 7px,rgba(135,55,43,.55) 7px 9px),repeating-linear-gradient(-45deg,transparent 0 7px,rgba(135,55,43,.55) 7px 9px),#91bd5d;color:#693529}.pk32-animal-cell[data-terrain="den"]{background:radial-gradient(circle,#172535 0 35%,#3e5264 36% 47%,#9ba8a8 48% 51%,#445766 52% 100%);color:#fff}.pk32-animal-cell[data-terrain="den"]::after{content:"穴";font-size:18px;font-weight:700;text-shadow:0 1px 2px #000}.pk32-animal-cell[data-terrain="trap"]::after{content:"";position:absolute;inset:15%;border:1px solid rgba(106,47,36,.8);border-radius:50%}.pk32-animal-piece{position:relative;display:grid;place-items:center;width:44px;height:44px;margin:auto;border:2px solid rgba(255,255,255,.85);border-radius:50%;font-size:20px;font-weight:700;background:#e5b05e;color:#fff;text-shadow:0 1px 2px #222;box-shadow:0 2px 4px rgba(0,0,0,.45),inset 0 0 0 3px rgba(0,0,0,.2)}.pk32-animal-piece::before{display:none}.pk32-animal-piece[data-side="1"]{background:#d8893c;border-color:#ffd18a}.pk32-animal-piece[data-side="2"]{background:#557bb6;border-color:#c9dcff}';
-        style.textContent += '.pk32-animal-piece{display:block;position:absolute;left:50%;top:50%;width:66px;height:53px;margin:0;border:0;border-radius:0;background-color:transparent;background-image:url("/img/pk32/jungle-original.png");background-repeat:no-repeat;background-size:661px 465px;color:transparent!important;font-size:0;text-shadow:none;box-shadow:none;transform:translate(-50%,-50%) scale(.74);transform-origin:center}.pk32-animal-piece[data-side="1"]{background-position:-530px var(--pk32-jungle-y)}.pk32-animal-piece[data-side="2"]{background-position:-464px var(--pk32-jungle-y)}.pk32-animal-cell:has(.pk32-animal-piece)::after{display:none}.pk32-board-ui{width:100%;min-height:0;overflow:visible}.pk32-board-scroll{min-height:0;max-height:calc(100dvh - 166px);overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y}@media (max-width:420px){.pk32-board-grid button{min-width:0;min-height:40px}.pk32-board-grid:has(.pk32-animal-cell){width:100%;min-width:0}.pk32-animal-grid,.pk32-board-grid:has(.pk32-animal-cell){width:100%;min-width:0}.pk32-animal-cell{min-width:0;min-height:clamp(44px,13vw,54px);overflow:visible}}';
+        style.textContent = '.pk32-board-ui{box-sizing:border-box;max-width:100%;overflow:visible}.pk32-board-scroll{width:100%;max-width:100%;overflow-x:visible;overflow-y:visible;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}.pk32-board-grid{width:100%;min-width:100%;gap:2px;touch-action:pan-y}.pk32-board-grid button{box-sizing:border-box;min-width:44px;min-height:44px;padding:3px;touch-action:pan-y}.pk32-board-grid:has(.pk32-animal-cell){box-sizing:border-box;min-width:0;width:100%;gap:0;border:5px solid #765126;background:#6f9f48;box-shadow:0 4px 12px rgba(0,0,0,.35)}.pk32-animal-cell{position:relative;display:grid;place-items:center;min-width:0;min-height:0;border:1px solid rgba(42,78,34,.45);background:#83b85c;color:#315d35;user-select:none}.pk32-animal-cell:nth-child(odd){background:#8abc62}.pk32-animal-cell[data-terrain="river"]{background:repeating-linear-gradient(0deg,rgba(255,255,255,.2) 0 2px,transparent 2px 15px),linear-gradient(#54b5dd,#2689bd);color:#164e63}.pk32-animal-cell[data-terrain="trap"]{background:radial-gradient(circle,transparent 0 28%,rgba(135,55,43,.8) 29% 32%,transparent 33%),repeating-linear-gradient(45deg,transparent 0 7px,rgba(135,55,43,.55) 7px 9px),repeating-linear-gradient(-45deg,transparent 0 7px,rgba(135,55,43,.55) 7px 9px),#91bd5d;color:#693529}.pk32-animal-cell[data-terrain="den"]{background:radial-gradient(circle,#172535 0 35%,#3e5264 36% 47%,#9ba8a8 48% 51%,#445766 52% 100%);color:#fff}.pk32-animal-cell[data-terrain="den"]::after{content:"穴";font-size:18px;font-weight:700;text-shadow:0 1px 2px #000}.pk32-animal-cell[data-terrain="trap"]::after{content:"";position:absolute;inset:15%;border:1px solid rgba(106,47,36,.8);border-radius:50%}.pk32-animal-cell[data-selected="true"]{outline:3px solid #ffe58a;outline-offset:-3px;z-index:2;box-shadow:inset 0 0 0 2px rgba(255,255,255,.85),0 0 10px rgba(255,229,138,.8)}.pk32-animal-cell[data-legal="true"]{outline:2px dashed #ffe58a;outline-offset:-3px;box-shadow:inset 0 0 0 1px rgba(255,229,138,.55)}.pk32-animal-piece{position:absolute;left:50%;top:50%;display:block;width:min(66px,100%);min-width:0;height:auto;aspect-ratio:66 / 58;margin:0;border:0;border-radius:0;background-color:transparent;background-image:url("/img/pk32/jungle-original.png");background-repeat:no-repeat;background-size:1001.515% 800%;background-position:var(--pk32-jungle-x) var(--pk32-jungle-y);color:transparent!important;font-size:0;text-shadow:none;box-shadow:none;transform:translate(-50%,-50%);transform-origin:center}.pk32-animal-piece[data-side="1"]{--pk32-jungle-x:89.076%}.pk32-animal-piece[data-side="2"]{--pk32-jungle-x:77.983%}.pk32-animal-cell:has(.pk32-animal-piece)::after{display:none}.pk32-board-ui{width:100%;min-height:0;overflow:visible}.pk32-board-scroll{min-height:0;max-height:min(62vh,520px);overflow-x:visible;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y}@media (max-width:420px){.pk32-board-grid button{min-width:0;min-height:40px}.pk32-board-grid:has(.pk32-animal-cell){width:100%;min-width:0}.pk32-animal-grid{width:100%;min-width:0}.pk32-animal-cell{min-width:0;min-height:0;overflow:visible}}';
         rootEl.appendChild(style);
         restart.type = 'button';
         restart.textContent = '重开';
@@ -332,7 +333,10 @@
         };
         const announce = result => {
             if (!result) {
-                status.textContent = '回合：' + (playerNames[session.state.turn] || ('玩家 ' + session.state.turn));
+                const turn = playerNames[session.state.turn] || ('玩家 ' + session.state.turn);
+                status.textContent = session.state.type === 'animal-chess'
+                    ? '回合：' + turn + (selected ? ' · 已选中棋子，再点目标格' : ' · 先点己方动物，再点目标格')
+                    : '回合：' + turn;
                 return;
             }
             status.textContent = result.winner === 0 ? '和棋' : (playerNames[result.winner] || ('玩家 ' + result.winner)) + '胜出';
@@ -379,14 +383,16 @@
                     piece.className = 'pk32-animal-piece';
                     piece.dataset.side = String(value.side);
                     piece.dataset.rank = String({ rat: 1, cat: 2, dog: 3, wolf: 4, leopard: 5, tiger: 6, lion: 7, elephant: 8 }[value.rank] || 0);
-                    const jungleY = (-53 * (({ rat: 1, cat: 2, dog: 3, wolf: 4, leopard: 5, tiger: 6, lion: 7, elephant: 8 }[value.rank] || 1) - 1)) + 'px';
+                    const jungleRank = { rat: 1, cat: 2, dog: 3, wolf: 4, leopard: 5, tiger: 6, lion: 7, elephant: 8 }[value.rank] || 1;
+                    const jungleY = ((jungleRank - 1) * 12.864) + '%';
+                    const jungleX = value.side === 1 ? '89.076%' : '77.983%';
                     if (piece.style && typeof piece.style.setProperty === 'function') piece.style.setProperty('--pk32-jungle-y', jungleY);
                     else if (piece.style) piece.style['--pk32-jungle-y'] = jungleY;
                     if (piece.style) {
                         piece.style.backgroundImage = 'url("/img/pk32/jungle-original.png")';
                         piece.style.backgroundRepeat = 'no-repeat';
-                        piece.style.backgroundSize = '661px 465px';
-                        piece.style.backgroundPosition = (value.side === 1 ? '-530px ' : '-464px ') + jungleY;
+                        piece.style.backgroundSize = '1001.515% 800%';
+                        piece.style.backgroundPosition = jungleX + ' ' + jungleY;
                     }
                     piece.textContent = text.replace(/^(我|敌)/, '');
                     piece.dataset.assetSource = 'jungle-original.png';
@@ -398,6 +404,7 @@
                 button.dataset.col = col;
                 button.setAttribute('role', 'gridcell');
                 if (selected && selected[0] === row && selected[1] === col) button.dataset.selected = 'true';
+                if (session.state.type === 'animal-chess' && selected && animalCanMove(session.state, selected, [row, col])) button.dataset.legal = 'true';
                 button.disabled = session.state.phase !== 'playing';
                 button.addEventListener('click', () => clickCell(row, col));
                 boardEl.appendChild(button);

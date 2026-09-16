@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-13T11:04:03.765Z",
+  "generatedAt": "2026-09-15T19:35:49.146Z",
   "input": {
     "file": "output\\pk32-reference\\module.bin",
     "bytes": 33767424,
@@ -12,8 +12,8 @@
     "picForms": 26,
     "catalog": 213,
     "native": {
-      "attempted": true,
-      "verified": true,
+      "attempted": false,
+      "verified": false,
       "error": null
     },
     "executableLogicRecovered": false,
@@ -289,7 +289,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 20,
+      "launchVerifiedNodes": 22,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -1275,7 +1275,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 16,
+      "launchVerifiedNodes": 18,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2023,7 +2023,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 24,
+      "launchVerifiedNodes": 22,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2032,7 +2032,7 @@
       "index": 60,
       "name": "接水管",
       "group": "扑克与纸牌",
-      "launcher": "casual",
+      "launcher": "variant",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -2057,8 +2057,8 @@
           ]
         }
       },
-      "launchVerifiedNodes": 1,
-      "notes": "",
+      "launchVerifiedNodes": 12,
+      "notes": "tools/verify-pk32-pipe-connect-data.js + tools/verify-pk32-pipe-connect-flow.js + tools/verify-pk32-pipe-connect-cdp.js；旋转规则与原始美术仍待认证",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -2200,6 +2200,40 @@
     {
       "id": "pk32-065",
       "index": 65,
+      "name": "桥桥",
+      "group": "扑克与纸牌",
+      "launcher": "variant",
+      "launcherVerified": true,
+      "originalAssetsVerified": false,
+      "originalLevelsVerified": false,
+      "originalRulesVerified": false,
+      "originalComplete": false,
+      "evidence": {
+        "asset": {
+          "verified": false,
+          "source": null
+        },
+        "levels": {
+          "verified": false,
+          "count": null
+        },
+        "rules": {
+          "verified": false,
+          "missing": [
+            "game boundary",
+            "asset bindings",
+            "level or round data",
+            "observable rule trace"
+          ]
+        }
+      },
+      "launchVerifiedNodes": 12,
+      "notes": "",
+      "source": "PK32 module.bin; read-only extraction"
+    },
+    {
+      "id": "pk32-066",
+      "index": 66,
       "name": "桥牌",
       "group": "扑克与纸牌",
       "launcher": "card",
@@ -2228,40 +2262,6 @@
         }
       },
       "launchVerifiedNodes": 21,
-      "notes": "",
-      "source": "PK32 module.bin; read-only extraction"
-    },
-    {
-      "id": "pk32-066",
-      "index": 66,
-      "name": "????",
-      "group": "扑克与纸牌",
-      "launcher": "variant",
-      "launcherVerified": true,
-      "originalAssetsVerified": false,
-      "originalLevelsVerified": false,
-      "originalRulesVerified": false,
-      "originalComplete": false,
-      "evidence": {
-        "asset": {
-          "verified": false,
-          "source": null
-        },
-        "levels": {
-          "verified": false,
-          "count": null
-        },
-        "rules": {
-          "verified": false,
-          "missing": [
-            "game boundary",
-            "asset bindings",
-            "level or round data",
-            "observable rule trace"
-          ]
-        }
-      },
-      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2465,7 +2465,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 24,
+      "launchVerifiedNodes": 22,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -2567,7 +2567,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 22,
+      "launchVerifiedNodes": 24,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3009,8 +3009,8 @@
           ]
         }
       },
-      "launchVerifiedNodes": 138,
-      "notes": "",
+      "launchVerifiedNodes": 6,
+      "notes": "原生盘面与规则已接入独立入口；未找到可安全归属的独粒钻石专用图集，原生美术状态保持未确认",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -3145,8 +3145,8 @@
           ]
         }
       },
-      "launchVerifiedNodes": 71,
-      "notes": "",
+      "launchVerifiedNodes": 73,
+      "notes": "tools/verify-pk32-reversi-data.js + tools/verify-pk32-reversi-cdp.js；完整终局规则、原 EXE 逐动作差分和原始美术仍待认证",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -3154,7 +3154,7 @@
       "index": 93,
       "name": "同色方块",
       "group": "棋类与益智",
-      "launcher": "puzzle",
+      "launcher": "variant",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -3179,7 +3179,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 138,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3247,7 +3247,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 19,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3324,7 +3324,7 @@
       "index": 98,
       "name": "华容道",
       "group": "棋类与益智",
-      "launcher": "puzzle",
+      "launcher": "variant",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -3349,8 +3349,8 @@
           ]
         }
       },
-      "launchVerifiedNodes": 28,
-      "notes": "",
+      "launchVerifiedNodes": 12,
+      "notes": "tools/verify-pk32-huarong-data.js + tools/verify-pk32-huarong-solvability.js + tools/verify-pk32-huarong-cdp.js；规则与原 EXE 逐动作差分仍待认证",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -3383,8 +3383,8 @@
           ]
         }
       },
-      "launchVerifiedNodes": 108,
-      "notes": "",
+      "launchVerifiedNodes": 113,
+      "notes": "tools/verify-pk32-richman-art.js：13 组 differentPixels=0；tools/verify-pk32-richman-flow.js：28 项通过；tools/verify-richman.js：14 项通过；仍缺原 EXE 全部事件逐动作差分",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -3417,7 +3417,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 138,
+      "launchVerifiedNodes": 172,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3451,7 +3451,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 71,
+      "launchVerifiedNodes": 73,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3519,7 +3519,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 232,
+      "launchVerifiedNodes": 234,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3689,7 +3689,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 70,
+      "launchVerifiedNodes": 88,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -3893,7 +3893,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 48,
+      "launchVerifiedNodes": 76,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -4368,7 +4368,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 66,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -4912,7 +4912,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
+      "launchVerifiedNodes": 17,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5365,31 +5365,30 @@
       "group": "休闲与解谜",
       "launcher": "variant",
       "launcherVerified": true,
-      "originalAssetsVerified": false,
-      "originalLevelsVerified": false,
+      "originalAssetsVerified": true,
+      "originalLevelsVerified": true,
       "originalRulesVerified": false,
       "originalComplete": false,
       "evidence": {
         "asset": {
-          "verified": false,
-          "source": null
+          "verified": true,
+          "source": "sheet-d3525b.png"
         },
         "levels": {
-          "verified": false,
-          "count": null
+          "verified": true,
+          "count": 160,
+          "source": "native level-selection prompt"
         },
         "rules": {
           "verified": false,
           "missing": [
-            "game boundary",
-            "asset bindings",
-            "level or round data",
-            "observable rule trace"
+            "complete original win trace",
+            "all fixed-ball and movement edge cases"
           ]
         }
       },
-      "launchVerifiedNodes": 76,
-      "notes": "",
+      "launchVerifiedNodes": 28,
+      "notes": "规则仍未宣称完整：已验证方向移动、固定球、同色连接和撤销的可观察行为，完整原版胜负流程与全部边界状态仍待逐关差分",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -5601,7 +5600,7 @@
       "index": 165,
       "name": "推箱子四",
       "group": "休闲与解谜",
-      "launcher": "casual",
+      "launcher": "pk32-sokoban4",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -5626,8 +5625,8 @@
           ]
         }
       },
-      "launchVerifiedNodes": 1,
-      "notes": "",
+      "launchVerifiedNodes": 18,
+      "notes": "原始关卡与图块资源已认证；完整规则（包括所有原版边界行为）仍待认证，originalComplete 保持 false",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -5694,7 +5693,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 108,
+      "launchVerifiedNodes": 6,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5728,7 +5727,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 138,
+      "launchVerifiedNodes": 33,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5771,7 +5770,7 @@
       "index": 170,
       "name": "智慧之光",
       "group": "休闲与解谜",
-      "launcher": "variant",
+      "launcher": "pk32-light",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -5796,7 +5795,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
+      "launchVerifiedNodes": 16,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5830,7 +5829,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 12,
+      "launchVerifiedNodes": 23,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5898,7 +5897,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 21,
+      "launchVerifiedNodes": 25,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -5932,8 +5931,8 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
-      "notes": "",
+      "launchVerifiedNodes": 19,
+      "notes": "tools/verify-pk32-ships-data.js + tools/verify-pk32-ships-cdp.js；规则与原始图集仍未认证",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -5966,7 +5965,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6034,7 +6033,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6340,7 +6339,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6417,7 +6416,7 @@
       "index": 189,
       "name": "打砖块",
       "group": "休闲与解谜",
-      "launcher": "action",
+      "launcher": "variant",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -6442,7 +6441,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 7,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6451,7 +6450,7 @@
       "index": 190,
       "name": "爆破彩球",
       "group": "休闲与解谜",
-      "launcher": "casual",
+      "launcher": "variant",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -6476,7 +6475,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 1,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6621,7 +6620,7 @@
       "index": 195,
       "name": "七盏灯",
       "group": "休闲与解谜",
-      "launcher": "strategy",
+      "launcher": "variant",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -6646,7 +6645,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 18,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6689,74 +6688,6 @@
       "index": 197,
       "name": "上一百层",
       "group": "其他原版游戏",
-      "launcher": "strategy",
-      "launcherVerified": true,
-      "originalAssetsVerified": false,
-      "originalLevelsVerified": false,
-      "originalRulesVerified": false,
-      "originalComplete": false,
-      "evidence": {
-        "asset": {
-          "verified": false,
-          "source": null
-        },
-        "levels": {
-          "verified": false,
-          "count": null
-        },
-        "rules": {
-          "verified": false,
-          "missing": [
-            "game boundary",
-            "asset bindings",
-            "level or round data",
-            "observable rule trace"
-          ]
-        }
-      },
-      "launchVerifiedNodes": 13,
-      "notes": "",
-      "source": "PK32 module.bin; read-only extraction"
-    },
-    {
-      "id": "pk32-198",
-      "index": 198,
-      "name": "下一百层",
-      "group": "其他原版游戏",
-      "launcher": "strategy",
-      "launcherVerified": true,
-      "originalAssetsVerified": false,
-      "originalLevelsVerified": false,
-      "originalRulesVerified": false,
-      "originalComplete": false,
-      "evidence": {
-        "asset": {
-          "verified": false,
-          "source": null
-        },
-        "levels": {
-          "verified": false,
-          "count": null
-        },
-        "rules": {
-          "verified": false,
-          "missing": [
-            "game boundary",
-            "asset bindings",
-            "level or round data",
-            "observable rule trace"
-          ]
-        }
-      },
-      "launchVerifiedNodes": 13,
-      "notes": "",
-      "source": "PK32 module.bin; read-only extraction"
-    },
-    {
-      "id": "pk32-199",
-      "index": 199,
-      "name": "宇宙黑洞",
-      "group": "其他原版游戏",
       "launcher": "variant",
       "launcherVerified": true,
       "originalAssetsVerified": false,
@@ -6784,6 +6715,74 @@
       },
       "launchVerifiedNodes": 12,
       "notes": "",
+      "source": "PK32 module.bin; read-only extraction"
+    },
+    {
+      "id": "pk32-198",
+      "index": 198,
+      "name": "下一百层",
+      "group": "其他原版游戏",
+      "launcher": "variant",
+      "launcherVerified": true,
+      "originalAssetsVerified": false,
+      "originalLevelsVerified": false,
+      "originalRulesVerified": false,
+      "originalComplete": false,
+      "evidence": {
+        "asset": {
+          "verified": false,
+          "source": null
+        },
+        "levels": {
+          "verified": false,
+          "count": null
+        },
+        "rules": {
+          "verified": false,
+          "missing": [
+            "game boundary",
+            "asset bindings",
+            "level or round data",
+            "observable rule trace"
+          ]
+        }
+      },
+      "launchVerifiedNodes": 21,
+      "notes": "",
+      "source": "PK32 module.bin; read-only extraction"
+    },
+    {
+      "id": "pk32-199",
+      "index": 199,
+      "name": "宇宙黑洞",
+      "group": "其他原版游戏",
+      "launcher": "variant",
+      "launcherVerified": true,
+      "originalAssetsVerified": false,
+      "originalLevelsVerified": true,
+      "originalRulesVerified": false,
+      "originalComplete": false,
+      "evidence": {
+        "asset": {
+          "verified": false,
+          "source": null
+        },
+        "levels": {
+          "verified": true,
+          "count": 30,
+          "source": "native level-selection prompt; 11 extra payloads withheld"
+        },
+        "rules": {
+          "verified": false,
+          "missing": [
+            "salvage collision rules",
+            "item effects",
+            "single-player and two-player end flow"
+          ]
+        }
+      },
+      "launchVerifiedNodes": 12,
+      "notes": "tools/verify-pk32-black-hole.js + tools/verify-pk32-native-cdp.js；打捞碰撞、道具效果、双人流程和原始美术仍待认证",
       "source": "PK32 module.bin; read-only extraction"
     },
     {
@@ -6859,7 +6858,7 @@
       "index": 202,
       "name": "坦克大战",
       "group": "其他原版游戏",
-      "launcher": "action",
+      "launcher": "variant",
       "launcherVerified": true,
       "originalAssetsVerified": false,
       "originalLevelsVerified": false,
@@ -6884,7 +6883,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 7,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6952,7 +6951,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 76,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -6986,7 +6985,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 49,
+      "launchVerifiedNodes": 51,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7088,7 +7087,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7156,7 +7155,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
+      "launchVerifiedNodes": 12,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     },
@@ -7258,7 +7257,7 @@
           ]
         }
       },
-      "launchVerifiedNodes": 41,
+      "launchVerifiedNodes": 57,
       "notes": "",
       "source": "PK32 module.bin; read-only extraction"
     }
@@ -7291,6 +7290,6 @@
   "limitations": [
     "A successful launcher is not evidence of original behavior.",
     "Numeric payload length alone is not evidence of a map or level count.",
-    "The current native evidence proves only the two explicitly inspected games."
+    "The current native evidence proves only the explicitly inspected games; other catalog entries remain incomplete."
   ]
 }

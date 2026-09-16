@@ -9,6 +9,8 @@ const { spawn } = require('node:child_process');
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const requested = (args.find(arg => arg.startsWith('--group=')) || '').slice(8).split(',').filter(Boolean);
+const requestedJobs = Number((args.find(arg => arg.startsWith('--jobs=')) || '').slice(7) || process.env.PK32_VALIDATION_JOBS || 3);
+const jobs = Number.isInteger(requestedJobs) && requestedJobs > 0 ? Math.min(requestedJobs, 4) : 3;
 const groups = {
   peg: {
     games: ['\u72ec\u7c92\u94bb\u77f3'],
@@ -35,6 +37,21 @@ const groups = {
     evidence: [],
     browser: ['tools/verify-pk32-jungle-cdp.js']
   },
+  reversi: {
+    games: ['\u9ed1\u767d\u68cb'],
+    evidence: ['tools/verify-pk32-reversi-data.js'],
+    browser: ['tools/verify-pk32-reversi-cdp.js']
+  },
+  pipe: {
+    games: ['\u63a5\u6c34\u7ba1'],
+    evidence: ['tools/verify-pk32-pipe-connect-data.js', 'tools/verify-pk32-pipe-connect-flow.js'],
+    browser: ['tools/verify-pk32-pipe-connect-cdp.js']
+  },
+  huarong: {
+    games: ['\u534e\u5bb9\u9053'],
+    evidence: ['tools/verify-pk32-huarong-data.js', 'tools/verify-pk32-huarong-solvability.js'],
+    browser: ['tools/verify-pk32-huarong-cdp.js']
+  },
   sokoban4: {
     games: ['\u63a8\u7bb1\u5b50\u56db'],
     evidence: ['tools/verify-pk32-sokoban4.js', 'tools/verify-pk32-sokoban4-data.js'],
@@ -44,6 +61,21 @@ const groups = {
     games: ['\u667a\u6167\u4e4b\u5149'],
     evidence: ['tools/verify-pk32-light.js', 'tools/verify-pk32-light-rules.js'],
     browser: ['tools/verify-pk32-light-cdp.js']
+  },
+  ships: {
+    games: ['\u822a\u6d77\u8ff7\u9898'],
+    evidence: ['tools/verify-pk32-ships-data.js'],
+    browser: ['tools/verify-pk32-ships-cdp.js']
+  },
+  electromagnetic: {
+    games: ['\u7535\u78c1\u5f69\u7403'],
+    evidence: ['tools/verify-pk32-electromagnetic-data.js'],
+    browser: ['tools/verify-pk32-native-cdp.js']
+  },
+  'black-hole': {
+    games: ['\u5b87\u5b99\u9ed1\u6d1e'],
+    evidence: ['tools/verify-pk32-black-hole.js'],
+    browser: ['tools/verify-pk32-native-cdp.js']
   }
 };
 const selected = args.includes('--all') ? Object.keys(groups) : (requested.length ? requested : Object.keys(groups));
@@ -54,6 +86,7 @@ const allSteps = [
   { phase: 'inventory', script: 'tools/verify-pk32-inventory.js' },
   { phase: 'inventory', script: 'tools/verify-pk32-catalog.js' },
   { phase: 'inventory', script: 'tools/verify-pk32-catalog-coverage.js' },
+  { phase: 'inventory', script: 'tools/verify-pk32-level-boundaries.js' },
   { phase: 'evidence', script: 'tools/verify-pk32-native-data-manifest.js' },
   { phase: 'evidence', script: 'tools/verify-pk32-native-data.js' },
   ...selected.flatMap(name => groups[name].evidence.map(script => ({ phase: 'evidence', group: name, script }))),
@@ -104,22 +137,43 @@ function run(step, env) {
   });
 }
 
+function runParallel(batch, env) {
+  const results = new Array(batch.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < batch.length) {
+      const index = next++;
+      results[index] = await run(batch[index], env);
+    }
+  };
+  return Promise.all(Array.from({ length: Math.min(jobs, batch.length) }, worker)).then(() => results);
+}
+
 (async () => {
-  const report = { version: 1, startedAt: new Date().toISOString(), selectedGroups: selected, steps: [] };
-  const needsBrowser = steps.some(step => step.phase === 'browser');
-  const port = needsBrowser ? await freePort() : null;
-  const env = { ...process.env, PK32_BASE_URL: port ? 'http://127.0.0.1:' + port : process.env.PK32_BASE_URL };
+  const report = { version: 2, startedAt: new Date().toISOString(), selectedGroups: selected, jobs, steps: [] };
+  const queueStep = steps.find(step => step.script === 'tools/build-pk32-migration-queue.js');
+  const preBrowserSteps = steps.filter(step => step !== queueStep && step.phase !== 'browser');
+  const browserSteps = steps.filter(step => step.phase === 'browser');
+  const env = { ...process.env };
   let server = null;
   try {
-    if (needsBrowser) {
+    if (queueStep) report.steps.push(await run(queueStep, env));
+    if (report.steps.every(step => step.passed)) {
+      report.steps.push(...await runParallel(preBrowserSteps, env));
+    }
+    for (const result of report.steps) {
+      console.log((result.passed ? 'PASS ' : 'FAIL ') + result.phase + ' ' + result.script + ' (' + result.durationMs + 'ms)');
+    }
+    if (report.steps.length === 1 + preBrowserSteps.length && report.steps.every(step => step.passed) && browserSteps.length) {
+      const port = await freePort();
+      env.PK32_BASE_URL = 'http://127.0.0.1:' + port;
       server = spawn(process.execPath, [path.join(root, 'server.js')], { cwd: root, env: { ...env, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
       await waitForServer(env.PK32_BASE_URL);
-    }
-    for (const step of steps) {
-      const result = await run(step, env);
-      report.steps.push(result);
-      console.log((result.passed ? 'PASS ' : 'FAIL ') + result.phase + ' ' + result.script + ' (' + result.durationMs + 'ms)');
-      if (!result.passed) break;
+      const results = await runParallel(browserSteps, env);
+      report.steps.push(...results);
+      for (const result of results) {
+        console.log((result.passed ? 'PASS ' : 'FAIL ') + result.phase + ' ' + result.script + ' (' + result.durationMs + 'ms)');
+      }
     }
   } finally {
     if (server) server.kill();

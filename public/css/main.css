@@ -819,11 +819,69 @@ body.in-battle .avatar-btn { display: none; }
     flex: 1; position: relative; overflow: hidden;
     display: flex; align-items: center; justify-content: center;
 }
-#pk32-mask .mini-stage { overflow: auto; align-items: flex-start; justify-content: flex-start; }
+#pk32-mask .mini-stage { overflow: auto; align-items: flex-start; justify-content: flex-start; min-height: 0; }
 /* PK32 使用页面级单一滚动容器，避免手机触摸手势在目录、游戏和棋盘之间互相截断。 */
-#pk32-mask .mini-stage { display: block; overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; }
+#pk32-mask .mini-stage { display: block; flex: 1 1 auto; min-height: 0; height: auto; overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
 #pk32-mask .emu-wrap { height: auto; min-height: 100%; overflow: visible; }
-#pk32-mask .pk32-board-scroll { max-height: none; overflow: visible; }
+#pk32-mask .emu-wrap.pk32-playing > .emu-note,
+#pk32-mask .emu-wrap.pk32-playing > .emu-toolbar { display: none; }
+#pk32-mask .pk32-board-scroll { max-height: none; overflow-x: auto; overflow-y: visible; }
+#pk32-mask .pk32-animal-ui { padding: 0 10px 20px; min-width: 0; box-sizing: border-box; }
+#pk32-mask .pk32-animal-ui .pk32-board-scroll {
+    /* 斗兽棋使用外层单一滚动区，整张棋盘随手势移动，避免手机嵌套滚动。 */
+    max-height: none;
+    overflow-x: visible;
+    overflow-y: visible;
+    overscroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+#pk32-mask .pk32-animal-ui .pk32-board-grid {
+    box-sizing: border-box;
+    min-height: 0;
+    width: 100%;
+    min-width: 0;
+    grid-auto-rows: clamp(44px, 13.5vw, 58px);
+}
+#pk32-mask .pk32-animal-ui .pk32-animal-cell {
+    min-height: 0;
+    touch-action: pan-y;
+    user-select: none;
+}
+#pk32-mask .pk32-animal-ui .pk32-animal-piece {
+    width: min(66px, 100%);
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: 66 / 58;
+    background-size: 1001.515% 800%;
+}
+@media (max-width:420px) {
+    #pk32-mask .pk32-animal-ui { padding-left: 6px; padding-right: 6px; }
+    #pk32-mask .pk32-animal-ui .pk32-board-scroll { max-height: none; overflow-x: visible; overflow-y: visible; }
+    #pk32-mask .pk32-animal-ui .pk32-board-grid { width: 100%; min-width: 0; grid-auto-rows: clamp(40px, 13vw, 52px); }
+}
+#pk32-mask .pk32v-ships-board { position: relative; width: min(100%, 560px); aspect-ratio: 1; margin: 8px auto; overflow: hidden; border: 4px solid #36516e; background: #16283e; box-shadow: 0 5px 18px rgba(0,0,0,.35); }
+#pk32-mask .pk32v-ships-board .ships-board { position: absolute; inset: 0; display: grid; gap: 1px; grid-template-columns: repeat(10, minmax(0, 1fr)); max-width: none; background: #28455e; }
+#pk32-mask .pk32v-ships-board .ships-board button { min-width: 0; min-height: 0; padding: 0; border: 0; border-radius: 0; background: #244f68; color: #e6f7ff; font-size: clamp(9px, 2.8vw, 15px); font-weight: 700; }
+#pk32-mask .pk32v-ships-board .ships-board button.ship, #pk32-mask .pk32v-ships-board .ships-board button.monster { display: grid; place-items: center; }
+#pk32-mask .pk32v-ships-board .pk32-ship-sprite { display: block; width: min(100%, 35px); height: 30px; background-image: url('/img/pk32/ships-original.png'); background-repeat: no-repeat; background-size: 280px 290.5px; background-position: var(--pk32-ship-x) var(--pk32-ship-y); image-rendering: auto; }
+#pk32-mask .pk32v-ships-board .ships-board button.vortex { background: radial-gradient(circle at center, #0b1521 0 19%, #6d8ba0 20% 23%, transparent 24%), repeating-linear-gradient(45deg, rgba(160,215,235,.28) 0 2px, transparent 2px 7px), #1c3348; color: transparent; }
+#pk32-mask .pk32v-ships-board .ships-board button.ship, #pk32-mask .pk32v-ships-board .ships-board button.monster { border: 2px solid var(--pk32-ship-color, #ffd166); background: #153b55; text-shadow: 0 1px 2px #000; }
+#pk32-mask .pk32v-ships-board .ships-board button.monster { background-color: #3a2442; }
+#pk32-mask .pk32v-ships-board .ships-board button[data-color="1"] { --pk32-ship-color: #ff4dba; }
+#pk32-mask .pk32v-ships-board .ships-board button[data-color="2"] { --pk32-ship-color: #62e36d; }
+#pk32-mask .pk32v-ships-board .ships-board button[data-color="3"] { --pk32-ship-color: #ff5454; }
+#pk32-mask .pk32v-ships-board .ships-board button[data-color="4"] { --pk32-ship-color: #d8dde5; }
+#pk32-mask .pk32v-ships-board .ships-board button[data-color="5"] { --pk32-ship-color: #2ce8ed; }
+#pk32-mask .pk32v-ships-board .ships-board button[data-color="6"] { --pk32-ship-color: #ffe44f; }
+#pk32-mask .pk32v-ships-board .ships-board button.selected { outline: 3px solid #fff3a6; outline-offset: -3px; }
+#pk32-mask .pk32v-ships-board .pk32v-ships-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+@media (max-width:420px) {
+    #pk32-mask .pk32v-ships-board { width: max(100%, 350px); margin-left: 0; margin-right: 0; overflow-x: auto; }
+    #pk32-mask .pk32v-ships-board .ships-board { width: 350px; }
+}
 .mini-stage canvas, .mini-stage > div:not(.mg-dom) { display: block; }
 /* 2026-09-10 升级：mini-stage 用机柜风格外壳（和 MG.gfx.scene 配套）
    canvas 类游戏的背景由 MG.gfx.scene 预渲染（带网格+暗角+顶亮底暗），此兜底

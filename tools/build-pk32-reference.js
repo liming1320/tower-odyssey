@@ -106,6 +106,23 @@ function originalEvidence(record) {
       rules: { verified: false, missing: ['rent table', 'card effects', 'building restrictions', 'AI and end flow'] }
     };
   }
+  if (record.name === '电磁彩球') {
+    const entry = nativeCatalog && nativeCatalog.records && nativeCatalog.records.find(item => item.name === record.name);
+    const levelCount = entry && entry.levelCount;
+    return {
+      asset: { verified: fs.existsSync(path.join(root, 'public', 'img', 'pk32', 'original', 'sheet-d3525b.png')), source: 'sheet-d3525b.png' },
+      levels: { verified: levelCount === 160 && entry.payloadCount === 160, count: levelCount || 0, source: 'native level-selection prompt' },
+      rules: { verified: false, missing: ['complete original win trace', 'all fixed-ball and movement edge cases'] }
+    };
+  }
+  if (record.name === '宇宙黑洞') {
+    const entry = nativeCatalog && nativeCatalog.records && nativeCatalog.records.find(item => item.name === record.name);
+    return {
+      asset: { verified: false, source: null },
+      levels: { verified: !!(entry && entry.levelCount === 30 && entry.payloadCount === 41), count: entry && entry.levelCount || 0, source: 'native level-selection prompt; 11 extra payloads withheld' },
+      rules: { verified: false, missing: ['salvage collision rules', 'item effects', 'single-player and two-player end flow'] }
+    };
+  }
   return {
     asset: { verified: false, source: null },
     levels: { verified: false, count: null },
@@ -153,7 +170,7 @@ const manifest = {
   limitations: [
     'A successful launcher is not evidence of original behavior.',
     'Numeric payload length alone is not evidence of a map or level count.',
-    'The current native evidence proves only the two explicitly inspected games.'
+    'The current native evidence proves only the explicitly inspected games; other catalog entries remain incomplete.'
   ]
 };
 const manifestFile = path.join(output, 'pk32-reference-manifest.json');

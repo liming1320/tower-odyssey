@@ -1,7 +1,7 @@
 {
   "version": 1,
   "source": "output/pk32-reference/strings.json; read-only extraction from PK32 module.bin",
-  "generatedAt": "2026-09-13T11:19:33.410Z",
+  "generatedAt": "2026-09-15T19:35:49.102Z",
   "total": 213,
   "records": [
     {
@@ -1102,6 +1102,17 @@
     },
     {
       "id": "pk32-065",
+      "name": "桥桥",
+      "titleOffset": null,
+      "titleFound": false,
+      "help": [],
+      "payloadCount": 0,
+      "payloadLengths": {},
+      "levelCount": null,
+      "levelCountBasis": null
+    },
+    {
+      "id": "pk32-066",
       "name": "桥牌",
       "titleOffset": 2460092,
       "titleFound": true,
@@ -1119,17 +1130,6 @@
           "sample": "100370000102000001000103006007011015022027033034"
         }
       ],
-      "levelCount": null,
-      "levelCountBasis": null
-    },
-    {
-      "id": "pk32-066",
-      "name": "????",
-      "titleOffset": null,
-      "titleFound": false,
-      "help": [],
-      "payloadCount": 0,
-      "payloadLengths": {},
       "levelCount": null,
       "levelCountBasis": null
     },
@@ -3358,8 +3358,8 @@
           "sample": "000000000000000000000000000000000000000000000000"
         }
       ],
-      "levelCount": 207,
-      "levelCountBasis": "207 native 20x14 board payloads"
+      "levelCount": 17,
+      "levelCountBasis": "native initialization switch cases at RVA 0x14b970c..0x14bc247"
     },
     {
       "id": "pk32-089",

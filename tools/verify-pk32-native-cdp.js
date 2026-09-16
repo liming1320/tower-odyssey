@@ -47,7 +47,10 @@ class CDP {
     }
     eval(expression) {
         return this.send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true }).then(result => {
-            if (result.result && result.result.exceptionDetails) throw new Error(result.result.exceptionDetails.text);
+            if (result.result && result.result.exceptionDetails) {
+                const details = result.result.exceptionDetails;
+                throw new Error(details.text + ': ' + (details.exception && (details.exception.description || details.exception.value) || 'unknown page exception'));
+            }
             return result.result.result.value;
         });
     }
@@ -99,7 +102,7 @@ class CDP {
                     const deadline = performance.now() + 2500;
                     let ready = false;
                     while (performance.now() < deadline) {
-                        ready = name === '电磁彩球' ? host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length === 256 :
+                        ready = name === '宇宙黑洞' ? host.querySelectorAll('.pk32-black-hole-board [data-code]').length > 0 : name === '电磁彩球' ? host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length === 256 :
                             name === '同色方块' ? host.querySelectorAll('.pk32v-native-data [data-cell]').length === 192 :
                                 !!host.querySelector('.pk32v-grid');
                         if (ready) break;
@@ -109,7 +112,7 @@ class CDP {
                         name,
                         ready,
                         elapsed: Math.round(performance.now() - startedAt),
-                        grid: host.querySelector('[data-board=electromagnetic]') ? host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length : host.querySelector('.pk32v-grid') ? host.querySelector('.pk32v-grid').children.length : host.querySelectorAll('[data-cell]').length,
+                        grid: host.querySelector('.pk32-black-hole-board') ? host.querySelectorAll('.pk32-black-hole-board [data-code]').length : host.querySelector('[data-board=electromagnetic]') ? host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length : host.querySelector('.pk32v-grid') ? host.querySelector('.pk32v-grid').children.length : host.querySelectorAll('[data-cell]').length,
                         options: host.querySelector('select') ? host.querySelector('select').options.length : 0,
                         prompt: host.querySelector('.pk32v-prompt') ? host.querySelector('.pk32v-prompt').textContent : '',
                         errors
@@ -118,12 +121,52 @@ class CDP {
                     row = { name, ready: false, elapsed: Math.round(performance.now() - startedAt), grid: host.querySelectorAll('[data-cell]').length, options: host.querySelector('select') ? host.querySelector('select').options.length : 0, prompt: host.querySelector('.pk32v-prompt') ? host.querySelector('.pk32v-prompt').textContent : '', errors, error: String(error && error.stack || error) };
                 }
                 try {
+                if (name === '宇宙黑洞' && row.ready) {
+                    const selector = host.querySelector('select');
+                    const initialGrid = host.querySelectorAll('.pk32-black-hole-board [data-code]').length;
+                    if (selector) {
+                        selector.value = String(selector.options.length - 1);
+                        selector.dispatchEvent(new Event('change', { bubbles: true }));
+                        await new Promise(resolve => setTimeout(resolve, 25));
+                    }
+                    const lastPrompt = host.querySelector('.pk32v-prompt') ? host.querySelector('.pk32v-prompt').textContent : '';
+                    row.blackHole = {
+                        options: selector ? selector.options.length : 0,
+                        initialGrid,
+                        lastGrid: host.querySelectorAll('.pk32-black-hole-board [data-code]').length,
+                        lastPrompt,
+                        overflow: document.documentElement.scrollWidth > innerWidth || document.body.scrollWidth > innerWidth
+                    };
+                }
                 if (name === '电磁彩球' && row.ready) {
                     const nodes = [...host.querySelectorAll('[data-board=electromagnetic] [data-cell]')];
                     const fixed = nodes.find(node => node.dataset.value === '5');
                     const empty = nodes.find(node => node.dataset.value === '0');
                     const fixedImage = fixed ? getComputedStyle(fixed).backgroundImage : '';
                     const emptyImage = empty ? getComputedStyle(empty).backgroundImage : '';
+                    const selector = host.querySelector('select');
+                    const levels = await (await fetch('/data/pk32-electromagnetic-levels.json')).json();
+                    const assetImages = {};
+                    const assetLevels = [];
+                    for (let index = 0; selector && index < levels.levels.length; index += 1) {
+                        selector.value = String(index);
+                        selector.dispatchEvent(new Event('change', { bubbles: true }));
+                        await new Promise(resolve => setTimeout(resolve, 5));
+                        const assetNodes = [...host.querySelectorAll('[data-board=electromagnetic] [data-cell]')];
+                        assetNodes.forEach(node => {
+                            const value = node.dataset.value;
+                            if (['1', '2', '3', '4', '5'].includes(value) && !assetImages[value]) assetImages[value] = getComputedStyle(node).backgroundImage;
+                        });
+                        if (['1', '2', '3', '4', '5'].every(value => assetImages[value])) { assetLevels.push(index + 1); break; }
+                        assetLevels.push(index + 1);
+                    }
+                    if (selector) {
+                        selector.value = '159';
+                        selector.dispatchEvent(new Event('change', { bubbles: true }));
+                        await new Promise(resolve => setTimeout(resolve, 40));
+                    }
+                    const lastLevelNodes = host.querySelectorAll('[data-board=electromagnetic] [data-cell]').length;
+                    const lastLevelPrompt = host.querySelector('.pk32v-prompt') ? host.querySelector('.pk32v-prompt').textContent : '';
                     const debug = window.__pk32ElectromagneticDebug;
                     const blank = () => Array(256).fill('0');
                     const chain = blank(); chain[1] = '1'; chain[2] = '2';
@@ -139,6 +182,10 @@ class CDP {
                     row.electromagnetic = {
                         fixedImage,
                         emptyImage,
+                        assetImages,
+                        assetLevels,
+                        allAssetImages: ['1', '2', '3', '4', '5'].every(value => /sheet-d3525b\.png/.test(assetImages[value])),
+                        lastLevelLoaded: lastLevelNodes === 256 && lastLevelPrompt.includes('160 / 160'),
                         chain: debug.shift(chain, -1, 0).slice(0, 4).join(''),
                         blocked: debug.shift(blocked, -1, 0).slice(0, 4).join(''),
                         joined: debug.shift(joined, -1, 0).slice(0, 4).join(''),
@@ -170,6 +217,7 @@ class CDP {
             }
             await check('同步移动', { grid: 142, options: 261 });
             await check('木乃伊', { grid: 42, options: 222 });
+            await check('宇宙黑洞', { grid: 0, options: 30 });
             await check('电磁彩球', { grid: 256, options: 160 });
             await check('同色方块', { grid: 192, options: 3 });
             return output;
@@ -177,8 +225,10 @@ class CDP {
         const expected = {
             '同步移动': row => row.grid === 142 && row.options === 261,
             '木乃伊': row => row.grid === 42 && row.options === 222,
+            '宇宙黑洞': row => row.grid > 0 && row.options === 30 && row.blackHole && row.blackHole.lastGrid > 0 && row.blackHole.lastPrompt.includes('原生关卡 30 / 30') && !row.blackHole.overflow,
             '电磁彩球': row => row.grid === 256 && row.options === 160 &&
                 /sheet-d3525b\.png/.test(row.electromagnetic.fixedImage) && row.electromagnetic.emptyImage === 'none' &&
+                row.electromagnetic.allAssetImages && row.electromagnetic.lastLevelLoaded &&
                 row.electromagnetic.chain === '1200' && row.electromagnetic.blocked === '5120' &&
                 row.electromagnetic.joined === '1100' && row.electromagnetic.moved && row.electromagnetic.undone &&
                 !row.electromagnetic.overflow,
