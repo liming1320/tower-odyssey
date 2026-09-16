@@ -65,6 +65,26 @@ window.MiniGames = window.MiniGames || {};
         return t;
     }
 
+    // 程序化石材贴图（不依赖任何外部图片）
+    function stoneTexture(THREE, base, dark) {
+        const c = document.createElement('canvas'); c.width = c.height = 64;
+        const x = c.getContext('2d');
+        x.fillStyle = base; x.fillRect(0, 0, 64, 64);
+        for (let i = 0; i < 240; i++) {
+            const px = Math.random() * 64, py = Math.random() * 64, s = 2 + Math.random() * 5;
+            x.fillStyle = Math.random() < 0.5 ? dark : 'rgba(255,255,255,0.06)';
+            x.fillRect(px, py, s, s);
+        }
+        // 砖缝
+        x.strokeStyle = 'rgba(0,0,0,0.35)'; x.lineWidth = 1;
+        for (let yy = 8; yy <= 64; yy += 16) { x.beginPath(); x.moveTo(0, yy); x.lineTo(64, yy); x.stroke(); }
+        for (let xx = 8; xx <= 64; xx += 16) { x.beginPath(); x.moveTo(xx, 0); x.lineTo(xx, 64); x.stroke(); }
+        const t = new THREE.CanvasTexture(c);
+        t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 1);
+        if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding;
+        return t;
+    }
+
     MiniGames.alienshoot3d = {
         LEVELS: lv,
         start(container, opts) {
@@ -75,7 +95,7 @@ window.MiniGames = window.MiniGames || {};
 
             // 游戏状态
             let px = 12, py = 12, yaw = 0, pitch = 0, hp = 100, kills = 0, over = false, t = 0, wave = 0, score = 0;
-            let aliens = [], decals = [], shake = 0, muzzle = 0;
+            let aliens = [], decals = [], shake = 0, muzzle = 0, medkits = [], recoil = 0, hitMark = 0, medT = 6;
             let dirX = 1, dirY = 0;
             const canStand = (x, y) => { const cx = Math.floor(x), cy = Math.floor(y); return cx > 0 && cy > 0 && cx < MW - 1 && cy < MH - 1 && grid[cy][cx] === 0; };
 
@@ -142,22 +162,30 @@ window.MiniGames = window.MiniGames || {};
                 ground.position.set(MW / 2, 0, MH / 2);
                 scene.add(ground);
 
-                // 墙体（单个 InstancedMesh，按类型上色，一次 draw call）
+                // 墙体：每种类型单独 InstancedMesh + 程序化石材贴图（仍是极少 draw call）
                 const wallCells = [];
                 for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (grid[y][x] > 0) wallCells.push({ x, y, v: grid[y][x] });
                 const wallGeo = new THREE.BoxGeometry(1, 1, 1);
-                const wallMat = new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0 });
-                const walls = new THREE.InstancedMesh(wallGeo, wallMat, wallCells.length);
                 const m4 = new THREE.Matrix4();
-                const col2 = new THREE.Color(0x6a4f2e), col3 = new THREE.Color(0x595563), col1 = new THREE.Color(0x444049);
-                wallCells.forEach((c, i) => {
-                    m4.makeTranslation(c.x + 0.5, 0.5, c.y + 0.5);
-                    walls.setMatrixAt(i, m4);
-                    walls.setColorAt(i, c.v === 2 ? col2 : c.v === 3 ? col3 : col1);
-                });
-                walls.instanceMatrix.needsUpdate = true;
-                if (walls.instanceColor) walls.instanceColor.needsUpdate = true;
-                scene.add(walls);
+                const wallMeshes = [];   // 用于射线射击求交
+                const wallDefs = {
+                    2: { base: '#6a4f2e', dark: 'rgba(40,28,14,0.5)', emissive: 0x140d05 },
+                    3: { base: '#595563', dark: 'rgba(20,18,28,0.5)', emissive: 0x0e0d14 },
+                    1: { base: '#444049', dark: 'rgba(15,13,18,0.5)', emissive: 0x0c0a0f },
+                };
+                for (const v in wallDefs) {
+                    const def = wallDefs[v];
+                    const cells = wallCells.filter(c => c.v === +v);
+                    if (!cells.length) continue;
+                    const mat = new THREE.MeshStandardMaterial({
+                        map: stoneTexture(THREE, def.base, def.dark),
+                        roughness: 0.95, metalness: 0, emissive: def.emissive, emissiveIntensity: 0.4,
+                    });
+                    const im = new THREE.InstancedMesh(wallGeo, mat, cells.length);
+                    cells.forEach((c, i) => { m4.makeTranslation(c.x + 0.5, 0.5, c.y + 0.5); im.setMatrixAt(i, m4); });
+                    im.instanceMatrix.needsUpdate = true;
+                    scene.add(im); wallMeshes.push(im);
+                }
 
                 // 第一人称枪（挂在相机下，随视角移动）
                 const gun = new THREE.Group();
@@ -189,6 +217,23 @@ window.MiniGames = window.MiniGames || {};
                     };
                 }
                 const hitMeshes = [];   // 用于射线射击的实体（胶囊体）
+                const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });  // 命中闪白（共享）
+
+                // 医疗包（红十字符子，走到附近自动拾取回血）
+                function spawnMedkit() {
+                    let x, y, tries = 0;
+                    do { x = 1 + Math.random() * (MW - 2); y = 1 + Math.random() * (MH - 2); tries++; } while (!canStand(x, y) && tries < 60);
+                    const g = new THREE.Group();
+                    g.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), new THREE.MeshStandardMaterial({ color: 0xeeeeee, emissive: 0x222222 })));
+                    const cm = new THREE.MeshBasicMaterial({ color: 0xff2b2b });
+                    const cv = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.07, 0.34), cm); cv.position.z = 0.001;
+                    const ch = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.22, 0.34), cm); ch.position.z = 0.001;
+                    g.add(cv); g.add(ch);
+                    g.position.set(x + 0.5, 0.28, y + 0.5);
+                    scene.add(g);
+                    medkits.push({ x: x + 0.5, y: y + 0.5, mesh: g, taken: false });
+                }
+
                 function spawnAlienMesh(a) {
                     const s = shared[a.type];
                     const g = new THREE.Group();
@@ -211,6 +256,7 @@ window.MiniGames = window.MiniGames || {};
                 }
 
                 function spawn() {
+                    if (kills >= quota) return;  // 达成击杀目标后停刷，清场即胜
                     wave++;
                     const boss = wave % Math.max(3, 8 - Math.floor(idx / 10)) === 0;
                     let x, y, tries = 0;
@@ -228,9 +274,9 @@ window.MiniGames = window.MiniGames || {};
                 const ray = new THREE.Raycaster();
                 const center = new THREE.Vector2(0, 0);
                 function fire() {
-                    muzzle = 0.06; muzzleLight.intensity = 3.2;
+                    muzzle = 0.06; muzzleLight.intensity = 3.2; recoil = 0.05;
                     ray.setFromCamera(center, camera);
-                    const objs = [walls].concat(hitMeshes);
+                    const objs = wallMeshes.concat(hitMeshes);
                     const hits = ray.intersectObjects(objs, false);
                     if (hits.length) {
                         const h = hits[0];
@@ -242,7 +288,7 @@ window.MiniGames = window.MiniGames || {};
                                 removeAlienMesh(a);
                                 aliens = aliens.filter(z => z !== a);
                                 if (kills >= quota && aliens.length === 0) return done(true, ['区域肃清！', `击杀 ${kills} · 剩余 HP ${Math.round(hp)}`]);
-                            }
+                            } else hitMark = 0.16;
                         }
                     }
                 }
@@ -302,7 +348,8 @@ window.MiniGames = window.MiniGames || {};
                 function step(now) {
                     if (over) return;
                     const dt = Math.min(0.05, (now - last) / 1000); last = now;
-                    t += dt; cool -= dt; muzzle -= dt; spawnT -= dt;
+                    t += dt; cool -= dt; muzzle -= dt; spawnT -= dt; hitMark -= dt;
+                    recoil = Math.max(0, recoil - dt * 0.45);
                     if (muzzleLight.intensity > 0) muzzleLight.intensity = Math.max(0, muzzleLight.intensity - dt * 40);
 
                     // 移动
@@ -323,6 +370,7 @@ window.MiniGames = window.MiniGames || {};
                     }
                     if (firing && cool <= 0) { fire(); cool = 0.14; }
                     if (spawnT <= 0) { spawn(); spawnT = spawnInt * (0.7 + Math.random() * 0.6); }
+                    medT -= dt; if (medT <= 0 && medkits.length < 3) { spawnMedkit(); medT = 9 + Math.random() * 5; }
 
                     // 异形移动 + 渲染同步
                     for (const a of aliens) {
@@ -337,19 +385,30 @@ window.MiniGames = window.MiniGames || {};
                         if (d < a.r + 0.6) { hp -= (a.type === 'tank' ? 14 : 7) * dt * 3; shake = 4; if (hp <= 0) return done(false, ['你被异形吞没了…', `击杀 ${kills}/${quota}`]); }
                     }
 
-                    // 相机
-                    camera.position.set(px, EYE, py);
+                    // 医疗包：旋转 + 靠近拾取回血
+                    for (const m of medkits) {
+                        m.mesh.rotation.y += dt * 1.6;
+                        if (Math.hypot(px - m.x, py - m.y) < 0.6) { hp = Math.min(100, hp + 35); m.taken = true; }
+                    }
+                    medkits = medkits.filter(m => { if (m.taken) { scene.remove(m.mesh); return false; } return true; });
+
+                    // 相机（受击抖动）
+                    let sx = 0, sy = 0;
+                    if (shake > 0) { shake = Math.max(0, shake - dt * 22); sx = (Math.random() - 0.5) * shake * 0.02; sy = (Math.random() - 0.5) * shake * 0.02; }
+                    camera.position.set(px + sx, EYE + sy, py + sy);
                     const cp = Math.cos(pitch), sp2 = Math.sin(pitch);
                     camera.lookAt(px + dirX * cp, EYE + sp2, py + dirY * cp);
+
+                    // 枪械：后坐 + 行走晃动
+                    const moving = ml > 0.001;
+                    gun.position.z = -0.5 + recoil - (moving ? Math.abs(Math.sin(t * 9)) * 0.012 : 0);
+                    gun.position.y = -0.24 + (moving ? Math.sin(t * 9) * 0.008 : 0);
 
                     renderer.render(scene, camera);
                     drawHUD();
                     opts.onScore && opts.onScore(`击杀 ${kills}/${quota} · HP ${Math.max(0, Math.round(hp))}`);
                     raf = requestAnimationFrame(step);
                 }
-
-                // 命中闪白材质（共享）
-                const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
                 function drawHUD() {
                     const x = hctx; x.clearRect(0, 0, W, H);
@@ -365,6 +424,13 @@ window.MiniGames = window.MiniGames || {};
                     x.moveTo(W / 2 + 4, H / 2); x.lineTo(W / 2 + 11, H / 2);
                     x.moveTo(W / 2, H / 2 - 11); x.lineTo(W / 2, H / 2 - 4);
                     x.moveTo(W / 2, H / 2 + 4); x.lineTo(W / 2, H / 2 + 11); x.stroke();
+                    // 命中标记（击中异形但未致命时闪红 X）
+                    if (hitMark > 0) {
+                        x.strokeStyle = 'rgba(255,70,70,0.95)'; x.lineWidth = 2.5; const r = 9;
+                        x.beginPath();
+                        x.moveTo(W / 2 - r, H / 2 - r); x.lineTo(W / 2 + r, H / 2 + r);
+                        x.moveTo(W / 2 + r, H / 2 - r); x.lineTo(W / 2 - r, H / 2 + r); x.stroke();
+                    }
                     // 血条
                     x.fillStyle = '#333'; x.fillRect(8, 8, 120, 10);
                     x.fillStyle = hp > 40 ? '#5ad48a' : '#ff7b7b'; x.fillRect(8, 8, 120 * Math.max(0, hp / 100), 10);
@@ -375,6 +441,7 @@ window.MiniGames = window.MiniGames || {};
                     x.strokeStyle = 'rgba(255,255,255,0.25)'; x.lineWidth = 1; x.strokeRect(mx0 + .5, my0 + .5, MM - 1, MM - 1);
                     for (let yy = 0; yy < MH; yy++) for (let xx = 0; xx < MW; xx++) if (grid[yy][xx] > 0) { x.fillStyle = grid[yy][xx] === 2 ? '#7a5a32' : '#6b6577'; x.fillRect(mx0 + xx * s, my0 + yy * s, s + 0.5, s + 0.5); }
                     x.fillStyle = 'rgba(255,91,91,0.95)'; for (const a of aliens) x.fillRect(mx0 + a.x * s - 1, my0 + a.y * s - 1, 2.5, 2.5);
+                    x.fillStyle = '#ff4d4d'; for (const m of medkits) x.fillRect(mx0 + m.x * s - 1.5, my0 + m.y * s - 1.5, 3, 3);
                     x.fillStyle = '#7dff7d'; x.beginPath(); x.arc(mx0 + px * s, my0 + py * s, 2.5, 0, Math.PI * 2); x.fill();
                     x.strokeStyle = '#7dff7d'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(mx0 + px * s, my0 + py * s); x.lineTo(mx0 + (px + dirX * 2) * s, my0 + (py + dirY * 2) * s); x.stroke();
                     // 触屏提示

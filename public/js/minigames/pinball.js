@@ -73,6 +73,28 @@ window.MiniGames = window.MiniGames || {};
     const GUIDE_L = [[62, 558], [74, 592], [100, 602]];
     const GUIDE_R = [[290, 558], [278, 592], [252, 602]];
 
+    /* ── 美术资源（生成式位图，贴近 Windows 原版质感）── */
+    let bgImg = null, ballSprite = null;
+    (function loadPinballAssets() {
+        const bi = new Image();
+        bi.onload = () => { bgImg = bi; };
+        bi.src = '/img/pinball/bg.png';
+        const pi = new Image();
+        pi.onload = () => {
+            try {
+                // 素材底色非透明：离屏圆形裁剪抠出金属球本体
+                const s = 256, cv = document.createElement('canvas');
+                cv.width = s; cv.height = s;
+                const g = cv.getContext('2d');
+                if (!g) return;
+                g.beginPath(); g.arc(s / 2, s / 2, s * 0.40, 0, Math.PI * 2); g.clip();
+                g.drawImage(pi, 0, 0, s, s);
+                ballSprite = cv;
+            } catch (e) { /* 降级用程序化球 */ }
+        };
+        pi.src = '/img/pinball/ball.png';
+    })();
+
     /* ══════════════════════ 2. 工具 ══════════════════════ */
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
     const lerp = (a, b, t) => a + (b - a) * t;
@@ -1077,20 +1099,27 @@ window.MiniGames = window.MiniGames || {};
                 gg.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = gg;
                 ctx.beginPath(); ctx.arc(ex, ey, R + 26, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = 'rgba(150,200,255,0.18)'; ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgba(255,214,120,0.30)'; ctx.lineWidth = 2.6;
                 ctx.beginPath(); ctx.arc(ex, ey, R, 0, Math.PI * 2); ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,190,90,0.16)'; ctx.lineWidth = 1.4;
                 ctx.beginPath(); ctx.arc(ex, ey, R - 10, 0, Math.PI * 2); ctx.stroke();
-                // 中央星徽
-                ctx.fillStyle = 'rgba(180,220,255,0.20)';
+                // 中央星徽（Space Cadet 金红星章）
                 ctx.save(); ctx.translate(ex, ey);
+                const sg2 = ctx.createRadialGradient(0, -6, 2, 0, 0, 26);
+                sg2.addColorStop(0, '#ffe9a8'); sg2.addColorStop(0.55, '#f7b936'); sg2.addColorStop(1, '#b36b12');
+                ctx.fillStyle = sg2;
                 ctx.beginPath();
                 for (let i = 0; i < 10; i++) {
                     const a = -Math.PI / 2 + i * Math.PI / 5;
-                    const rr = i % 2 ? 8 : 20;
-                    const px = Math.cos(a) * rr, py = Math.sin(a) * rr;
+                    const rr2 = i % 2 ? 9 : 24;
+                    const px = Math.cos(a) * rr2, py = Math.sin(a) * rr2;
                     if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
                 }
                 ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = 'rgba(120,60,10,0.55)'; ctx.lineWidth = 1.2; ctx.stroke();
+                // 星面高光
+                ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                ctx.beginPath(); ctx.ellipse(-6, -8, 5, 3, -0.7, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
                 ctx.restore();
             }
