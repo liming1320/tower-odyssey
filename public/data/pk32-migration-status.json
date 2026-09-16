@@ -12,8 +12,8 @@
     "ownershipVerified": 0,
     "migrationComplete": 0,
     "verificationComplete": 0,
-    "payloadMigration": 42,
-    "partialContentMigration": 43,
+    "payloadMigration": 14,
+    "partialContentMigration": 71,
     "originalComplete": 0
   },
   "records": [
@@ -1480,11 +1480,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -1600,11 +1600,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -2080,11 +2080,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -2290,11 +2290,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -2350,11 +2350,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -2470,11 +2470,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -2890,11 +2890,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -2920,11 +2920,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -3640,11 +3640,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -3880,11 +3880,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -3910,11 +3910,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -3940,11 +3940,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -3970,11 +3970,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -4120,11 +4120,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -4300,11 +4300,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -4360,11 +4360,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -4390,11 +4390,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -4420,11 +4420,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -4870,11 +4870,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -5050,11 +5050,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -5080,11 +5080,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -5410,11 +5410,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -5470,11 +5470,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -5560,11 +5560,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -5650,11 +5650,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -6220,11 +6220,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -6340,11 +6340,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -6370,11 +6370,11 @@
         "catalogRegistered": true,
         "rawPayloadsBound": true,
         "structuredPayloadsBound": true,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "contentComplete": false,
         "verificationComplete": false
       },
-      "migrationPhase": "payload-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {

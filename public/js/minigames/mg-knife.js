@@ -36,6 +36,7 @@ window.MiniGames = window.MiniGames || {};
             lv: 1, exp: 0, expNeed: 6,
             kills: 0, need: P.need || 8,
             enemies: [], orbs: [], sparks: [],
+            powerups: [], floaters: [],                      // 道具掉落 / 拾取浮动文字
             spawnT: 0.5, elapsed: 0,
             keys: {},                                       // 当前按住的键 → 最近一次 keydown 时间戳（用于持续移动）
             touch: null,                                     // 按住屏幕的目标点（指哪走哪）
@@ -256,6 +257,21 @@ window.MiniGames = window.MiniGames || {};
                 ctx.shadowColor = '#5ce87a'; ctx.shadowBlur = 8;
                 ctx.fillStyle = '#5ce87a';
                 ctx.beginPath(); ctx.arc(o.x, o.y, 4 * pulse, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+
+            // ---- 道具掉落（🔪刀数 / 🌀转速），发光球 ----
+            for (const o of S.powerups) {
+                const pulse = 0.7 + 0.3 * Math.sin(S.elapsed * 8 + o.x);
+                ctx.save();
+                ctx.translate(o.x, o.y);
+                const col = o.kind === 'knife' ? '#ffd56b' : '#5cd6ff';
+                ctx.shadowColor = col; ctx.shadowBlur = 14;
+                ctx.fillStyle = col;
+                ctx.beginPath(); ctx.arc(0, 0, 9 * pulse, 0, Math.PI * 2); ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.font = 'bold 11px "Microsoft YaHei"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(o.kind === 'knife' ? '🔪' : '🌀', 0, 1);
                 ctx.restore();
             }
 

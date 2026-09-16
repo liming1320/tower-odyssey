@@ -71,6 +71,7 @@
     CONFIG['同步移动'].nativePayloadCount = 261;
     CONFIG['宇宙黑洞'].levelCount = 30;
     CONFIG['宇宙黑洞'].nativePayloadCount = 41;
+    const STRUCTURED_PAYLOAD_NAMES = new Set('考眼力|24点二|21点二|梭哈六|三张牌|接龙二|平面魔方|激光坦克|开心辞典|记忆考验|反应测试|海豚骰|汉诺塔|老虎机|跳跃棋|找不同|找彩球|变化彩球|推箱子二|移彩球|数独|跳棋二|拼疑犯|扩展线路|马跳棋盘|彩球迷宫|吃豆子|彩球连线'.split('|'));
 
     function el(tag, attrs, text) {
         const node = document.createElement(tag);
@@ -241,6 +242,72 @@
             }
             difficulty.addEventListener('change', reset);
             reset();
+        }
+        function renderStructuredPayloads() {
+            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载' + config.name + '原始结构化载荷…');
+            const panel = el('div', { className: 'pk32v-native-data' });
+            body.append(prompt, panel);
+            fetch('/data/pk32-structured-payloads.json').then(function (response) { return response.json(); }).then(function (data) {
+                const game = (data.games || []).find(function (item) { return item.name === config.name; });
+                if (!game || !game.payloads || !game.payloads.length) {
+                    prompt.textContent = config.name + '暂无可绑定的结构化载荷。';
+                    return;
+                }
+                let level = 0;
+                const select = el('select', { 'aria-label': config.name + '原始载荷' });
+                game.payloads.forEach(function (payload, index) {
+                    select.appendChild(el('option', { value: String(index) }, '原始载荷 ' + (index + 1) + ' / ' + game.payloads.length + '，长度 ' + payload.length));
+                });
+                function chooseShape(payload) {
+                    const structure = payload.structure || {};
+                    if (structure.width && structure.height) return { width: structure.width, height: structure.height };
+                    const shapes = structure.candidateShapes || [];
+                    const single = shapes.find(function (shape) { return shape.cellWidth === 1 && shape.width <= 20 && shape.height <= 20; }) || shapes[0];
+                    if (single) return { width: single.width, height: single.height };
+                    if (payload.family === 'paired-code-candidate') return { width: 12, height: Math.ceil((payload.units || []).length / 12) };
+                    if (payload.family === 'three-digit-index-candidate') return { width: 9, height: Math.ceil((payload.units || []).length / 9) };
+                    if (payload.family === 'legacy-100-stream') return { width: 10, height: Math.ceil((payload.units || []).length / 10) };
+                    return { width: Math.min(16, Math.max(1, Math.ceil(Math.sqrt((payload.units || []).length || 1)))), height: 0 };
+                }
+                function colorFor(value) {
+                    const n = Number(value);
+                    const colors = ['#0f172a', '#334155', '#2563eb', '#16a34a', '#eab308', '#dc2626', '#7c3aed', '#0891b2', '#f97316', '#be123c'];
+                    if (Number.isFinite(n)) return colors[Math.abs(n) % colors.length];
+                    return '#475569';
+                }
+                function draw() {
+                    panel.innerHTML = '';
+                    const payload = game.payloads[level], units = payload.units || [], shape = chooseShape(payload);
+                    const width = Math.max(1, shape.width || 1), height = shape.height || Math.ceil(units.length / width);
+                    const nav = el('div', { className: 'pk32v-toolbar' });
+                    nav.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一条', function () { level = Math.min(game.payloads.length - 1, level + 1); select.value = String(level); draw(); }), select);
+                    const grid = renderGrid(width, height, 'pk32-structured-payload-board');
+                    units.slice(0, width * height).forEach(function (value, index) {
+                        const cell = button(String(value == null ? '' : value), function () { cell.classList.toggle('pk32-structured-selected'); });
+                        cell.dataset.code = String(value == null ? '' : value);
+                        cell.dataset.cell = String(index);
+                        cell.title = '偏移 ' + payload.offset + '，格 ' + (index + 1) + '，值 ' + cell.dataset.code;
+                        cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + colorFor(value) + ';color:#fff;font-size:10px;line-height:1.1;overflow:hidden';
+                        grid.appendChild(cell);
+                    });
+                    const detail = el('details', {});
+                    detail.append(el('summary', {}, '查看载荷结构'), el('pre', { className: 'pk32v-native-grid' }, JSON.stringify({
+                        family: payload.family,
+                        confidence: payload.confidence,
+                        offset: payload.offset,
+                        length: payload.length,
+                        unitCount: payload.unitCount,
+                        structure: payload.structure,
+                        prefix: payload.prefix,
+                        trailer: payload.trailer,
+                        semanticsVerified: payload.semanticsVerified
+                    }, null, 2)));
+                    panel.append(nav, grid, detail);
+                    prompt.textContent = config.name + '：已绑定原始结构化载荷 ' + (level + 1) + ' / ' + game.payloads.length + '；当前只是内容迁移适配层，规则语义仍待按原程序确认。';
+                }
+                select.onchange = function () { level = Number(select.value) || 0; draw(); };
+                draw();
+            }).catch(function () { prompt.textContent = config.name + '结构化载荷加载失败'; });
         }
         function renderReaction() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '等待目标出现后立即点击。');
@@ -1094,7 +1161,7 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; selected = null; ended = false; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; selected = null; ended = false; draw(); } }), button('清除连线', function () { links = []; selected = null; ended = false; draw(); }));
             wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },

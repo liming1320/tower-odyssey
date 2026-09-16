@@ -64,10 +64,12 @@
     const GROUPS = [
         [0, 80, '扑克与纸牌'], [80, 147, '棋类与益智'], [147, 196, '休闲与解谜'], [196, NAMES.length, '其他原版游戏'],
     ];
+    const STRUCTURED_VARIANT_NAMES = '考眼力|24点二|21点二|梭哈六|三张牌|接龙二|平面魔方|激光坦克|开心辞典|记忆考验|反应测试|海豚骰|汉诺塔|老虎机|跳跃棋|找不同|找彩球|变化彩球|推箱子二|移彩球|数独|跳棋二|拼疑犯|扩展线路|马跳棋盘|彩球迷宫|吃豆子|彩球连线'.split('|');
     const DEDICATED_VARIANT_NAMES = '接水管|同色方块|同步移动|木乃伊|电磁彩球|建筑制造|航海迷题|立体魔方二|反射镜|交换彩球|爆破彩球|坦克大战|海底寻宝|七盏灯|推箱子五|禅宗迷宫|跟花二|魔法城堡二|魔法城堡|连结电线二|七巧板|宇宙黑洞|下一百层|上一百层|飞一百米|打砖块|魔塔二|魔塔三|魔塔四'.split('|');
+    STRUCTURED_VARIANT_NAMES.forEach(name => { VARIANT_CONFIG[name] = name; });
     DEDICATED_VARIANT_NAMES.forEach(name => { VARIANT_CONFIG[name] = name; });
     const DEDICATED_NAMES = new Set([
-        ...Object.keys(PLAYABLE), ...Object.keys(MODULE_CONFIG), '独粒钻石', ...DEDICATED_VARIANT_NAMES,
+        ...Object.keys(PLAYABLE), ...Object.keys(MODULE_CONFIG), '独粒钻石', ...STRUCTURED_VARIANT_NAMES, ...DEDICATED_VARIANT_NAMES,
     ]);
 
     function esc(s) {

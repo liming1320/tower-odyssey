@@ -24,11 +24,13 @@ const missing = catalog.filter(record => !record.playable && !record.module && !
 if (missing.length) throw new Error('Unmapped entries: ' + missing.join(', '));
 const launcherMapped = catalog.filter(record => record.playable || record.module || record.casual || record.action || record.strategy || record.card || record.puzzle || record.variant).length;
 const originalComplete = catalog.filter(record => record.originalComplete === true).length;
+const structuredPayloads = JSON.parse(fs.readFileSync(path.join(root, 'public', 'data', 'pk32-structured-payloads.json'), 'utf8'));
+const structuredNames = new Set((structuredPayloads.games || []).map(record => record.name));
 const ambiguousLaunchers = catalog.filter(record => [
     record.playable, record.module, record.variant, record.puzzle, record.action, record.casual, record.strategy, record.card
 ].filter(Boolean).length > 1);
 const allowedAmbiguous = new Set(['24点二', '21点二', '数字魔方', '跟花二', '推箱子二', '推箱子三', '推箱子五', '连结电线二', '推箱子六', '交换彩球', '飞一百米', '接水管', '七巧板']);
-const unexpectedAmbiguous = ambiguousLaunchers.filter(record => !allowedAmbiguous.has(record.name));
+const unexpectedAmbiguous = ambiguousLaunchers.filter(record => !allowedAmbiguous.has(record.name) && !structuredNames.has(record.name));
 if (unexpectedAmbiguous.length) throw new Error('Unexpected multi-launcher entries: ' + unexpectedAmbiguous.map(record => record.name).join(', '));
 const distinctPairs = [
     ['魔塔', '魔塔四'],
