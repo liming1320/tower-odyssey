@@ -25,10 +25,6 @@ window.MiniGames = window.MiniGames || {};
     // 台面：左右直墙 + 顶部半圆拱
     const PF = { l: 28, r: 324, cx: 176, cy: 300, arcR: 148, bot: 648 };
     const LANE = { l: 346, r: 402, top: 118, bot: 690 };
-    const LNCX = (LANE.l + LANE.r) / 2;      // 374 —— 发射巷中线
-    const PLG_TOP = 648;                     // 活塞头顶面（未蓄力）
-    const BALL_REST_Y = PLG_TOP - BALL_R;    // 639
-    const PLG_PULL = 26;                     // 满蓄力后退距离
 
     const DMD = { x: 20, y: 14, w: 380, h: 84 };   // 加高：第三行显示当前任务与进度
     const CADET_LOGO = new Image();
@@ -46,6 +42,12 @@ window.MiniGames = window.MiniGames || {};
         image.src = '/img/pinball/' + name + '?v=2';
         return image;
     };
+    // Keep the ball, plunger sprite and launch rail on the original table's coordinates.
+    const CADET_LAUNCH = { ballX: 466, ballY: 379 };
+    const LNCX = cadetX(CADET_LAUNCH.ballX);
+    const BALL_REST_Y = cadetY(CADET_LAUNCH.ballY);
+    const PLG_TOP = BALL_REST_Y + BALL_R;
+    const PLG_PULL = 26;
     const CADET_BALL = cadetImage('cadet-ball.png');
     const CADET_PLUNGER = cadetImage('cadet-plunger.png');
     const CADET_FLIPPERS = [
@@ -466,7 +468,33 @@ window.MiniGames = window.MiniGames || {};
 
             /* ── 音效 ── */
             const AU = MG.audio;
-            const sfx = n => { try { AU.sfx(n); } catch (e) { } };
+            const CADET_SFX = {
+                bumper: 'SOUND104.WAV', sling: 'SOUND105.WAV', flip: 'SOUND16.WAV',
+                target: 'SOUND17.WAV', rollover: 'SOUND18.WAV', spinner: 'SOUND19.WAV',
+                saucer: 'SOUND20.WAV', kick: 'SOUND21.WAV', ramp: 'SOUND22.WAV',
+                drain: 'SOUND24.WAV', launch: 'SOUND25.WAV', charge: 'SOUND26.WAV',
+                jet: 'SOUND27.WAV', jackpot: 'SOUND28.WAV', levelup: 'SOUND29.WAV',
+                fail: 'SOUND30.WAV', click: 'SOUND34.WAV', coin: 'SOUND35.WAV',
+            };
+            const cadetSfx = {};
+            const cadetVoices = new Set();
+            const setCadetMuted = muted => cadetVoices.forEach(voice => { voice.muted = muted; });
+            const sfx = n => {
+                try {
+                    if (AU.muted) return;
+                    const file = CADET_SFX[n];
+                    if (file && typeof Audio !== 'undefined') {
+                        const source = cadetSfx[file] || (cadetSfx[file] = new Audio('/audio/pinball/' + file));
+                        const voice = source.cloneNode();
+                        voice.volume = 0.55;
+                        cadetVoices.add(voice);
+                        voice.addEventListener('ended', () => cadetVoices.delete(voice), { once: true });
+                        voice.play().catch(() => { cadetVoices.delete(voice); try { AU.sfx(n); } catch (e) { } });
+                        return;
+                    }
+                    AU.sfx(n);
+                } catch (e) { }
+            };
             let cadetMusicTimer = null;
             let cadetMusicToken = 0;
             const stopMusic = () => {
@@ -822,7 +850,7 @@ window.MiniGames = window.MiniGames || {};
                     if (!launched) { plungerHold = true; startAudio(); }
                     e.preventDefault();
                 }
-                if (isMute) { try { AU.toggleMuted(); } catch (err) { } }
+                if (isMute) { try { setCadetMuted(AU.toggleMuted()); } catch (err) { } }
                 if (isNudge) { doNudge(); e.preventDefault(); }
                 const isRelaunch = k === 'r' || k === 'R' || c === 'KeyR';
                 if (isRelaunch) manualRelaunch();
@@ -865,7 +893,7 @@ window.MiniGames = window.MiniGames || {};
                     const r = c.getBoundingClientRect();
                     const x = (e.clientX - r.left) / (r.width || 1) * GW;
                     const y = (e.clientY - r.top) / (r.height || 1) * GH;
-                    if (x > GW - 36 && y < 36) { try { AU.toggleMuted(); } catch (err) { } return; }
+                    if (x > GW - 36 && y < 36) { try { setCadetMuted(AU.toggleMuted()); } catch (err) { } return; }
                     if (x > PANEL.x - 10) return;      // 右侧指令面板不响应台面操作
                     startAudio();
                     if (!launched) plungerHold = true;
@@ -1665,7 +1693,7 @@ window.MiniGames = window.MiniGames || {};
                 const pull = !launched ? plunger * PLG_PULL : 0;
                 ctx.drawImage(
                     CADET_PLUNGER,
-                    cadetX(461), cadetY(383) + pull,
+                    LNCX - CADET_PLUNGER.naturalWidth * CADET_SCALE / 2, PLG_TOP + pull,
                     CADET_PLUNGER.naturalWidth * CADET_SCALE, CADET_PLUNGER.naturalHeight * CADET_SCALE,
                 );
             }
@@ -2388,13 +2416,13 @@ window.MiniGames = window.MiniGames || {};
                 if (saucerHold > 0 && isMain) return;
                 if (CADET_TABLE.complete && CADET_TABLE.naturalWidth && CADET_BALL.complete && CADET_BALL.naturalWidth) {
                     const diameter = CADET_BALL.naturalWidth * CADET_SCALE;
-                    const bx = !launched && isMain ? cadetX(466) : b.x;
-                    const by = !launched && isMain ? cadetY(379) : b.y;
+                    const bx = b.x;
+                    const by = b.y;
                     ctx.drawImage(CADET_BALL, bx - diameter / 2, by - diameter / 2, diameter, diameter);
                     return;
                 }
                 const bx = b.x;
-                const by = !launched && isMain && CADET_TABLE.complete && CADET_TABLE.naturalWidth ? b.y - 36 : b.y;
+                const by = b.y;
                 // 管道滑行时加一个冷光，让球在 tube 内不丢辨识度
                 if (onRail && isMain) {
                     const g0 = ctx.createRadialGradient(bx, by, 2, bx, by, 18);
