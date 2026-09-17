@@ -1570,6 +1570,7 @@ window.MiniGames = window.MiniGames || {};
                     const tableW = LANE.r - PF.l;
                     const tableH = CADET_TABLE.naturalHeight * tableW / CADET_TABLE.naturalWidth;
                     ctx.drawImage(CADET_TABLE, PF.l, 140, tableW, tableH);
+                    return;
                 }
 
                 ctx.save();
@@ -2314,16 +2315,18 @@ window.MiniGames = window.MiniGames || {};
             function drawBall(b, withTrail) {
                 const isMain = (b === ball);
                 if (saucerHold > 0 && isMain) return;
+                const bx = b.x;
+                const by = !launched && isMain && CADET_TABLE.complete && CADET_TABLE.naturalWidth ? b.y - 36 : b.y;
                 // 管道滑行时加一个冷光，让球在 tube 内不丢辨识度
                 if (onRail && isMain) {
-                    const g0 = ctx.createRadialGradient(b.x, b.y, 2, b.x, b.y, 18);
+                    const g0 = ctx.createRadialGradient(bx, by, 2, bx, by, 18);
                     g0.addColorStop(0, 'rgba(160,220,255,0.55)');
                     g0.addColorStop(1, 'rgba(160,220,255,0)');
                     ctx.fillStyle = g0;
-                    ctx.beginPath(); ctx.arc(b.x, b.y, 18, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(bx, by, 18, 0, Math.PI * 2); ctx.fill();
                 }
                 ctx.fillStyle = 'rgba(0,0,0,0.42)';
-                ctx.beginPath(); ctx.ellipse(b.x + 3, b.y + 11, BALL_R * 1.05, BALL_R * 0.42, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(bx + 3, by + 11, BALL_R * 1.05, BALL_R * 0.42, 0, 0, Math.PI * 2); ctx.fill();
                 if (withTrail) {
                     for (let i = 0; i < trail.length; i++) {
                         const p = trail[i], a = i / trail.length;
@@ -2331,28 +2334,28 @@ window.MiniGames = window.MiniGames || {};
                         ctx.beginPath(); ctx.arc(p.x, p.y, BALL_R * (0.35 + a * 0.6), 0, Math.PI * 2); ctx.fill();
                     }
                 }
-                const g = ctx.createRadialGradient(b.x - 3.4, b.y - 4, 0.6, b.x, b.y, BALL_R + 1);
+                const g = ctx.createRadialGradient(bx - 3.4, by - 4, 0.6, bx, by, BALL_R + 1);
                 g.addColorStop(0, '#ffffff'); g.addColorStop(0.22, '#dfe8f5');
                 g.addColorStop(0.55, '#9fadc4'); g.addColorStop(0.85, '#5a6579'); g.addColorStop(1, '#2b3340');
                 ctx.fillStyle = g;
-                ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(bx, by, BALL_R, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = 'rgba(20,26,40,0.6)'; ctx.lineWidth = 0.8; ctx.stroke();
                 ctx.fillStyle = 'rgba(255,255,255,0.95)';
-                ctx.beginPath(); ctx.ellipse(b.x - 3, b.y - 3.6, 2.6, 1.7, -0.6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(bx - 3, by - 3.6, 2.6, 1.7, -0.6, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = 'rgba(255,255,255,0.35)';
-                ctx.beginPath(); ctx.arc(b.x + 3.4, b.y + 3.4, 1.5, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(bx + 3.4, by + 3.4, 1.5, 0, Math.PI * 2); ctx.fill();
                 // 环境反射弧（金属感）
                 ctx.save();
-                ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R - 0.5, Math.PI * 0.15, Math.PI * 0.85);
+                ctx.beginPath(); ctx.arc(bx, by, BALL_R - 0.5, Math.PI * 0.15, Math.PI * 0.85);
                 ctx.strokeStyle = 'rgba(200,225,255,0.5)'; ctx.lineWidth = 1.2; ctx.stroke();
                 ctx.restore();
                 // 顶部细高光环
-                ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R - 1.5, Math.PI * 1.05, Math.PI * 1.7);
+                ctx.beginPath(); ctx.arc(bx, by, BALL_R - 1.5, Math.PI * 1.05, Math.PI * 1.7);
                 ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1; ctx.stroke();
                 // 多球：给额外球加一圈金色光环，一眼能认出「这不是主球」
                 if (!isMain) {
                     ctx.strokeStyle = 'rgba(255,200,90,0.85)'; ctx.lineWidth = 1.6;
-                    ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R + 3.5, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(bx, by, BALL_R + 3.5, 0, Math.PI * 2); ctx.stroke();
                 }
             }
 
@@ -2446,6 +2449,10 @@ window.MiniGames = window.MiniGames || {};
                 ctx.strokeStyle = '#6e5226'; ctx.lineWidth = 2; ctx.stroke();
                 ctx.save();
                 rr(lx, ly, lw, lh, 6); ctx.clip();
+                if (CADET_LOGO.complete && CADET_LOGO.naturalWidth) {
+                    const logoSize = Math.min(lw - 14, lh - 14);
+                    ctx.drawImage(CADET_LOGO, lx + (lw - logoSize) / 2, ly + (lh - logoSize) / 2, logoSize, logoSize);
+                } else {
                 for (let i = 0; i < 46; i++) {
                     const sx = lx + ((i * 97) % lw), sy = ly + ((i * 53) % lh);
                     ctx.fillStyle = `rgba(255,250,240,${0.25 + (i % 5) * 0.13})`;
@@ -2498,9 +2505,6 @@ window.MiniGames = window.MiniGames || {};
                 ctx.font = `bold ${Math.round(10 * FS)}px "Segoe UI",sans-serif`;
                 ctx.fillStyle = 'rgba(255,220,150,0.55)';
                 ctx.fillText('塔界远征 · 太空军校生', lx + 14, ly + 92);
-                if (CADET_LOGO.complete && CADET_LOGO.naturalWidth) {
-                    const logoSize = Math.min(lw - 18, lh - 18);
-                    ctx.drawImage(CADET_LOGO, lx + (lw - logoSize) / 2, ly + (lh - logoSize) / 2, logoSize, logoSize);
                 }
                 ctx.restore();
 
@@ -2668,34 +2672,40 @@ window.MiniGames = window.MiniGames || {};
                 ctx.clearRect(-20, -20, GW + 40, GH + 40);
                 drawCabinet();
                 drawPlayfield();
-                drawTubeLeft();
-                drawRamp();
-                drawLanes();
-                drawWalls();
-                drawStructures();
-                drawLaunchTube();
-                drawSaucer();
-                drawCards();
-                drawTargets();
-                drawSpinner();
-                drawBumpers();
-                drawJets();
-                drawWarpJet();
-                drawNew();
-                drawPosts();
-                drawSlings();
-                drawKickback();
-                drawFlipper(FL);
-                drawFlipper(FR);
-                drawTiltLights();
-                drawPlunger();
+                const originalTable = CADET_TABLE.complete && CADET_TABLE.naturalWidth;
+                if (!originalTable) {
+                    drawTubeLeft();
+                    drawRamp();
+                    drawLanes();
+                    drawWalls();
+                    drawStructures();
+                    drawLaunchTube();
+                    drawSaucer();
+                    drawCards();
+                    drawTargets();
+                    drawSpinner();
+                    drawBumpers();
+                    drawJets();
+                    drawWarpJet();
+                    drawNew();
+                    drawPosts();
+                    drawSlings();
+                    drawKickback();
+                    drawFlipper(FL);
+                    drawFlipper(FR);
+                    drawTiltLights();
+                    drawPlunger();
+                } else {
+                    if (FL.held || Math.abs(FL.omega) > 0.01) drawFlipper(FL);
+                    if (FR.held || Math.abs(FR.omega) > 0.01) drawFlipper(FR);
+                }
                 for (let bi = 0; bi < live.length; bi++) drawBall(live[bi], bi === 0);
                 drawParts();
                 ctx.restore();
 
                 drawDMD();
                 drawPanel();
-                drawHints();
+                if (!(CADET_TABLE.complete && CADET_TABLE.naturalWidth)) drawHints();
                 drawToast();
                 drawMuteBtn();
 
