@@ -239,47 +239,11 @@ window.MiniGames = window.MiniGames || {};
 
             const { c, ctx, w, h, destroy } = MG.canvas(container, GW, GH);
 
-            // 第二块画布：右侧指令面板（不参与台面倾斜，保持正立）
-            const pc = document.createElement('canvas');
-            pc.style.position = 'absolute';
-            pc.style.right = '0';
-            pc.style.top = '0';
-            pc.style.height = '100%';
-            pc.style.width = (((PANEL.w + 24) / GW) * 100) + '%';
-            pc.style.touchAction = 'none';
-            pc.style.pointerEvents = 'none';   // 面板不拦截输入，事件落到台面画布
-            container.appendChild(pc);
-            const pctx = pc.getContext('2d');
-            const _dpr = Math.max(1, window.devicePixelRatio || 1);
-            let PLW = PANEL.w + 24;             // 面板逻辑宽：按显示盒真实宽高比推导（等比缩放，永不拉伸模糊）
-            const fitPanel = () => {
-                const cw = container.clientWidth || GW, ch = container.clientHeight || GH;
-                const boxW = cw * ((PANEL.w + 24) / GW);          // 面板的 CSS 显示宽
-                const bw = Math.max(120, Math.round(boxW * _dpr)); // 背光缓冲 = 显示像素，1:1 高清
-                const bh = Math.max(200, Math.round(ch * _dpr));
-                pc.width = bw; pc.height = bh;
-                PLW = Math.max(210, Math.min(440, GH * bw / bh));  // 逻辑宽随盒子比例走，与台面坐标解耦
-                const s = bh / GH;
-                pctx.setTransform(s, 0, 0, s, 0, 0);
-            };
-            fitPanel();
-            window.addEventListener('resize', fitPanel);
-            let _pro = null;
-            if (typeof ResizeObserver !== 'undefined') {
-                _pro = new ResizeObserver(() => { try { fitPanel(); } catch (e) { } });
-                try { _pro.observe(container); } catch (e) { _pro = null; }
-            }
             container.style.position = 'relative';
             container.style.overflow = 'hidden';
 
-            // 台面画布：伪 3D 倾斜（原版 Space Cadet 的纵深俯视感）
-            // 以「底部」为支点翻起，并补纵向缩放，使台面投影高度与右侧正立的计分板对齐（不再一高一矮）
-            c.style.transformOrigin = 'center 100%';
-            c.style.transform = 'perspective(1150px) rotateX(13deg) scaleY(1.15)';
-
-            // GC = 当前绘图上下文（台面用 ctx，面板用 pctx）
+            // 台面、DMD 与计分板共用同一画布，缩放时始终保持为一体。
             let GC = ctx;
-            const _tctx = ctx;          // 台面上下文别名（供 drawPanel 收尾还原 GC）
 
     /* ── 新增组件（对齐百科 55 项：落下靶组 / 指示灯 / 三色旋涡 / 黑洞 / 中央立柱 / 反弹器）── */
             function mkBank(lbl, color, x0, y0, dx, dy, n, w, h) {
@@ -1338,8 +1302,11 @@ window.MiniGames = window.MiniGames || {};
 
                 // 物理子步：主球 + 多球统一推进
                 // 技巧：每颗球处理前把闭包变量 ball 指向它，collide()/hitFlipper() 无需改动即可复用
-                const hd = dt / SUB;
-                for (let i = 0; i < SUB; i++) {
+                // Keep a ball from crossing more than one collision radius per substep,
+                // including a speed boost applied halfway through this frame.
+                const subSteps = Math.max(SUB, Math.ceil(SPEED_CAP * dt / BALL_R));
+                const hd = dt / subSteps;
+                for (let i = 0; i < subSteps; i++) {
                     for (let bi = 0; bi < live.length; bi++) {
                         const b = live[bi];
                         if (bi === 0 && (mainFrozen || onRailNow)) continue;
@@ -2537,12 +2504,12 @@ window.MiniGames = window.MiniGames || {};
 
             /* ── 右侧指令面板（对齐原版：logo · BALL · 分数框 · 任务框）── */
             function drawPanel() {
-                const octx = _tctx;         // 台面上下文（用于收尾还原 GC）
-                GC = pctx;                   // rr()/dmdText() 改画到面板画布
-                const ctx = pctx;            // 本函数内所有 ctx.* 落到面板画布
-                pctx.save();
-                const px = 0, pw = PLW;      // 面板画布自有坐标系（fitPanel 保证背光缓冲=显示像素）
-                const FS = Math.max(1, Math.min(1.3, pw / 300));   // 字号/间距随面板宽自适应
+                const octx = GC;
+                GC = ctx;
+                ctx.save();
+                ctx.translate(PANEL.x, 0);
+                const px = 0, pw = PANEL.w;
+                const FS = Math.max(0.72, pw / 210);
                 // 面板底 + 与台面的分隔梁
                 const bg = ctx.createLinearGradient(0, 0, 18, 0);
                 bg.addColorStop(0, '#0c0a08'); bg.addColorStop(0.5, '#3a3021'); bg.addColorStop(1, '#191410');
@@ -2751,7 +2718,7 @@ window.MiniGames = window.MiniGames || {};
                         dmdText('MULTIBALL ×' + live.length, px + 22, my + mh - 16, Math.round(13 * FS), '#ff6a3d', 'left');
                 }
                 ctx.restore();
-                pctx.restore();
+                ctx.restore();
                 GC = octx;
             }
 
@@ -2877,9 +2844,6 @@ window.MiniGames = window.MiniGames || {};
                     cancelAnimationFrame(raf);
                     window.removeEventListener('keydown', kd);
                     window.removeEventListener('keyup', ku);
-                    window.removeEventListener('resize', fitPanel);
-                    if (_pro) { try { _pro.disconnect(); } catch (e) { } }
-                    if (pc && pc.parentNode) pc.parentNode.removeChild(pc);
                     stopMusic();
                     destroy();
                 },
