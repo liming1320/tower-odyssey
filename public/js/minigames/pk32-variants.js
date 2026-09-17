@@ -125,6 +125,8 @@
             if (config.name === '华容道') return renderNativeHuarong();
             if (config.name === '接水管') return renderNativePipeConnect();
             if (config.name === '捡棋子') return renderPickPieces();
+            if (config.name === '海盗船') return renderNativePirateShip();
+            if (config.name === '极品飞车') return renderNativeRacing();
             let hits = 0;
             const limit = /海盗船|潜艇大战|宇宙黑洞|极品飞车|反射镜|企鹅/.test(config.name) ? 12 : 10;
             const prompt = el('p', { className: 'pk32v-prompt' }, '完成本局目标：0 / ' + limit);
@@ -137,6 +139,153 @@
                 if (hits >= limit) finish('本局目标完成。');
             });
             body.append(prompt, target);
+        }
+        function renderNativePirateShip() {
+            const width = 8;
+            const whirlpools = new Set([0, width - 1, width * (width - 1), width * width - 1]);
+            const grid = renderGrid(width, width, 'pirate-ship-board');
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            let player = 4 * width + 3;
+            let hull = 3;
+            let selected = false;
+            let enemies = [
+                { position: 10, name: '红船', hp: 1 },
+                { position: 22, name: '蓝船', hp: 1 },
+                { position: 45, name: '紫船', hp: 2 },
+                { position: 53, name: '海怪', hp: Infinity }
+            ];
+
+            function xy(index) { return { x: index % width, y: Math.floor(index / width) }; }
+            function adjacent(from, to) {
+                const a = xy(from), b = xy(to);
+                return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) === 1;
+            }
+            function occupied(index) { return enemies.some(function (enemy) { return enemy.position === index; }); }
+            function safePositions(center) {
+                const point = xy(center), choices = [];
+                for (let y = point.y - 1; y <= point.y + 1; y += 1) for (let x = point.x - 1; x <= point.x + 1; x += 1) {
+                    const index = y * width + x;
+                    if (x >= 0 && y >= 0 && x < width && y < width && index !== center && !occupied(index) && index !== player) choices.push(index);
+                }
+                return choices;
+            }
+            function enemyTurn() {
+                enemies.forEach(function (enemy) {
+                    if (enemy.name === '海怪' || ended) return;
+                    const origin = xy(enemy.position), target = xy(player);
+                    const dx = Math.sign(target.x - origin.x), dy = Math.sign(target.y - origin.y);
+                    const next = (origin.y + dy) * width + origin.x + dx;
+                    if (next === player || adjacent(enemy.position, player)) {
+                        hull -= 1;
+                        return;
+                    }
+                    if (next >= 0 && next < width * width && !occupied(next) && next !== player) enemy.position = next;
+                });
+                if (hull <= 0) return finish('船身被击沉，本局结束。');
+            }
+            function fire() {
+                let sunk = 0;
+                enemies = enemies.filter(function (enemy) {
+                    if (enemy.name === '海怪' || !adjacent(player, enemy.position)) return true;
+                    enemy.hp -= 1;
+                    if (enemy.hp > 0) return true;
+                    sunk += 1;
+                    return false;
+                });
+                setScore(score + sunk * 100);
+                if (!enemies.some(function (enemy) { return enemy.name !== '海怪'; })) return finish('所有海盗船均被消灭。');
+                enemyTurn();
+                draw(sunk ? '击沉 ' + sunk + ' 艘海盗船。' : '炮弹没有击中海盗船。');
+            }
+            function move(target) {
+                if (!adjacent(player, target) || occupied(target)) return;
+                player = target;
+                if (whirlpools.has(player)) {
+                    const exits = safePositions(player);
+                    if (exits.length) player = exits[randomInt(exits.length)];
+                }
+                enemyTurn();
+                draw('已航行一格。');
+            }
+            function draw(message) {
+                grid.innerHTML = '';
+                for (let index = 0; index < width * width; index += 1) {
+                    const enemy = enemies.find(function (item) { return item.position === index; });
+                    const label = index === player ? '船' : enemy ? (enemy.name === '海怪' ? '怪' : enemy.name.charAt(0)) : whirlpools.has(index) ? '涡' : '';
+                    const cell = button(label, function () {
+                        if (ended) return;
+                        if (index === player) {
+                            if (selected) { selected = false; fire(); return; }
+                            selected = true;
+                            draw('已选中自己的船，再次点击自己的船可原地开炮，或点相邻海域航行。');
+                            return;
+                        }
+                        if (selected) { selected = false; move(index); }
+                    });
+                    cell.disabled = !!enemy && index !== player;
+                    cell.dataset.selected = String(index === player && selected);
+                    cell.dataset.pirate = enemy ? enemy.name : whirlpools.has(index) ? '旋涡' : '海域';
+                    grid.appendChild(cell);
+                }
+                prompt.textContent = '海盗船：船身 ' + hull + '；海盗船 ' + enemies.filter(function (enemy) { return enemy.name !== '海怪'; }).length + ' 艘。' + (message || '选中自己的船后可移动到周围八格；再次点击自己的船向周围开炮。四角旋涡会把船转移到邻近安全海域，海怪不能被消灭。');
+            }
+            body.append(prompt, grid, button('原地开炮', function () { if (!ended) fire(); }));
+            draw();
+        }
+        function renderNativeRacing() {
+            const width = 5, height = 12;
+            const grid = renderGrid(width, height, 'racing-native-board');
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const controls = el('div', { className: 'pk32v-controls' });
+            let lane = 2;
+            let distance = 0;
+            let running = false;
+            let paused = false;
+            let traffic = [1, 3, 0];
+            let timer = null;
+
+            function stop() { if (timer) clearInterval(timer); timer = null; }
+            function draw(message) {
+                grid.innerHTML = '';
+                for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) {
+                    const car = y === height - 1 && x === lane;
+                    const obstacle = traffic.some(function (trafficLane, index) { return x === trafficLane && y === (distance + index * 4) % height; });
+                    const cell = button(car ? '车' : obstacle ? '障' : '', function () { if (x < lane) steer(-1); else if (x > lane) steer(1); });
+                    cell.disabled = ended;
+                    cell.dataset.racing = car ? 'player' : obstacle ? 'traffic' : 'road';
+                    grid.appendChild(cell);
+                }
+                prompt.textContent = '极品飞车：距离 ' + distance + ' / 1000。' + (message || (paused ? '已暂停。' : running ? '使用左右键或按钮转向，空格暂停。' : '按开始或回车起跑。'));
+            }
+            function steer(delta) { if (!running || paused || ended) return; lane = Math.max(0, Math.min(width - 1, lane + delta)); draw(); }
+            function tick() {
+                if (ended || paused) { stop(); return; }
+                distance += 25;
+                const collision = traffic.some(function (trafficLane, index) { return trafficLane === lane && (distance + index * 4) % height === height - 1; });
+                if (collision) { stop(); return finish('撞上前车，比赛结束。'); }
+                if (distance >= 1000) { stop(); setScore(1000); return finish('完成赛程。'); }
+                draw();
+            }
+            function start() {
+                if (ended) return;
+                running = true;
+                paused = false;
+                if (!timer) timer = setInterval(tick, 260);
+                draw();
+            }
+            function togglePause() { if (!running || ended) return; paused = !paused; if (paused) stop(); else timer = setInterval(tick, 260); draw(); }
+            function onKey(event) {
+                if (event.key === 'ArrowLeft') { event.preventDefault(); steer(-1); }
+                else if (event.key === 'ArrowRight') { event.preventDefault(); steer(1); }
+                else if (event.key === 'Enter') { event.preventDefault(); start(); }
+                else if (event.key === ' ') { event.preventDefault(); togglePause(); }
+            }
+            root.tabIndex = 0;
+            root.addEventListener('keydown', onKey);
+            addCleanup(function () { stop(); root.removeEventListener('keydown', onKey); });
+            controls.append(button('左转', function () { steer(-1); }), button('开始', start), button('暂停', togglePause), button('右转', function () { steer(1); }));
+            body.append(prompt, controls, grid);
+            draw();
         }
         function renderPickPieces() {
             const width = 7, height = 7;

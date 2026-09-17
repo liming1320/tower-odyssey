@@ -39,8 +39,8 @@
     "migrationComplete": 160,
     "verificationComplete": 0,
     "payloadMigration": 0,
-    "partialContentMigration": 27,
-    "evidenceAdapterMigration": 26,
+    "partialContentMigration": 29,
+    "evidenceAdapterMigration": 24,
     "catalogMigration": 0,
     "originalComplete": 0
   },
@@ -8360,13 +8360,13 @@
         "runtimePcodeTerminatedSlices": 4,
         "runtimePcodeTrustedTerminatedSlices": 0,
         "methodBodyCaptured": false,
-        "evidenceConfidence": "catalog-launch-help",
+        "evidenceConfidence": "content-bound",
         "resourcePackageBound": true,
         "sharedAtlasCount": 28,
         "gameSpecificAssetMapping": false,
         "charGridCandidatesBound": false,
         "charGridCandidateCount": 0,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "candidateDataRendererBound": false,
         "contentComplete": false,
         "verificationComplete": false,
@@ -8386,7 +8386,7 @@
         "genericAdapterBound": true,
         "playableAdapterBound": true
       },
-      "migrationPhase": "evidence-adapter-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {
@@ -9248,13 +9248,13 @@
         "runtimePcodeTerminatedSlices": 4,
         "runtimePcodeTrustedTerminatedSlices": 0,
         "methodBodyCaptured": false,
-        "evidenceConfidence": "catalog-launch-help",
+        "evidenceConfidence": "content-bound",
         "resourcePackageBound": true,
         "sharedAtlasCount": 28,
         "gameSpecificAssetMapping": false,
         "charGridCandidatesBound": false,
         "charGridCandidateCount": 0,
-        "dedicatedAdapterBound": false,
+        "dedicatedAdapterBound": true,
         "candidateDataRendererBound": false,
         "contentComplete": false,
         "verificationComplete": false,
@@ -9274,7 +9274,7 @@
         "genericAdapterBound": true,
         "playableAdapterBound": true
       },
-      "migrationPhase": "evidence-adapter-migration",
+      "migrationPhase": "partial-content-migration",
       "originalComplete": false
     },
     {

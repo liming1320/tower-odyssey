@@ -17,7 +17,7 @@ window.MiniGames = window.MiniGames || {};
     // 布局对齐原版：左侧台面 + 右侧指令面板（logo / BALL / 分数框 / 任务框）
     const GW = 620, GH = 700;
     const PANEL = { x: 434, w: 176, y: 96, h: 592 };
-    const BALL_R = 9;
+    const BALL_R = 5;
     const GRAV = 1500;
     const SUB = 6;                 // 物理子步
     const SPEED_CAP = 1800;
@@ -36,17 +36,46 @@ window.MiniGames = window.MiniGames || {};
     const CADET_TABLE = new Image();
     CADET_TABLE.src = '/img/pinball/cadet-table.bmp';
 
+    // Full Tilt resource coordinates are global 640x480 coordinates; the table starts at 137,2.
+    const CADET_SCALE = (LANE.r - PF.l) / 365;
+    const cadetX = x => PF.l + (x - 137) * CADET_SCALE;
+    const cadetY = y => 140 + (y - 2) * CADET_SCALE;
+    const cadetImage = name => {
+        const image = new Image();
+        // The extractor can replace these files while the development server is running.
+        image.src = '/img/pinball/' + name + '?v=2';
+        return image;
+    };
+    const CADET_BALL = cadetImage('cadet-ball.png');
+    const CADET_PLUNGER = cadetImage('cadet-plunger.png');
+    const CADET_FLIPPERS = [
+        Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-flip-left-${frame}.png`)),
+        Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-flip-right-${frame}.png`)),
+    ];
+    const CADET_FLIPPER_POSITIONS = [
+        [[261, 378], [261, 378], [261, 378], [261, 378], [261, 377], [261, 370], [261, 364], [261, 358]],
+        [[335, 378], [332, 378], [329, 378], [328, 378], [328, 377], [329, 370], [331, 364], [335, 358]],
+    ];
+    const CADET_BUMPERS = [
+        { frames: Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-bump-1-${frame}.png`)), pos: [[307, 112], [307, 113]] },
+        { frames: Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-bump-2-${frame}.png`)), pos: [[328, 79], [328, 80]] },
+        { frames: Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-bump-3-${frame}.png`)), pos: [[288, 86], [288, 87]] },
+        { frames: Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-bump-5-${frame}.png`)), pos: [[212, 216], [212, 217]] },
+        { frames: Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-bump-6-${frame}.png`)), pos: [[178, 208], [179, 209]] },
+        { frames: Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-bump-7-${frame}.png`)), pos: [[188, 231], [188, 232]] },
+    ];
+
     // 顶部涡轮引擎 ×3（倒三角布置，原版 turbo bumper 位）
     const BUMPERS = [
-        { x: 120, y: 250, r: 23, hue: 5 },
-        { x: 232, y: 250, r: 23, hue: 22 },
-        { x: 176, y: 314, r: 23, hue: 40 },
+        { x: cadetX(319), y: cadetY(125), r: 13, hue: 5 },
+        { x: cadetX(340), y: cadetY(91), r: 12, hue: 22 },
+        { x: cadetX(300), y: cadetY(98), r: 12, hue: 40 },
     ];
     // 左侧涡轮引擎 ×3（竖排，原版左路引擎带）
     const JETS = [
-        { x: 76, y: 292, r: 18, hue: 145 },
-        { x: 76, y: 344, r: 18, hue: 180 },
-        { x: 76, y: 396, r: 18, hue: 210 },
+        { x: cadetX(222), y: cadetY(226), r: 10, hue: 145 },
+        { x: cadetX(188), y: cadetY(218), r: 10, hue: 180 },
+        { x: cadetX(198), y: cadetY(241), r: 10, hue: 210 },
     ];
     // 左上角第 7 只引擎：涡轮虫洞（吸入 → 送进左侧火箭管道重新发射）
     const WARP = { x: 102, y: 212, r: 16 };
@@ -73,8 +102,8 @@ window.MiniGames = window.MiniGames || {};
         { a: [290, 498], b: [228, 558], c: [290, 558] },
     ];
     // 挡板
-    const FLIP_L = { px: 108, py: 592, len: 58, rest: 0.52, up: -0.52 };
-    const FLIP_R = { px: 244, py: 592, len: 58, rest: Math.PI - 0.52, up: Math.PI + 0.52 };
+    const FLIP_L = { px: cadetX(264), py: cadetY(402), len: 43 * CADET_SCALE, rest: 0.52, up: -0.52, cadetSide: 0 };
+    const FLIP_R = { px: cadetX(378), py: cadetY(402), len: 43 * CADET_SCALE, rest: Math.PI - 0.52, up: Math.PI + 0.52, cadetSide: 1 };
     // 外道导轨（把外道与内道分开）
         const GUIDE_L = [[62, 558], [74, 592], [100, 602]];
         const GUIDE_R = [[290, 558], [278, 592], [252, 602]];
@@ -474,10 +503,53 @@ window.MiniGames = window.MiniGames || {};
             /* ── 音效 ── */
             const AU = MG.audio;
             const sfx = n => { try { AU.sfx(n); } catch (e) { } };
+            let cadetMusicTimer = null;
+            let cadetMusicToken = 0;
+            const stopMusic = () => {
+                cadetMusicToken++;
+                if (cadetMusicTimer) { clearTimeout(cadetMusicTimer); cadetMusicTimer = null; }
+                try { AU.bgm.stop(); } catch (e) { }
+            };
+            const playCadetNote = (note, delay) => {
+                const [,, pitch, velocity, channel, program] = note;
+                const gain = Math.min(0.075, 0.012 + velocity / 2200);
+                if (channel === 9) {
+                    AU.noise({ dur: 0.055, freq: pitch < 45 ? 150 : 1900, type: pitch < 45 ? 'lowpass' : 'highpass', gain, delay });
+                    return;
+                }
+                const type = program >= 80 ? 'square' : program >= 40 ? 'sawtooth' : 'triangle';
+                AU.tone({ freq: 440 * Math.pow(2, (pitch - 69) / 12), dur: Math.min(0.8, note[1] / 1000), type, gain, delay });
+            };
+            const startCadetMusic = () => {
+                const token = ++cadetMusicToken;
+                fetch('/data/pinball-cadet-music.json?v=1')
+                    .then(response => response.ok ? response.json() : Promise.reject(new Error('MDS music unavailable')))
+                    .then(data => {
+                        if (token !== cadetMusicToken || !AU.ctx || !data.tracks || !data.tracks.length) return;
+                        const track = data.tracks[Math.floor(Math.random() * data.tracks.length)];
+                        let index = 0;
+                        let cycleStart = AU.ctx.currentTime + 0.12;
+                        const schedule = () => {
+                            if (token !== cadetMusicToken || !AU.ctx) return;
+                            const until = AU.ctx.currentTime + 0.25;
+                            while (index < track.notes.length && cycleStart + track.notes[index][0] / 1000 < until) {
+                                const note = track.notes[index++];
+                                playCadetNote(note, Math.max(0, cycleStart + note[0] / 1000 - AU.ctx.currentTime));
+                            }
+                            if (index === track.notes.length) {
+                                index = 0;
+                                cycleStart += track.duration / 1000;
+                            }
+                            cadetMusicTimer = setTimeout(schedule, 45);
+                        };
+                        schedule();
+                    })
+                    .catch(() => { });
+            };
             let audioOn = false;
             const startAudio = () => {
                 if (audioOn) return;
-                try { if (AU.unlock()) { AU.bgm.start('space'); audioOn = true; } } catch (e) { }
+                try { if (AU.unlock()) { startCadetMusic(); audioOn = true; } } catch (e) { }
             };
             startAudio();
 
@@ -1106,7 +1178,7 @@ window.MiniGames = window.MiniGames || {};
             const finish = win => {
                 if (over) return;
                 over = true;
-                try { AU.bgm.stop(); } catch (e) { }
+                stopMusic();
                 sfx(win ? 'levelup' : 'fail');
                 const stars = win ? (balls >= 3 ? 3 : balls >= 2 ? 2 : 1) : 0;
                 opts.onComplete && opts.onComplete({
@@ -1597,6 +1669,38 @@ window.MiniGames = window.MiniGames || {};
                 const vg = ctx.createRadialGradient(176, 380, 90, 176, 380, 330);
                 vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.5)');
                 ctx.fillStyle = vg; ctx.fillRect(0, 88, GW, GH - 88);
+            }
+
+            function drawCadetSprite(image, x, y) {
+                if (!image.complete || !image.naturalWidth) return;
+                ctx.drawImage(image, cadetX(x), cadetY(y), image.naturalWidth * CADET_SCALE, image.naturalHeight * CADET_SCALE);
+            }
+
+            function drawCadetBumpers() {
+                CADET_BUMPERS.forEach((bumper, index) => {
+                    const hit = index < 3 ? bumps[index] : jets[index - 3];
+                    const frame = hit > 0 ? 1 + (Math.floor((1 - hit) * 18) % 7) : 0;
+                    const pos = bumper.pos[frame & 1];
+                    drawCadetSprite(bumper.frames[frame], pos[0], pos[1]);
+                });
+            }
+
+            function drawCadetFlipper(f) {
+                const side = f.cadetSide;
+                const travel = Math.abs((f.ang - f.rest) / (f.up - f.rest));
+                const frame = clamp(Math.round(travel * 7), 0, 7);
+                const pos = CADET_FLIPPER_POSITIONS[side][frame];
+                drawCadetSprite(CADET_FLIPPERS[side][frame], pos[0], pos[1]);
+            }
+
+            function drawCadetPlunger() {
+                if (!CADET_PLUNGER.complete || !CADET_PLUNGER.naturalWidth) return;
+                const pull = !launched ? plunger * PLG_PULL : 0;
+                ctx.drawImage(
+                    CADET_PLUNGER,
+                    cadetX(461), cadetY(383) + pull,
+                    CADET_PLUNGER.naturalWidth * CADET_SCALE, CADET_PLUNGER.naturalHeight * CADET_SCALE,
+                );
             }
 
             function drawWire(pts, wdt) {
@@ -2315,6 +2419,13 @@ window.MiniGames = window.MiniGames || {};
             function drawBall(b, withTrail) {
                 const isMain = (b === ball);
                 if (saucerHold > 0 && isMain) return;
+                if (CADET_TABLE.complete && CADET_TABLE.naturalWidth && CADET_BALL.complete && CADET_BALL.naturalWidth) {
+                    const diameter = CADET_BALL.naturalWidth * CADET_SCALE;
+                    const bx = !launched && isMain ? cadetX(466) : b.x;
+                    const by = !launched && isMain ? cadetY(379) : b.y;
+                    ctx.drawImage(CADET_BALL, bx - diameter / 2, by - diameter / 2, diameter, diameter);
+                    return;
+                }
                 const bx = b.x;
                 const by = !launched && isMain && CADET_TABLE.complete && CADET_TABLE.naturalWidth ? b.y - 36 : b.y;
                 // 管道滑行时加一个冷光，让球在 tube 内不丢辨识度
@@ -2696,8 +2807,10 @@ window.MiniGames = window.MiniGames || {};
                     drawTiltLights();
                     drawPlunger();
                 } else {
-                    if (FL.held || Math.abs(FL.omega) > 0.01) drawFlipper(FL);
-                    if (FR.held || Math.abs(FR.omega) > 0.01) drawFlipper(FR);
+                    drawCadetBumpers();
+                    drawCadetFlipper(FL);
+                    drawCadetFlipper(FR);
+                    drawCadetPlunger();
                 }
                 for (let bi = 0; bi < live.length; bi++) drawBall(live[bi], bi === 0);
                 drawParts();
@@ -2767,7 +2880,7 @@ window.MiniGames = window.MiniGames || {};
                     window.removeEventListener('resize', fitPanel);
                     if (_pro) { try { _pro.disconnect(); } catch (e) { } }
                     if (pc && pc.parentNode) pc.parentNode.removeChild(pc);
-                    try { AU.bgm.stop(); } catch (e) { }
+                    stopMusic();
                     destroy();
                 },
             };

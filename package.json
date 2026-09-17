@@ -16,6 +16,7 @@
     "pk32:migration-map": "node tools/build-pk32-native-migration-map.js",
     "pk32:migrate-all": "node tools/run-pk32-content-migration.js --skip-reference",
     "pk32:migrate-content": "node tools/run-pk32-content-migration.js",
+    "pk32:runtime-export": "node tools/extract-pk32-minidump-vb5.js --write-image",
     "pk32:decoded-docs": "node tools/build-pk32-decoded-docs.js",
     "pk32:verify-inventory": "node tools/verify-pk32-inventory.js",
     "pk32:verify-native-data": "node tools/verify-pk32-native-data.js",

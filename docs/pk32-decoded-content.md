@@ -170,7 +170,7 @@
 | pk32-110 | 正方形棋 | content-migration-complete | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | yes | no | no decoded content; no dedicated adapter |
 | pk32-111 | 军棋-暗棋 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-112 | 麻将 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
-| pk32-113 | 极品飞车 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
+| pk32-113 | 极品飞车 | partial-content-migration | content-bound | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; rules not fully migrated; full flow not migrated |
 | pk32-114 | 六子连珠 | content-migration-complete | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | yes | no | no decoded content; no dedicated adapter |
 | pk32-115 | 拼图 | content-migration-complete | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | yes | no | no decoded content; no dedicated adapter |
 | pk32-116 | 天地棋 | content-migration-complete | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | yes | no | no decoded content; no dedicated adapter |
@@ -182,7 +182,7 @@
 | pk32-122 | 开心灯谜 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 0 | 0 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-123 | 冒泡大战 | content-migration-complete | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | yes | no | no decoded content; no dedicated adapter |
 | pk32-124 | 剪刀石头布 | content-migration-complete | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | yes | no | no decoded content; no dedicated adapter |
-| pk32-125 | 海盗船 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
+| pk32-125 | 海盗船 | partial-content-migration | content-bound | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; rules not fully migrated; full flow not migrated |
 | pk32-126 | 神符 | content-migration-complete | content-bound | shared atlases 28 | 0 |  | 0 | 0 | no | yes | no | no decoded content |
 | pk32-127 | 原子 | partial-content-migration | content-bound | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; rules not fully migrated; full flow not migrated |
 | pk32-128 | 木乃伊 | content-migration-complete | content-bound | shared atlases 28 | 1 |  | 222 | 0 | yes | yes | no |  |

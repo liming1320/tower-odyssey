@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-17T05:22:21.198Z",
+  "generatedAt": "2026-09-17T05:43:20.322Z",
   "policy": {
     "sharedAtlasBindingIsContentMigration": true,
     "sharedAtlasBindingDoesNotProveGameSpecificSpriteOwnership": true,

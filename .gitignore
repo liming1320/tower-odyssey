@@ -25,6 +25,9 @@ game/tools/tmp/
 tools/shots/
 tools/tmp/
 
+.tools/pe-tools/pe-tools-master
+.playwright-cli
+
 # PK32 反编译参考目录与浏览器测试产物（本地可重建/体积较大）
 output/
 
