@@ -1421,7 +1421,18 @@ body.in-battle .avatar-btn { display: none; }
 .pk32v-eye-card { aspect-ratio: 1; padding: 7px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .pk32v-eye-dot { border-radius: 50%; background: rgba(255,255,255,.08); }
 .pk32v-eye-dot[data-active="true"] { background: #ffd56b; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
+.pk32v-diff-board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 760px); }
+.pk32v-diff-side { display: grid; gap: 5px; justify-items: center; min-width: 0; }
+.pk32v-diff-side .pk32-index-board { width: min(100%, 330px); }
 .pk32v-color-palette { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: min(100%, 420px); }
+.pk32v-quiz-bank { width: min(100%, 720px); }
+.pk32v-quiz-card { display: grid; gap: 10px; width: 100%; padding: 12px; box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,.14); border-radius: 8px; background: rgba(15,23,42,.58); }
+.pk32v-quiz-meta { color: #9fb0c6; font-size: 12px; line-height: 1.35; word-break: break-word; }
+.pk32v-quiz-question { margin: 0; color: #fff7d6; font-size: 18px; line-height: 1.45; letter-spacing: 0; }
+.pk32v-quiz-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pk32v-quiz-choice { min-height: 42px; white-space: normal; text-align: left; line-height: 1.35; }
+.pk32v-quiz-choice[data-selected="true"] { outline: 2px solid #ffd56b; outline-offset: -2px; }
 .pk32-index-board { width: min(100%, 360px); overflow: hidden; }
 .pk32-dolphin-board { width: min(100%, 390px); overflow: hidden; }
 .pk32-color-maze-board { width: min(100%, 390px); overflow: hidden; }
@@ -1437,6 +1448,10 @@ body.in-battle .avatar-btn { display: none; }
     .pk32v-row-score { grid-column: 1 / -1; min-height: 14px; }
     .pk32v-eye-board { gap: 6px; }
     .pk32v-eye-card { padding: 5px; gap: 2px; }
+    .pk32v-diff-board { grid-template-columns: 1fr; }
+    .pk32v-quiz-card { padding: 10px; }
+    .pk32v-quiz-question { font-size: 15px; }
+    .pk32v-quiz-choices { grid-template-columns: 1fr; }
     .pk32-index-board { width: min(100%, 320px); }
     .pk32-dolphin-board, .pk32-color-maze-board { width: min(100%, 340px); }
 }

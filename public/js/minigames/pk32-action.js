@@ -54,15 +54,15 @@
     function reset() { ended = false; score = 0; last = 0; keys = {}; pressed = {}; state = makeState(spec.type); if (spec.type === 'breakout' && nativeBreakoutLevels[nativeBreakoutLevel]) state.bricks = nativeBricks(nativeBreakoutLevels[nativeBreakoutLevel].cells) || state.bricks; say(''); canvas.focus(); }
     function loadNativeBreakout() { if (spec.type !== 'breakout' || !global.fetch) return; global.fetch('/data/pk32-breakout-levels.json').then(function (response) { return response.json(); }).then(function (data) { nativeBreakoutLevels = data.levels || []; var select = document.createElement('select'); select.setAttribute('aria-label', '选择打砖块原生关卡'); nativeBreakoutLevels.forEach(function (_, index) { var option = document.createElement('option'); option.value = String(index); option.textContent = '原生关卡 ' + (index + 1); select.appendChild(option); }); select.onchange = function () { nativeBreakoutLevel = Number(select.value) || 0; reset(); }; controls.appendChild(select); reset(); say(nativeBreakoutLevels[nativeBreakoutLevel] && nativeBreakoutLevels[nativeBreakoutLevel].cells.length === 150 ? '原生关卡 ' + (nativeBreakoutLevel + 1) + ' / ' + nativeBreakoutLevels.length + ' 已加载' : '原生关卡 ' + (nativeBreakoutLevel + 1) + ' 编码格式待解析'); }).catch(function () { say('原生关卡加载失败，使用默认布局'); }); }
     function finish(message) { ended = true; say(message + '  得分：' + score + '，点击“重开”再来一次'); }
-    function onKey(e) { var key = e.key.toLowerCase(); if (!keys[key]) pressed[key] = true; keys[key] = true; if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(key) >= 0) e.preventDefault(); }
+    function onKey(e) { var key = e.key.toLowerCase(); if (spec.type === 'whack' && /^[1-9]$/.test(key)) { hitMole(state.holes[Number(key) - 1], 0); e.preventDefault(); return; } if (!keys[key]) pressed[key] = true; keys[key] = true; if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(key) >= 0) e.preventDefault(); }
     function offKey(e) { delete keys[e.key.toLowerCase()]; }
     function consume(key) { var hit = !!pressed[key]; delete pressed[key]; return hit; }
     function moveKey() { return { left: keys.arrowleft || keys.a, right: keys.arrowright || keys.d, up: keys.arrowup || keys.w, down: keys.arrowdown || keys.s }; }
     canvas.addEventListener('keydown', onKey); canvas.addEventListener('keyup', offKey); restart.addEventListener('click', reset);
-    canvas.addEventListener('pointerdown', function (e) { canvas.focus(); var r = canvas.getBoundingClientRect(); click((e.clientX - r.left) * canvas.width / r.width, (e.clientY - r.top) * canvas.height / r.height); });
+    canvas.addEventListener('pointerdown', function (e) { canvas.focus(); var r = canvas.getBoundingClientRect(); click((e.clientX - r.left) * canvas.width / r.width, (e.clientY - r.top) * canvas.height / r.height, e.button); });
 
     function makeState(type) {
-      if (type === 'whack') return { holes: Array.from({ length: 9 }, function (_, i) { return { x: 90 + (i % 3) * 150, y: 105 + Math.floor(i / 3) * 90, mole: false }; }), timer: 0, miss: 0 };
+      if (type === 'whack') return { holes: Array.from({ length: 9 }, function (_, i) { return { x: 90 + (i % 3) * 150, y: 105 + Math.floor(i / 3) * 90, mole: false, kind: '', hits: 0 }; }), timer: 0, miss: 0, time: 100 };
       if (type === 'snake') return { body: [{ x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }], dir: { x: 1, y: 0 }, food: { x: 15, y: 8 }, timer: 0 };
       if (type === 'tetris') return { board: Array.from({ length: 20 }, function () { return Array(10).fill(0); }), piece: null, x: 3, y: 0, timer: 0, lines: 0 };
       if (type === 'breakout') return { ball: { x: 320, y: 300, vx: 170, vy: -170 }, paddle: 270, bricks: Array.from({ length: 30 }, function (_, i) { return { x: 20 + (i % 10) * 62, y: 35 + Math.floor(i / 10) * 24, alive: true }; }) };
@@ -73,15 +73,22 @@
       if (type === 'flight') return { y: 210, vy: 0, distance: 0, timer: 0, pipes: [] };
       return { ship: { x: 70, y: 210 }, bullets: [], enemies: Array.from({ length: 5 }, function (_, i) { return { x: 430 + i * 40, y: 60 + (i % 3) * 100 }; }), timer: 0 };
     }
-    function click(x, y) {
+    function click(x, y, buttonCode) {
       if (ended) return;
-      if (spec.type === 'whack') state.holes.forEach(function (h) { if (h.mole && Math.hypot(x - h.x, y - h.y) < 42) { h.mole = false; score += 10; } });
+      if (spec.type === 'whack') state.holes.forEach(function (h) { if (Math.hypot(x - h.x, y - h.y) < 42) hitMole(h, buttonCode); });
       if (spec.type === 'dart') { if (state.shots <= 0) return; state.shots--; var d = Math.hypot(x - state.x, y - state.y); score += d < 35 ? 100 : d < 80 ? 50 : d < 150 ? 20 : 5; state.hits += d < 150 ? 1 : 0; say('命中！剩余投射：' + state.shots); if (state.shots <= 0) finish('投射机会用完。'); }
       if (spec.type === 'rocket') { state.bullets.push({ x: state.ship.x + 25, y: state.ship.y, vx: 360, vy: 0 }); }
     }
+    function hitMole(hole, buttonCode) {
+      if (!hole || !hole.mole) return;
+      if (hole.kind === 'pink') { score = Math.max(0, score - 10); hole.mole = false; return; }
+      hole.hits += 1;
+      if (hole.kind === 'gray' && hole.hits < 2) return;
+      hole.mole = false; hole.kind = ''; hole.hits = 0; score += buttonCode === 2 ? 12 : 10;
+    }
     function update(dt) {
       var m = moveKey();
-      if (spec.type === 'whack') { state.timer -= dt; if (state.timer <= 0) { state.holes[random(9)].mole = true; state.timer = .65; } }
+      if (spec.type === 'whack') { state.time -= dt; if (state.time <= 0) return finish('100 秒任务结束'); state.timer -= dt; if (state.timer <= 0) { var hole = state.holes[random(9)]; hole.mole = true; hole.kind = Math.random() < .18 ? 'pink' : Math.random() < .45 ? 'gray' : 'yellow'; hole.hits = 0; state.timer = .65; } }
       if (spec.type === 'snake') { state.timer += dt; if (state.timer > .13) { state.timer = 0; var n = { x: state.body[0].x + state.dir.x, y: state.body[0].y + state.dir.y }; if (n.x < 0 || n.y < 0 || n.x >= 24 || n.y >= 18 || state.body.some(function (p) { return p.x === n.x && p.y === n.y; })) return finish('撞到了'); state.body.unshift(n); if (n.x === state.food.x && n.y === state.food.y) { score += 10; state.food = { x: random(24), y: random(18) }; } else state.body.pop(); } if (m.up && state.dir.y === 0) state.dir = { x: 0, y: -1 }; if (m.down && state.dir.y === 0) state.dir = { x: 0, y: 1 }; if (m.left && state.dir.x === 0) state.dir = { x: -1, y: 0 }; if (m.right && state.dir.x === 0) state.dir = { x: 1, y: 0 }; }
       if (spec.type === 'breakout') { state.paddle += (m.left ? -1 : m.right ? 1 : 0) * 300 * dt; state.paddle = clamp(state.paddle, 0, 570); state.ball.x += state.ball.vx * dt; state.ball.y += state.ball.vy * dt; if (state.ball.x < 8 || state.ball.x > 632) state.ball.vx *= -1; if (state.ball.y < 8) state.ball.vy *= -1; if (state.ball.y > 385 && state.ball.x > state.paddle && state.ball.x < state.paddle + 70) state.ball.vy = -Math.abs(state.ball.vy); state.bricks.forEach(function (b) { if (b.alive && Math.abs(state.ball.x - (b.x + 27)) < 32 && Math.abs(state.ball.y - b.y) < 14) { b.alive = false; state.ball.vy *= -1; score += 5; } }); if (state.ball.y > 440) return finish('球掉落'); if (!state.bricks.some(function (b) { return b.alive; })) finish('清屏'); }
       if (spec.type === 'tank' || spec.type === 'rocket') { var s = spec.type === 'tank' ? state.player : state.ship; s.x += (m.right ? 1 : m.left ? -1 : 0) * 180 * dt; s.y += (m.down ? 1 : m.up ? -1 : 0) * 180 * dt; s.x = clamp(s.x, 20, canvas.width - 20); s.y = clamp(s.y, 20, canvas.height - 20); state.timer -= dt; if ((keys[' '] || keys.enter) && state.timer <= 0) { state.bullets.push({ x: s.x + 18, y: s.y, vx: 380, vy: 0 }); state.timer = .3; } state.bullets.forEach(function (b) { b.x += b.vx * dt; b.y += b.vy * dt; }); var targets = spec.type === 'tank' ? state.enemies : state.enemies; state.bullets = state.bullets.filter(function (b) { var hit = targets.find(function (e) { return Math.hypot(e.x - b.x, e.y - b.y) < 22; }); if (hit) { targets.splice(targets.indexOf(hit), 1); score += 20; return false; } return b.x < canvas.width + 20; }); if (!targets.length) finish('全部击破'); }
@@ -119,7 +126,7 @@
       if (cleared) say('消除 ' + cleared + ' 行，得分：' + score);
     }
     function draw() {
-      ctx.fillStyle = colors.bg; ctx.fillRect(0, 0, canvas.width, canvas.height); text(ctx, '得分 ' + score, 12, 24, 16); if (spec.type === 'whack') { state.holes.forEach(function (h) { ctx.fillStyle = '#513a2d'; ctx.beginPath(); ctx.ellipse(h.x, h.y + 28, 48, 18, 0, 0, Math.PI * 2); ctx.fill(); if (h.mole) { ctx.fillStyle = '#b87952'; ctx.beginPath(); ctx.arc(h.x, h.y, 30, 0, Math.PI * 2); ctx.fill(); text(ctx, '• •', h.x, h.y - 2, 18, 'center'); } }); }
+      ctx.fillStyle = colors.bg; ctx.fillRect(0, 0, canvas.width, canvas.height); text(ctx, '得分 ' + score, 12, 24, 16); if (spec.type === 'whack') { text(ctx, '剩余 ' + Math.max(0, Math.ceil(state.time)) + ' 秒', 12, 48, 16); state.holes.forEach(function (h, i) { ctx.fillStyle = '#513a2d'; ctx.beginPath(); ctx.ellipse(h.x, h.y + 28, 48, 18, 0, 0, Math.PI * 2); ctx.fill(); if (h.mole) { ctx.fillStyle = h.kind === 'gray' ? '#9ca3af' : h.kind === 'pink' ? '#f0a3c7' : '#d7a34d'; ctx.beginPath(); ctx.arc(h.x, h.y, 30, 0, Math.PI * 2); ctx.fill(); text(ctx, h.kind === 'gray' ? (2 - h.hits) + '击' : h.kind === 'pink' ? '禁打' : '地鼠', h.x, h.y - 2, 14, 'center'); } text(ctx, String(i + 1), h.x, h.y + 40, 12, 'center'); }); }
       if (spec.type === 'snake') { ctx.fillStyle = colors.good; state.body.forEach(function (p) { ctx.fillRect(p.x * 20, p.y * 20 + 35, 18, 18); }); ctx.fillStyle = colors.danger; ctx.fillRect(state.food.x * 20, state.food.y * 20 + 35, 18, 18); }
       if (spec.type === 'breakout') { ctx.fillStyle = colors.accent; state.bricks.forEach(function (b) { if (b.alive) ctx.fillRect(b.x, b.y, 54, 16); }); ctx.fillStyle = colors.good; ctx.fillRect(state.paddle, 395, 70, 10); ctx.beginPath(); ctx.arc(state.ball.x, state.ball.y, 7, 0, Math.PI * 2); ctx.fill(); }
        if (spec.type === 'dart') { ctx.strokeStyle = colors.text; ctx.lineWidth = 8; [150, 105, 60, 25].forEach(function (r, i) { ctx.beginPath(); ctx.arc(state.x, state.y, r, 0, Math.PI * 2); ctx.strokeStyle = i % 2 ? colors.danger : colors.text; ctx.stroke(); }); text(ctx, '剩余投射 ' + state.shots + ' 次', 12, 48); }

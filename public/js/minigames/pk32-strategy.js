@@ -73,7 +73,8 @@
             else if (id === 'slot') drawSlot();
             else if (id === 'rune') drawRune();
             else if (id === 'atom') drawAtom();
-            else if (id === 'quiz' || id === 'riddle') drawQuestion(id === 'riddle');
+            else if (id === 'quiz') drawQuestion(false);
+            else if (id === 'riddle') drawNativeRiddles();
             else if (id === 'lights') drawLights();
         }
         function drawLudo() {
@@ -119,6 +120,36 @@
             body.innerHTML = ''; state.atoms = state.atoms || Array(25).fill(0); const colors = ['红', '蓝', '绿', '黄']; const grid = el('div', 'board'); grid.style.gridTemplateColumns = 'repeat(5,1fr)';
             function clearGroups() { let cleared = 0; for (let y = 0; y < 4; y += 1) for (let x = 0; x < 4; x += 1) { const v = state.atoms[y * 5 + x]; if (v && state.atoms[y * 5 + x + 1] === v && state.atoms[(y + 1) * 5 + x] === v && state.atoms[(y + 1) * 5 + x + 1] === v) { [y * 5 + x, y * 5 + x + 1, (y + 1) * 5 + x, (y + 1) * 5 + x + 1].forEach(i => { state.atoms[i] = 0; cleared += 1; }); } } return cleared; }
             state.atoms.forEach(function (v, i) { const b = button(v ? colors[v - 1] : '+', guard(function () { if (!state.atoms[i]) { state.atoms[i] = 1 + Math.floor(Math.random() * colors.length); } else { const empty = state.atoms.findIndex(x => !x); if (empty >= 0) { state.atoms[empty] = state.atoms[i]; state.atoms[i] = 0; } } const cleared = clearGroups(); state.score += cleared; if (state.score >= 20) { state.ended = true; setMessage('原子消除目标完成！'); } drawAtom(); })); b.className = 'cell ' + (v ? 'on' : 'off'); grid.appendChild(b); }); body.append(grid, el('div', 'meta', '原版 300 关 · 已消除：' + state.score + ' · 点击空位生成原子，点击已有原子移动'));
+        }
+        function drawNativeRiddles() {
+            if (!state.riddleBank && !state.riddleLoading) {
+                state.riddleLoading = true;
+                fetch('/data/pk32-riddle-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                    state.riddleBank = (data.levels || []).filter(function (item) { return item && item.prompt; });
+                    state.riddleLoading = false;
+                    drawNativeRiddles();
+                }).catch(function () {
+                    state.riddleLoading = false;
+                    drawQuestion(true);
+                });
+            }
+            body.innerHTML = '';
+            if (state.riddleLoading) {
+                body.append(el('div', 'meta', '正在读取 PK32 原始灯谜题库'));
+                setMessage('题库加载中。');
+                return;
+            }
+            const list = state.riddleBank || [];
+            if (!list.length) return drawQuestion(true);
+            const index = Math.max(0, Math.min((state.turn || 1) - 1, list.length - 1));
+            const item = list[index];
+            body.append(el('div', '', item.prompt));
+            const bar = el('div', 'bar');
+            bar.append(button('上一题', guard(function () { state.turn = Math.max(1, (state.turn || 1) - 1); drawNativeRiddles(); })));
+            bar.append(button('下一题', guard(function () { state.turn = Math.min(list.length, (state.turn || 1) + 1); state.score += 1; drawNativeRiddles(); })));
+            bar.append(button('标记已读', guard(function () { state.score += 1; setMessage('已记录当前灯谜；谜底映射仍待解码。'); })));
+            body.append(bar, el('div', 'meta', '原始灯谜：' + (index + 1) + ' / ' + list.length + '　offset：' + item.offset + '　谜底待解码'));
+            setMessage('开心灯谜题库内容已迁移；答案、求助和连续答对计分仍待 p-code 或运行轨迹确认。');
         }
         function drawQuestion(riddle) {
             body.innerHTML = ''; const list = riddle ? RIDDLES : QUESTIONS; const q = list[(state.turn - 1) % list.length]; body.append(el('div', '', q[0]));

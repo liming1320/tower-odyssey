@@ -103,6 +103,7 @@ try {
       sharedResourcePackagesBound: queue.summary.sharedResourcePackagesBound,
       gameSpecificAssetMappings: queue.summary.gameSpecificAssetMappings,
       evidenceAdapterMigrated: queue.summary.evidenceAdapterMigrated,
+      flowContentMigrated: queue.summary.flowContentMigrated,
       catalogEvidenceAdapter: queue.summary.catalogEvidenceAdapter,
       titleReferenceEvidence: queue.summary.titleReferenceEvidence,
       launchEvidence: queue.summary.launchEvidence,

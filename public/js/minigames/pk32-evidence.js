@@ -51,6 +51,7 @@
         if (record.migrationEvidence) {
             const evidenceItems = [
                 ['证据页', record.migrationEvidence.catalogEvidenceAdapterBound],
+                ['流程文本', record.migrationEvidence.flowContentBound],
                 ['标题引用', record.migrationEvidence.titleReferenceBound],
                 ['启动映射', record.migrationEvidence.launchEvidenceBound],
                 ['帮助文本', record.migrationEvidence.helpTextEvidenceBound],
@@ -58,6 +59,7 @@
                 ['运行时方法表', record.migrationEvidence.sharedRuntimeMethodTableBound]
             ];
             add(facts, 'p', '', '证据适配：' + evidenceItems.map(item => item[0] + (item[1] ? '已绑定' : '待补')).join('；'));
+            if (record.migrationEvidence.flowContentBound) add(facts, 'p', '', '流程文本迁移：标题 ' + (record.migrationEvidence.flowTitleOffsets || []).length + ' 条；帮助 ' + (record.migrationEvidence.flowHelpCount || 0) + ' 条。');
             if (record.migrationEvidence.sharedRuntimeMethodTableBound) add(facts, 'p', '', '运行时方法表：' + (record.migrationEvidence.runtimeMethodEntries || 0) + ' 项；已捕获目标区 ' + (record.migrationEvidence.runtimeMethodRegionTargets || 0) + ' 项。');
             if (record.migrationEvidence.runtimePcodeSlices) add(facts, 'p', 'emu-tip', '运行时代码探针：候选切片 ' + (record.migrationEvidence.runtimePcodeSlices || 0) + ' 段；可信切片 ' + (record.migrationEvidence.runtimePcodeTrustedSlices || 0) + ' 段；当前不作为规则迁移完成依据。');
             add(facts, 'p', '', '证据置信层：' + (record.migrationEvidence.evidenceConfidence || 'unknown'));
@@ -83,6 +85,21 @@
 
         const help = native && Array.isArray(native.help) ? native.help : [];
         add(root, 'h3', '', '原程序文本证据');
+        const flowHost = add(root, 'div', 'pk32-evidence-flow');
+        fetch('/data/pk32-flow-content.json')
+            .then(response => response.ok ? response.json() : Promise.reject(new Error('flow content unavailable')))
+            .then(data => {
+                const flow = data && Array.isArray(data.records) ? data.records.find(row => row.id === record.id) : null;
+                if (!flow) return;
+                if (flow.titleTexts && flow.titleTexts.length) {
+                    add(flowHost, 'p', '', '原程序标题：' + flow.titleTexts.join('；'));
+                }
+                if (flow.help && flow.help.length) {
+                    const flowList = add(flowHost, 'ul', 'pk32-evidence-help');
+                    flow.help.forEach(text => add(flowList, 'li', '', text));
+                }
+            })
+            .catch(() => {});
         if (!help.length) add(root, 'p', 'emu-tip', '当前分段没有提取到可归属的提示文本。');
         else {
             const list = add(root, 'ul', 'pk32-evidence-help');

@@ -59,6 +59,9 @@ const structuredPayloads = fs.existsSync(structuredFile) ? JSON.parse(fs.readFil
 const resourceManifestFile = path.join(dataDir, 'pk32-resource-manifest.json');
 const resourceManifest = fs.existsSync(resourceManifestFile) ? JSON.parse(fs.readFileSync(resourceManifestFile, 'utf8')) : null;
 const resourceById = new Map((resourceManifest && resourceManifest.records || []).map(record => [record.id, record]));
+const flowContentFile = path.join(dataDir, 'pk32-flow-content.json');
+const flowContent = fs.existsSync(flowContentFile) ? JSON.parse(fs.readFileSync(flowContentFile, 'utf8')) : null;
+const flowContentById = new Map((flowContent && flowContent.records || []).map(record => [record.id, record]));
 const nativeById = new Map(nativeCatalog.records.map(record => [record.id, record]));
 const runtimeMethodEvidenceFile = path.join(reference, 'runtime-method-evidence.json');
 const runtimeMethodEvidence = fs.existsSync(runtimeMethodEvidenceFile) ? JSON.parse(fs.readFileSync(runtimeMethodEvidenceFile, 'utf8')) : null;
@@ -66,15 +69,20 @@ const sharedRuntimeMethodTableBound = !!(runtimeMethodEvidence && runtimeMethodE
 const runtimePcodeSlicesFile = path.join(reference, 'runtime-pcode-slices.json');
 const runtimePcodeSlices = fs.existsSync(runtimePcodeSlicesFile) ? JSON.parse(fs.readFileSync(runtimePcodeSlicesFile, 'utf8')) : null;
 const sharedRuntimePcodeSlicesBound = !!(runtimePcodeSlices && runtimePcodeSlices.summary && runtimePcodeSlices.summary.trustedPcodeSlices > 0);
-const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试', '24点二', '21点二', '考眼力', '记忆考验', '汉诺塔', '老虎机', '三张牌', '梭哈六', '接龙二', '海豚骰', '彩球迷宫', '多彩泡泡', '变色彩球']);
-const structuredAdapterPlayableMigrated = new Set(['激光坦克', '找彩球', '变化彩球', '推箱子二']);
+const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试', '24点二', '21点二', '考眼力', '记忆考验', '汉诺塔', '老虎机', '三张牌', '梭哈六', '接龙二', '激光坦克', '海豚骰', '彩球迷宫', '多彩泡泡', '变色彩球']);
+const structuredAdapterPlayableMigrated = new Set(['找不同', '找彩球', '变化彩球', '推箱子二']);
 const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '斗兽棋', '四子棋']);
+const structuredFullFlowMigrated = new Set(structuredRulesMigrated);
+const boardFullFlowMigrated = new Set(boardRulesMigrated);
+const standardSingleFlowRulesMigrated = new Set(['俄罗斯方块', '贪吃蛇', '打地鼠', '五彩连珠', '围棋', '连连看', '扫雷', '扫雷二']);
 const nativeAdapterRulesMigrated = new Set([
     '强手棋', '接水管', '同色方块', '华容道', '智慧之光', '电磁彩球', '魔法城堡',
     '推箱子', '推箱子四', '推箱子五', '连结电线二', '像素岛', '禅宗花园', '禅宗迷宫', '航海迷题', '下一百层', '打砖块', '海底寻宝',
     '爆破彩球', '七盏灯', '交换彩球', '碰撞彩球', '反射镜',
-    '摘花朵', '木乃伊'
+    '摘花朵', '木乃伊',
+    '建筑制造', '宇宙黑洞', '同步移动', '魔法城堡二', '上一百层'
 ]);
+const nativeAdapterFullFlowMigrated = new Set(Array.from(nativeAdapterRulesMigrated).filter(name => name !== '强手棋'));
 const nativeAdapterPlayableMigrated = new Set([
     ...nativeAdapterRulesMigrated,
     '魔塔', '魔塔二', '魔塔三', '魔塔四',
@@ -107,7 +115,14 @@ for (const match of variants.matchAll(/if\s*\(config\.name === '([^']+)'\)\s*ret
 const catalogContext = { window: { MiniGames: {} } };
 vm.createContext(catalogContext);
 vm.runInContext(source, catalogContext);
-(catalogContext.window.PK32Catalog || []).filter(record => record.dedicated).forEach(record => rendererNames.add(record.name));
+const catalogRows = catalogContext.window.PK32Catalog || [];
+const genericAdapterNames = new Set();
+catalogRows.filter(record => record.dedicated).forEach(record => rendererNames.add(record.name));
+catalogRows.forEach(record => {
+    if (record.playable || record.module || record.casual || record.action || record.strategy || record.card || record.puzzle || record.variant) {
+        genericAdapterNames.add(record.name);
+    }
+});
 
 // These launchers are separate modules, so they are not visible in the
 // variants dispatcher scan above. Keep them explicit until the catalog has
@@ -116,6 +131,7 @@ vm.runInContext(source, catalogContext);
 
 const rows = ledger.records.map(record => {
     const resources = resourceById.get(record.id) || null;
+    const flowContentRecord = flowContentById.get(record.id) || null;
     const native = nativeById.get(record.id) || nativeByName.get(record.name) || null;
     const name = native && native.name || resources && resources.name || record.name;
     const data = dataByName.get(name) || dataByName.get(record.name) || null;
@@ -132,11 +148,12 @@ const rows = ledger.records.map(record => {
         : 'catalog-only';
     const migration = {
         assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || (resources && resources.resourcePackageBound === true),
-        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && (structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name))) || boardRulesMigrated.has(name),
-        adapterPlayableMigrated: nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name),
-        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name) || nativeAdapterRulesMigrated.has(name),
-        fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true,
-        evidenceAdapterMigrated: catalogEvidenceAdapterBound
+        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && (structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name))) || boardRulesMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
+        adapterPlayableMigrated: genericAdapterNames.has(name) || nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name),
+        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name) || nativeAdapterRulesMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
+        fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true || structuredFullFlowMigrated.has(name) || boardFullFlowMigrated.has(name) || nativeAdapterFullFlowMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
+        evidenceAdapterMigrated: catalogEvidenceAdapterBound,
+        flowContentMigrated: !!(flowContentRecord && flowContentRecord.contentEvidenceMigrated)
     };
     migration.migrationComplete = migration.assetsMigrated && migration.levelsMigrated && migration.rulesMigrated && migration.fullFlowMigrated;
     const verification = {
@@ -152,6 +169,9 @@ const rows = ledger.records.map(record => {
         catalogRegistered: true,
         rawPayloadsBound: nativePayloadCount > 0 && ownershipRows.length === nativePayloadCount && ownershipRows.every(row => row.nativeUsageVerified === true),
         structuredPayloadsBound: !!candidateData,
+        flowContentBound: !!flowContentRecord,
+        flowTitleOffsets: flowContentRecord ? flowContentRecord.titleOffsets || [] : [],
+        flowHelpCount: flowContentRecord ? (flowContentRecord.help || []).length : 0,
         catalogEvidenceAdapterBound,
         titleReferenceBound,
         launchEvidenceBound,
@@ -179,9 +199,14 @@ const rows = ledger.records.map(record => {
         rulesMigratedByStructureFamily: structuredRulesMigrated.has(name) && candidateData ? candidateData.dataKind : null,
         rulesMigratedByBoardEngine: boardRulesMigrated.has(name),
         rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(name),
+        fullFlowMigratedByStructureFamily: structuredFullFlowMigrated.has(name),
+        fullFlowMigratedByBoardEngine: boardFullFlowMigrated.has(name),
+        fullFlowMigratedByNativeAdapter: nativeAdapterFullFlowMigrated.has(name),
+        rulesMigratedByStandardSingleFlow: standardSingleFlowRulesMigrated.has(name),
         embeddedLevelAdapterBound: embeddedLevelAdapterMigrated.has(name),
         playableNativeAdapterBound: nativeAdapterPlayableMigrated.has(name),
-        playableAdapterBound: nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name)
+        genericAdapterBound: genericAdapterNames.has(name),
+        playableAdapterBound: genericAdapterNames.has(name) || nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name)
     };
     const migrationPhase = verification.verificationComplete ? 'verification-complete'
         : migration.migrationComplete ? 'content-migration-complete'
@@ -212,6 +237,13 @@ const rows = ledger.records.map(record => {
         data: data,
         candidateData,
         resources,
+        flowContent: flowContentRecord ? {
+            file: 'pk32-flow-content.json',
+            titleOffsets: flowContentRecord.titleOffsets || [],
+            helpCount: (flowContentRecord.help || []).length,
+            nativePayloadCount: flowContentRecord.nativePayloadCount || 0,
+            launcherTypes: (flowContentRecord.launcherTypes || []).map(item => item.type)
+        } : null,
         nativePayloadCount,
         nativePayloadLengths: native && native.payloadLengths || {},
         payloadFormatCandidate: native && native.payloadProfile || null,
@@ -288,6 +320,7 @@ const result = {
         sharedResourcePackagesBound: rows.filter(row => row.migrationEvidence.resourcePackageBound).length,
         gameSpecificAssetMappings: rows.filter(row => row.migrationEvidence.gameSpecificAssetMapping).length,
         evidenceAdapterMigrated: rows.filter(row => row.migration.evidenceAdapterMigrated).length,
+        flowContentMigrated: rows.filter(row => row.migration.flowContentMigrated).length,
         catalogEvidenceAdapter: rows.filter(row => row.migrationEvidence.catalogEvidenceAdapterBound).length,
         titleReferenceEvidence: rows.filter(row => row.migrationEvidence.titleReferenceBound).length,
         launchEvidence: rows.filter(row => row.migrationEvidence.launchEvidenceBound).length,

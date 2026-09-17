@@ -82,6 +82,7 @@
     function statusTags(record) {
         const migrationText = record.migrationComplete ? '内容迁移完成'
             : record.migrationPhase === 'partial-content-migration' ? '内容部分迁移'
+            : record.migration && record.migration.adapterPlayableMigrated ? '适配入口已接入'
             : record.migrationPhase === 'payload-migration' ? '原始载荷已绑定'
             : record.migrationPhase === 'evidence-adapter-migration' ? '原始证据适配'
             : record.status === 'structured-assignment-review' ? '结构已解析，归属待复核'
@@ -247,6 +248,11 @@
                     (x.dedicatedLauncher === 'module' ? '<button class="btn ghost pk32-module-launch" data-pk32-module="' + esc(x.id) + '">独立启动</button>' : '') +
                     (x.dedicatedLauncher === 'puzzle' ? '<button class="btn ghost pk32-puzzle-launch" data-pk32-puzzle="' + esc(x.id) + '">独立启动</button>' : '') +
                     (x.dedicatedLauncher === 'variant' ? '<button class="btn ghost pk32-variant-launch" data-pk32-variant="' + esc(x.id) + '">独立启动</button>' : '') +
+                    (!x.dedicatedLauncher && x.casual ? '<button class="btn ghost pk32-casual-launch" data-pk32-casual="' + esc(x.id) + '">适配入口</button>' : '') +
+                    (!x.dedicatedLauncher && x.action ? '<button class="btn ghost pk32-action-launch" data-pk32-action="' + esc(x.id) + '">适配入口</button>' : '') +
+                    (!x.dedicatedLauncher && x.strategy ? '<button class="btn ghost pk32-strategy-launch" data-pk32-strategy="' + esc(x.id) + '">适配入口</button>' : '') +
+                    (!x.dedicatedLauncher && x.card ? '<button class="btn ghost pk32-card-launch" data-pk32-card="' + esc(x.id) + '">适配入口</button>' : '') +
+                    (!x.dedicatedLauncher && x.puzzle ? '<button class="btn ghost pk32-puzzle-launch" data-pk32-puzzle="' + esc(x.id) + '">适配入口</button>' : '') +
                     '<button class="btn ghost pk32-evidence-launch" data-pk32-evidence="' + esc(x.id) + '">原始迁移资料</button>' +
                     statusTags(x) + '</div>'
                 ).join('');

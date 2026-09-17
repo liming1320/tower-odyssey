@@ -120,6 +120,7 @@ const result = {
         sharedResourcePackagesBound: records.filter(record => record.migrationEvidence && record.migrationEvidence.resourcePackageBound).length,
         gameSpecificAssetMappings: records.filter(record => record.migrationEvidence && record.migrationEvidence.gameSpecificAssetMapping).length,
         evidenceAdapterMigrated: records.filter(record => record.migration && record.migration.evidenceAdapterMigrated).length,
+        flowContentMigrated: records.filter(record => record.migration && record.migration.flowContentMigrated).length,
         catalogEvidenceAdapter: records.filter(record => record.migrationEvidence && record.migrationEvidence.catalogEvidenceAdapterBound).length,
         titleReferenceEvidence: records.filter(record => record.migrationEvidence && record.migrationEvidence.titleReferenceBound).length,
         launchEvidence: records.filter(record => record.migrationEvidence && record.migrationEvidence.launchEvidenceBound).length,

@@ -55,6 +55,7 @@
         if (mode === 'freecell') return freecell(host, title, session);
         if (mode === 'spider') return spider(host, title, session);
         if (mode === 'minesweeper') return mines(host, title, session);
+        if (mode === 'link-pair') return linkPair(host, title, session);
         if (mode === 'high-low') return highLow(host, title, session);
         if (mode === 'blackjack') return blackjack(host, title, session);
         if (mode === 'sokoban') return config.name === '推箱子四' ? sokobanNative4(host, title, session) : sokoban(host, title, session);
@@ -139,6 +140,73 @@
         function setStatus(t) { const s = host.querySelector('#pk32-play-status'); if (s) s.textContent = t; }
         function draw() { const area = host.querySelector('#pk32-play-area'); if (!area) return; area.innerHTML = button('重新开始', 'reset') + '<div class="pk32-grid" style="display:grid;grid-template-columns:repeat(' + size + ',36px);gap:3px;margin-top:10px">' + board.map(function (mine, i) { const show = opened[i], n = count(i); return '<button class="btn ghost" style="width:36px;height:36px;padding:0" data-cell="' + i + '">' + (show ? (mine ? 'X' : (n || '')) : (flags[i] ? '旗' : '■')) + '</button>'; }).join('') + '</div>'; area.querySelector('[data-action="reset"]').onclick = reset; area.querySelectorAll('[data-cell]').forEach(function (b) { b.disabled = over; b.onclick = function (e) { const i = +b.dataset.cell; if (over || opened[i]) return; if (e.shiftKey) { flags[i] = !flags[i]; draw(); } else reveal(i); }; }); }
         shell(host, title, '', '点击方块翻开，Shift+点击标记'); reset();
+    }
+
+    function linkPair(host, title, session) {
+        const size = 8, types = ['竹', '梅', '兰', '菊', '春', '夏', '秋', '冬', '东', '南', '西', '北', '中', '发', '白', '花'];
+        let cells, selected, time, over, timer;
+        function reset() {
+            const pool = [];
+            for (let i = 0; i < size * size / 2; i++) pool.push(types[i % types.length], types[i % types.length]);
+            cells = pool.sort(() => Math.random() - .5); selected = -1; time = 600; over = false;
+            if (timer) clearInterval(timer);
+            timer = setInterval(function () { if (over) return; time -= 1; if (time <= 0) { over = true; setStatus('时间用完，本局只能得 1 分。'); } draw(); }, 1000);
+            session.cleanup.push(function () { if (timer) clearInterval(timer); });
+            draw();
+        }
+        function setStatus(text) { const node = host.querySelector('#pk32-play-status'); if (node) node.textContent = text; }
+        function occupied(index) { return cells[index] != null; }
+        function openCell(x, y, a, b) {
+            if (x < 0 || x > size + 1 || y < 0 || y > size + 1) return false;
+            if (x === 0 || y === 0 || x === size + 1 || y === size + 1) return true;
+            const index = (y - 1) * size + x - 1;
+            return index === a || index === b || !occupied(index);
+        }
+        function canLink(a, b) {
+            const ax = a % size + 1, ay = Math.floor(a / size) + 1, bx = b % size + 1, by = Math.floor(b / size) + 1;
+            const queue = [{ x: ax, y: ay, dir: -1, turns: 0 }], seen = new Set();
+            const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+            while (queue.length) {
+                const item = queue.shift();
+                if (item.x === bx && item.y === by) return true;
+                dirs.forEach(function (dir, dirIndex) {
+                    const turns = item.dir < 0 || item.dir === dirIndex ? item.turns : item.turns + 1;
+                    if (turns > 2) return;
+                    const next = { x: item.x + dir[0], y: item.y + dir[1], dir: dirIndex, turns };
+                    const key = next.x + ':' + next.y + ':' + next.dir + ':' + next.turns;
+                    if (seen.has(key) || !openCell(next.x, next.y, a, b)) return;
+                    seen.add(key); queue.push(next);
+                });
+            }
+            return false;
+        }
+        function choose(index) {
+            if (over || !occupied(index)) return;
+            if (selected < 0) { selected = index; draw(); return; }
+            if (selected === index) { selected = -1; draw(); return; }
+            if (cells[selected] === cells[index] && canLink(selected, index)) {
+                cells[selected] = null; cells[index] = null; selected = -1;
+                if (!cells.some(Boolean)) { over = true; if (timer) clearInterval(timer); setStatus('全部消除，得分按剩余时间结算。'); }
+                draw(); return;
+            }
+            selected = index; setStatus('这两张不能在三段以内连通。'); draw();
+        }
+        function shuffleRemaining() {
+            if (over || time <= 60) return;
+            const left = cells.filter(Boolean).sort(() => Math.random() - .5);
+            cells = cells.map(value => value ? left.pop() : null);
+            time -= 60; selected = -1; draw();
+        }
+        function draw() {
+            const area = shell(host, title, button('重置', 'reset') + button('洗牌 -60秒', 'shuffle'), over ? '本局结束' : '成对点击相同牌，连线最多转两次；剩余 ' + Math.max(0, time) + ' 秒');
+            area.innerHTML += '<div style="display:grid;grid-template-columns:repeat(8,38px);gap:3px;margin-top:10px">' + cells.map(function (value, index) {
+                return '<button class="btn ghost" style="width:38px;height:38px;padding:0' + (selected === index ? ';outline:2px solid #ffd56b' : '') + '" data-link="' + index + '"' + (!value || over ? ' disabled' : '') + '>' + esc(value || '') + '</button>';
+            }).join('') + '</div>';
+            area.querySelector('[data-action="reset"]').onclick = reset;
+            area.querySelector('[data-action="shuffle"]').onclick = shuffleRemaining;
+            area.querySelectorAll('[data-link]').forEach(function (button) { button.onclick = function () { choose(Number(button.dataset.link)); }; });
+        }
+        reset();
     }
 
     function highLow(host, title) { let score = 0, current; function draw() { const area = shell(host, title, button('抽牌', 'draw'), '猜下一张牌比当前大还是小'); area.querySelector('[data-action="draw"]').onclick = function () { current = 1 + Math.floor(Math.random() * 13); area.innerHTML = '<div>当前牌：<b>' + current + '</b></div>' + button('下一张更大', 'up') + button('下一张更小', 'down') + '<div style="margin-top:8px">得分：' + score + '</div>'; area.querySelectorAll('[data-action]').forEach(function (b) { b.onclick = function () { const next = 1 + Math.floor(Math.random() * 13), ok = (b.dataset.action === 'up' ? next > current : next < current); score = ok ? score + 1 : 0; current = next; setTimeout(draw, 0); }; }); }; function setTimeoutDraw() {} } draw(); }

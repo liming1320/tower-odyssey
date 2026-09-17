@@ -1605,6 +1605,83 @@
                 draw();
             }).catch(function () { prompt.textContent = config.name + '候选原生关卡加载失败'; });
         }
+        function renderQuizBank() {
+            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载开心辞典原始题库…');
+            const panel = el('div', { className: 'pk32v-native-data pk32v-quiz-bank' });
+            let questions = [], choiceLists = [], index = 0, choiceIndex = 0, answered = 0, assists = 3, removed = new Set(), chosen = null;
+            body.append(prompt, panel);
+            function draw() {
+                panel.innerHTML = '';
+                if (!questions.length) {
+                    prompt.textContent = '开心辞典题库尚未提取。';
+                    return;
+                }
+                const current = questions[index];
+                const choiceGroup = choiceLists[choiceIndex] || null;
+                const nav = el('div', { className: 'pk32v-toolbar' });
+                const picker = el('select', { 'aria-label': '开心辞典原始题目' });
+                questions.forEach(function (question, questionIndex) {
+                    const option = el('option', { value: String(questionIndex) }, '题目 ' + (questionIndex + 1) + ' / ' + questions.length);
+                    picker.appendChild(option);
+                });
+                picker.value = String(index);
+                picker.onchange = function () { index = Number(picker.value) || 0; removed = new Set(); chosen = null; draw(); };
+                nav.append(button('上一题', function () { index = Math.max(0, index - 1); removed = new Set(); chosen = null; draw(); }), button('下一题', function () { index = Math.min(questions.length - 1, index + 1); removed = new Set(); chosen = null; draw(); }), picker);
+                const card = el('article', { className: 'pk32v-quiz-card' });
+                card.appendChild(el('div', { className: 'pk32v-quiz-meta' }, (current.category || '小常识') + ' · 原始 offset ' + current.offset));
+                card.appendChild(el('h3', { className: 'pk32v-quiz-question' }, current.prompt));
+                const choices = el('div', { className: 'pk32v-quiz-choices' });
+                (choiceGroup && choiceGroup.choices || []).forEach(function (choice) {
+                    const disabled = removed.has(choice.key);
+                    const item = button(choice.key + '. ' + choice.text, function () {
+                        if (disabled) return;
+                        chosen = choice.key;
+                        answered = Math.max(answered, Math.min(12, index + 1));
+                        prompt.textContent = '开心辞典：已记录选择 ' + choice.key + '；正确答案映射仍待 p-code 或运行轨迹确认。';
+                        draw();
+                    });
+                    item.className += ' pk32v-quiz-choice';
+                    item.dataset.choice = choice.key;
+                    item.dataset.selected = String(chosen === choice.key);
+                    item.disabled = disabled;
+                    if (disabled) item.textContent = choice.key + '. 已去掉';
+                    choices.appendChild(item);
+                });
+                if (!choices.children.length) choices.appendChild(el('p', { className: 'pk32v-prompt' }, '本题选项表尚未和题目一一匹配；请用候选选项组浏览原始选项文本。'));
+                card.appendChild(choices);
+                const tools = el('div', { className: 'pk32v-toolbar' });
+                tools.append(button('现场求助', function () {
+                    if (assists <= 0) return;
+                    assists -= 1;
+                    const available = (choiceGroup && choiceGroup.choices || []).filter(function (choice) { return !removed.has(choice.key); });
+                    if (available.length > 2) removed.add(available[available.length - 1].key);
+                    prompt.textContent = '现场求助已使用，去掉一个候选答案；剩余求助 ' + assists + ' 次。';
+                    draw();
+                }), button('电话求助', function () {
+                    if (assists <= 0) return;
+                    assists -= 1;
+                    prompt.textContent = '电话求助已使用；原版会给出倾向答案，当前答案映射待解码，剩余求助 ' + assists + ' 次。';
+                    draw();
+                }), button('开始 12 题流程', function () { index = 0; answered = 0; assists = 3; removed = new Set(); chosen = null; ended = false; draw(); }));
+                const next = button(index >= 11 ? '完成本轮' : '进入下一题', function () {
+                    if (index >= 11) return finish('开心辞典 12 题原始流程已走完；题库内容已迁移，答案与结局判定待继续解码。');
+                    index += 1; removed = new Set(); chosen = null; answered = Math.max(answered, Math.min(12, index)); draw();
+                });
+                tools.append(next);
+                const choiceTools = el('div', { className: 'pk32v-toolbar' });
+                choiceTools.append(button('上一组选项', function () { choiceIndex = Math.max(0, choiceIndex - 1); removed = new Set(); chosen = null; draw(); }), button('下一组选项', function () { choiceIndex = Math.min(choiceLists.length - 1, choiceIndex + 1); removed = new Set(); chosen = null; draw(); }));
+                if (choiceGroup) choiceTools.appendChild(el('span', { className: 'pk32v-status' }, '候选选项组 ' + (choiceIndex + 1) + ' / ' + choiceLists.length + ' · offset ' + choiceGroup.offset));
+                panel.append(nav, card, tools);
+                panel.appendChild(choiceTools);
+                setScore(answered);
+                prompt.textContent = '开心辞典：原版说明为 12 道题、每答对 3 道提升难度、3 次求助；已迁移题目 ' + questions.length + ' 条、候选选项组 ' + choiceLists.length + ' 组，答案和题目-选项映射待解码。';
+            }
+            fetch('/data/pk32-quiz-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                questions = (data.levels || []).filter(function (item) { return item && item.prompt; });
+                choiceLists = data.choiceLists || [];
+                draw();
+            }).catch(function () { prompt.textContent = '开心辞典题库加载失败'; });
+        }
         function renderRawPayloads() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载' + config.name + '原始载荷…');
             const panel = el('div', { className: 'pk32v-native-data' });
@@ -3117,7 +3194,7 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; selected = null; ended = false; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; selected = null; ended = false; draw(); } }), button('清除连线', function () { links = []; selected = null; ended = false; draw(); }));
             wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子' ? renderNativeSokoban : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : RAW_PAYLOAD_NAMES.has(config.name) ? renderRawPayloads : CANDIDATE_LEVEL_FILES[config.name] ? renderCandidateLevelFile : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '开心辞典' ? renderQuizBank : config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子' ? renderNativeSokoban : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : RAW_PAYLOAD_NAMES.has(config.name) ? renderRawPayloads : CANDIDATE_LEVEL_FILES[config.name] ? renderCandidateLevelFile : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },
