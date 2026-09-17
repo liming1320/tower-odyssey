@@ -1,4 +1,4 @@
-﻿warp probe: warpHold=0 live=1
+warp probe: warpHold=0 live=1
 after warp1: hyperStage=1 score=4200
 warp 1: hyperStage=1 score=5790
 warp 2: hyperStage=0 score=6410

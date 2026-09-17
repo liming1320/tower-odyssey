@@ -218,16 +218,16 @@ window.MiniGames = window.MiniGames || {};
             container.appendChild(pc);
             const pctx = pc.getContext('2d');
             const _dpr = Math.max(1, window.devicePixelRatio || 1);
-            let _ps = ctx.__mgScale || _dpr;
-            const PANEL_OX = PANEL.x - 8;       // 面板区在台面坐标中的左边界（用于平移到独立画布）
+            let PLW = PANEL.w + 24;             // 面板逻辑宽：按显示盒真实宽高比推导（等比缩放，永不拉伸模糊）
             const fitPanel = () => {
-                const pw = container.clientWidth, ph = container.clientHeight;
-                const s = Math.min(pw / GW, ph / GH);
-                const target = Math.min(3, _dpr * Math.max(1, s));
-                _ps = target;
-                pc.width = Math.round((PANEL.w + 24) * target);
-                pc.height = Math.round(GH * target);
-                pctx.setTransform(target, 0, 0, target, 0, 0);
+                const cw = container.clientWidth || GW, ch = container.clientHeight || GH;
+                const boxW = cw * ((PANEL.w + 24) / GW);          // 面板的 CSS 显示宽
+                const bw = Math.max(120, Math.round(boxW * _dpr)); // 背光缓冲 = 显示像素，1:1 高清
+                const bh = Math.max(200, Math.round(ch * _dpr));
+                pc.width = bw; pc.height = bh;
+                PLW = Math.max(210, Math.min(440, GH * bw / bh));  // 逻辑宽随盒子比例走，与台面坐标解耦
+                const s = bh / GH;
+                pctx.setTransform(s, 0, 0, s, 0, 0);
             };
             fitPanel();
             window.addEventListener('resize', fitPanel);
@@ -2417,20 +2417,20 @@ window.MiniGames = window.MiniGames || {};
                 GC = pctx;                   // rr()/dmdText() 改画到面板画布
                 const ctx = pctx;            // 本函数内所有 ctx.* 落到面板画布
                 pctx.save();
-                pctx.translate(-PANEL_OX, 0);   // 面板区左移进独立画布
-                const px = PANEL.x, pw = PANEL.w;
+                const px = 0, pw = PLW;      // 面板画布自有坐标系（fitPanel 保证背光缓冲=显示像素）
+                const FS = Math.max(1, Math.min(1.3, pw / 300));   // 字号/间距随面板宽自适应
                 // 面板底 + 与台面的分隔梁
-                const bg = ctx.createLinearGradient(px - 8, 0, px + 14, 0);
+                const bg = ctx.createLinearGradient(0, 0, 18, 0);
                 bg.addColorStop(0, '#0c0a08'); bg.addColorStop(0.5, '#3a3021'); bg.addColorStop(1, '#191410');
-                ctx.fillStyle = bg; ctx.fillRect(px - 8, 8, 22, GH - 16);
-                const pbg = ctx.createLinearGradient(px, 0, px + pw, GH);
+                ctx.fillStyle = bg; ctx.fillRect(0, 8, 20, GH - 16);
+                const pbg = ctx.createLinearGradient(14, 0, px + pw, GH);
                 pbg.addColorStop(0, '#1b1712'); pbg.addColorStop(0.5, '#120f0b'); pbg.addColorStop(1, '#0a0806');
-                ctx.fillStyle = pbg; ctx.fillRect(px, 8, pw + 2, GH - 16);
+                ctx.fillStyle = pbg; ctx.fillRect(14, 8, pw - 12, GH - 16);
                 ctx.strokeStyle = '#8a6f45'; ctx.lineWidth = 2;
-                rr(px - 6, 6, pw + 14, GH - 12, 10); ctx.stroke();
+                rr(3, 6, pw - 5, GH - 12, 10); ctx.stroke();
 
                 /* ── ① Logo 框（星空 + 紫字 + 绿行星 + 军校生飞船）── */
-                const lx = px + 10, ly = 104, lw = pw - 20, lh = 196;
+                const lx = px + 14, ly = 90, lw = pw - 28, lh = 170;
                 ctx.fillStyle = '#04030a';
                 rr(lx, ly, lw, lh, 6); ctx.fill();
                 ctx.strokeStyle = '#6e5226'; ctx.lineWidth = 2; ctx.stroke();
@@ -2475,72 +2475,72 @@ window.MiniGames = window.MiniGames || {};
                 ctx.closePath(); ctx.fill();
                 // 文字
                 ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-                ctx.font = 'italic bold 15px "Segoe UI",sans-serif';
+                ctx.font = `italic bold ${Math.round(16 * FS)}px "Segoe UI",sans-serif`;
                 ctx.fillStyle = '#a868e8';
-                ctx.fillText('3D Pinball', lx + 12, ly + 30);
-                const sc3 = ctx.createLinearGradient(0, ly + 38, 0, ly + 70);
+                ctx.fillText('3D Pinball', lx + 14, ly + 34);
+                const sc3 = ctx.createLinearGradient(0, ly + 40, 0, ly + 78);
                 sc3.addColorStop(0, '#d29aff'); sc3.addColorStop(0.55, '#9a44ec'); sc3.addColorStop(1, '#5c1e9e');
-                ctx.font = 'italic bold 25px "Segoe UI",sans-serif';
+                ctx.font = `italic bold ${Math.round(28 * FS)}px "Segoe UI",sans-serif`;
                 ctx.fillStyle = sc3;
                 ctx.shadowColor = 'rgba(150,70,230,0.55)'; ctx.shadowBlur = 8;
-                ctx.fillText('Space Cadet', lx + 12, ly + 64);
+                ctx.fillText('Space Cadet', lx + 14, ly + 72);
                 ctx.shadowBlur = 0;
-                ctx.font = 'bold 9px "Segoe UI",sans-serif';
+                ctx.font = `bold ${Math.round(10 * FS)}px "Segoe UI",sans-serif`;
                 ctx.fillStyle = 'rgba(255,220,150,0.55)';
-                ctx.fillText('塔界远征 · 太空军校生', lx + 12, ly + 84);
+                ctx.fillText('塔界远征 · 太空军校生', lx + 14, ly + 92);
                 ctx.restore();
 
                 /* ── ② BALL 行 ── */
                 const by2 = ly + lh + 16;
                 ctx.textBaseline = 'middle';
-                ctx.font = 'bold 15px "Segoe UI",sans-serif';
+                ctx.font = `bold ${Math.round(16 * FS)}px "Segoe UI",sans-serif`;
                 ctx.textAlign = 'left';
                 ctx.fillStyle = '#e8e4d8';
-                ctx.fillText('BALL', px + 12, by2 + 14);
+                ctx.fillText('BALL', px + 16, by2 + 15);
                 const bn = endless ? '∞' : String(Math.max(1, Math.min(3, 4 - balls)));
                 ctx.fillStyle = '#180404';
-                rr(px + 72, by2, 44, 28, 3); ctx.fill();
+                rr(px + 86, by2, 50, 30, 3); ctx.fill();
                 ctx.strokeStyle = '#c02020'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.font = 'bold 19px "Consolas",monospace';
+                ctx.font = `bold ${Math.round(21 * FS)}px "Consolas",monospace`;
                 ctx.textAlign = 'center';
                 ctx.shadowColor = '#ff4030'; ctx.shadowBlur = 8;
                 ctx.fillStyle = '#ff5040';
-                ctx.fillText(bn, px + 94, by2 + 15);
+                ctx.fillText(bn, px + 111, by2 + 16);
                 ctx.shadowBlur = 0;
 
                 /* ── ③ 分数框（两格凹槽：球号 | 总分）── */
-                const sy2 = by2 + 40;
+                const sy2 = by2 + 42;
                 ctx.fillStyle = '#08090e';
-                rr(px + 10, sy2, lw, 56, 4); ctx.fill();
+                rr(px + 12, sy2, lw, 60, 4); ctx.fill();
                 ctx.strokeStyle = '#565d6e'; ctx.lineWidth = 2.4; ctx.stroke();
                 ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(px + 11, sy2 + 1); ctx.lineTo(px + lw - 1, sy2 + 1);
-                ctx.moveTo(px + 11, sy2 + 1); ctx.lineTo(px + 11, sy2 + 55);
+                ctx.moveTo(px + 13, sy2 + 1); ctx.lineTo(px + lw - 1, sy2 + 1);
+                ctx.moveTo(px + 13, sy2 + 1); ctx.lineTo(px + 13, sy2 + 59);
                 ctx.stroke();
                 ctx.strokeStyle = '#565d6e';
-                ctx.beginPath(); ctx.moveTo(px + 54, sy2 + 3); ctx.lineTo(px + 54, sy2 + 53); ctx.stroke();
-                ctx.font = 'bold 17px "Consolas",monospace';
+                ctx.beginPath(); ctx.moveTo(px + 60, sy2 + 3); ctx.lineTo(px + 60, sy2 + 57); ctx.stroke();
+                ctx.font = `bold ${Math.round(19 * FS)}px "Consolas",monospace`;
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#d8d4c8';
-                ctx.fillText(bn, px + 32, sy2 + 29);
+                ctx.fillText(bn, px + 36, sy2 + 31);
                 ctx.textAlign = 'right';
                 ctx.shadowColor = '#ffd45a'; ctx.shadowBlur = 6;
                 ctx.fillStyle = '#ffd166';
-                ctx.font = 'bold 19px "Consolas",monospace';
+                ctx.font = `bold ${Math.round(21 * FS)}px "Consolas",monospace`;
                 let sTxt = String(score);
                 if (sTxt.length > 9) sTxt = (score / 1000).toFixed(1) + 'k';
-                ctx.fillText(sTxt, px + lw - 8, sy2 + 29);
+                ctx.fillText(sTxt, px + lw - 10, sy2 + 31);
                 ctx.shadowBlur = 0;
 
                 /* ── ③b 状态灯阵（倍率阶梯 / 超空间 / 倾斜 / 军衔 / 进度）── */
-                const iy = sy2 + 64;
+                const iy = sy2 + 72;
                 const drawLightRow = (lab, y, n, lit, col) => {
-                    ctx.font = 'bold 9px "Consolas",monospace';
+                    ctx.font = `bold ${Math.round(10 * FS)}px "Consolas",monospace`;
                     ctx.fillStyle = 'rgba(220,210,190,0.75)';
                     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-                    ctx.fillText(lab, px + 12, y);
-                    const r = 3.6, gap = 11, x0 = px + 64;
+                    ctx.fillText(lab, px + 16, y);
+                    const gap = Math.min(15, (pw - 92) / n), r = Math.min(4.4, gap * 0.36), x0 = px + 76;
                     for (let i = 0; i < n; i++) {
                         const on = i < lit;
                         ctx.beginPath(); ctx.arc(x0 + i * gap, y, r, 0, Math.PI * 2);
@@ -2550,37 +2550,39 @@ window.MiniGames = window.MiniGames || {};
                         ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 1; ctx.stroke();
                     }
                 };
+                const rowP = 17 * FS;
                 drawLightRow('倍率', iy, 9, Math.min(9, mult), '#ff6a3d');
-                drawLightRow('超空间', iy + 15, 5, hyperStage, '#c79bff');
-                drawLightRow('倾斜', iy + 30, 3, tiltWarn, tiltWarn >= 2 ? '#ff4a3d' : '#ffb84d');
-                drawLightRow('军衔', iy + 45, 9, Math.min(9, missionIdx + 1), '#5fd0ff');
-                // 进度灯阵（18 格总体进度）
-                ctx.font = 'bold 9px "Consolas",monospace';
+                drawLightRow('超空间', iy + rowP, 5, hyperStage, '#c79bff');
+                drawLightRow('倾斜', iy + rowP * 2, 3, tiltWarn, tiltWarn >= 2 ? '#ff4a3d' : '#ffb84d');
+                drawLightRow('军衔', iy + rowP * 3, 9, Math.min(9, missionIdx + 1), '#5fd0ff');
+                // 进度灯阵（18 格总体进度，两行）
+                ctx.font = `bold ${Math.round(10 * FS)}px "Consolas",monospace`;
                 ctx.fillStyle = 'rgba(220,210,190,0.75)';
                 ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-                ctx.fillText('进度', px + 12, iy + 60);
+                ctx.fillText('进度', px + 16, iy + rowP * 4.5);
                 const progAll = (missionIdx + Math.min(1, (MISSIONS[missionIdx] ? missionProg / MISSIONS[missionIdx].need : 0))) / MISSIONS.length;
                 const litP = Math.round(progAll * 18);
+                const gapP = Math.min(14, (pw - 86) / 9);
                 for (let i = 0; i < 18; i++) {
                     const on = i < litP;
-                    const rx = px + 50 + (i % 9) * 13, ry = iy + 56 + Math.floor(i / 9) * 11;
-                    ctx.beginPath(); ctx.arc(rx, ry, 3.2, 0, Math.PI * 2);
+                    const rx = px + 74 + (i % 9) * gapP, ry = iy + rowP * 4 + Math.floor(i / 9) * rowP;
+                    ctx.beginPath(); ctx.arc(rx, ry, Math.min(4, gapP * 0.34), 0, Math.PI * 2);
                     if (on) { ctx.fillStyle = '#46d97a'; ctx.shadowColor = '#46d97a'; ctx.shadowBlur = 5; }
                     else { ctx.fillStyle = 'rgba(60,80,60,0.45)'; ctx.shadowBlur = 0; }
                     ctx.fill(); ctx.shadowBlur = 0;
                 }
 
                 /* ── ④ 任务黑框（原版底部任务文字区）── */
-                const my = iy + 80, mh = GH - 24 - my;
+                const my = iy + rowP * 5 + 16, mh = GH - 24 - my;
                 ctx.fillStyle = '#04050a';
-                rr(px + 10, my, lw, mh, 5); ctx.fill();
+                rr(px + 12, my, lw, mh, 5); ctx.fill();
                 ctx.strokeStyle = '#3a2a1e'; ctx.lineWidth = 2; ctx.stroke();
                 ctx.save();
-                rr(px + 10, my, lw, mh, 5); ctx.clip();
+                rr(px + 12, my, lw, mh, 5); ctx.clip();
                 ctx.textAlign = 'left';
-                ctx.font = 'bold 10px "Consolas",monospace';
+                ctx.font = `bold ${Math.round(11 * FS)}px "Consolas",monospace`;
                 ctx.fillStyle = 'rgba(255,150,60,0.75)';
-                ctx.fillText('· MISSION ·', px + 20, my + 18);
+                ctx.fillText('· MISSION ·', px + 22, my + 18);
                 const wrap = (txt, x, y, maxW, lh3, size, color, glow) => {
                     ctx.font = `bold ${size}px "Consolas","Courier New",monospace`;
                     let line = '', yy = y;
@@ -2594,30 +2596,30 @@ window.MiniGames = window.MiniGames || {};
                     return yy + lh3;
                 };
                 if (over) {
-                    dmdText('GAME OVER', px + 24, my + mh / 2 - 14, 20, '#ff6a3d', 'left');
-                    dmdText(score >= P.goal ? '任务达成' : '球已用完', px + 24, my + mh / 2 + 16, 14, '#ffb85c', 'left');
+                    dmdText('GAME OVER', px + 24, my + mh / 2 - 14, Math.round(20 * FS), '#ff6a3d', 'left');
+                    dmdText(score >= P.goal ? '任务达成' : '球已用完', px + 24, my + mh / 2 + 16, Math.round(14 * FS), '#ffb85c', 'left');
                 } else if (!launched) {
                     // 原版味：待发射时任务区显示「等待部署」
-                    dmdText('等待部署', px + 24, my + 58, 24, '#ff9a2e', 'left');
-                    wrap('按住空格蓄力，松手发射', px + 22, my + 104, lw - 40, 20, 12, '#c8bfa8');
+                    dmdText('等待部署', px + 24, my + 52, Math.round(24 * FS), '#ff9a2e', 'left');
+                    wrap('按住空格蓄力，松手发射', px + 22, my + 96, lw - 40, 20, Math.round(12 * FS), '#c8bfa8');
                 } else {
                     const m = MISSIONS[missionIdx];
                     const rk = RANKS[Math.min(RANKS.length - 1, missionIdx)];
                     if (missionFlash > 0) {
-                        dmdText('任务完成!', px + 24, my + 58, 22, '#ffe9b0', 'left');
+                        dmdText('任务完成!', px + 24, my + 52, Math.round(22 * FS), '#ffe9b0', 'left');
                     } else if (m) {
-                        let yy = wrap(m.n, px + 22, my + 48, lw - 40, 24, 18, '#ff9a2e', true);
-                        yy = wrap('目标：' + m.hint, px + 22, yy + 6, lw - 40, 19, 12, '#d8cdb2');
-                        dmdText(`进度 ${Math.min(missionProg, m.need)}/${m.need} · 军衔 ${rk}`, px + 22, yy + 10, 11, '#ffb85c', 'left');
+                        let yy = wrap(m.n, px + 22, my + 42, lw - 40, Math.round(24 * FS), Math.round(17 * FS), '#ff9a2e', true);
+                        yy = wrap('目标：' + m.hint, px + 22, yy + 4, lw - 40, Math.round(20 * FS), Math.round(12 * FS), '#d8cdb2');
+                        dmdText(`进度 ${Math.min(missionProg, m.need)}/${m.need} · 军衔 ${rk}`, px + 22, yy + 8, Math.round(12 * FS), '#ffb85c', 'left');
                         // 进度条
-                        const bw2 = lw - 44, bx2 = px + 22, byy = yy + 26;
+                        const bw2 = lw - 44, bx2 = px + 22, byy = yy + 28;
                         ctx.fillStyle = 'rgba(255,140,60,0.18)';
                         ctx.fillRect(bx2, byy, bw2, 7);
                         ctx.fillStyle = '#ff9a2e';
                         ctx.fillRect(bx2, byy, bw2 * Math.min(1, missionProg / m.need), 7);
                     }
                     if (mbCount > 1 && live.length > 1)
-                        dmdText('MULTIBALL ×' + live.length, px + 22, my + mh - 18, 13, '#ff6a3d', 'left');
+                        dmdText('MULTIBALL ×' + live.length, px + 22, my + mh - 16, Math.round(13 * FS), '#ff6a3d', 'left');
                 }
                 ctx.restore();
                 pctx.restore();

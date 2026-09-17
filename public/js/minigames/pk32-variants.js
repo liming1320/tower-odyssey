@@ -818,39 +818,66 @@
                 }
                 function renderBlackjackNative(payload, nav, detail) {
                     const units = (payload.units || []).map(Number).filter(Number.isFinite);
-                    let deck = units.map(cardRank), cursor = 0, player = [], dealer = [], standing = false;
-                    if (deck.length < 16) deck = Array.from({ length: 52 }, function (_, index) { return cardRank(index); });
-                    function drawCard() { const card = deck[cursor % deck.length]; cursor += 1; return card; }
-                    function handValue(hand) {
-                        let total = 0, aces = 0;
-                        hand.forEach(function (card) { total += card.point; if (card.rank === 1) aces += 1; });
-                        while (aces && total + 10 <= 21) { total += 10; aces -= 1; }
-                        return total;
+                    const width = 8, height = 8;
+                    let cursor = 0, cells = [], selected = [], adds = 0;
+                    function dealCard(index) {
+                        const card = cardRank(units[(cursor + index * 3) % Math.max(1, units.length)] || index + 1);
+                        return { rank: card.rank, text: card.text, point: card.rank === 1 ? 11 : card.point };
                     }
-                    function handText(hand) { return hand.map(function (card) { return card.text; }).join(' '); }
-                    function resetHand() { cursor = (level * 7) % deck.length; player = [drawCard(), drawCard()]; dealer = [drawCard(), drawCard()]; standing = false; ended = false; drawBoard(); }
-                    function settle() {
-                        standing = true;
-                        while (handValue(dealer) < 17) dealer.push(drawCard());
-                        const pv = handValue(player), dv = handValue(dealer);
-                        if (pv > 21) finish('玩家爆牌，本局结束。');
-                        else if (dv > 21 || pv > dv) { setScore(score + 20); finish('玩家胜。'); }
-                        else if (pv === dv) finish('平局。');
-                        else finish('庄家胜。');
+                    function total() {
+                        let value = selected.reduce(function (sum, index) { return sum + (cells[index] ? cells[index].point : 0); }, 0);
+                        let aces = selected.filter(function (index) { return cells[index] && cells[index].rank === 1; }).length;
+                        while (value > 21 && aces) { value -= 10; aces -= 1; }
+                        return value;
+                    }
+                    function neighbor(a, b) {
+                        const ax = a % width, ay = Math.floor(a / width), bx = b % width, by = Math.floor(b / width);
+                        return Math.max(Math.abs(ax - bx), Math.abs(ay - by)) <= 1;
+                    }
+                    function resetBoard() {
+                        cursor = level * 11; selected = []; adds = 0; ended = false;
+                        cells = Array.from({ length: width * height }, function (_, index) {
+                            const seed = units[(index + level) % Math.max(1, units.length)] || index;
+                            return seed % 7 === 0 ? null : dealCard(index);
+                        });
                         drawBoard();
+                    }
+                    function addRow() {
+                        adds += 1;
+                        for (let y = height - 1; y > 0; y -= 1) for (let x = 0; x < width; x += 1) cells[y * width + x] = cells[(y - 1) * width + x];
+                        for (let x = 0; x < width; x += 1) cells[x] = dealCard(cursor + x + adds * 13);
+                        cursor += width; selected = [];
+                        if (cells.every(Boolean)) finish('牌已经加满，本局结束。');
+                    }
+                    function choose(index) {
+                        if (ended || !cells[index]) return;
+                        if (selected.indexOf(index) >= 0) { selected = selected.filter(function (value) { return value !== index; }); drawBoard(); return; }
+                        if (selected.length && !selected.some(function (value) { return neighbor(value, index); })) return;
+                        selected.push(index);
+                        const sum = total();
+                        if (sum >= 21) {
+                            if (sum === 21) { selected.forEach(function (value) { cells[value] = null; }); setScore(score + selected.length * 10); selected = []; }
+                            else { selected = []; setScore(Math.max(0, score - 5)); }
+                        }
+                        if (!cells.some(Boolean)) finish('21点二本局牌面全部消去。');
+                        else drawBoard();
                     }
                     function drawBoard() {
                         panel.innerHTML = '';
-                        const board = el('div', { className: 'pk32v-native-data' });
-                        board.append(el('p', { className: 'pk32v-prompt' }, '玩家：' + handText(player) + ' = ' + handValue(player)));
-                        board.append(el('p', { className: 'pk32v-prompt' }, '庄家：' + (standing || ended ? handText(dealer) + ' = ' + handValue(dealer) : dealer[0].text + ' ?')));
+                        const board = renderGrid(width, height, 'pk32-card-grid');
+                        cells.forEach(function (card, index) {
+                            const cell = button(card ? card.text : '', function () { choose(index); });
+                            cell.dataset.selected = String(selected.indexOf(index) >= 0);
+                            cell.dataset.empty = String(!card);
+                            cell.className += ' pk32v-card-cell';
+                            board.appendChild(cell);
+                        });
                         const actions = el('div', { className: 'pk32v-toolbar' });
-                        actions.append(button('要牌', function () { if (ended || standing) return; player.push(drawCard()); if (handValue(player) > 21) settle(); else drawBoard(); }), button('停牌', settle), button('重开本局', resetHand));
-                        board.appendChild(actions);
-                        panel.append(nav, board, detail);
-                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；按 21 点要牌/停牌规则进行。';
+                        actions.append(button('增加一行', addRow), button('重置本关', resetBoard));
+                        panel.append(nav, board, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；邻近连续选牌，当前点数 ' + total() + '，等于 21 加分消去，超过 21 扣分。';
                     }
-                    resetHand();
+                    resetBoard();
                 }
                 function renderHanoiNative(payload, nav, detail) {
                     const units = (payload.units || []).map(Number).filter(Number.isFinite);
@@ -944,32 +971,54 @@
                     return { value: category * 1000000 + maxRank * 1000 + groups.reduce(function (sum, rank, index) { return sum + rank * (10 - index); }, 0), name: names[category] };
                 }
                 function renderThreeCardsNative(payload, nav, detail) {
-                    let round = 0, player = [], dealer = [];
-                    function deal() { const cards = payloadCards(payload, 6, round); player = cards.slice(0, 3); dealer = cards.slice(3, 6); ended = false; drawBoard(); }
-                    function threeScore(cards) {
-                        const base = handScore(cards), counts = {};
-                        cards.forEach(function (card) { counts[card.rank] = (counts[card.rank] || 0) + 1; });
-                        const pair = Object.keys(counts).find(function (rank) { return counts[rank] === 2; });
-                        const triple = Object.keys(counts).find(function (rank) { return counts[rank] === 3; });
-                        const flush = cards.every(function (card) { return card.suit === cards[0].suit; });
-                        const ranks = cards.map(function (card) { return card.rank; }).sort(function (a, b) { return a - b; });
-                        const straight = ranks[2] - ranks[0] === 2 && new Set(ranks).size === 3 || ranks.join(',') === '1,12,13';
-                        const category = triple ? 5 : straight && flush ? 4 : straight ? 3 : flush ? 2 : pair ? 1 : 0;
-                        const names = ['散牌', '对子', '顺子', '同花', '同花顺', '豹子'];
-                        return { value: category * 1000000 + base.value, name: names[category] };
+                    let cursor = 0, chains = 0;
+                    const areas = Array.from({ length: 7 }, function () { return []; });
+                    const deck = payloadCards(payload, 180, level + 1);
+                    function nextCard() { const card = deck[cursor % deck.length]; cursor += 1; return card; }
+                    let incoming = nextCard();
+                    function isThreeClear(cards) {
+                        if (cards.length < 3) return false;
+                        const run = cards.slice(cards.length - 3);
+                        const sameRank = run.every(function (card) { return card.rank === run[0].rank; });
+                        const sameSuit = run.every(function (card) { return card.suit === run[0].suit; });
+                        const ranks = run.map(function (card) { return card.rank; }).sort(function (a, b) { return a - b; });
+                        const straight = new Set(ranks).size === 3 && (ranks[2] - ranks[0] === 2 || ranks.join(',') === '1,12,13');
+                        return sameRank || (sameSuit && straight);
+                    }
+                    function place(areaIndex) {
+                        if (ended) return;
+                        const area = areas[areaIndex];
+                        area.push(incoming);
+                        if (isThreeClear(area)) {
+                            area.splice(area.length - 3, 3);
+                            chains += 1;
+                            setScore(score + 30 * chains);
+                        } else {
+                            chains = 0;
+                        }
+                        if (area.length >= 10) { drawBoard(); finish('三张牌有一个存放区达到10张，游戏结束。'); return; }
+                        incoming = nextCard();
+                        drawBoard();
                     }
                     function drawBoard() {
                         panel.innerHTML = '';
-                        const ps = threeScore(player), ds = threeScore(dealer);
-                        const row = el('div', { className: 'pk32v-card-table' });
-                        row.append(el('p', { className: 'pk32v-prompt' }, '玩家：' + player.map(function (card) { return card.text; }).join(' ') + ' · ' + ps.name));
-                        row.append(el('p', { className: 'pk32v-prompt' }, '电脑：' + dealer.map(function (card) { return card.text; }).join(' ') + ' · ' + ds.name));
-                        const actions = el('div', { className: 'pk32v-toolbar' });
-                        actions.append(button('比牌', function () { if (ps.value >= ds.value) { setScore(score + 20); finish('三张牌本局玩家胜。'); } else finish('三张牌本局电脑胜。'); }), button('下一局', function () { round += 1; deal(); }));
-                        panel.append(nav, row, actions, detail);
-                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；按三张牌牌型比较。';
+                        const next = el('div', { className: 'pk32v-next-card' });
+                        next.append(el('span', {}, '右侧来牌'), el('strong', { className: 'pk32v-card' }, incoming.text));
+                        const board = el('div', { className: 'pk32v-three-areas' });
+                        areas.forEach(function (area, index) {
+                            const node = button('', function () { place(index); });
+                            node.className += ' pk32v-three-area';
+                            node.dataset.full = String(area.length >= 10);
+                            node.append(el('span', { className: 'pk32v-area-title' }, String(index + 1)));
+                            const stack = el('span', { className: 'pk32v-area-stack' });
+                            area.slice(-10).forEach(function (card) { stack.append(el('em', { className: 'pk32v-card-mini' }, card.text)); });
+                            node.append(stack);
+                            board.appendChild(node);
+                        });
+                        panel.append(nav, next, board, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；七个存放区，末尾连续三张同点或同花顺会消去，连消 ' + chains + ' 次。';
                     }
-                    deal();
+                    drawBoard();
                 }
                 function renderStudSixNative(payload, nav, detail) {
                     let round = 0, kept = new Set(), player = [], dealer = [], compared = false;
