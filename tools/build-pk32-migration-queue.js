@@ -20,6 +20,16 @@ for (const row of nativeOwnership && nativeOwnership.payloadEvidence || []) {
 }
 const source = fs.readFileSync(path.join(root, 'public/js/minigames/pk32.js'), 'utf8');
 const variants = fs.readFileSync(path.join(root, 'public/js/minigames/pk32-variants.js'), 'utf8');
+const catalogEvidenceAdapterBound = /data-pk32-evidence/.test(source);
+const sharedPcodeMetadataBound = fs.existsSync(path.join(reference, 'pcode', '_INDEX.txt'));
+const titleReferencedByGame = new Set();
+for (const row of nativeOwnership && nativeOwnership.titleReferenceFunctions || []) {
+    for (const game of row.games || []) titleReferencedByGame.add(game.gameId);
+}
+const launchMappedByGame = new Set();
+for (const edge of nativeOwnership && nativeOwnership.launchEdges || []) {
+    for (const game of edge.games || []) launchMappedByGame.add(game.gameId);
+}
 
 const dataDir = path.join(root, 'public', 'data');
 const dataByName = new Map();
@@ -49,7 +59,14 @@ const structuredPayloads = fs.existsSync(structuredFile) ? JSON.parse(fs.readFil
 const resourceManifestFile = path.join(dataDir, 'pk32-resource-manifest.json');
 const resourceManifest = fs.existsSync(resourceManifestFile) ? JSON.parse(fs.readFileSync(resourceManifestFile, 'utf8')) : null;
 const resourceById = new Map((resourceManifest && resourceManifest.records || []).map(record => [record.id, record]));
-const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试']);
+const nativeById = new Map(nativeCatalog.records.map(record => [record.id, record]));
+const runtimeMethodEvidenceFile = path.join(reference, 'runtime-method-evidence.json');
+const runtimeMethodEvidence = fs.existsSync(runtimeMethodEvidenceFile) ? JSON.parse(fs.readFileSync(runtimeMethodEvidenceFile, 'utf8')) : null;
+const sharedRuntimeMethodTableBound = !!(runtimeMethodEvidence && runtimeMethodEvidence.summary && runtimeMethodEvidence.summary.objectsWithRuntimeMethodTables > 0);
+const runtimePcodeSlicesFile = path.join(reference, 'runtime-pcode-slices.json');
+const runtimePcodeSlices = fs.existsSync(runtimePcodeSlicesFile) ? JSON.parse(fs.readFileSync(runtimePcodeSlicesFile, 'utf8')) : null;
+const sharedRuntimePcodeSlicesBound = !!(runtimePcodeSlices && runtimePcodeSlices.summary && runtimePcodeSlices.summary.trustedPcodeSlices > 0);
+const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试', '24点二', '21点二', '记忆考验', '汉诺塔', '老虎机', '三张牌', '梭哈六', '海豚骰', '彩球迷宫']);
 const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '斗兽棋', '四子棋']);
 const nativeAdapterRulesMigrated = new Set([
     '强手棋', '接水管', '同色方块', '华容道', '智慧之光', '电磁彩球', '魔法城堡',
@@ -58,8 +75,10 @@ const nativeAdapterRulesMigrated = new Set([
 ]);
 const nativeAdapterPlayableMigrated = new Set([
     ...nativeAdapterRulesMigrated,
-    '建筑制造', '上一百层', '飞一百米', '魔法城堡二', '摘花朵', '木乃伊'
+    '魔塔', '魔塔二', '魔塔三', '魔塔四',
+    '独粒钻石', '建筑制造', '上一百层', '飞一百米', '魔法城堡二', '摘花朵', '木乃伊', '同步移动', '坦克大战', '宇宙黑洞', '七巧板', '立体魔方二', '跟花二'
 ]);
+const embeddedLevelAdapterMigrated = new Set(['魔塔', '魔塔二', '魔塔三', '魔塔四']);
 if (structuredPayloads) {
     for (const game of structuredPayloads.games || []) {
         if (dataByName.has(game.name) || candidateDataByName.has(game.name)) continue;
@@ -94,18 +113,28 @@ vm.runInContext(source, catalogContext);
 ['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造', '同色方块'].forEach(name => rendererNames.add(name));
 
 const rows = ledger.records.map(record => {
-    const data = dataByName.get(record.name) || null;
-    const candidateData = candidateDataByName.get(record.name) || null;
-    const native = nativeByName.get(record.name) || null;
     const resources = resourceById.get(record.id) || null;
+    const native = nativeById.get(record.id) || nativeByName.get(record.name) || null;
+    const name = native && native.name || resources && resources.name || record.name;
+    const data = dataByName.get(name) || dataByName.get(record.name) || null;
+    const candidateData = candidateDataByName.get(name) || candidateDataByName.get(record.name) || null;
     const nativePayloadCount = native && Array.isArray(native.nativePayloads) ? native.nativePayloads.length : 0;
-    const renderer = rendererNames.has(record.name) ? 'dedicated-or-board' : record.launcher ? 'shared-mode-or-placeholder' : 'none';
+    const renderer = rendererNames.has(name) ? 'dedicated-or-board' : record.launcher ? 'shared-mode-or-placeholder' : 'none';
+    const titleReferenceBound = titleReferencedByGame.has(record.id);
+    const launchEvidenceBound = launchMappedByGame.has(record.id);
+    const helpTextEvidenceBound = !!(native && Array.isArray(native.help) && native.help.length);
+    const evidenceConfidence = renderer === 'dedicated-or-board' || data || candidateData || nativePayloadCount ? 'content-bound'
+        : titleReferenceBound && launchEvidenceBound && helpTextEvidenceBound ? 'catalog-launch-help'
+        : titleReferenceBound && launchEvidenceBound ? 'catalog-launch'
+        : titleReferenceBound || helpTextEvidenceBound ? 'catalog-text'
+        : 'catalog-only';
     const migration = {
         assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || (resources && resources.resourcePackageBound === true),
-        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || !!(candidateData && structuredRulesMigrated.has(record.name)) || boardRulesMigrated.has(record.name),
-        adapterPlayableMigrated: nativeAdapterPlayableMigrated.has(record.name),
-        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(record.name) || boardRulesMigrated.has(record.name) || nativeAdapterRulesMigrated.has(record.name),
-        fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true
+        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && structuredRulesMigrated.has(name)) || boardRulesMigrated.has(name),
+        adapterPlayableMigrated: nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name),
+        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name) || nativeAdapterRulesMigrated.has(name),
+        fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true,
+        evidenceAdapterMigrated: catalogEvidenceAdapterBound
     };
     migration.migrationComplete = migration.assetsMigrated && migration.levelsMigrated && migration.rulesMigrated && migration.fullFlowMigrated;
     const verification = {
@@ -121,21 +150,42 @@ const rows = ledger.records.map(record => {
         catalogRegistered: true,
         rawPayloadsBound: nativePayloadCount > 0 && ownershipRows.length === nativePayloadCount && ownershipRows.every(row => row.nativeUsageVerified === true),
         structuredPayloadsBound: !!candidateData,
+        catalogEvidenceAdapterBound,
+        titleReferenceBound,
+        launchEvidenceBound,
+        helpTextEvidenceBound,
+        sharedPcodeMetadataBound,
+        sharedRuntimeMethodTableBound,
+        runtimeMethodEntries: runtimeMethodEvidence && runtimeMethodEvidence.summary ? runtimeMethodEvidence.summary.methodEntries || 0 : 0,
+        runtimeMethodRegionTargets: runtimeMethodEvidence && runtimeMethodEvidence.summary ? runtimeMethodEvidence.summary.entriesWithRegionTargets || 0 : 0,
+        sharedRuntimePcodeSlicesBound,
+        runtimePcodeSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.pcodeSlices || 0 : 0,
+        runtimePcodeTrustedSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.trustedPcodeSlices || 0 : 0,
+        runtimePcodeTerminatedSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.terminatedSlices || 0 : 0,
+        runtimePcodeTrustedTerminatedSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.trustedTerminatedSlices || 0 : 0,
+        methodBodyCaptured: !!(runtimePcodeSlices && runtimePcodeSlices.summary && runtimePcodeSlices.summary.methodBodyCaptured),
+        evidenceConfidence,
         resourcePackageBound: resources ? resources.resourcePackageBound === true : false,
         sharedAtlasCount: resources ? resources.atlasIds.length : 0,
         gameSpecificAssetMapping: resources ? resources.gameSpecificAssetMapping === true : false,
+        charGridCandidatesBound: resources ? (resources.charGridCandidateCount || 0) > 0 : false,
+        charGridCandidateCount: resources ? resources.charGridCandidateCount || 0 : 0,
         dedicatedAdapterBound: renderer === 'dedicated-or-board',
+        candidateDataRendererBound: !!candidateData && renderer === 'dedicated-or-board',
         contentComplete: migration.migrationComplete,
         verificationComplete: verification.verificationComplete,
-        rulesMigratedByStructureFamily: structuredRulesMigrated.has(record.name) && candidateData ? candidateData.dataKind : null,
-        rulesMigratedByBoardEngine: boardRulesMigrated.has(record.name),
-        rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(record.name),
-        playableNativeAdapterBound: nativeAdapterPlayableMigrated.has(record.name)
+        rulesMigratedByStructureFamily: structuredRulesMigrated.has(name) && candidateData ? candidateData.dataKind : null,
+        rulesMigratedByBoardEngine: boardRulesMigrated.has(name),
+        rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(name),
+        embeddedLevelAdapterBound: embeddedLevelAdapterMigrated.has(name),
+        playableNativeAdapterBound: nativeAdapterPlayableMigrated.has(name),
+        playableAdapterBound: nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name)
     };
     const migrationPhase = verification.verificationComplete ? 'verification-complete'
         : migration.migrationComplete ? 'content-migration-complete'
         : migrationEvidence.dedicatedAdapterBound ? 'partial-content-migration'
         : migrationEvidence.structuredPayloadsBound || migrationEvidence.rawPayloadsBound ? 'payload-migration'
+        : migrationEvidence.catalogEvidenceAdapterBound ? 'evidence-adapter-migration'
         : 'catalog-migration';
     let status = 'unstarted';
     if (originalComplete) status = 'original-complete';
@@ -146,11 +196,13 @@ const rows = ledger.records.map(record => {
     else if (nativePayloadCount && native && native.payloadAssignment && native.payloadAssignment.confidence === 'low') status = 'payload-assignment-review';
     else if (nativePayloadCount && renderer === 'dedicated-or-board') status = 'native-payloads-dedicated-renderer';
     else if (nativePayloadCount) status = 'native-payloads-awaiting-adapter';
+    else if (migration.adapterPlayableMigrated) status = 'adapter-playable-needs-original-evidence';
+    else if (migration.evidenceAdapterMigrated) status = 'catalog-evidence-adapter-bound';
     else if (renderer === 'shared-mode-or-placeholder') status = 'renderer-needs-original-evidence';
     return {
         id: record.id,
         index: record.index,
-        name: record.name,
+        name,
         group: record.group,
         engineGroup: 'vb5-pk32-shared-host',
         sourceExePath: inventory.engineGroups[0] && inventory.engineGroups[0].executable,
@@ -217,6 +269,8 @@ const result = {
         verificationComplete: rows.filter(row => row.verificationComplete).length,
         payloadMigration: rows.filter(row => row.migrationPhase === 'payload-migration').length,
         partialContentMigration: rows.filter(row => row.migrationPhase === 'partial-content-migration').length,
+        evidenceAdapterMigration: rows.filter(row => row.migrationPhase === 'evidence-adapter-migration').length,
+        catalogMigration: rows.filter(row => row.migrationPhase === 'catalog-migration').length,
         nativeData: rows.filter(row => row.data).length,
         candidateData: rows.filter(row => row.candidateData).length,
         assetsMigrated: rows.filter(row => row.migration.assetsMigrated).length,
@@ -231,6 +285,24 @@ const result = {
         structuredPayloadGames: structuredPayloads ? structuredPayloads.gameCount : 0,
         sharedResourcePackagesBound: rows.filter(row => row.migrationEvidence.resourcePackageBound).length,
         gameSpecificAssetMappings: rows.filter(row => row.migrationEvidence.gameSpecificAssetMapping).length,
+        evidenceAdapterMigrated: rows.filter(row => row.migration.evidenceAdapterMigrated).length,
+        catalogEvidenceAdapter: rows.filter(row => row.migrationEvidence.catalogEvidenceAdapterBound).length,
+        titleReferenceEvidence: rows.filter(row => row.migrationEvidence.titleReferenceBound).length,
+        launchEvidence: rows.filter(row => row.migrationEvidence.launchEvidenceBound).length,
+        helpTextEvidence: rows.filter(row => row.migrationEvidence.helpTextEvidenceBound).length,
+        sharedPcodeMetadata: rows.filter(row => row.migrationEvidence.sharedPcodeMetadataBound).length,
+        sharedRuntimeMethodTable: rows.filter(row => row.migrationEvidence.sharedRuntimeMethodTableBound).length,
+        runtimeMethodEntries: runtimeMethodEvidence && runtimeMethodEvidence.summary ? runtimeMethodEvidence.summary.methodEntries || 0 : 0,
+        runtimeMethodRegionTargets: runtimeMethodEvidence && runtimeMethodEvidence.summary ? runtimeMethodEvidence.summary.entriesWithRegionTargets || 0 : 0,
+        sharedRuntimePcodeSlices: rows.filter(row => row.migrationEvidence.sharedRuntimePcodeSlicesBound).length,
+        runtimePcodeSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.pcodeSlices || 0 : 0,
+        runtimePcodeTrustedSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.trustedPcodeSlices || 0 : 0,
+        runtimePcodeTerminatedSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.terminatedSlices || 0 : 0,
+        runtimePcodeTrustedTerminatedSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.trustedTerminatedSlices || 0 : 0,
+        methodBodyCaptured: runtimePcodeSlices && runtimePcodeSlices.summary && runtimePcodeSlices.summary.methodBodyCaptured ? 1 : 0,
+        charGridCandidateGames: rows.filter(row => row.migrationEvidence.charGridCandidatesBound).length,
+        charGridCandidates: rows.reduce((sum, row) => sum + row.migrationEvidence.charGridCandidateCount, 0),
+        candidateDataRenderer: rows.filter(row => row.migrationEvidence.candidateDataRendererBound).length,
         dedicatedRenderer: rows.filter(row => row.renderer === 'dedicated-or-board').length,
         needsOriginalEvidence: rows.filter(row => row.migrationStatus !== 'original-complete').length
     },

@@ -10,7 +10,13 @@ const rendererNames = new Set();
 for (const match of variants.matchAll(/config\.name === '([^']+)'\s*(?:\?[^:]+)?\s*return\s+(renderNative[A-Za-z0-9_]*)/g)) rendererNames.add(match[1]);
 for (const match of variants.matchAll(/if\s*\(config\.name === '([^']+)'\)\s*return\s+(renderNative[A-Za-z0-9_]*)/g)) rendererNames.add(match[1]);
 for (const match of variants.matchAll(/config\.name === '([^']+)'\s*\?\s*(renderNative[A-Za-z0-9_]*)/g)) rendererNames.add(match[1]);
-['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造'].forEach(name => rendererNames.add(name));
+[
+  '魔塔', '魔塔二', '魔塔三', '魔塔四',
+  '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造',
+  '同步移动', '坦克大战', '宇宙黑洞', '七巧板', '立体魔方二', '跟花二',
+  '魔力纸牌', '多彩泡泡', '魅力之球', '推箱子三', '骰子王', '数谜', '变色彩球',
+  '蜘蛛纸牌', '14点', '桥牌', '麻将王三', '弹力连珠'
+].forEach(name => rendererNames.add(name));
 const moduleNames = new Set((source.match(/'([^']+)': \{ family: 'board'/g) || []).map(value => value.slice(1, value.indexOf("':"))));
 const namesMatch = source.match(/const NAMES = \(\s*'([^']+)'\s*\)\.split\('\|'\)/);
 if (!namesMatch) throw new Error('PK32 catalog names not found');

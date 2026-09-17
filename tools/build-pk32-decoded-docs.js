@@ -43,6 +43,18 @@ function listLevelFiles() {
       dataKind: data.dataKind || 'native-level-records'
     });
   }
+  const pegBoards = readJson(path.join(dataDir, 'pk32-peg-native-boards.json'), null);
+  if (pegBoards && pegBoards.name && Array.isArray(pegBoards.levels)) {
+    if (!result.has(pegBoards.name)) result.set(pegBoards.name, []);
+    result.get(pegBoards.name).push({
+      file: 'public/data/pk32-peg-native-boards.json',
+      count: pegBoards.levels.length,
+      recordsArePlayableLevels: true,
+      fullGameRulesVerified: pegBoards.fullGameRulesVerified === true,
+      assignmentVerified: true,
+      dataKind: 'native-initialization-boards'
+    });
+  }
   return result;
 }
 
@@ -63,9 +75,18 @@ const records = (queue.records || []).map(record => {
   const playableLevelFiles = levelFiles.filter(file => file.recordsArePlayableLevels && file.assignmentVerified);
   const hasDedicatedAdapter = record.renderer === 'dedicated-or-board';
   const hasResourcePackage = record.migrationEvidence && record.migrationEvidence.resourcePackageBound === true;
+  const hasCatalogEvidenceAdapter = record.migrationEvidence && record.migrationEvidence.catalogEvidenceAdapterBound === true;
+  const hasTitleReference = record.migrationEvidence && record.migrationEvidence.titleReferenceBound === true;
+  const hasLaunchEvidence = record.migrationEvidence && record.migrationEvidence.launchEvidenceBound === true;
+  const hasHelpTextEvidence = record.migrationEvidence && record.migrationEvidence.helpTextEvidenceBound === true;
+  const hasSharedPcodeMetadata = record.migrationEvidence && record.migrationEvidence.sharedPcodeMetadataBound === true;
+  const hasSharedRuntimeMethodTable = record.migrationEvidence && record.migrationEvidence.sharedRuntimeMethodTableBound === true;
+  const hasCharGridCandidates = record.migrationEvidence && record.migrationEvidence.charGridCandidatesBound === true;
+  const hasEmbeddedLevelAdapter = record.migrationEvidence && record.migrationEvidence.embeddedLevelAdapterBound === true;
+  const hasCandidateDataRenderer = record.migrationEvidence && record.migrationEvidence.candidateDataRendererBound === true;
   const hasDecodedLevels = playableLevelFiles.length > 0;
   const hasStructuredPayloads = !!structuredRecord;
-  const canAutoBindContent = hasDecodedLevels && hasDedicatedAdapter;
+  const canAutoBindContent = (hasDecodedLevels || hasEmbeddedLevelAdapter) && hasDedicatedAdapter;
   const canAutoCompleteMigration = record.migrationComplete === true;
   const blockers = [];
   if (!hasDecodedLevels && !hasStructuredPayloads && !(native.payloadCount > 0)) blockers.push('no decoded content');
@@ -94,8 +115,25 @@ const records = (queue.records || []).map(record => {
     },
     resources: {
       packageBound: hasResourcePackage,
+      catalogEvidenceAdapter: hasCatalogEvidenceAdapter,
+      titleReference: hasTitleReference,
+      launchEvidence: hasLaunchEvidence,
+      helpTextEvidence: hasHelpTextEvidence,
+      sharedPcodeMetadata: hasSharedPcodeMetadata,
+      sharedRuntimeMethodTable: hasSharedRuntimeMethodTable,
+      runtimeMethodEntries: record.migrationEvidence && record.migrationEvidence.runtimeMethodEntries || 0,
+      runtimeMethodRegionTargets: record.migrationEvidence && record.migrationEvidence.runtimeMethodRegionTargets || 0,
+      runtimePcodeSlices: record.migrationEvidence && record.migrationEvidence.runtimePcodeSlices || 0,
+      runtimePcodeTrustedSlices: record.migrationEvidence && record.migrationEvidence.runtimePcodeTrustedSlices || 0,
+      runtimePcodeTerminatedSlices: record.migrationEvidence && record.migrationEvidence.runtimePcodeTerminatedSlices || 0,
+      methodBodyCaptured: record.migrationEvidence && record.migrationEvidence.methodBodyCaptured === true,
+      charGridCandidateCount: record.migrationEvidence && record.migrationEvidence.charGridCandidateCount || 0,
+      charGridCandidates: hasCharGridCandidates,
+      evidenceConfidence: record.migrationEvidence && record.migrationEvidence.evidenceConfidence || 'unknown',
       sharedAtlasCount: record.migrationEvidence && record.migrationEvidence.sharedAtlasCount || 0,
-      gameSpecificAssetMapping: record.migrationEvidence && record.migrationEvidence.gameSpecificAssetMapping === true
+      gameSpecificAssetMapping: record.migrationEvidence && record.migrationEvidence.gameSpecificAssetMapping === true,
+      embeddedLevelAdapter: hasEmbeddedLevelAdapter,
+      candidateDataRenderer: hasCandidateDataRenderer
     },
     structuredPayloads: structuredRecord ? {
       file: 'public/data/pk32-structured-payloads.json',
@@ -150,7 +188,23 @@ const result = {
     withStructuredPayloads: records.filter(record => record.structuredPayloads).length,
     withNativePayloads: records.filter(record => record.native.payloadCount > 0).length,
     withResourcePackages: records.filter(record => record.resources.packageBound).length,
+    withCatalogEvidenceAdapters: records.filter(record => record.resources.catalogEvidenceAdapter).length,
+    withTitleReferenceEvidence: records.filter(record => record.resources.titleReference).length,
+    withLaunchEvidence: records.filter(record => record.resources.launchEvidence).length,
+    withHelpTextEvidence: records.filter(record => record.resources.helpTextEvidence).length,
+    withSharedPcodeMetadata: records.filter(record => record.resources.sharedPcodeMetadata).length,
+    withSharedRuntimeMethodTables: records.filter(record => record.resources.sharedRuntimeMethodTable).length,
+    runtimeMethodEntries: records.reduce((max, record) => Math.max(max, record.resources.runtimeMethodEntries), 0),
+    runtimeMethodRegionTargets: records.reduce((max, record) => Math.max(max, record.resources.runtimeMethodRegionTargets), 0),
+    runtimePcodeSlices: records.reduce((max, record) => Math.max(max, record.resources.runtimePcodeSlices), 0),
+    runtimePcodeTrustedSlices: records.reduce((max, record) => Math.max(max, record.resources.runtimePcodeTrustedSlices), 0),
+    runtimePcodeTerminatedSlices: records.reduce((max, record) => Math.max(max, record.resources.runtimePcodeTerminatedSlices), 0),
+    methodBodyCaptured: records.filter(record => record.resources.methodBodyCaptured).length,
+    withCharGridCandidates: records.filter(record => record.resources.charGridCandidates).length,
+    charGridCandidates: records.reduce((sum, record) => sum + record.resources.charGridCandidateCount, 0),
     gameSpecificAssetMappings: records.filter(record => record.resources.gameSpecificAssetMapping).length,
+    embeddedLevelAdapters: records.filter(record => record.resources.embeddedLevelAdapter).length,
+    candidateDataRenderers: records.filter(record => record.resources.candidateDataRenderer).length,
     assetsMigrated: records.filter(record => record.migration.assetsMigrated).length,
     levelsMigrated: records.filter(record => record.migration.levelsMigrated).length,
     adapterPlayableMigrated: records.filter(record => record.migration.adapterPlayableMigrated).length,
@@ -189,10 +243,26 @@ const docLines = [
   '| Games with structured payloads | ' + result.summary.withStructuredPayloads + ' |',
   '| Games with native payloads | ' + result.summary.withNativePayloads + ' |',
   '| Games with resource packages | ' + result.summary.withResourcePackages + ' |',
+  '| Games with catalog evidence adapters | ' + result.summary.withCatalogEvidenceAdapters + ' |',
+  '| Games with title-reference evidence | ' + result.summary.withTitleReferenceEvidence + ' |',
+  '| Games with launch evidence | ' + result.summary.withLaunchEvidence + ' |',
+  '| Games with help-text evidence | ' + result.summary.withHelpTextEvidence + ' |',
+  '| Games with shared p-code metadata | ' + result.summary.withSharedPcodeMetadata + ' |',
+  '| Games with shared runtime method tables | ' + result.summary.withSharedRuntimeMethodTables + ' |',
+  '| Runtime method table entries | ' + result.summary.runtimeMethodEntries + ' |',
+  '| Runtime method entries with region targets | ' + result.summary.runtimeMethodRegionTargets + ' |',
+  '| Runtime p-code probe slices | ' + result.summary.runtimePcodeSlices + ' |',
+  '| Trusted runtime p-code slices | ' + result.summary.runtimePcodeTrustedSlices + ' |',
+  '| Runtime p-code probe slices with exit token | ' + result.summary.runtimePcodeTerminatedSlices + ' |',
+  '| Method bodies captured | ' + result.summary.methodBodyCaptured + ' |',
+  '| Games with char-grid candidates | ' + result.summary.withCharGridCandidates + ' |',
+  '| Char-grid candidates | ' + result.summary.charGridCandidates + ' |',
   '| Games with game-specific asset mapping | ' + result.summary.gameSpecificAssetMappings + ' |',
+  '| Games with embedded level adapters | ' + result.summary.embeddedLevelAdapters + ' |',
+  '| Games with candidate data renderers | ' + result.summary.candidateDataRenderers + ' |',
   '| Assets migrated | ' + result.summary.assetsMigrated + ' |',
   '| Levels migrated | ' + result.summary.levelsMigrated + ' |',
-  '| Playable native adapters migrated | ' + result.summary.adapterPlayableMigrated + ' |',
+  '| Playable adapters migrated | ' + result.summary.adapterPlayableMigrated + ' |',
   '| Rules migrated | ' + result.summary.rulesMigrated + ' |',
   '| Full flow migrated | ' + result.summary.fullFlowMigrated + ' |',
   '| Auto-bindable content games | ' + result.summary.canAutoBindContent + ' |',
@@ -208,16 +278,18 @@ const docLines = [
   '',
   '## Game readiness',
   '',
-  '| ID | Name | Phase | Resource package | Level files | Structured payloads | Native payloads | Auto-bind | Migration complete | Verification complete | Blockers |',
-  '| --- | --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |',
+  '| ID | Name | Phase | Evidence | Resource package | Level files | Structured payloads | Native payloads | Char grids | Auto-bind | Migration complete | Verification complete | Blockers |',
+  '| --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | --- | --- | --- | --- |',
   ...records.map(record => '| ' + [
     record.id,
     record.name,
     record.migrationPhase,
+    record.resources.evidenceConfidence,
     record.resources.packageBound ? 'shared atlases ' + record.resources.sharedAtlasCount : '',
     record.levelFiles.length,
     record.structuredPayloads ? record.structuredPayloads.family + ' / ' + record.structuredPayloads.payloads : '',
     record.native.payloadCount,
+    record.resources.charGridCandidateCount,
     boolText(record.automation.canAutoBindContent),
     boolText(record.migration.migrationComplete),
     boolText(record.verification.verificationComplete),

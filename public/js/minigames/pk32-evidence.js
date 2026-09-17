@@ -48,6 +48,20 @@
             add(facts, 'p', '', '内容迁移状态：' + (record.migrationComplete ? '迁移完成' : '尚未完成'));
             add(facts, 'p', '', '原版验证状态：' + (record.verificationComplete ? '验证完成' : '尚未完成'));
         }
+        if (record.migrationEvidence) {
+            const evidenceItems = [
+                ['证据页', record.migrationEvidence.catalogEvidenceAdapterBound],
+                ['标题引用', record.migrationEvidence.titleReferenceBound],
+                ['启动映射', record.migrationEvidence.launchEvidenceBound],
+                ['帮助文本', record.migrationEvidence.helpTextEvidenceBound],
+                ['共享 p-code 元数据', record.migrationEvidence.sharedPcodeMetadataBound],
+                ['运行时方法表', record.migrationEvidence.sharedRuntimeMethodTableBound]
+            ];
+            add(facts, 'p', '', '证据适配：' + evidenceItems.map(item => item[0] + (item[1] ? '已绑定' : '待补')).join('；'));
+            if (record.migrationEvidence.sharedRuntimeMethodTableBound) add(facts, 'p', '', '运行时方法表：' + (record.migrationEvidence.runtimeMethodEntries || 0) + ' 项；已捕获目标区 ' + (record.migrationEvidence.runtimeMethodRegionTargets || 0) + ' 项。');
+            if (record.migrationEvidence.runtimePcodeSlices) add(facts, 'p', 'emu-tip', '运行时代码探针：候选切片 ' + (record.migrationEvidence.runtimePcodeSlices || 0) + ' 段；可信切片 ' + (record.migrationEvidence.runtimePcodeTrustedSlices || 0) + ' 段；当前不作为规则迁移完成依据。');
+            add(facts, 'p', '', '证据置信层：' + (record.migrationEvidence.evidenceConfidence || 'unknown'));
+        }
         add(facts, 'p', '', native && native.levelCount != null
             ? '原版关卡/回合证据：' + native.levelCount + '（' + (native.levelCountBasis || '来源待补充') + '）'
             : '原版关卡/回合证据：待解码');
@@ -101,6 +115,50 @@
                     });
                 })
                 .catch(() => {});
+        }
+        if (record.migrationEvidence && record.migrationEvidence.charGridCandidatesBound) {
+            add(root, 'h3', '', '字符地图候选');
+            const charGridHost = add(root, 'div', 'pk32-evidence-char-grids');
+            fetch('/data/pk32-char-grid-candidates.json')
+                .then(response => response.ok ? response.json() : Promise.reject(new Error('char grids unavailable')))
+                .then(data => {
+                    const group = (data.groups || []).find(item => item.sectionId === record.id);
+                    if (!group || !group.records || !group.records.length) return;
+                    const controls = add(charGridHost, 'div', 'emu-toolbar');
+                    const select = add(controls, 'select');
+                    select.setAttribute('aria-label', '选择字符地图候选');
+                    group.records.forEach((item, index) => {
+                        const option = document.createElement('option');
+                        option.value = String(index);
+                        option.textContent = '候选 ' + (index + 1) + ' / ' + group.records.length + '，长度 ' + item.sourceLength + '，偏移 ' + item.sourceOffset;
+                        select.appendChild(option);
+                    });
+                    const preview = add(charGridHost, 'div', 'pk32-evidence-char-grid-preview');
+                    const raw = add(charGridHost, 'pre', 'pk32-evidence-payload');
+                    const note = add(charGridHost, 'p', 'emu-tip');
+                    function color(symbol) {
+                        return symbol === '0' ? '#0f172a' : symbol === 'X' ? '#64748b' : symbol === '?' ? '#f59e0b' : symbol === 'S' ? '#22c55e' : symbol === '+' ? '#38bdf8' : '#ef4444';
+                    }
+                    function draw() {
+                        const item = group.records[Number(select.value) || 0];
+                        const shape = item.shape || { width: 16, height: Math.ceil(item.value.length / 16) };
+                        preview.innerHTML = '';
+                        preview.style.display = 'grid';
+                        preview.style.gridTemplateColumns = 'repeat(' + shape.width + ', minmax(12px, 1fr))';
+                        item.value.split('').forEach(symbol => {
+                            const cell = document.createElement('span');
+                            cell.textContent = symbol === '0' ? '' : symbol;
+                            cell.style.background = color(symbol);
+                            cell.dataset.symbol = symbol;
+                            preview.appendChild(cell);
+                        });
+                        raw.textContent = item.value;
+                        note.textContent = '候选形状：' + shape.width + '×' + shape.height + '；归属和规则语义未验证。';
+                    }
+                    select.onchange = draw;
+                    draw();
+                })
+                .catch(() => { charGridHost.textContent = '字符地图候选读取失败。'; });
         }
         add(root, 'h3', '', '完整原始载荷');
         if (!payloads.length) {

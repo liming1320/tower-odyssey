@@ -19,6 +19,7 @@ function readJson(file, fallback) {
 const audit = readJson(path.join(reference, 'extraction-audit.json'), { images: [] });
 const catalog = readJson(path.join(publicData, 'pk32-native-catalog.json'), { records: [] });
 const structured = readJson(path.join(publicData, 'pk32-structured-payloads.json'), { games: [] });
+const charGrids = readJson(path.join(publicData, 'pk32-char-grid-candidates.json'), { groups: [] });
 const imageFiles = new Set(fs.existsSync(publicImageRoot) ? fs.readdirSync(publicImageRoot) : []);
 const atlases = (audit.images || []).map(image => {
   const png = image.file.replace(/\.bmp$/i, '.png');
@@ -36,9 +37,11 @@ const atlases = (audit.images || []).map(image => {
   };
 });
 const structuredById = new Map((structured.games || []).map(game => [game.id, game]));
+const charGridsById = new Map((charGrids.groups || []).filter(group => group.sectionId).map(group => [group.sectionId, group]));
 
 const records = (catalog.records || []).map(record => {
   const structuredRecord = structuredById.get(record.id);
+  const charGridRecord = charGridsById.get(record.id);
   return {
     id: record.id,
     name: record.name,
@@ -48,8 +51,9 @@ const records = (catalog.records || []).map(record => {
     atlasIds: atlases.filter(atlas => atlas.available).map(atlas => atlas.id),
     nativePayloadCount: record.payloadCount || 0,
     structuredPayloadCount: structuredRecord ? structuredRecord.decodedPayloadCount || 0 : 0,
+    charGridCandidateCount: charGridRecord ? charGridRecord.count || 0 : 0,
     helpTextCount: Array.isArray(record.help) ? record.help.length : 0,
-    resourcePackageBound: atlases.some(atlas => atlas.available) || (record.payloadCount || 0) > 0 || !!structuredRecord
+    resourcePackageBound: atlases.some(atlas => atlas.available) || (record.payloadCount || 0) > 0 || !!structuredRecord || !!charGridRecord
   };
 });
 
@@ -72,6 +76,8 @@ const result = {
     availableAtlases: atlases.filter(atlas => atlas.available).length,
     sharedResourcePackagesBound: records.filter(record => record.resourcePackageBound).length,
     gameSpecificAssetMappings: records.filter(record => record.gameSpecificAssetMapping).length,
+    charGridCandidateGames: records.filter(record => record.charGridCandidateCount).length,
+    charGridCandidates: records.reduce((sum, record) => sum + record.charGridCandidateCount, 0),
     sourceBytesVerifiedAtlases: atlases.filter(atlas => atlas.sourceBytesVerified).length
   },
   atlases,

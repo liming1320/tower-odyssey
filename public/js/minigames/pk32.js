@@ -65,7 +65,7 @@
         [0, 80, '扑克与纸牌'], [80, 147, '棋类与益智'], [147, 196, '休闲与解谜'], [196, NAMES.length, '其他原版游戏'],
     ];
     const STRUCTURED_VARIANT_NAMES = '考眼力|24点二|21点二|梭哈六|三张牌|接龙二|平面魔方|激光坦克|开心辞典|记忆考验|反应测试|海豚骰|汉诺塔|老虎机|跳跃棋|找不同|找彩球|变化彩球|推箱子二|移彩球|数独|跳棋二|拼疑犯|扩展线路|马跳棋盘|彩球迷宫|吃豆子|彩球连线'.split('|');
-    const DEDICATED_VARIANT_NAMES = '接水管|同色方块|同步移动|木乃伊|电磁彩球|建筑制造|航海迷题|立体魔方二|反射镜|交换彩球|爆破彩球|坦克大战|海底寻宝|七盏灯|推箱子|推箱子五|禅宗迷宫|禅宗花园|像素岛|跟花二|魔法城堡二|魔法城堡|连结电线二|七巧板|宇宙黑洞|下一百层|上一百层|飞一百米|打砖块|魔塔二|魔塔三|魔塔四'.split('|');
+    const DEDICATED_VARIANT_NAMES = '接水管|同色方块|同步移动|木乃伊|电磁彩球|建筑制造|航海迷题|立体魔方二|反射镜|交换彩球|爆破彩球|坦克大战|海底寻宝|七盏灯|推箱子|推箱子五|禅宗迷宫|禅宗花园|像素岛|跟花二|魔法城堡二|魔法城堡|连结电线二|七巧板|宇宙黑洞|下一百层|上一百层|飞一百米|打砖块|魔塔二|魔塔三|魔塔四|魔力纸牌|多彩泡泡|魅力之球|推箱子三|骰子王|数谜|变色彩球|蜘蛛纸牌|14点|桥牌|麻将王三|弹力连珠'.split('|');
     STRUCTURED_VARIANT_NAMES.forEach(name => { VARIANT_CONFIG[name] = name; });
     DEDICATED_VARIANT_NAMES.forEach(name => { VARIANT_CONFIG[name] = name; });
     const DEDICATED_NAMES = new Set([
@@ -83,6 +83,7 @@
         const migrationText = record.migrationComplete ? '内容迁移完成'
             : record.migrationPhase === 'partial-content-migration' ? '内容部分迁移'
             : record.migrationPhase === 'payload-migration' ? '原始载荷已绑定'
+            : record.migrationPhase === 'evidence-adapter-migration' ? '原始证据适配'
             : record.status === 'structured-assignment-review' ? '结构已解析，归属待复核'
             : record.status === 'payload-assignment-review' ? '载荷归属待复核'
             : '内容待迁移';

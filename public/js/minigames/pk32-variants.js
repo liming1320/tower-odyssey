@@ -72,6 +72,16 @@
     CONFIG['宇宙黑洞'].levelCount = 30;
     CONFIG['宇宙黑洞'].nativePayloadCount = 41;
     const STRUCTURED_PAYLOAD_NAMES = new Set('考眼力|24点二|21点二|梭哈六|三张牌|接龙二|平面魔方|激光坦克|开心辞典|记忆考验|反应测试|海豚骰|汉诺塔|老虎机|跳跃棋|找不同|找彩球|变化彩球|推箱子二|移彩球|数独|跳棋二|拼疑犯|扩展线路|马跳棋盘|彩球迷宫|吃豆子|彩球连线'.split('|'));
+    const CANDIDATE_LEVEL_FILES = {
+        '魔力纸牌': 'pk32-magic-cards-levels.json',
+        '多彩泡泡': 'pk32-colorful-bubbles-levels.json',
+        '魅力之球': 'pk32-charm-ball-levels.json',
+        '推箱子三': 'pk32-sokoban3-levels.json',
+        '骰子王': 'pk32-dice-king-levels.json',
+        '数谜': 'pk32-number-riddle-levels.json',
+        '变色彩球': 'pk32-color-changing-balls-levels.json'
+    };
+    const RAW_PAYLOAD_NAMES = new Set('蜘蛛纸牌|14点|桥牌|麻将王三|弹力连珠'.split('|'));
 
     function el(tag, attrs, text) {
         const node = document.createElement(tag);
@@ -770,6 +780,358 @@
                     }
                     drawBoard();
                 }
+                function cardRank(value) {
+                    const rank = Math.abs(Number(value) || 0) % 13 + 1;
+                    return { rank: rank, text: rank === 1 ? 'A' : rank === 11 ? 'J' : rank === 12 ? 'Q' : rank === 13 ? 'K' : String(rank), point: Math.min(rank, 10) };
+                }
+                function renderTwentyFourNative(payload, nav, detail) {
+                    const units = (payload.units || []).map(Number).filter(Number.isFinite);
+                    let cursor = 0, cards = [];
+                    function nextCards() {
+                        cards = Array.from({ length: 4 }, function (_, index) { return cardRank(units[(cursor + index * 7) % Math.max(1, units.length)] || index + 1); });
+                        cursor = (cursor + 4) % Math.max(1, units.length);
+                    }
+                    function safeEval(expr) {
+                        if (!/^[0-9+\-*/().\s]+$/.test(expr)) return NaN;
+                        try { return Function('"use strict";return (' + expr + ')')(); } catch (_) { return NaN; }
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const row = el('div', { className: 'pk32v-controls' });
+                        cards.forEach(function (card) { row.appendChild(el('span', { className: 'pk32v-card' }, card.text)); });
+                        const input = el('input', { className: 'pk32v-input', placeholder: '输入算式，例如 (8-2)*4', ariaLabel: '24点算式' });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('检查', function () {
+                            const expr = input.value || '';
+                            const used = (expr.match(/\d+/g) || []).map(Number).sort(function (a, b) { return a - b; });
+                            const need = cards.map(function (card) { return card.point; }).sort(function (a, b) { return a - b; });
+                            const okCards = used.length === 4 && used.every(function (value, index) { return value === need[index]; });
+                            const value = safeEval(expr);
+                            if (okCards && Math.abs(value - 24) < 0.0001) finish('24点二本组完成。');
+                            else prompt.textContent = '24点二：算式必须只使用这四张牌点数各一次，并计算得到 24。';
+                        }), button('下一组', function () { nextCards(); ended = false; drawBoard(); }));
+                        panel.append(nav, row, input, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；用四张牌点数算出 24。';
+                    }
+                    nextCards();
+                    drawBoard();
+                }
+                function renderBlackjackNative(payload, nav, detail) {
+                    const units = (payload.units || []).map(Number).filter(Number.isFinite);
+                    let deck = units.map(cardRank), cursor = 0, player = [], dealer = [], standing = false;
+                    if (deck.length < 16) deck = Array.from({ length: 52 }, function (_, index) { return cardRank(index); });
+                    function drawCard() { const card = deck[cursor % deck.length]; cursor += 1; return card; }
+                    function handValue(hand) {
+                        let total = 0, aces = 0;
+                        hand.forEach(function (card) { total += card.point; if (card.rank === 1) aces += 1; });
+                        while (aces && total + 10 <= 21) { total += 10; aces -= 1; }
+                        return total;
+                    }
+                    function handText(hand) { return hand.map(function (card) { return card.text; }).join(' '); }
+                    function resetHand() { cursor = (level * 7) % deck.length; player = [drawCard(), drawCard()]; dealer = [drawCard(), drawCard()]; standing = false; ended = false; drawBoard(); }
+                    function settle() {
+                        standing = true;
+                        while (handValue(dealer) < 17) dealer.push(drawCard());
+                        const pv = handValue(player), dv = handValue(dealer);
+                        if (pv > 21) finish('玩家爆牌，本局结束。');
+                        else if (dv > 21 || pv > dv) { setScore(score + 20); finish('玩家胜。'); }
+                        else if (pv === dv) finish('平局。');
+                        else finish('庄家胜。');
+                        drawBoard();
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const board = el('div', { className: 'pk32v-native-data' });
+                        board.append(el('p', { className: 'pk32v-prompt' }, '玩家：' + handText(player) + ' = ' + handValue(player)));
+                        board.append(el('p', { className: 'pk32v-prompt' }, '庄家：' + (standing || ended ? handText(dealer) + ' = ' + handValue(dealer) : dealer[0].text + ' ?')));
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('要牌', function () { if (ended || standing) return; player.push(drawCard()); if (handValue(player) > 21) settle(); else drawBoard(); }), button('停牌', settle), button('重开本局', resetHand));
+                        board.appendChild(actions);
+                        panel.append(nav, board, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；按 21 点要牌/停牌规则进行。';
+                    }
+                    resetHand();
+                }
+                function renderHanoiNative(payload, nav, detail) {
+                    const units = (payload.units || []).map(Number).filter(Number.isFinite);
+                    const discCount = Math.max(3, Math.min(7, 3 + (Math.abs(units[0] || level) % 5)));
+                    let towers = [], selected = -1, moves = 0;
+                    function resetHanoi() { towers = [Array.from({ length: discCount }, function (_, index) { return discCount - index; }), [], []]; selected = -1; moves = 0; ended = false; drawBoard(); }
+                    function moveTower(index) {
+                        if (ended) return;
+                        if (selected < 0) { if (towers[index].length) selected = index; drawBoard(); return; }
+                        if (selected === index) { selected = -1; drawBoard(); return; }
+                        const disc = towers[selected][towers[selected].length - 1];
+                        const target = towers[index][towers[index].length - 1];
+                        if (target && target < disc) { prompt.textContent = '汉诺塔：大盘不能放在小盘上。'; return; }
+                        towers[selected].pop(); towers[index].push(disc); selected = -1; moves += 1; setScore(score + 1);
+                        if (towers[2].length === discCount) finish('汉诺塔本局完成，步数 ' + moves + '。');
+                        drawBoard();
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const board = el('div', { className: 'pk32v-hanoi' });
+                        towers.forEach(function (tower, index) {
+                            const col = button('', function () { moveTower(index); });
+                            col.className = 'pk32v-hanoi-tower';
+                            col.dataset.selected = String(selected === index);
+                            for (let y = discCount - 1; y >= 0; y -= 1) {
+                                const disc = tower[y];
+                                const span = el('span', { className: 'pk32v-hanoi-disc' }, disc ? String(disc) : '');
+                                if (disc) span.style.width = (28 + disc * 12) + 'px';
+                                col.appendChild(span);
+                            }
+                            board.appendChild(col);
+                        });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('重置本关', resetHanoi));
+                        panel.append(nav, board, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；' + discCount + ' 个圆盘，移动 ' + moves + ' 步。';
+                    }
+                    resetHanoi();
+                }
+                function renderSlotsNative(payload, nav, detail) {
+                    const units = (payload.units || []).map(Number).filter(Number.isFinite);
+                    const symbols = ['7', '铃', '星', '瓜', '桃', 'BAR', '钻', '橙'];
+                    let cursor = 0, coins = 30, reels = [0, 1, 2];
+                    function spin() {
+                        if (coins <= 0 || ended) return;
+                        coins -= 1;
+                        reels = [0, 1, 2].map(function (slot) { return Math.abs(units[(cursor + slot * 5) % Math.max(1, units.length)] || cursor + slot) % symbols.length; });
+                        cursor = (cursor + 3) % Math.max(1, units.length);
+                        const payout = reels[0] === reels[1] && reels[1] === reels[2] ? 20 : reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2] ? 3 : 0;
+                        coins += payout;
+                        if (payout) setScore(score + payout);
+                        if (coins <= 0) finish('老虎机筹码用完，本局结束。');
+                        drawBoard();
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const reelsNode = el('div', { className: 'pk32v-slots' });
+                        reels.forEach(function (value) { reelsNode.appendChild(el('span', {}, symbols[value])); });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('旋转', spin), button('重置', function () { coins = 30; cursor = 0; reels = [0, 1, 2]; ended = false; drawBoard(); }));
+                        panel.append(nav, reelsNode, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；筹码 ' + coins + '，两同赔 3，三同赔 20。';
+                    }
+                    drawBoard();
+                }
+                function payloadCards(payload, count, salt) {
+                    const units = (payload.units || []).map(Number).filter(Number.isFinite);
+                    const used = new Set(), cards = [], suits = ['♠', '♥', '♣', '♦'];
+                    for (let index = 0; cards.length < count && index < count * 9; index += 1) {
+                        const seed = units.length ? units[(index + (salt || 0)) % units.length] : index;
+                        const code = Math.abs(seed + index * 17 + (salt || 0) * 11) % 52;
+                        if (used.has(code)) continue;
+                        used.add(code);
+                        const rank = code % 13 + 1, suit = Math.floor(code / 13);
+                        cards.push({ rank: rank, suit: suit, point: Math.min(rank, 10), text: suits[suit] + (rank === 1 ? 'A' : rank === 11 ? 'J' : rank === 12 ? 'Q' : rank === 13 ? 'K' : String(rank)) });
+                    }
+                    return cards;
+                }
+                function handScore(cards) {
+                    const ranks = cards.map(function (card) { return card.rank; }).sort(function (a, b) { return a - b; });
+                    const counts = {};
+                    ranks.forEach(function (rank) { counts[rank] = (counts[rank] || 0) + 1; });
+                    const groups = Object.keys(counts).map(Number).sort(function (a, b) { return counts[b] - counts[a] || b - a; });
+                    const flush = cards.every(function (card) { return card.suit === cards[0].suit; });
+                    const unique = Array.from(new Set(ranks));
+                    const straight = unique.length === cards.length && (unique[unique.length - 1] - unique[0] === cards.length - 1 || unique.join(',') === '1,10,11,12,13');
+                    const maxRank = unique.join(',') === '1,10,11,12,13' ? 14 : unique[unique.length - 1];
+                    const pattern = groups.map(function (rank) { return counts[rank]; }).join('');
+                    const category = straight && flush ? 8 : pattern === '41' ? 7 : pattern === '32' ? 6 : flush ? 5 : straight ? 4 : pattern === '311' ? 3 : pattern === '221' ? 2 : pattern === '2111' ? 1 : 0;
+                    const names = ['高牌', '一对', '两对', '三条', '顺子', '同花', '葫芦', '四条', '同花顺'];
+                    return { value: category * 1000000 + maxRank * 1000 + groups.reduce(function (sum, rank, index) { return sum + rank * (10 - index); }, 0), name: names[category] };
+                }
+                function renderThreeCardsNative(payload, nav, detail) {
+                    let round = 0, player = [], dealer = [];
+                    function deal() { const cards = payloadCards(payload, 6, round); player = cards.slice(0, 3); dealer = cards.slice(3, 6); ended = false; drawBoard(); }
+                    function threeScore(cards) {
+                        const base = handScore(cards), counts = {};
+                        cards.forEach(function (card) { counts[card.rank] = (counts[card.rank] || 0) + 1; });
+                        const pair = Object.keys(counts).find(function (rank) { return counts[rank] === 2; });
+                        const triple = Object.keys(counts).find(function (rank) { return counts[rank] === 3; });
+                        const flush = cards.every(function (card) { return card.suit === cards[0].suit; });
+                        const ranks = cards.map(function (card) { return card.rank; }).sort(function (a, b) { return a - b; });
+                        const straight = ranks[2] - ranks[0] === 2 && new Set(ranks).size === 3 || ranks.join(',') === '1,12,13';
+                        const category = triple ? 5 : straight && flush ? 4 : straight ? 3 : flush ? 2 : pair ? 1 : 0;
+                        const names = ['散牌', '对子', '顺子', '同花', '同花顺', '豹子'];
+                        return { value: category * 1000000 + base.value, name: names[category] };
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const ps = threeScore(player), ds = threeScore(dealer);
+                        const row = el('div', { className: 'pk32v-card-table' });
+                        row.append(el('p', { className: 'pk32v-prompt' }, '玩家：' + player.map(function (card) { return card.text; }).join(' ') + ' · ' + ps.name));
+                        row.append(el('p', { className: 'pk32v-prompt' }, '电脑：' + dealer.map(function (card) { return card.text; }).join(' ') + ' · ' + ds.name));
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('比牌', function () { if (ps.value >= ds.value) { setScore(score + 20); finish('三张牌本局玩家胜。'); } else finish('三张牌本局电脑胜。'); }), button('下一局', function () { round += 1; deal(); }));
+                        panel.append(nav, row, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；按三张牌牌型比较。';
+                    }
+                    deal();
+                }
+                function renderStudSixNative(payload, nav, detail) {
+                    let round = 0, kept = new Set(), player = [], dealer = [], compared = false;
+                    function deal() { const cards = payloadCards(payload, 10, round); player = cards.slice(0, 5); dealer = cards.slice(5, 10); kept = new Set(); compared = false; ended = false; drawBoard(); }
+                    function drawOnce() { const replacements = payloadCards(payload, 5, round + 3); player = player.map(function (card, index) { return kept.has(index) ? card : replacements[index]; }); compared = true; drawBoard(); }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const row = el('div', { className: 'pk32v-controls' });
+                        player.forEach(function (card, index) {
+                            const cardNode = button(card.text, function () { if (compared) return; if (kept.has(index)) kept.delete(index); else kept.add(index); drawBoard(); });
+                            cardNode.className += ' pk32v-card';
+                            cardNode.dataset.kept = String(kept.has(index));
+                            row.appendChild(cardNode);
+                        });
+                        const dealerScore = handScore(dealer), playerScore = handScore(player);
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button(compared ? '比牌' : '换牌', function () {
+                            if (!compared) { drawOnce(); return; }
+                            if (playerScore.value >= dealerScore.value) { setScore(score + 30); finish('梭哈六本局玩家胜。'); } else finish('梭哈六本局电脑胜。');
+                        }), button('下一局', function () { round += 1; deal(); }));
+                        panel.append(nav, row, el('p', { className: 'pk32v-prompt' }, '玩家：' + playerScore.name + '；电脑暗牌已发出' + (compared ? '，电脑牌型：' + dealerScore.name : '')), actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；点击手牌保留，换牌后比五张牌牌型。';
+                    }
+                    deal();
+                }
+                function indexPoint(value) {
+                    const n = Number(value) || 0;
+                    return { x: ((n % 16) + 16) % 16, y: Math.max(0, Math.min(15, Math.floor(n / 16))) };
+                }
+                function renderFindColorBalls(payload, nav, detail) {
+                    const targets = new Set((payload.units || []).map(indexPoint).map(function (point) { return point.y * 16 + point.x; }));
+                    let found = new Set(), misses = 0;
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(16, 16, 'pk32-index-board');
+                        for (let index = 0; index < 256; index += 1) {
+                            const target = targets.has(index), hit = found.has(index);
+                            const cell = button(hit ? '●' : target ? '·' : '', function () {
+                                if (ended || hit) return;
+                                if (target) { found.add(index); setScore(score + 10); }
+                                else { misses += 1; setScore(Math.max(0, score - 1)); }
+                                drawBoard();
+                                if (found.size === targets.size) finish('找彩球本关目标全部找到。');
+                            });
+                            cell.dataset.target = String(target); cell.dataset.found = String(hit);
+                            cell.style.cssText = 'min-width:20px;min-height:20px;padding:0;background:' + (hit ? '#facc15' : target ? '#2563eb' : '#0f172a') + ';color:#fff;font-size:10px;line-height:1;overflow:hidden';
+                            grid.appendChild(cell);
+                        }
+                        panel.append(nav, grid, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；已按原始 16×16 坐标布置彩球，找到 ' + found.size + ' / ' + targets.size + '，误点 ' + misses + ' 次。';
+                    }
+                    drawBoard();
+                }
+                function renderChangingColorBalls(payload, nav, detail) {
+                    const points = (payload.units || []).map(indexPoint), active = new Map();
+                    points.forEach(function (point, index) { active.set(point.y * 16 + point.x, index % 5); });
+                    const colors = ['#ef4444', '#eab308', '#22c55e', '#38bdf8', '#a855f7'];
+                    let current = active.size ? active.values().next().value : 0, moves = 0;
+                    function neighbors(index) { const x = index % 16, y = Math.floor(index / 16), out = []; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (dir) { const nx = x + dir[0], ny = y + dir[1]; if (nx >= 0 && nx < 16 && ny >= 0 && ny < 16) out.push(ny * 16 + nx); }); return out; }
+                    function flood(color) {
+                        if (ended || color === current) return;
+                        const start = active.keys().next().value, seen = new Set([start]), queue = [start], old = current;
+                        while (queue.length) neighbors(queue.shift()).forEach(function (next) { if (!seen.has(next) && active.get(next) === old) { seen.add(next); queue.push(next); } });
+                        seen.forEach(function (index) { active.set(index, color); });
+                        current = color; moves += 1; setScore(Math.max(0, 100 - moves)); drawBoard();
+                        if (Array.from(active.values()).every(function (value) { return value === current; })) finish('变化彩球本关全部变成同一颜色。');
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const palette = el('div', { className: 'pk32v-color-palette' });
+                        colors.forEach(function (color, index) { const pick = button(String(index + 1), function () { flood(index); }); pick.style.cssText = 'background:' + color + ';color:#fff;min-width:42px;min-height:34px;padding:0;font-weight:800'; palette.appendChild(pick); });
+                        const grid = renderGrid(16, 16, 'pk32-index-board');
+                        for (let index = 0; index < 256; index += 1) {
+                            const value = active.get(index);
+                            const cell = button(value == null ? '' : '●', function () { if (value != null) flood((value + 1) % colors.length); });
+                            cell.dataset.color = value == null ? '' : String(value);
+                            cell.style.cssText = 'min-width:20px;min-height:20px;padding:0;background:' + (value == null ? '#0f172a' : colors[value]) + ';color:#fff;font-size:9px;line-height:1;overflow:hidden';
+                            grid.appendChild(cell);
+                        }
+                        panel.append(nav, palette, grid, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；原始坐标 ' + active.size + ' 个，点击颜色扩展连通区域，步数 ' + moves + '。';
+                    }
+                    drawBoard();
+                }
+                function renderDolphinDiceNative(payload, nav, detail) {
+                    const coords = (payload.units || []).map(Number).filter(Number.isFinite).map(function (value) { return { raw: value, x: Math.abs(value) % 100, y: Math.floor(Math.abs(value) / 100) }; }).filter(function (point) { return point.x < 17 && point.y < 10; });
+                    const path = [], seen = new Set();
+                    coords.forEach(function (point) { const index = point.y * 17 + point.x; if (!seen.has(index)) { seen.add(index); path.push(index); } });
+                    let step = 0, cursor = 0, lastRoll = 0;
+                    function roll() {
+                        if (ended || !path.length) return;
+                        const units = (payload.units || []).map(Number).filter(Number.isFinite);
+                        lastRoll = Math.abs(units[cursor % Math.max(1, units.length)] || cursor) % 6 + 1;
+                        cursor += 1;
+                        step = Math.min(path.length - 1, step + lastRoll);
+                        setScore(step * 5);
+                        drawBoard();
+                        if (step >= path.length - 1) finish('海豚骰到达终点。');
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(17, 10, 'pk32-dolphin-board');
+                        for (let index = 0; index < 170; index += 1) {
+                            const order = path.indexOf(index), current = order === step;
+                            const cell = button(current ? '豚' : order >= 0 ? String(order + 1) : '', function () {});
+                            cell.dataset.pathOrder = order >= 0 ? String(order) : '';
+                            cell.style.cssText = 'min-width:22px;min-height:22px;padding:0;background:' + (current ? '#facc15' : order >= 0 ? '#2563eb' : '#0f172a') + ';color:#fff;font-size:9px;font-weight:700;line-height:1;overflow:hidden';
+                            grid.appendChild(cell);
+                        }
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button('掷骰', roll), button('重置本关', function () { step = 0; cursor = 0; lastRoll = 0; ended = false; drawBoard(); }));
+                        panel.append(nav, grid, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；路径点 ' + path.length + ' 个，上次骰子 ' + (lastRoll || '-') + '。';
+                    }
+                    drawBoard();
+                }
+                function renderColorMazeNative(payload, nav, detail) {
+                    const width = 14, height = 12, original = (payload.units || []).slice(0, 168).map(Number);
+                    let cells = original.slice(), player = cells.indexOf(3), collected = new Set();
+                    if (player < 0) player = cells.findIndex(function (value) { return value !== 1; });
+                    function collectable(index) { const value = cells[index]; return value > 3 && value < 10; }
+                    function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                    function move(delta) {
+                        if (ended) return;
+                        const next = player + delta;
+                        if (next < 0 || next >= cells.length || cells[next] === 1 || ((delta === 1 || delta === -1) && !sameRow(player, next))) return;
+                        player = next;
+                        if (collectable(player)) { collected.add(player); cells[player] = 0; setScore(score + 10); }
+                        drawBoard();
+                        if (!cells.some(function (_, index) { return collectable(index); })) finish('彩球迷宫本关彩球全部收集。');
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(width, height, 'pk32-color-maze-board');
+                        cells.forEach(function (value, index) {
+                            const label = index === player ? '人' : value === 1 ? '' : value > 3 ? '●' : '';
+                            const cell = button(label, function () { const delta = index - player; if ([1, -1, width, -width].indexOf(delta) >= 0) move(delta); });
+                            cell.dataset.code = String(value); cell.dataset.player = String(index === player); cell.dataset.collected = String(collected.has(index));
+                            cell.style.cssText = 'min-width:25px;min-height:25px;padding:0;background:' + (index === player ? '#facc15' : value === 1 ? '#1f2937' : value === 0 || value === 3 ? '#0f172a' : colorFor(value)) + ';color:#fff;font-size:10px;font-weight:700;line-height:1;overflow:hidden';
+                            grid.appendChild(cell);
+                        });
+                        const controls = el('div', { className: 'pk32v-controls' });
+                        [['上', -width], ['下', width], ['左', -1], ['右', 1]].forEach(function (item) { controls.append(button(item[0], function () { move(item[1]); })); });
+                        panel.append(nav, grid, controls, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 关；按 14×12 原始迷宫收集彩球，剩余 ' + cells.filter(function (_, index) { return collectable(index); }).length + ' 个。';
+                    }
+                    drawBoard();
+                }
+                function renderIndexedEvidenceBoard(payload, nav, detail) {
+                    const points = new Set((payload.units || []).map(indexPoint).map(function (point) { return point.y * 16 + point.x; }));
+                    panel.innerHTML = '';
+                    const grid = renderGrid(16, 16, 'pk32-index-board');
+                    for (let index = 0; index < 256; index += 1) {
+                        const active = points.has(index);
+                        const cell = button(active ? '坐' : '', function () {});
+                        cell.dataset.nativeIndex = String(index); cell.dataset.active = String(active);
+                        cell.style.cssText = 'min-width:20px;min-height:20px;padding:0;background:' + (active ? '#eab308' : '#0f172a') + ';color:#111;font-size:9px;font-weight:700;line-height:1;overflow:hidden';
+                        grid.appendChild(cell);
+                    }
+                    panel.append(nav, grid, detail);
+                    prompt.textContent = config.name + '：已把原始三位索引还原到 16×16 坐标盘；箱子/墙/目标语义仍未确认，暂不标记规则迁移完成。';
+                }
                 function draw() {
                     panel.innerHTML = '';
                     const payload = game.payloads[level], units = payload.units || [], shape = chooseShape(payload);
@@ -807,6 +1169,18 @@
                     if (config.name === '跳跃棋' && payload.family === 'three-digit-index-candidate') return renderJumpChess(payload, nav, detail);
                     if (config.name === '跳棋二' && payload.family === 'paired-code-candidate') return renderCheckers2(payload, nav, detail);
                     if (config.name === '拼疑犯' && (payload.family === 'paired-code-candidate' || payload.family === 'numeric-mixed')) return renderSuspectSokoban(payload, nav, detail);
+                    if (config.name === '24点二') return renderTwentyFourNative(payload, nav, detail);
+                    if (config.name === '21点二') return renderBlackjackNative(payload, nav, detail);
+                    if (config.name === '三张牌') return renderThreeCardsNative(payload, nav, detail);
+                    if (config.name === '梭哈六') return renderStudSixNative(payload, nav, detail);
+                    if (config.name === '找彩球' && payload.family === 'three-digit-index-candidate') return renderFindColorBalls(payload, nav, detail);
+                    if (config.name === '变化彩球' && payload.family === 'three-digit-index-candidate') return renderChangingColorBalls(payload, nav, detail);
+                    if (config.name === '海豚骰' && payload.family === 'legacy-100-stream') return renderDolphinDiceNative(payload, nav, detail);
+                    if (config.name === '彩球迷宫' && payload.family === 'fixed-area-candidate') return renderColorMazeNative(payload, nav, detail);
+                    if (config.name === '推箱子二' && payload.family === 'three-digit-index-candidate') return renderIndexedEvidenceBoard(payload, nav, detail);
+                    if (config.name === '记忆考验') return renderMemoryPairsNative(payload, nav, detail);
+                    if (config.name === '汉诺塔') return renderHanoiNative(payload, nav, detail);
+                    if (config.name === '老虎机') return renderSlotsNative(payload, nav, detail);
                     if (config.name === '反应测试' && payload.family === 'legacy-100-stream') return renderMemoryPairsNative(payload, nav, detail);
                     panel.append(nav, grid, detail);
                     prompt.textContent = config.name + '：已绑定原始结构化载荷 ' + (level + 1) + ' / ' + game.payloads.length + '；当前只是内容迁移适配层，规则语义仍待按原程序确认。';
@@ -814,6 +1188,104 @@
                 select.onchange = function () { level = Number(select.value) || 0; draw(); };
                 draw();
             }).catch(function () { prompt.textContent = config.name + '结构化载荷加载失败'; });
+        }
+        function renderCandidateLevelFile() {
+            const file = CANDIDATE_LEVEL_FILES[config.name];
+            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载' + config.name + '候选原生关卡…');
+            const panel = el('div', { className: 'pk32v-native-data' });
+            body.append(prompt, panel);
+            fetch('/data/' + file).then(function (response) { return response.json(); }).then(function (data) {
+                let level = 0;
+                const select = el('select', { 'aria-label': config.name + '候选原生关卡' });
+                (data.levels || []).forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '候选记录 ' + (item.number || index + 1))); });
+                function colorForToken(token) {
+                    const n = parseInt(token, 10);
+                    const colors = ['#0f172a', '#334155', '#2563eb', '#16a34a', '#eab308', '#dc2626', '#7c3aed', '#0891b2', '#f97316', '#be123c'];
+                    return Number.isFinite(n) ? colors[Math.abs(n) % colors.length] : '#475569';
+                }
+                function draw() {
+                    const item = (data.levels || [])[level];
+                    panel.innerHTML = '';
+                    if (!item) {
+                        prompt.textContent = config.name + '没有候选关卡记录。';
+                        return;
+                    }
+                    const width = Math.max(1, item.width || 10), height = Math.max(1, item.height || Math.ceil(String(item.cells || '').length / width));
+                    const cellWidth = Math.max(1, item.cellWidth || 1);
+                    const tokens = String(item.cells || '').match(new RegExp('.{1,' + cellWidth + '}', 'g')) || [];
+                    const nav = el('div', { className: 'pk32v-toolbar' });
+                    nav.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一条', function () { level = Math.min((data.levels || []).length - 1, level + 1); select.value = String(level); draw(); }), select);
+                    const grid = renderGrid(width, height, 'pk32-candidate-native-board');
+                    for (let index = 0; index < width * height; index += 1) {
+                        const token = tokens[index] || '0';
+                        const parsed = parseInt(token, 10);
+                        const text = /^0+$/.test(token) ? '' : Number.isFinite(parsed) ? String(parsed) : token;
+                        const cell = button(text, function () {});
+                        cell.dataset.code = token;
+                        cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + colorForToken(token) + ';color:#fff;font-size:10px;font-weight:700;line-height:1;overflow:hidden';
+                        grid.appendChild(cell);
+                    }
+                    panel.append(nav, grid);
+                    prompt.textContent = config.name + '：候选原生记录 ' + (level + 1) + ' / ' + (data.levels || []).length + '，' + width + '×' + height + '，cellWidth=' + cellWidth + '；归属和完整规则仍待原生代码交叉确认。';
+                }
+                select.onchange = function () { level = Number(select.value) || 0; draw(); };
+                draw();
+            }).catch(function () { prompt.textContent = config.name + '候选原生关卡加载失败'; });
+        }
+        function renderRawPayloads() {
+            const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载' + config.name + '原始载荷…');
+            const panel = el('div', { className: 'pk32v-native-data' });
+            body.append(prompt, panel);
+            fetch('/data/pk32-native-catalog.json').then(function (response) { return response.json(); }).then(function (data) {
+                const record = (data.records || []).find(function (item) { return item.name === config.name; });
+                const payloads = record && record.nativePayloads || [];
+                let index = 0;
+                const select = el('select', { 'aria-label': config.name + '原始载荷' });
+                payloads.forEach(function (payload, payloadIndex) { select.appendChild(el('option', { value: String(payloadIndex) }, '载荷 ' + (payloadIndex + 1) + ' / ' + payloads.length + '，长度 ' + payload.length)); });
+                function inspect(value) {
+                    const width = Number(value.slice(0, 2)), height = Number(value.slice(2, 4));
+                    if (width >= 2 && width <= 40 && height >= 2 && height <= 40) {
+                        for (const cellWidth of [1, 2, 3]) if (value.length >= 4 + width * height * cellWidth) return { width: width, height: height, cellWidth: cellWidth, offset: 4 };
+                    }
+                    const compactWidth = Number(value.slice(0, 1)), compactHeight = Number(value.slice(1, 2));
+                    if (compactWidth >= 2 && compactHeight >= 2 && value.length >= 2 + compactWidth * compactHeight) return { width: compactWidth, height: compactHeight, cellWidth: 1, offset: 2 };
+                    return null;
+                }
+                function colorForToken(token) {
+                    const n = parseInt(token, 10);
+                    const colors = ['#0f172a', '#334155', '#2563eb', '#16a34a', '#eab308', '#dc2626', '#7c3aed', '#0891b2', '#f97316', '#be123c'];
+                    return Number.isFinite(n) ? colors[Math.abs(n) % colors.length] : '#475569';
+                }
+                function draw() {
+                    const payload = payloads[index];
+                    panel.innerHTML = '';
+                    if (!payload) {
+                        prompt.textContent = config.name + '没有可显示的原始载荷。';
+                        return;
+                    }
+                    const value = String(payload.value || ''), shape = inspect(value);
+                    const nav = el('div', { className: 'pk32v-toolbar' });
+                    nav.append(button('上一条', function () { index = Math.max(0, index - 1); select.value = String(index); draw(); }), button('下一条', function () { index = Math.min(payloads.length - 1, index + 1); select.value = String(index); draw(); }), select);
+                    panel.appendChild(nav);
+                    if (shape) {
+                        const bodyValue = value.slice(shape.offset, shape.offset + shape.width * shape.height * shape.cellWidth);
+                        const tokens = bodyValue.match(new RegExp('.{1,' + shape.cellWidth + '}', 'g')) || [];
+                        const grid = renderGrid(shape.width, shape.height, 'pk32-raw-payload-board');
+                        for (let pos = 0; pos < shape.width * shape.height; pos += 1) {
+                            const token = tokens[pos] || '0', parsed = parseInt(token, 10), text = /^0+$/.test(token) ? '' : Number.isFinite(parsed) ? String(parsed) : token;
+                            const cell = button(text, function () {});
+                            cell.dataset.code = token;
+                            cell.style.cssText = 'min-width:22px;min-height:22px;padding:0;background:' + colorForToken(token) + ';color:#fff;font-size:10px;font-weight:700;line-height:1;overflow:hidden';
+                            grid.appendChild(cell);
+                        }
+                        panel.appendChild(grid);
+                    }
+                    panel.appendChild(el('pre', { className: 'pk32v-native-grid' }, value));
+                    prompt.textContent = config.name + '：低置信原始载荷 ' + (index + 1) + ' / ' + payloads.length + '；仅展示二进制提取结果，未确认关卡归属和规则语义。';
+                }
+                select.onchange = function () { index = Number(select.value) || 0; draw(); };
+                draw();
+            }).catch(function () { prompt.textContent = config.name + '原始载荷加载失败'; });
         }
         function renderReaction() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '等待目标出现后立即点击。');
@@ -879,28 +1351,94 @@
         function renderNativeTangram() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七巧板原生载荷…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
             fetch('/data/pk32-tangram-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                let level = 0; const select = el('select', { 'aria-label': '七巧板原生数据' });
+                let level = 0, selected = '1', work = [];
+                const select = el('select', { 'aria-label': '七巧板原生数据' });
                 data.levels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '已定位数据 ' + (index + 1))); });
-                  function draw() { panel.innerHTML = ''; const nav = el('div', { className: 'pk32v-toolbar' }); nav.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一条', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select); const item = data.levels[level], width = item.cells.length === 150 ? 15 : 19, chunks = item.cells.match(new RegExp('.{1,' + width + '}', 'g')) || [], grid = renderGrid(width, chunks.length, 'pk32-tangram-board'); chunks.join('').split('').forEach(function (value) { const cell = button(value === '0' ? '' : value, function () { cell.classList.toggle('pk32-tangram-selected'); }); cell.dataset.code = value; cell.style.cssText = 'min-width:22px;min-height:22px;padding:0;background:' + (value === '0' ? '#0f172a' : value === '1' ? '#ef4444' : value === '2' ? '#f59e0b' : value === '3' ? '#eab308' : value === '4' ? '#22c55e' : value === '5' ? '#38bdf8' : '#a78bfa') + ';color:#111;font-size:10px'; grid.appendChild(cell); }); panel.appendChild(nav); panel.appendChild(grid); prompt.textContent = '七巧板：原版声明 80 关；当前原始载荷 ' + (level + 1) + ' / ' + data.levels.length + '，每条载荷含 10 个图形；几何规则仍在校核。'; }
-                select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw();
+                function color(value) { return value === '0' ? '#0f172a' : value === '1' ? '#ef4444' : value === '2' ? '#f59e0b' : value === '3' ? '#eab308' : value === '4' ? '#22c55e' : value === '5' ? '#38bdf8' : value === '6' ? '#a78bfa' : '#f472b6'; }
+                function reset() { work = data.levels[level].cells.split('').map(function () { return '0'; }); ended = false; draw(); }
+                  function draw() { panel.innerHTML = ''; const nav = el('div', { className: 'pk32v-toolbar' }); nav.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一条', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); reset(); }), select, button('清空本图', reset)); const item = data.levels[level], target = item.cells.split(''), width = item.cells.length === 150 ? 15 : 19, grid = renderGrid(width, Math.ceil(target.length / width), 'pk32-tangram-board'), palette = el('div', { className: 'pk32v-controls' }); '1234567'.split('').forEach(function (value) { const pick = button('板' + value, function () { selected = value; draw(); }); pick.style.cssText = 'background:' + color(value) + ';color:#111;outline:' + (selected === value ? '3px solid #111' : 'none'); palette.appendChild(pick); }); target.forEach(function (value, index) { const current = work[index]; const cell = button(current === '0' ? '' : current, function () { if (ended || value === '0') return; work[index] = current === selected ? '0' : selected; draw(); if (target.every(function (code, i) { return code === '0' || work[i] === code; })) finish('七巧板当前原始图形已匹配。'); }); cell.dataset.targetCode = value; cell.dataset.code = current; cell.style.cssText = 'min-width:22px;min-height:22px;padding:0;background:' + (current !== '0' ? color(current) : value === '0' ? '#0f172a' : color(value)) + ';opacity:' + (current === '0' && value !== '0' ? '0.45' : '1') + ';color:#111;font-size:10px;font-weight:700'; grid.appendChild(cell); }); panel.appendChild(nav); panel.appendChild(palette); panel.appendChild(grid); prompt.textContent = '七巧板：原版声明 80 关，已提取 ' + data.levels.length + ' 条图形；当前用 7 个板块颜色匹配原始目标格。拖拽/旋转几何仍待后续还原。'; }
+                select.onchange = function () { level = Number(select.value) || 0; reset(); }; reset();
             }).catch(function () { prompt.textContent = '七巧板原生载荷加载失败'; });
         }
         function renderNativeSyncMove() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载同步移动原生载荷…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
             fetch('/data/pk32-sync-move-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                let level = 0; const select = el('select', { 'aria-label': '同步移动原生数据' });
+                let level = 0, cells = [], width = 14, height = 10, side = '7';
+                const select = el('select', { 'aria-label': '同步移动原生数据' });
                 data.levels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '已定位数据 ' + (index + 1))); });
-                  function draw() { panel.innerHTML = ''; const nav = el('div', { className: 'pk32v-toolbar' }); nav.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一条', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select); const item = data.levels[level], width = item.cells.length >= 140 ? 14 : 9, cells = item.cells.split(''), grid = renderGrid(width, Math.ceil(cells.length / width), 'pk32-sync-board'); cells.forEach(function (value, index) { const cell = button(value === '0' ? '' : value === '7' ? '白' : value === '8' ? '黑' : '·', function () { if (value === '0') return; cell.dataset.selected = 'true'; }); cell.dataset.code = value; cell.style.cssText = 'min-width:28px;min-height:28px;padding:0;border-radius:50%;background:' + (value === '7' ? '#f8fafc;color:#111' : value === '8' ? '#111827;color:#fff' : '#64748b;color:#fff') + ';font-size:11px'; grid.appendChild(cell); }); panel.appendChild(nav); panel.appendChild(grid); prompt.textContent = '同步移动：原生数据 ' + (level + 1) + ' / ' + data.levels.length + '；白棋无棋可下时黑棋继续。棋盘编码和落子规则正在校核。'; }
-                select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw();
+                function chooseWidth(length) { if (length % 14 === 0) return 14; if (length % 9 === 0) return 9; if (length % 8 === 0) return 8; return Math.max(1, Math.floor(Math.sqrt(length))); }
+                function reset() { const item = data.levels[level]; width = chooseWidth(item.cells.length); height = Math.ceil(item.cells.length / width); cells = item.cells.padEnd(width * height, '9').split(''); side = '7'; ended = false; draw(); }
+                function opponent() { return side === '7' ? '8' : '7'; }
+                function captures(index, dx, dy) {
+                    const other = opponent(), hit = []; let x = index % width + dx, y = Math.floor(index / width) + dy;
+                    while (x >= 0 && x < width && y >= 0 && y < height) {
+                        const pos = y * width + x, value = cells[pos];
+                        if (value === other) hit.push(pos);
+                        else return value === side && hit.length ? hit : [];
+                        x += dx; y += dy;
+                    }
+                    return [];
+                }
+                function legal(index, checkSide) {
+                    const oldSide = side; if (checkSide) side = checkSide;
+                    const result = cells[index] === '0' ? [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]].flatMap(function (dir) { return captures(index, dir[0], dir[1]); }) : [];
+                    side = oldSide; return result;
+                }
+                function hasMove(checkSide) { return cells.some(function (_, index) { return legal(index, checkSide).length > 0; }); }
+                function play(index) {
+                    if (ended || cells[index] !== '0') return;
+                    const hit = legal(index);
+                    if (!hit.length) return;
+                    cells[index] = side; hit.forEach(function (pos) { cells[pos] = side; }); setScore(score + hit.length + 1);
+                    side = opponent();
+                    if (!hasMove(side)) {
+                        const skipped = side; side = opponent();
+                        if (!hasMove(side)) { finish('双方都无棋可下，同步移动本局结束。'); return; }
+                        prompt.textContent = (skipped === '7' ? '白棋' : '黑棋') + '无棋可下，另一方继续。';
+                    }
+                    draw();
+                }
+                  function draw() { panel.innerHTML = ''; const nav = el('div', { className: 'pk32v-toolbar' }); nav.append(button('上一条', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一条', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); reset(); }), select, button('重置本关', reset)); const grid = renderGrid(width, height, 'pk32-sync-board'); cells.forEach(function (value, index) { const canPlay = legal(index).length > 0; const cell = button(value === '0' ? (canPlay ? '可' : '') : value === '7' ? '白' : value === '8' ? '黑' : '', function () { play(index); }); cell.dataset.code = value; cell.dataset.legal = String(canPlay); cell.style.cssText = 'min-width:28px;min-height:28px;padding:0;border-radius:50%;background:' + (value === '7' ? '#f8fafc;color:#111' : value === '8' ? '#111827;color:#fff' : canPlay ? '#16a34a;color:#fff' : '#64748b;color:#fff') + ';font-size:11px;font-weight:700'; grid.appendChild(cell); }); panel.appendChild(nav); panel.appendChild(grid); prompt.textContent = '同步移动：原生数据 ' + (level + 1) + ' / ' + data.levels.length + '；当前 ' + (side === '7' ? '白棋' : '黑棋') + ' 落子，夹住对方棋子翻转，无棋可下则跳过。'; }
+                select.onchange = function () { level = Number(select.value) || 0; reset(); }; reset();
             }).catch(function () { prompt.textContent = '同步移动原生载荷加载失败'; });
         }
         function renderNativeBlackHole() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载宇宙黑洞原生载荷…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
             fetch('/data/pk32-black-hole-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                const playableLevels = data.levels.slice(0, data.nativeLevelCount || data.levels.length);
-                let level = 0; const select = el('select', { 'aria-label': '宇宙黑洞原生数据' }); playableLevels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '原版关卡 ' + (index + 1))); });
-                function draw() { panel.innerHTML = ''; const nav = el('div', { className: 'pk32v-toolbar' }); nav.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(playableLevels.length - 1, level + 1); select.value = String(level); draw(); }), select); panel.appendChild(nav); const item = playableLevels[level]; const width = item.cells.length === 676 ? 26 : item.cells.length === 168 ? 14 : item.cells.length === 36 ? 6 : item.cells.length; const rows = item.cells.match(new RegExp('.{1,' + width + '}', 'g')) || [], grid = renderGrid(width, rows.length, 'pk32-black-hole-board'); rows.join('').split('').forEach(function (value) { const cell = button(value === '0' ? '' : value, function () { cell.classList.toggle('pk32-black-hole-selected'); }); cell.dataset.code = value; cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (value === '0' ? '#0f172a' : value === '1' ? '#38bdf8' : value === '2' ? '#f59e0b' : value === '5' ? '#ef4444' : '#64748b') + ';color:#fff;font-size:10px'; grid.appendChild(cell); }); panel.appendChild(grid); prompt.textContent = '宇宙黑洞：原版 30 关；原生关卡 ' + (level + 1) + ' / ' + playableLevels.length + '。另有 ' + Math.max(0, data.levels.length - playableLevels.length) + ' 条待确认载荷未开放，物品碰撞规则仍在校核。'; }
-                select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw();
+                const playableLevels = data.levels.filter(function (item) { return item.cells.length === 676; }).slice(0, data.nativeLevelCount || 30);
+                let level = 0, cells = [], base = 0, seconds = 60, timer = null, bombs = 0, multiplier = 1;
+                const width = 26, select = el('select', { 'aria-label': '宇宙黑洞原生数据' });
+                playableLevels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '原版关卡 ' + item.number)); });
+                function itemAt(index) { return cells[index] === '2' || cells[index] === '3' || cells[index] === '5'; }
+                function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                function clearLine(a, b) {
+                    const delta = sameRow(a, b) ? (b > a ? 1 : -1) : (a % width === b % width ? (b > a ? width : -width) : 0);
+                    if (!delta) return false;
+                    for (let p = a + delta; p !== b; p += delta) if (cells[p] === '1') return false;
+                    return true;
+                }
+                function reset() { const item = playableLevels[level]; cells = item.cells.split(''); base = cells.findIndex(function (value) { return value === '6' || value === '7' || value === '8' || value === '9'; }); if (base < 0) base = 0; seconds = 60; bombs = 0; multiplier = 1; ended = false; clearInterval(timer); timer = setInterval(function () { if (ended) return; seconds -= 1; if (seconds <= 0) finish('哈！时间到了！请再来一次吧。'); else draw(); }, 1000); draw(); }
+                function collect(index) {
+                    if (ended || !itemAt(index) || !clearLine(base, index)) return;
+                    const code = cells[index]; cells[index] = '0';
+                    if (code === '2') bombs += 1;
+                    if (code === '5') multiplier += 1;
+                    setScore(score + (code === '3' ? 20 : code === '5' ? 30 : 10) * multiplier);
+                    draw();
+                    if (!cells.some(function (_, pos) { return itemAt(pos); })) finish('本关物品已经全部打捞。');
+                }
+                function blast() { if (!bombs) return; const target = cells.findIndex(function (value, index) { return index !== base && value !== '0' && value !== '6' && value !== '7' && value !== '8' && value !== '9'; }); if (target >= 0) { cells[target] = '0'; bombs -= 1; draw(); } }
+                function draw() {
+                    panel.innerHTML = '';
+                    const nav = el('div', { className: 'pk32v-toolbar' }); nav.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min(playableLevels.length - 1, level + 1); select.value = String(level); reset(); }), select, button('使用炸弹', blast), button('重置本关', reset)); panel.appendChild(nav);
+                    const grid = renderGrid(width, 26, 'pk32-black-hole-board');
+                    cells.forEach(function (value, index) { const label = index === base ? '洞' : value === '2' ? '弹' : value === '3' ? '速' : value === '5' ? '宝' : ''; const cell = button(label, function () { collect(index); }); cell.dataset.code = value; cell.style.cssText = 'min-width:20px;min-height:20px;padding:0;background:' + (index === base ? '#111827' : value === '0' ? '#0f172a' : value === '1' ? '#334155' : value === '2' ? '#f59e0b' : value === '3' ? '#38bdf8' : value === '5' ? '#ef4444' : '#64748b') + ';color:#fff;font-size:10px;font-weight:700'; grid.appendChild(cell); });
+                    panel.appendChild(grid);
+                    prompt.textContent = '宇宙黑洞：原版 30 关；点击与黑洞同行或同列且无遮挡的道具打捞。炸弹 ' + bombs + '，宝石倍率 ' + multiplier + '，剩余 ' + seconds + ' 秒。';
+                }
+                select.onchange = function () { level = Number(select.value) || 0; reset(); };
+                addCleanup(function () { clearInterval(timer); });
+                reset();
             }).catch(function () { prompt.textContent = '宇宙黑洞原生载荷加载失败'; });
         }
         function renderNativeNextHundred() {
@@ -1021,19 +1559,31 @@
             const panel = el('div', { className: 'pk32v-native-data' });
             body.append(prompt, panel);
             fetch('/data/pk32-cube2-levels.json').then(function (response) { return response.json(); }).then(function (data) {
-                let level = 0;
+                let level = 0, view = 0, placed = new Set();
                 const select = el('select', { 'aria-label': '立体魔方二原生关卡' });
                 data.levels.forEach(function (item, index) { select.appendChild(el('option', { value: String(index) }, '第 ' + (index + 1) + ' 关 · ' + item.length + ' 位编码')); });
+                function tokens() { return data.levels[level].cells.match(/.{1,2}/g) || []; }
+                function point(token) { const a = Number(token[0]), b = Number(token[1]); return view % 2 ? { x: b, y: a } : { x: a, y: b }; }
+                function reset() { placed = new Set(); ended = false; draw(); }
                 function draw() {
                     panel.innerHTML = '';
                     const nav = el('div', { className: 'pk32v-toolbar' });
-                    nav.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select);
+                    nav.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); reset(); }), select, button('旋转视角', function () { view = (view + 1) % 4; draw(); }), button('重置本关', reset));
                     panel.appendChild(nav);
-                    const item = data.levels[level];
-                    panel.appendChild(el('pre', { className: 'pk32v-native-grid' }, item.cells.match(/.{1,2}/g).join(' ')));
-                    prompt.textContent = '原生关卡 ' + (level + 1) + ' / ' + data.levels.length + '；编码长度 ' + item.cells.length + '，立体坐标解析中。';
+                    const rawTokens = tokens(), targets = Array.from(new Set(rawTokens)), grid = renderGrid(10, 10, 'pk32-cube2-board');
+                    for (let index = 0; index < 100; index += 1) {
+                        const x = index % 10, y = Math.floor(index / 10), token = targets.find(function (value) { const p = point(value); return p.x === x && p.y === y; });
+                        const done = token && placed.has(token);
+                        const cell = button(done ? '方' : token ? '影' : '', function () { if (!token || ended) return; if (placed.has(token)) placed.delete(token); else placed.add(token); draw(); if (placed.size === targets.length) finish('立体魔方二当前原始坐标组已重建。'); });
+                        cell.dataset.token = token || ''; cell.dataset.placed = String(done);
+                        cell.style.cssText = 'min-width:26px;min-height:26px;padding:0;background:' + (done ? '#22c55e' : token ? '#64748b' : '#0f172a') + ';color:#fff;font-size:10px;font-weight:700';
+                        grid.appendChild(cell);
+                    }
+                    panel.appendChild(grid);
+                    panel.appendChild(el('pre', { className: 'pk32v-native-grid' }, rawTokens.join(' ')));
+                    prompt.textContent = '立体魔方二：原生关卡 ' + (level + 1) + ' / ' + data.levels.length + '；点击坐标影子放置方块，旋转视角查看二位坐标投影。真实 3D 旋转规则仍待后续还原。';
                 }
-                select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw();
+                select.onchange = function () { level = Number(select.value) || 0; reset(); }; reset();
             }).catch(function () { prompt.textContent = '立体魔方二原生数据加载失败'; });
         }
         function renderNativeMirror() {
@@ -1617,7 +2167,39 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
         }
         function renderNativeGenhua2() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载跟花二原生关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
-            fetch('/data/pk32-genhua2-levels.json').then(function (response) { return response.json(); }).then(function (data) { let level = 0; const select = el('select', { 'aria-label': '跟花二原生关卡' }); data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); }); function draw() { panel.innerHTML = ''; const item = data.levels[level]; panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); draw(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); draw(); }), select, el('pre', { className: 'pk32v-native-grid' }, item.cells.match(/.{1,6}/g).join('\n'))); prompt.textContent = '跟花二原生关卡 ' + (level + 1) + ' / ' + data.levels.length + '；6×6 牌面编码，规则解析中。'; } select.onchange = function () { level = Number(select.value) || 0; draw(); }; draw(); }).catch(function () { prompt.textContent = '跟花二原生数据加载失败'; });
+            fetch('/data/pk32-genhua2-levels.json').then(function (response) { return response.json(); }).then(function (data) {
+                let level = 0, cells = [], player = 0, moves = 30, flowers = new Set();
+                const width = 6, select = el('select', { 'aria-label': '跟花二原生关卡' });
+                data.levels.forEach(function (_, index) { select.appendChild(el('option', { value: String(index) }, '原生关卡 ' + (index + 1))); });
+                function reset() { cells = data.levels[level].cells.split(''); player = Math.max(0, cells.indexOf('5')); flowers = new Set(cells.map(function (value, index) { return /^[1-4]$/.test(value) ? index : -1; }).filter(function (index) { return index >= 0; })); moves = 30; ended = false; draw(); }
+                function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                function move(delta) {
+                    const next = player + delta;
+                    if (ended || moves <= 0 || next < 0 || next >= cells.length || ((delta === 1 || delta === -1) && !sameRow(player, next))) return;
+                    player = next; moves -= 1;
+                    if (flowers.has(player)) { flowers.delete(player); setScore(score + 5); }
+                    draw();
+                    if (!flowers.size) finish('跟花二当前原生盘面完成。');
+                    else if (moves <= 0) finish('哈！移动次数用完了，请再来一次吧。');
+                }
+                function draw() {
+                    panel.innerHTML = '';
+                    const grid = renderGrid(width, 6, 'pk32-genhua2-board');
+                    cells.forEach(function (value, index) {
+                        const activeFlower = flowers.has(index), label = index === player ? '人' : activeFlower ? value : '';
+                        const cell = button(label, function () { const delta = index - player; if (delta === 1 || delta === -1 || delta === width || delta === -width) move(delta); });
+                        cell.dataset.code = value; cell.dataset.player = String(index === player);
+                        cell.style.cssText = 'min-width:30px;min-height:30px;padding:0;background:' + (index === player ? '#22c55e' : activeFlower ? ({ '1': '#ef4444', '2': '#f59e0b', '3': '#38bdf8', '4': '#a78bfa' }[value] || '#64748b') : '#0f172a') + ';color:#fff;font-size:12px;font-weight:700';
+                        grid.appendChild(cell);
+                    });
+                    const controls = el('div', { className: 'pk32v-controls' });
+                    [['上', -width], ['下', width], ['左', -1], ['右', 1]].forEach(function (entry) { controls.appendChild(button(entry[0], function () { move(entry[1]); })); });
+                    panel.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min(data.levels.length - 1, level + 1); select.value = String(level); reset(); }), select, button('重置本关', reset), grid, controls);
+                    prompt.textContent = '跟花二：原版提示 1-15 关与移动次数；当前绑定 ' + data.levels.length + ' 条 6×6 原始盘面。移动点收集 1-4 花色，剩余移动 ' + moves + '。';
+                }
+                select.onchange = function () { level = Number(select.value) || 0; reset(); };
+                reset();
+            }).catch(function () { prompt.textContent = '跟花二原生数据加载失败'; });
         }
         function renderNativeWires2() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载连结电线二原生箱体关卡…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
@@ -2162,7 +2744,7 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; selected = null; ended = false; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; selected = null; ended = false; draw(); } }), button('清除连线', function () { links = []; selected = null; ended = false; draw(); }));
             wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子' ? renderNativeSokoban : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子' ? renderNativeSokoban : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : RAW_PAYLOAD_NAMES.has(config.name) ? renderRawPayloads : CANDIDATE_LEVEL_FILES[config.name] ? renderCandidateLevelFile : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },
