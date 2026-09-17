@@ -6,7 +6,7 @@
 
     NAMES.push(...'跟花|丰收|拱猪|十点半|钓鱼|争上游|抽乌龟|梭哈|牌九|扑克麻将|百智牌|FF8卡片|比大小|移动|接龙|争夺|同花|三打三|记忆|变幻牌|挑选|暗牌|扑克扫雷|24点|炮牌|猜数|幸运|读心术|梭哈二|井字牌|斗地主|拖拉机-升级|纸牌魔法阵|别棍|纸牌|空当接龙|蜘蛛纸牌|14点|考眼力|21点|13点|扎金花|纸牌算命|抽乌龟二|抽乌龟三|接水管|读心术三|梭哈三|桥桥|桥牌|梭哈四|读心术四|21点二|塔罗牌|梭哈五|抽乌龟四|抽乌龟五|梭哈六|三张牌|梭哈七|魔力纸牌|跟花二|接龙二|扫雷|赛马|俄罗斯方块|飞行棋|贪吃蛇|独粒钻石|推箱子|火箭大战|打地鼠|黑白棋|同色方块|华容道|强手棋|五彩连珠|跳棋|五子棋|斗兽棋|迷宫|拼图|七彩宝石|宝石方块|连结电线|魔塔|开心辞典|开心灯谜|神符|原子|汉诺塔|前进棋|轮盘|老虎机|连连看|扫雷二|泡泡彩球|找不同|找彩球|变化彩球|魔塔二|多彩泡泡|魔塔三|推箱子二|推箱子三|移彩球|数独|绝妙飞行|推箱子六|十字绣|变色彩球|扩展线路|飞镖王|爆破彩球二|七盏灯|交换彩球|四子棋|立体魔方|吃豆子|推箱子四|推箱子五|连结电线二|七巧板'.split('|').filter(function (name) { return NAMES.indexOf(name) < 0; }));
     const BOARD = new Set('中国象棋|围棋|象棋-暗棋|国际象棋|军棋|正方形棋|军棋-暗棋|六子连珠|天地棋|跳跃棋|跳棋二|圈地|五连板'.split('|'));
-    const NUMBERS = new Set('记数|转换|排数字|超级99|幸运数字|40点|24点二|骰子王|数谜|智商测试|海豚骰|成语填字'.split('|'));
+    const NUMBERS = new Set('记数|转换|排数字|超级99|重合|幸运数字|40点|24点二|骰子王|数谜|智商测试|海豚骰|成语填字'.split('|'));
     const MEMORY = new Set('配对|读心术二|记忆考验|拼疑犯|邻居|摘花朵'.split('|'));
     const REACTION = new Set('追逐|连击|反应测试|剪刀石头布|冒泡大战|激光坦克|潜艇大战|宇宙黑洞|海盗船|极品飞车'.split('|'));
     const BALLS = new Set('连珠牌|同色方块变体|电磁彩球|魅力之球|弹力连珠|碰撞彩球|彩球迷宫|彩球连线|绿洲|魔力珠宝'.split('|'));
@@ -124,6 +124,7 @@
         function renderAction() {
             if (config.name === '华容道') return renderNativeHuarong();
             if (config.name === '接水管') return renderNativePipeConnect();
+            if (config.name === '捡棋子') return renderPickPieces();
             let hits = 0;
             const limit = /海盗船|潜艇大战|宇宙黑洞|极品飞车|反射镜|企鹅/.test(config.name) ? 12 : 10;
             const prompt = el('p', { className: 'pk32v-prompt' }, '完成本局目标：0 / ' + limit);
@@ -136,6 +137,43 @@
                 if (hits >= limit) finish('本局目标完成。');
             });
             body.append(prompt, target);
+        }
+        function renderPickPieces() {
+            const width = 7, height = 7;
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const grid = renderGrid(width, height, 'pick-pieces-board');
+            let current = -1;
+            const pieces = Array(width * height).fill(false);
+            [3, 9, 10, 15, 17, 21, 22, 23, 25, 29, 31, 33, 37, 38, 39, 45].forEach(function (index) { pieces[index] = true; });
+            function sameLine(a, b) { return Math.floor(a / width) === Math.floor(b / width) || a % width === b % width; }
+            function clearPath(a, b) {
+                if (a < 0) return true;
+                if (!sameLine(a, b)) return false;
+                const step = Math.floor(a / width) === Math.floor(b / width) ? (b > a ? 1 : -1) : (b > a ? width : -width);
+                for (let pos = a + step; pos !== b; pos += step) if (!pieces[pos]) return false;
+                return true;
+            }
+            function canPick(index) { return pieces[index] && clearPath(current, index); }
+            function draw() {
+                grid.innerHTML = '';
+                pieces.forEach(function (hasPiece, index) {
+                    const legal = canPick(index);
+                    const b = button(hasPiece ? (legal ? '白' : '黑') : '', function () {
+                        if (!legal || ended) return;
+                        pieces[index] = false;
+                        current = index;
+                        setScore(score + 1);
+                        if (!pieces.some(Boolean)) return finish('所有棋子已经捡完，过关。');
+                        draw();
+                    });
+                    b.disabled = !legal || ended;
+                    b.dataset.legal = String(legal);
+                    grid.appendChild(b);
+                });
+                prompt.textContent = '捡棋子：白色棋子表示现在可以选择，黑色棋子现在不能选择；每次只能沿横线或竖线连续捡，不能跳过空位。剩余 ' + pieces.filter(Boolean).length + ' 枚。';
+            }
+            body.append(prompt, grid, button('重开', function () { render(); }));
+            draw();
         }
         function renderNativePipeConnect() {
             const width = 12, height = 8, total = width * height;
@@ -1738,6 +1776,8 @@
             }).catch(function () { prompt.textContent = config.name + '原始载荷加载失败'; });
         }
         function renderReaction() {
+            if (config.name === '剪刀石头布') return renderRockPaperScissors();
+            if (config.name === '冒泡大战') return renderBubbleBattle();
             const prompt = el('p', { className: 'pk32v-prompt' }, '等待目标出现后立即点击。');
             const target = button('等待…', function () {});
             body.append(prompt, target);
@@ -1748,7 +1788,326 @@
             target.onclick = function () { if (target.dataset.ready === '1' && !ended) { setScore(score + 20); target.dataset.ready = '0'; target.textContent = '等待…'; schedule(500); } };
             addCleanup(function () { if (timer) clearTimeout(timer); });
         }
+        function renderRockPaperScissors() {
+            const prompt = el('p', { className: 'pk32v-prompt' }, '剪刀石头布：请选择出拳。');
+            const controls = el('div', { className: 'pk32v-toolbar' });
+            const moves = ['剪刀', '石头', '布'];
+            let rounds = 0, wins = 0;
+            function play(mine) {
+                if (ended) return;
+                const computer = moves[randomInt(moves.length)];
+                rounds += 1;
+                const result = mine === computer ? 0 : (mine === '剪刀' && computer === '布') || (mine === '石头' && computer === '剪刀') || (mine === '布' && computer === '石头') ? 1 : -1;
+                if (result > 0) { wins += 1; setScore(score + 10); }
+                prompt.textContent = '你出' + mine + '，电脑出' + computer + '，' + (result > 0 ? '你赢了' : result < 0 ? '你输了' : '平局') + '。胜局 ' + wins + ' / ' + rounds + '。';
+                if (rounds >= 5) finish('五局结束，胜局：' + wins + '。');
+            }
+            moves.forEach(function (move) { controls.appendChild(button(move, function () { play(move); })); });
+            body.append(prompt, controls);
+        }
+        function renderBubbleBattle() {
+            const size = 6, cells = Array.from({ length: size * size }, function () { return { side: null, count: 0 }; });
+            let turn = 0, moves = 0;
+            [0, size - 1, size * (size - 1), size * size - 1].forEach(function (index, n) { cells[index] = { side: n % 2, count: 2 }; });
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const grid = renderGrid(size, size, 'bubble-battle-board');
+            function label(side) { return side === 0 ? '蓝' : '红'; }
+            function around(index) {
+                const x = index % size, y = Math.floor(index / size), list = [];
+                [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(function (d) {
+                    const nx = x + d[0], ny = y + d[1];
+                    if (nx >= 0 && nx < size && ny >= 0 && ny < size) list.push(ny * size + nx);
+                });
+                return list;
+            }
+            function owned(side) { return cells.filter(function (cell) { return cell.side === side; }).length; }
+            function addBubble(index, side) {
+                const cell = cells[index];
+                cell.side = side;
+                cell.count += 1;
+                if (cell.count < 4) return;
+                cell.count = 0;
+                cell.side = null;
+                around(index).forEach(function (next) { addBubble(next, side); });
+            }
+            function aiMove() {
+                if (ended || turn !== 1) return;
+                const choices = cells.map(function (cell, index) { return cell.side === 1 || cell.side == null ? index : -1; }).filter(function (index) { return index >= 0; });
+                const pick = choices.sort(function (a, b) { return cells[b].count - cells[a].count; })[0];
+                play(pick);
+            }
+            function play(index) {
+                if (ended) return;
+                const cell = cells[index];
+                if (cell.side != null && cell.side !== turn) return;
+                addBubble(index, turn);
+                moves += 1;
+                const blue = owned(0), red = owned(1);
+                setScore(blue * 5 + moves);
+                if (moves > 4 && (!blue || !red)) { finish((blue ? '恭喜！蓝方赢了！' : '红方赢了！')); return; }
+                turn = 1 - turn;
+                draw();
+                if (turn === 1) setTimeout(aiMove, 260);
+            }
+            function draw() {
+                grid.innerHTML = '';
+                cells.forEach(function (cell, index) {
+                    const b = button(cell.side == null ? '' : label(cell.side) + cell.count, function () { if (turn === 0) play(index); });
+                    b.disabled = ended || turn !== 0 || (cell.side != null && cell.side !== 0);
+                    b.dataset.side = cell.side == null ? '' : String(cell.side);
+                    grid.appendChild(b);
+                });
+                prompt.textContent = '冒泡大战：一个格子达到四个泡泡会向四周传播，并全部转为当前颜色。蓝方你操作，红方电脑操作；消灭对方颜色获胜。';
+            }
+            body.append(prompt, grid);
+            draw();
+        }
+        function renderNumberArrange() {
+            const size = 4, solved = Array.from({ length: 16 }, function (_, index) { return index < 15 ? index + 1 : 0; });
+            const state = { cells: solved.slice(), moves: 0 };
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const grid = renderGrid(size, size, 'number-arrange-board');
+            function sameRow(a, b) { return Math.floor(a / size) === Math.floor(b / size); }
+            function swapWithBlank(index) {
+                const blank = state.cells.indexOf(0);
+                if (Math.abs(index - blank) !== size && !(Math.abs(index - blank) === 1 && sameRow(index, blank))) return false;
+                state.cells[blank] = state.cells[index]; state.cells[index] = 0; state.moves += 1;
+                return true;
+            }
+            function shuffleBoard() {
+                state.cells = solved.slice(); state.moves = 0;
+                for (let step = 0; step < 90; step += 1) {
+                    const blank = state.cells.indexOf(0), choices = [blank - size, blank + size, blank - 1, blank + 1].filter(function (index) {
+                        return index >= 0 && index < state.cells.length && (Math.abs(index - blank) === size || sameRow(index, blank));
+                    });
+                    swapWithBlank(choices[randomInt(choices.length)]);
+                }
+                state.moves = 0;
+            }
+            function draw() {
+                grid.innerHTML = '';
+                state.cells.forEach(function (value, index) {
+                    const cell = button(value ? String(value) : '', function () {
+                        if (ended || !swapWithBlank(index)) return;
+                        if (state.cells.every(function (item, at) { return item === solved[at]; })) finish('排数字完成。');
+                        draw();
+                    });
+                    cell.disabled = ended || value === 0;
+                    cell.dataset.value = String(value);
+                    grid.appendChild(cell);
+                });
+                prompt.textContent = '排数字：移动数字牌，按 1 到 15 顺序排好。步数 ' + state.moves + '。';
+            }
+            shuffleBoard();
+            body.append(prompt, grid, button('重排', function () { ended = false; shuffleBoard(); draw(); }));
+            draw();
+        }
+        function renderFortyPoints() {
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const hand = el('div', { className: 'pk32v-hand' });
+            const middle = el('div', { className: 'pk32v-hand' });
+            let mine = [], center = [], selectedCenter = -1, rounds = 0;
+            function card() { return 1 + randomInt(10); }
+            function total() { return mine.reduce(function (sum, value) { return sum + value; }, 0); }
+            function deal() {
+                mine = Array.from({ length: 5 }, card);
+                center = Array.from({ length: 5 }, card);
+                selectedCenter = -1; rounds = 0; setScore(0);
+            }
+            function finishRound() {
+                const diff = Math.abs(40 - total());
+                setScore(Math.max(0, 100 - diff * 4 - rounds * 2));
+                finish(diff === 0 ? '正好 40 点，您赢了这一局！' : '本局结算：' + total() + ' 点，距离 40 点差 ' + diff + '。');
+            }
+            function draw() {
+                hand.innerHTML = ''; middle.innerHTML = '';
+                center.forEach(function (value, index) {
+                    const cell = button(String(value), function () { selectedCenter = index; draw(); });
+                    cell.dataset.selected = String(selectedCenter === index);
+                    middle.appendChild(cell);
+                });
+                mine.forEach(function (value, index) {
+                    const cell = button(String(value), function () {
+                        if (selectedCenter < 0) { prompt.textContent = '请您先在中间选择要更换的牌。'; return; }
+                        const next = center[selectedCenter];
+                        center[selectedCenter] = mine[index];
+                        mine[index] = next;
+                        selectedCenter = -1; rounds += 1;
+                        if (total() >= 40 || rounds >= 5) finishRound();
+                        else draw();
+                    });
+                    hand.appendChild(cell);
+                });
+                prompt.textContent = '40点：先点中间牌，再点自己的牌进行更换；目标尽量凑到 40 点。当前 ' + total() + ' 点，已换 ' + rounds + ' / 5 次。';
+            }
+            deal();
+            body.append(prompt, el('p', { className: 'pk32v-prompt' }, '中间牌'), middle, el('p', { className: 'pk32v-prompt' }, '你的牌'), hand, button('停牌结算', finishRound), button('重开', function () { ended = false; deal(); draw(); }));
+            draw();
+        }
+        function renderIdiomFill() {
+            const idioms = ['爱不释手', '按兵不动', '白手起家', '百发百中', '杯弓蛇影', '变化无常', '别具一格', '兵不厌诈', '博学多才', '不屈不挠'];
+            let answer = idioms[randomInt(idioms.length)], cells = answer.split(''), blanks = [1, 3], tries = 0;
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const grid = renderGrid(4, 1, 'idiom-fill-board');
+            const bank = el('div', { className: 'pk32v-toolbar' });
+            function next() { answer = idioms[randomInt(idioms.length)]; cells = answer.split(''); blanks = [1, 3]; tries = 0; draw(); }
+            function draw() {
+                grid.innerHTML = ''; bank.innerHTML = '';
+                cells.forEach(function (value, index) {
+                    const hidden = blanks.indexOf(index) >= 0;
+                    const cell = button(hidden ? '□' : value, function () {});
+                    cell.disabled = true;
+                    cell.dataset.blank = String(hidden);
+                    grid.appendChild(cell);
+                });
+                const options = answer.split('').concat(['安', '百', '不', '花', '天', '山']).filter(function (value, index, list) { return list.indexOf(value) === index; }).sort(function () { return Math.random() - .5; });
+                options.forEach(function (value) {
+                    bank.appendChild(button(value, function () {
+                        if (!blanks.length) return;
+                        const index = blanks.shift();
+                        cells[index] = value; tries += 1;
+                        if (!blanks.length) {
+                            if (cells.join('') === answer) { setScore(score + Math.max(20, 60 - tries * 5)); finish('成语填字完成：' + answer); }
+                            else prompt.textContent = '填写结果不正确，正确成语是：' + answer;
+                        }
+                        draw();
+                    }));
+                });
+                prompt.textContent = '成语填字：从字库选择缺字，补全四字成语。题面来自原版成语词库证据。';
+            }
+            body.append(prompt, grid, bank, button('下一题', function () { ended = false; next(); }));
+            draw();
+        }
+        function renderCountQuiz() {
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const grid = renderGrid(6, 4, 'count-quiz-board');
+            const controls = el('div', { className: 'pk32v-toolbar' });
+            let target = 1, values = [];
+            function reset() {
+                target = 1 + randomInt(5);
+                values = Array.from({ length: 24 }, function () { return 1 + randomInt(5); });
+                draw();
+            }
+            function draw() {
+                grid.innerHTML = ''; controls.innerHTML = '';
+                values.forEach(function (value) { grid.appendChild(button(String(value), function () {})); });
+                const answer = values.filter(function (value) { return value === target; }).length;
+                for (let n = 0; n <= 12; n += 1) controls.appendChild(button(String(n), function () {
+                    if (n === answer) { setScore(score + 10); reset(); }
+                    else prompt.textContent = '数量不对，请重新数一遍。目标数字：' + target;
+                }));
+                prompt.textContent = '记数：数一数盘面中数字 ' + target + ' 出现了几次。';
+            }
+            body.append(prompt, grid, controls);
+            reset();
+        }
+        function renderConvertQuiz() {
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const input = el('input', { type: 'text', placeholder: '输入转换结果' });
+            const submit = button('提交', function () {
+                const expected = String(current.answer);
+                if (String(input.value || '').trim() === expected) { setScore(score + 20); next(); }
+                else prompt.textContent = current.text + '；答案不对，请再试。';
+            });
+            let current = null;
+            function next() {
+                const value = 10 + randomInt(90), mode = randomInt(3);
+                current = mode === 0 ? { text: '转换：十进制 ' + value + ' 转成二进制', answer: value.toString(2) }
+                    : mode === 1 ? { text: '转换：十进制 ' + value + ' 转成十六进制', answer: value.toString(16).toUpperCase() }
+                    : { text: '转换：二进制 ' + value.toString(2) + ' 转成十进制', answer: value };
+                input.value = '';
+                prompt.textContent = current.text;
+            }
+            body.append(prompt, input, submit, button('下一题', next));
+            next();
+        }
+        function renderSuper99() {
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const hand = el('div', { className: 'pk32v-hand' });
+            const cards = [1, 2, 3, 4, 5, 10, 20, -10], state = { total: 0, hand: [], turn: 0 };
+            function drawCard() { return cards[randomInt(cards.length)]; }
+            function reset() { state.total = 0; state.hand = Array.from({ length: 5 }, drawCard); state.turn = 0; ended = false; draw(); }
+            function play(index) {
+                if (ended) return;
+                const value = state.hand[index];
+                state.total += value; state.turn += 1;
+                state.hand[index] = drawCard();
+                if (state.total < 0 || state.total > 99) { finish('超过 99 或低于 0，本局结束。'); return; }
+                setScore(score + Math.max(1, value));
+                if (state.turn >= 20) { finish('超级99完成 20 回合，最终点数 ' + state.total + '。'); return; }
+                draw();
+            }
+            function draw() {
+                hand.innerHTML = '';
+                state.hand.forEach(function (value, index) { hand.appendChild(button((value > 0 ? '+' : '') + value, function () { play(index); })); });
+                prompt.textContent = '超级99：依次出牌调整总点数，保持 0 到 99；当前 ' + state.total + '，回合 ' + state.turn + ' / 20。';
+            }
+            body.append(prompt, hand, button('重开', reset));
+            reset();
+        }
+        function renderLuckyNumber() {
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const controls = el('div', { className: 'pk32v-toolbar' });
+            function play(choice) {
+                const result = 1 + randomInt(9);
+                if (choice === result) { setScore(score + 50); prompt.textContent = '开出 ' + result + '，押中幸运数字。'; }
+                else prompt.textContent = '开出 ' + result + '，本轮未中。';
+            }
+            for (let n = 1; n <= 9; n += 1) controls.appendChild(button(String(n), function () { play(n); }));
+            body.append(prompt, controls);
+            prompt.textContent = '幸运数字：选择一个 1 到 9 的数字，开奖命中得分。';
+        }
+        function renderOverlap() {
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const grid = renderGrid(3, 3, 'overlap-board');
+            const ring = [0, 1, 2, 5, 8, 7, 6, 3];
+            let player = 6, computer = 2, center = 3, rounds = 0;
+            function ringPos(cell) { return ring.indexOf(cell); }
+            function answerCell() { return ring[(ringPos(player) + center) % ring.length]; }
+            function moveComputer() {
+                const a = ringPos(computer), b = ringPos(player);
+                const clockwise = (b - a + ring.length) % ring.length;
+                const step = clockwise <= ring.length / 2 ? 1 : -1;
+                computer = ring[(a + step + ring.length) % ring.length];
+            }
+            function clickCell(index) {
+                if (ended || index === 4) return;
+                if (index === answerCell()) {
+                    player = index;
+                    rounds += 1;
+                    setScore(score + 10);
+                    center = 2 + randomInt(6);
+                    if (rounds >= 8) return finish('重合过关：连续完成 8 次计数。');
+                } else {
+                    moveComputer();
+                    if (computer === player) return finish('电脑牌和您的牌重合，本局失败。');
+                }
+                draw();
+            }
+            function draw() {
+                grid.innerHTML = '';
+                for (let index = 0; index < 9; index += 1) {
+                    const text = index === 4 ? String(center) : index === player ? '您' : index === computer ? '电脑' : '·';
+                    const cell = button(text, function () { clickCell(index); });
+                    cell.disabled = index === 4 || ended;
+                    cell.dataset.player = String(index === player);
+                    cell.dataset.computer = String(index === computer);
+                    grid.appendChild(cell);
+                }
+                prompt.textContent = '重合：从您的牌逆时针下一格开始计数，加到中间数字 ' + center + '，点击得到的位置；点错时电脑牌会靠近您。完成 ' + rounds + ' / 8。';
+            }
+            body.append(prompt, grid);
+            draw();
+        }
         function renderNumber() {
+            if (config.name === '排数字') return renderNumberArrange();
+            if (config.name === '40点') return renderFortyPoints();
+            if (config.name === '成语填字') return renderIdiomFill();
+            if (config.name === '记数') return renderCountQuiz();
+            if (config.name === '转换') return renderConvertQuiz();
+            if (config.name === '超级99') return renderSuper99();
+            if (config.name === '重合') return renderOverlap();
+            if (config.name === '幸运数字') return renderLuckyNumber();
             let target = 1 + randomInt(9); const total = config.levelCount || 1; let level = 0; const prompt = el('p', { className: 'pk32v-prompt' }, (config.name === '数谜' ? '原版关卡：第 1 / ' + total + ' 关；当前已确认原生数据串 ' + config.nativePayloadCount + ' 条。' : '') + '找出目标数字：' + target); const grid = el('div', { className: 'pk32v-grid' });
             const controls = el('div', { className: 'pk32v-toolbar' });
             function update() { prompt.textContent = (config.name === '数谜' ? '原版关卡：第 ' + (level + 1) + ' / ' + total + ' 关；当前已确认原生数据串 ' + config.nativePayloadCount + ' 条。' : '') + '找出目标数字：' + target; }
@@ -1760,11 +2119,125 @@
             body.append(prompt, grid);
         }
         function renderMemory() {
+            if (config.name === '读心术二') return renderMindRead2();
             if (config.name === '摘花朵') return renderNativePickFlowers();
             const values = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D'].sort(function () { return Math.random() - 0.5; }); let open = [], matched = 0; const grid = el('div', { className: 'pk32v-grid memory' });
             values.forEach(function (value) { const b = button('？', function () { if (b.disabled || open.indexOf(b) >= 0) return; b.textContent = value; open.push(b); if (open.length === 2) { if (open[0].textContent === open[1].textContent) { open.forEach(function (x) { x.disabled = true; }); matched += 2; setScore(score + 15); if (matched === values.length) finish('全部配对完成。'); } else { const pair = open.slice(); const timer = setTimeout(function () { pair.forEach(function (x) { x.textContent = '？'; }); }, 450); addCleanup(function () { clearTimeout(timer); }); } open = []; } }); grid.appendChild(b); }); body.append(grid);
         }
+        function renderMindRead2() {
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const cards = ['黑桃A', '红桃K', '梅花Q', '方块J', '黑桃9', '红桃8'];
+            const reveal = ['红桃A', '梅花K', '方块Q', '黑桃J', '红桃9'];
+            function draw(list) {
+                body.querySelectorAll('.pk32v-hand').forEach(function (node) { node.remove(); });
+                const hand = el('div', { className: 'pk32v-hand' });
+                list.forEach(function (card) { hand.appendChild(button(card, function () {})); });
+                body.appendChild(hand);
+            }
+            prompt.textContent = '读心术二：请在心里记住任意一张牌，然后点击揭示。';
+            body.append(prompt, button('揭示', function () {
+                draw(reveal);
+                setScore(score + 20);
+                finish('您刚才选中的牌已经被移走。');
+            }));
+            draw(cards);
+        }
+        function cardName(card) {
+            return ['黑桃', '红桃', '梅花', '方块'][card.suit] + card.rank;
+        }
+        function cardRank(card) {
+            return card.rank === 1 ? 14 : card.rank === 2 ? 15 : card.rank;
+        }
+        function makeCards(count) {
+            const list = [];
+            for (let suit = 0; suit < 4; suit += 1) for (let rank = 1; rank <= 13; rank += 1) list.push({ suit: suit, rank: rank });
+            list.sort(function () { return Math.random() - .5; });
+            return list.slice(0, count);
+        }
+        function renderBigTwo() {
+            let hand = makeCards(13).sort(function (a, b) { return cardRank(a) - cardRank(b) || a.suit - b.suit; });
+            let last = 0, passes = 0;
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const row = el('div', { className: 'pk32v-hand' });
+            function draw() {
+                row.innerHTML = '';
+                hand.forEach(function (card, index) {
+                    const value = cardRank(card);
+                    const cardButton = button(cardName(card), function () {
+                        if (value <= last) { prompt.textContent = '锄大地：必须出比上家更大的单牌，或选择不要。'; return; }
+                        last = value;
+                        hand.splice(index, 1);
+                        setScore(score + 5);
+                        if (!hand.length) return finish('锄大地完成：手牌已经出完。');
+                        draw();
+                    });
+                    cardButton.disabled = value <= last;
+                    row.appendChild(cardButton);
+                });
+                prompt.textContent = '锄大地：按单牌点数压上家，2 最大；当前需要大于 ' + (last || '任意') + '，剩余 ' + hand.length + ' 张。';
+            }
+            body.append(prompt, row, button('不要', function () { passes += 1; if (passes >= 2) { last = 0; passes = 0; } draw(); }));
+            draw();
+        }
+        function renderSevens() {
+            let hand = makeCards(13).sort(function (a, b) { return a.suit - b.suit || a.rank - b.rank; });
+            const lanes = [[], [], [], []];
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const table = el('div', { className: 'pk32v-hand' });
+            const row = el('div', { className: 'pk32v-hand' });
+            function canPlay(card) {
+                const lane = lanes[card.suit];
+                if (!lane.length) return card.rank === 7;
+                return card.rank === Math.min.apply(null, lane) - 1 || card.rank === Math.max.apply(null, lane) + 1;
+            }
+            function draw() {
+                table.innerHTML = ''; row.innerHTML = '';
+                lanes.forEach(function (lane, suit) { table.appendChild(button(['黑桃', '红桃', '梅花', '方块'][suit] + '：' + (lane.length ? lane.slice().sort(function (a, b) { return a - b; }).join(' ') : '待出7'), function () {})); });
+                hand.forEach(function (card, index) {
+                    const playable = canPlay(card);
+                    const cardButton = button(cardName(card), function () {
+                        if (!playable) return;
+                        lanes[card.suit].push(card.rank);
+                        hand.splice(index, 1);
+                        setScore(score + (card.rank === 7 ? 20 : 5));
+                        if (!hand.length) return finish('憋七完成：手牌全部接入牌列。');
+                        draw();
+                    });
+                    cardButton.disabled = !playable;
+                    row.appendChild(cardButton);
+                });
+                prompt.textContent = '憋七：每门从 7 开始，向两端连续接牌；不能接的牌会被憋住。剩余 ' + hand.length + ' 张。';
+            }
+            body.append(prompt, table, row);
+            draw();
+        }
+        function renderSevenGhost523() {
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const row = el('div', { className: 'pk32v-hand' });
+            let hand = makeCards(8), total = 0, turns = 0;
+            function value(card) { return card.rank === 7 ? -7 : card.rank === 5 ? 5 : card.rank === 2 ? 2 : card.rank === 3 ? 3 : Math.min(10, card.rank); }
+            function draw() {
+                row.innerHTML = '';
+                hand.forEach(function (card, index) {
+                    row.appendChild(button(cardName(card), function () {
+                        const delta = value(card);
+                        total += delta;
+                        turns += 1;
+                        hand.splice(index, 1);
+                        setScore(score + Math.max(1, Math.abs(delta)));
+                        if (total === 23 || turns >= 8) return finish('7鬼523结束：最终点数 ' + total + '。');
+                        draw();
+                    }));
+                });
+                prompt.textContent = '7鬼523：7 可把点数往回拉，5/2/3 是关键点数，尽量把累计点数凑近 23；当前 ' + total + '。';
+            }
+            body.append(prompt, row);
+            draw();
+        }
         function renderCards() {
+            if (config.name === '锄大地') return renderBigTwo();
+            if (config.name === '憋七') return renderSevens();
+            if (config.name === '7鬼523') return renderSevenGhost523();
             const hand = el('div', { className: 'pk32v-hand' });
             const info = el('p', { className: 'pk32v-prompt' }, '按原版单局节奏逐张处理牌面：0 / 5');
             let played = 0;
@@ -1789,14 +2262,203 @@
             values.forEach(function (value, i) { const b = button(value, function () { const hit = group(i); if (hit.length < 2) return; hit.forEach(function (n) { values[n] = ''; }); setScore(score + hit.length * 3); b.textContent = ''; if (!values.some(Boolean)) finish('彩球全部消除。'); }); grid.appendChild(b); });
             body.append(el('p', { className: 'pk32v-prompt' }, '点击相邻同色球组，至少两个相连才可消除。'), grid);
         }
+        function renderRiverCrossing() {
+            const puzzles = [
+                {
+                    title: '狼、羊、菜',
+                    rules: ['一个人带着一只狼、一只羊和一棵菜要过河。', '小船每次最多能载两样东西，只有人可以划船。', '狼和羊单独在一起狼就会吃掉羊。', '羊和菜单独在一起羊就会吃掉菜。'],
+                    items: [{ id: 'man', label: '人', rower: true, human: true }, { id: 'wolf', label: '狼' }, { id: 'goat', label: '羊' }, { id: 'cabbage', label: '菜' }],
+                    max: 2,
+                    requireHuman: true,
+                    unsafe: function (side) { return (!side.man && side.wolf && side.goat) || (!side.man && side.goat && side.cabbage); }
+                },
+                {
+                    title: '17分钟电筒',
+                    rules: ['四个人过河，天黑无灯，只有一支电筒能亮17分钟。', '每次最多两人过河，手里必须有手电筒，不能扔回来。', '两人同行以较慢者的速度为准。', '张三1分钟、赵四2分钟、王五5分钟、赵六10分钟，目标17分钟内全部过去。'],
+                    items: [{ id: 'zhang', label: '张三', time: 1, rower: true, human: true }, { id: 'zhao', label: '赵四', time: 2, rower: true, human: true }, { id: 'wang', label: '王五', time: 5, rower: true, human: true }, { id: 'liu', label: '赵六', time: 10, rower: true, human: true }],
+                    max: 2,
+                    timeLimit: 17,
+                    unsafe: function () { return false; }
+                },
+                {
+                    title: '三人三狼',
+                    rules: ['三个人和三只狼需要过河，河上有小船。', '小船每次最多能载两样东西，人和狼都可以划船。', '在岸同一边如果狼的数量多于人的数量则人被推下河。'],
+                    items: [{ id: 'p1', label: '人1', rower: true, human: true }, { id: 'p2', label: '人2', rower: true, human: true }, { id: 'p3', label: '人3', rower: true, human: true }, { id: 'w1', label: '狼1', rower: true, wolf: true }, { id: 'w2', label: '狼2', rower: true, wolf: true }, { id: 'w3', label: '狼3', rower: true, wolf: true }],
+                    max: 2,
+                    unsafe: function (side) { const people = side.p1 + side.p2 + side.p3, wolves = side.w1 + side.w2 + side.w3; return people > 0 && wolves > people; }
+                },
+                {
+                    title: '猎人与动物',
+                    rules: ['三个人和动物需要过河，河上有小船。', '如果猎人不在老虎身边则老虎会推其他的下河。', '如果男人不在则女人会推小狗和小猫下河。', '如果女人不在则男人会推兔子和鸭子下河。'],
+                    items: [{ id: 'hunter', label: '猎人', rower: true, human: true }, { id: 'man', label: '男人', rower: true, human: true }, { id: 'woman', label: '女人', rower: true, human: true }, { id: 'tiger', label: '老虎' }, { id: 'dog', label: '小狗' }, { id: 'cat', label: '小猫' }, { id: 'rabbit', label: '兔子' }, { id: 'duck', label: '鸭子' }],
+                    max: 2,
+                    requireHuman: true,
+                    unsafe: function (side) {
+                        const tigerHurts = side.tiger && !side.hunter && (side.man || side.woman || side.dog || side.cat || side.rabbit || side.duck);
+                        const womanHurts = side.woman && !side.man && (side.dog || side.cat);
+                        const manHurts = side.man && !side.woman && (side.rabbit || side.duck);
+                        return tigerHurts || womanHurts || manHurts;
+                    }
+                }
+            ];
+            let puzzleIndex = 0, state = null, selected = new Set(), usedTime = 0;
+            const wrap = el('div', { className: 'pk32v-native-data pk32v-river-crossing' });
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const ruleText = el('p', { className: 'pk32v-prompt' });
+            const selector = el('select', { ariaLabel: '过河题目' });
+            const banks = el('div', { className: 'pk32v-grid river-banks' });
+            const actions = el('div', { className: 'pk32v-controls' });
+            puzzles.forEach(function (puzzle, index) { const option = el('option', { value: String(index) }, puzzle.title); selector.appendChild(option); });
+            function reset() {
+                const puzzle = puzzles[puzzleIndex];
+                state = { boat: 'left' };
+                puzzle.items.forEach(function (item) { state[item.id] = 'left'; });
+                selected = new Set();
+                usedTime = 0;
+                ended = false;
+                status.textContent = '原版帮助文本规则已接入：按题面选择船边角色过河';
+                draw();
+            }
+            function sideSnapshot(side) {
+                const result = {};
+                puzzles[puzzleIndex].items.forEach(function (item) { result[item.id] = state[item.id] === side ? 1 : 0; });
+                return result;
+            }
+            function validSelection(puzzle) {
+                const chosen = Array.from(selected).map(function (id) { return puzzle.items.find(function (item) { return item.id === id; }); });
+                if (!chosen.length) return '请您选择需要过河的东西。';
+                if (chosen.length > puzzle.max) return '您最多能选择两样东西。';
+                if (chosen.some(function (item) { return state[item.id] !== state.boat; })) return '请您只选择有船靠近的一边。';
+                if (puzzle.requireHuman && !chosen.some(function (item) { return item.human; })) return '必须要有<人>才能过河。';
+                if (!chosen.some(function (item) { return item.rower; })) return puzzle.requireHuman ? '必须要有<人>才能过河。' : '本题必须选择可以划船的角色。';
+                return '';
+            }
+            function cross() {
+                if (ended) return;
+                const puzzle = puzzles[puzzleIndex], message = validSelection(puzzle);
+                if (message) { prompt.textContent = message; return; }
+                const chosen = Array.from(selected), nextSide = state.boat === 'left' ? 'right' : 'left';
+                chosen.forEach(function (id) { state[id] = nextSide; });
+                state.boat = nextSide;
+                if (puzzle.timeLimit) {
+                    usedTime += Math.max.apply(null, chosen.map(function (id) { const item = puzzle.items.find(function (x) { return x.id === id; }); return item.time || 0; }));
+                }
+                selected = new Set();
+                if (puzzle.unsafe(sideSnapshot('left')) || puzzle.unsafe(sideSnapshot('right')) || (puzzle.timeLimit && usedTime > puzzle.timeLimit)) {
+                    draw();
+                    finish('游戏条件失效，过河失败，请重新开始。');
+                    return;
+                }
+                if (puzzle.items.every(function (item) { return state[item.id] === 'right'; })) {
+                    setScore(score + 50);
+                    draw();
+                    finish('恭喜！过河成功！');
+                    return;
+                }
+                draw();
+            }
+            function draw() {
+                const puzzle = puzzles[puzzleIndex];
+                banks.innerHTML = '';
+                ruleText.textContent = puzzle.title + '：' + puzzle.rules.join(' ');
+                prompt.textContent = '船在' + (state.boat === 'left' ? '左岸' : '右岸') + '；' + (puzzle.timeLimit ? '过河已用时间：' + usedTime + '分钟/' + puzzle.timeLimit + '分钟。' : '请选择船靠近一边的角色。');
+                ['left', 'right'].forEach(function (side) {
+                    const bank = el('section', { className: 'pk32v-native-data' });
+                    bank.appendChild(el('strong', {}, (side === 'left' ? '左岸' : '右岸') + (state.boat === side ? '（船）' : '')));
+                    puzzle.items.filter(function (item) { return state[item.id] === side; }).forEach(function (item) {
+                        const picked = selected.has(item.id);
+                        const b = button(item.label, function () {
+                            if (ended || state[item.id] !== state.boat) return;
+                            if (picked) selected.delete(item.id); else selected.add(item.id);
+                            draw();
+                        });
+                        b.dataset.selected = String(picked);
+                        b.style.outline = picked ? '3px solid #facc15' : '';
+                        b.disabled = ended || state[item.id] !== state.boat;
+                        bank.appendChild(b);
+                    });
+                    banks.appendChild(bank);
+                });
+                selector.value = String(puzzleIndex);
+            }
+            selector.addEventListener('change', function () { puzzleIndex = Number(selector.value) || 0; reset(); });
+            actions.append(selector, button('过河', cross), button('重开本题', reset));
+            wrap.append(ruleText, actions, banks, prompt);
+            body.appendChild(wrap);
+            state = { boat: 'left' };
+            reset();
+        }
         function renderMaze() {
+            if (config.name === '过河') return renderRiverCrossing();
             if (config.name === '华容道') return renderNativeHuarong();
+            if (config.name === '白手起家') return renderStartupBoard();
             const size = 5; const walls = new Set([1, 3, 6, 8, 11, 13, 17, 19]); let pos = 0; const grid = el('div', { className: 'pk32v-grid maze' }); const cells = [];
             for (let i = 0; i < size * size; i += 1) { const b = button(walls.has(i) ? '■' : (i === 0 ? '●' : (i === size * size - 1 ? '★' : '')), function () {}); b.disabled = walls.has(i); cells.push(b); grid.appendChild(b); }
             function move(delta) { const next = pos + delta; if (next < 0 || next >= cells.length || walls.has(next) || (delta === 1 && next % size === 0) || (delta === -1 && pos % size === 0)) return; cells[pos].textContent = ''; pos = next; cells[pos].textContent = '●'; if (pos === cells.length - 1) { setScore(score + 50); finish('完成本局路线。'); } }
             const controls = el('div', { className: 'pk32v-controls' }); [['上', -size], ['下', size], ['左', -1], ['右', 1]].forEach(function (x) { controls.appendChild(button(x[0], function () { move(x[1]); })); });
             function key(e) { const map = { ArrowUp: -size, ArrowDown: size, ArrowLeft: -1, ArrowRight: 1 }; if (map[e.key] != null) move(map[e.key]); }
-            document.addEventListener('keydown', key); addCleanup(function () { document.removeEventListener('keydown', key); }); body.append(grid, controls);
+            document.addEventListener('keydown', key); addCleanup(function () { document.removeEventListener('keydown', key); }); body.append(el('p', { className: 'pk32v-prompt' }, '迷宫：从左上角走到右下角，可使用方向键或下方方向按钮。'), grid, controls);
+        }
+        function renderStartupBoard() {
+            const size = 5, playerCount = 4;
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const boards = Array.from({ length: playerCount }, function (_, player) {
+                const pool = Array.from({ length: 50 }, function (_, i) { return i + 1; }).sort(function () { return Math.random() - 0.5; });
+                return { name: player ? '电脑' + player : '你', score: 0, nums: pool.slice(0, size * size), marks: Array(size * size).fill(false) };
+            });
+            let turn = 0;
+            const called = new Set();
+            function lineCount(board) {
+                let lines = 0;
+                for (let y = 0; y < size; y += 1) if (Array.from({ length: size }, function (_, x) { return board.marks[y * size + x]; }).every(Boolean)) lines += 1;
+                for (let x = 0; x < size; x += 1) if (Array.from({ length: size }, function (_, y) { return board.marks[y * size + x]; }).every(Boolean)) lines += 1;
+                if (Array.from({ length: size }, function (_, i) { return board.marks[i * size + i]; }).every(Boolean)) lines += 1;
+                if (Array.from({ length: size }, function (_, i) { return board.marks[i * size + size - 1 - i]; }).every(Boolean)) lines += 1;
+                return lines;
+            }
+            function callNumber(number) {
+                if (ended || called.has(number)) return;
+                called.add(number);
+                boards.forEach(function (board) {
+                    board.nums.forEach(function (value, index) { if (value === number) board.marks[index] = true; });
+                    board.score = lineCount(board);
+                });
+                const winner = boards.find(function (board) { return board.score >= 5; });
+                if (winner) { finish(winner.name + '连出 5 条线，游戏结束。'); return; }
+                turn = (turn + 1) % playerCount;
+                draw();
+                if (turn !== 0) setTimeout(aiTurn, 240);
+            }
+            function aiTurn() {
+                if (ended) return;
+                const board = boards[turn];
+                const choice = board.nums.find(function (number, index) { return !board.marks[index] && !called.has(number); })
+                    || Array.from({ length: 50 }, function (_, i) { return i + 1; }).find(function (number) { return !called.has(number); });
+                if (choice) callNumber(choice);
+            }
+            function draw() {
+                body.innerHTML = '';
+                prompt.textContent = '白手起家：' + boards[turn].name + '选择数字；相同数字会同步标到所有人的数字板上，最先连出 5 条横线、竖线或斜线获胜。已叫号 ' + called.size + ' / 50。';
+                body.appendChild(prompt);
+                const wrap = el('div', { className: 'pk32v-grid startup-boards' });
+                wrap.style.gridTemplateColumns = 'repeat(2, minmax(180px, 1fr))';
+                boards.forEach(function (board, player) {
+                    const panel = el('section', { className: 'pk32v-native-data' });
+                    panel.appendChild(el('strong', {}, board.name + ' · 连线 ' + board.score + ' / 5'));
+                    const grid = renderGrid(size, size, 'startup-board');
+                    board.nums.forEach(function (number, index) {
+                        const marked = board.marks[index];
+                        const b = button(String(number), function () { if (player === 0 && turn === 0 && !marked) callNumber(number); });
+                        b.disabled = ended || marked || player !== 0 || turn !== 0 || called.has(number);
+                        b.dataset.marked = String(marked);
+                        grid.appendChild(b);
+                    });
+                    panel.appendChild(grid);
+                    wrap.appendChild(panel);
+                });
+                body.appendChild(wrap);
+            }
+            draw();
         }
         function renderNativeTangram() {
             const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七巧板原生载荷…'); const panel = el('div', { className: 'pk32v-native-data' }); body.append(prompt, panel);
@@ -2160,6 +2822,8 @@
             }).catch(function () { prompt.textContent = '原版盘面加载失败，当前显示规则验证盘面。'; });
         }
         function renderBoard() {
+            if (config.name === '天地棋') return renderHeavenEarthBoard();
+            if (config.name === '正方形棋') return renderSquareBoard();
             const size = config.name === '六子连珠' ? 8 : 6;
             const need = config.name === '五连板' ? 5 : (config.name === '六子连珠' ? 6 : 4);
             let turn = 0; const cells = Array(size * size).fill(''); const grid = renderGrid(size, size, 'board');
@@ -2173,6 +2837,151 @@
             }
             cells.forEach(function (_, i) { const b = button('', function () { if (ended || cells[i]) return; const player = turn % 2 ? '○' : '●'; cells[i] = player; b.textContent = player; turn += 1; setScore(score + 1); if (hasLine(player)) finish(player + '方连成' + need + '子。'); else if (turn === cells.length) finish('棋盘填满，本局和棋。'); }); grid.appendChild(b); });
             body.append(el('p', { className: 'pk32v-prompt' }, '轮流落子；' + need + '子横、竖或斜线相连即胜。'), grid);
+        }
+        function renderHeavenEarthBoard() {
+            const size = 7, cells = Array(size * size).fill(null);
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const grid = renderGrid(size, size, 'heaven-earth-board');
+            let selected = -1, turn = 'red';
+            function at(x, y) { return y * size + x; }
+            function sideName(side) { return side === 'red' ? '红棋' : '蓝棋'; }
+            function pieceCount(side) { return cells.filter(function (cell) { return cell === side; }).length; }
+            function neighbors(index) {
+                const x = index % size, y = Math.floor(index / size);
+                return [[0, -1], [0, 1], [-1, 0], [1, 0]].map(function (d) {
+                    const nx = x + d[0], ny = y + d[1];
+                    return nx >= 0 && nx < size && ny >= 0 && ny < size ? at(nx, ny) : -1;
+                }).filter(function (value) { return value >= 0; });
+            }
+            function surrounded(index, side) {
+                return neighbors(index).every(function (next) { return cells[next] && cells[next] !== side; });
+            }
+            function removeCaptured(side) {
+                const other = side === 'red' ? 'blue' : 'red';
+                const dead = cells.map(function (cell, index) { return cell === other && surrounded(index, other) ? index : -1; }).filter(function (index) { return index >= 0; });
+                dead.forEach(function (index) { cells[index] = null; });
+                return dead.length;
+            }
+            function legalMove(from, to) {
+                return cells[from] === turn && !cells[to] && neighbors(from).indexOf(to) >= 0;
+            }
+            function aiMove() {
+                if (ended || turn !== 'blue') return;
+                const move = cells.map(function (cell, from) {
+                    if (cell !== 'blue') return null;
+                    const to = neighbors(from).find(function (next) { return !cells[next]; });
+                    return to == null ? null : { from: from, to: to };
+                }).find(Boolean);
+                if (!move) { finish('蓝棋已经没有可以移动的棋子，红棋赢了！'); return; }
+                movePiece(move.from, move.to);
+            }
+            function movePiece(from, to) {
+                if (!legalMove(from, to)) return;
+                cells[to] = turn;
+                cells[from] = null;
+                const captured = removeCaptured(turn);
+                setScore(score + 1 + captured * 5);
+                const red = pieceCount('red'), blue = pieceCount('blue');
+                if (!blue) { finish('恭喜！红棋赢了！'); return; }
+                if (!red) { finish('蓝棋赢了！'); return; }
+                if (red <= 2 && blue <= 2) { finish('恭喜！双方打平！'); return; }
+                selected = -1;
+                turn = turn === 'red' ? 'blue' : 'red';
+                draw();
+                if (turn === 'blue') setTimeout(aiMove, 260);
+            }
+            function draw() {
+                grid.innerHTML = '';
+                cells.forEach(function (cell, index) {
+                    const b = button(cell === 'red' ? '红' : cell === 'blue' ? '蓝' : '', function () {
+                        if (ended || turn !== 'red') return;
+                        if (selected < 0 && cell === 'red') { selected = index; draw(); return; }
+                        if (selected >= 0 && legalMove(selected, index)) movePiece(selected, index);
+                        else { selected = cell === 'red' ? index : -1; draw(); }
+                    });
+                    b.dataset.selected = String(index === selected);
+                    b.dataset.side = cell || '';
+                    grid.appendChild(b);
+                });
+                prompt.textContent = '天地棋：走棋只能一步一步走；棋子被对方包围时出局；吃完对方获胜，双方都只剩一两粒棋子则和棋。当前：' + sideName(turn);
+            }
+            [0, 2, 4, 6, 8, 10].forEach(function (index) { cells[index] = 'blue'; });
+            [38, 40, 42, 44, 46, 48].forEach(function (index) { cells[index] = 'red'; });
+            body.append(prompt, grid);
+            draw();
+        }
+        function renderSquareBoard() {
+            const size = 9, totalAttack = 25;
+            let turn = 'black', mode = 'attack';
+            const cells = Array(size * size).fill(null);
+            const stock = { black: { attack: totalAttack, defense: 8 }, white: { attack: totalAttack, defense: 10 } };
+            const prompt = el('p', { className: 'pk32v-prompt' });
+            const controls = el('div', { className: 'pk32v-controls' });
+            const grid = renderGrid(size, size, 'square-board');
+            function sideName(side) { return side === 'black' ? '黑棋' : '白棋'; }
+            function at(x, y) { return y * size + x; }
+            function inside(x, y) { return x >= 0 && x < size && y >= 0 && y < size; }
+            function attackAt(side, x, y) { const cell = inside(x, y) ? cells[at(x, y)] : null; return cell && cell.side === side && cell.kind === 'attack'; }
+            function hasSquare(side) {
+                const stones = [];
+                cells.forEach(function (cell, index) { if (cell && cell.side === side && cell.kind === 'attack') stones.push({ x: index % size, y: Math.floor(index / size) }); });
+                for (let a = 0; a < stones.length; a += 1) for (let b = a + 1; b < stones.length; b += 1) {
+                    const p = stones[a], q = stones[b], dx = q.x - p.x, dy = q.y - p.y;
+                    if (attackAt(side, p.x - dy, p.y + dx) && attackAt(side, q.x - dy, q.y + dx)) return true;
+                    if (attackAt(side, p.x + dy, p.y - dx) && attackAt(side, q.x + dy, q.y - dx)) return true;
+                }
+                return false;
+            }
+            function nextEmpty() { return cells.findIndex(function (cell) { return !cell; }); }
+            function finishByStock() {
+                if (stock.black.attack || stock.white.attack) return false;
+                if (stock.black.defense === stock.white.defense) finish('双方进攻棋子用尽，剩余防御棋子相同，平局。');
+                else finish((stock.black.defense > stock.white.defense ? '黑棋' : '白棋') + '的防守棋子多，获胜。');
+                return true;
+            }
+            function place(side, kind, pos) {
+                if (ended || pos < 0 || cells[pos] || stock[side][kind] <= 0) return false;
+                cells[pos] = { side: side, kind: kind };
+                stock[side][kind] -= 1;
+                setScore(score + (side === 'black' ? 1 : 0));
+                if (kind === 'attack' && hasSquare(side)) { finish(sideName(side) + '组成正方形，获得胜利。'); return true; }
+                return true;
+            }
+            function aiMove() {
+                if (ended) return;
+                const empty = nextEmpty();
+                if (empty < 0) return finishByStock();
+                if (stock.white.defense > 0 && Math.random() < 0.28) place('white', 'defense', empty);
+                const attackPos = nextEmpty();
+                if (attackPos >= 0 && stock.white.attack > 0) place('white', 'attack', attackPos);
+                turn = 'black';
+                finishByStock();
+                draw();
+            }
+            function human(pos, kind) {
+                if (ended || turn !== 'black') return;
+                if (kind === 'defense') { if (place('black', 'defense', pos)) draw(); return; }
+                if (!place('black', 'attack', pos)) return;
+                if (finishByStock()) return;
+                turn = 'white';
+                draw();
+                setTimeout(aiMove, 260);
+            }
+            function draw() {
+                grid.innerHTML = '';
+                cells.forEach(function (cell, index) {
+                    const text = !cell ? '·' : cell.side === 'black' ? (cell.kind === 'attack' ? '●' : '×') : (cell.kind === 'attack' ? '○' : '+');
+                    const b = button(text, function () { human(index, mode); });
+                    b.oncontextmenu = function (event) { event.preventDefault(); human(index, 'defense'); };
+                    if (cell) b.dataset.side = cell.side;
+                    if (cell) b.dataset.kind = cell.kind;
+                    grid.appendChild(b);
+                });
+                prompt.textContent = '正方形棋：' + (turn === 'black' ? '黑棋行动' : '白棋行动') + '；黑攻 ' + stock.black.attack + ' 防 ' + stock.black.defense + '，白攻 ' + stock.white.attack + ' 防 ' + stock.white.defense + '。攻棋四角组成任意大小、任意方向正方形即胜；防棋不计入正方形。';
+            }
+            controls.append(button('攻棋模式', function () { mode = 'attack'; draw(); }), button('防棋模式', function () { mode = 'defense'; draw(); }), button('重开', function () { render(); }));
+            body.append(prompt, controls, grid);
+            draw();
         }
         function renderGrid(width, height, className) {
             const grid = el('div', { className: 'pk32v-grid ' + (className || '') });
@@ -3194,7 +4003,7 @@ const prompt = el('p', { className: 'pk32v-prompt' }, '正在加载七盏灯原�
             controls.append(button('上一关', function () { if (level > 0) { level -= 1; links = []; selected = null; ended = false; draw(); } }), button('下一关', function () { if (level + 1 < levels.length) { level += 1; links = []; selected = null; ended = false; draw(); } }), button('清除连线', function () { links = []; selected = null; ended = false; draw(); }));
             wrap.append(el('p', { className: 'pk32v-prompt' }, '原版规则：连接相同颜色的船与海怪，绕过旋涡且连线不能交叉。当前保留原始坐标串。'), controls, board); body.append(wrap); load();
         }
-        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '开心辞典' ? renderQuizBank : config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子' ? renderNativeSokoban : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : RAW_PAYLOAD_NAMES.has(config.name) ? renderRawPayloads : CANDIDATE_LEVEL_FILES[config.name] ? renderCandidateLevelFile : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
+        function render() { body.innerHTML = ''; setScore(0); ended = false; const renderer = config.name === '开心辞典' ? renderQuizBank : config.name === '航海迷题' ? renderShips : config.name === '建筑制造' ? renderBuilding : config.name === '立体魔方二' ? renderNativeCube2 : config.name === '反射镜' ? renderNativeMirror : config.name === '交换彩球' ? renderNativeSwapBalls : config.name === '同色方块' ? function () { renderNativeBurstOriginal('同色方块', '/data/pk32-same-color-levels.json'); } : config.name === '爆破彩球' ? renderNativeBurstOriginal : config.name === '爆破彩球二' ? function () { renderNativeBurstOriginal('爆破彩球二', '/data/pk32-burst-balls-levels.json'); } : config.name === '坦克大战' ? renderNativeTank : config.name === '海底寻宝' ? renderNativeSeaTreasure : config.name === '七盏灯' ? renderNativeLampsCandidate : config.name === '推箱子' ? renderNativeSokoban : config.name === '推箱子五' ? renderNativeSokoban5 : config.name === '推箱子四' ? renderNativeSokoban4 : config.name === '禅宗迷宫' ? renderNativeZenMaze : config.name === '跟花二' ? renderNativeGenhua2 : config.name === '魔法城堡二' ? renderNativeCastle2 : config.name === '魔法城堡' ? renderNativeCastle : config.name === '连结电线二' ? renderNativeWires2 : config.name === '七巧板' ? renderNativeTangram : config.name === '同步移动' ? renderNativeSyncMove : config.name === '宇宙黑洞' ? renderNativeBlackHole : config.name === '下一百层' ? renderNativeNextHundred : config.name === '上一百层' ? renderNativePreviousHundred : config.name === '飞一百米' ? renderNativeFlyHundred : config.name === '打砖块' ? renderNativeBreakout : RAW_PAYLOAD_NAMES.has(config.name) ? renderRawPayloads : CANDIDATE_LEVEL_FILES[config.name] ? renderCandidateLevelFile : STRUCTURED_PAYLOAD_NAMES.has(config.name) ? renderStructuredPayloads : ({ action: renderAction, reaction: renderReaction, number: renderNumber, memory: renderMemory, cards: renderCards, balls: renderBalls, maze: renderMaze, 'zen-garden': renderZenGarden, electromagnetic: renderElectromagnetic, 'pixel-island': renderPixelIsland, board: renderBoard, 'chinese-chess': renderChineseChess, go: renderGo, chess: renderChess, military: renderMilitary, mahjong: renderMahjong, billiards: renderBilliards, bubble: renderBubble, mummy: renderMummy }[config.mode] || renderAction); renderer(); }
         const api = {
             config: config,
             restart: function () { cleanups.forEach(function (fn) { fn(); }); cleanups = []; render(); },

@@ -71,22 +71,37 @@ const runtimePcodeSlices = fs.existsSync(runtimePcodeSlicesFile) ? JSON.parse(fs
 const sharedRuntimePcodeSlicesBound = !!(runtimePcodeSlices && runtimePcodeSlices.summary && runtimePcodeSlices.summary.trustedPcodeSlices > 0);
 const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试', '24点二', '21点二', '考眼力', '记忆考验', '汉诺塔', '老虎机', '三张牌', '梭哈六', '接龙二', '激光坦克', '海豚骰', '彩球迷宫', '多彩泡泡', '变色彩球']);
 const structuredAdapterPlayableMigrated = new Set(['找不同', '找彩球', '变化彩球', '推箱子二']);
-const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '斗兽棋', '四子棋']);
+const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '四子棋', '正方形棋']);
 const structuredFullFlowMigrated = new Set(structuredRulesMigrated);
 const boardFullFlowMigrated = new Set(boardRulesMigrated);
-const standardSingleFlowRulesMigrated = new Set(['俄罗斯方块', '贪吃蛇', '打地鼠', '五彩连珠', '围棋', '连连看', '扫雷', '扫雷二']);
+const strategySingleFlowMigrated = new Set(['飞行棋', '轮盘', '老虎机', '神符']);
+const helpTextFlowMigrated = new Set(['白手起家', '猜数', '迷宫', '配对', '七彩宝石', '捡棋子', '过河', '火箭大战', '冒泡大战', '天地棋', '排数字', '40点', '成语填字']);
+const standardSingleFlowRulesMigrated = new Set([
+    '俄罗斯方块', '贪吃蛇', '打地鼠', '五彩连珠', '围棋', '连连看', '扫雷', '扫雷二',
+    '接龙', '空当接龙', '蜘蛛纸牌', '扑克扫雷', '比大小',
+    '跟花', '丰收', '钓鱼', '争上游', '同花', '挑选', '暗牌', '幸运',
+    '牌九', '扑克麻将', '百智牌', 'FF8卡片', '移动', '争夺', '三打三', '变幻牌', '炮牌',
+    '十点半', '21点', '24点', '13点', '14点',
+    '梭哈', '梭哈二', '梭哈三', '梭哈四', '梭哈五', '梭哈七',
+    '抽乌龟', '抽乌龟二', '抽乌龟三', '抽乌龟四', '抽乌龟五',
+    '拱猪', '记忆', '别棍', '扎金花', '剪刀石头布', '五连板', '六子连珠', '拼图', '飞镖王',
+    '纸牌魔法阵', '纸牌算命', '读心术', '读心术三', '读心术四', '塔罗牌',
+    '锄大地', '憋七', '7鬼523', '读心术二',
+    '追逐', '连击', '连珠牌', '宝石方块', '连结电线', '魔力珠宝', '泡泡彩球', '绿洲', '十字绣', '绝妙飞行', '立体魔方',
+    '记数', '转换', '超级99', '重合', '幸运数字'
+]);
 const nativeAdapterRulesMigrated = new Set([
-    '强手棋', '接水管', '同色方块', '华容道', '智慧之光', '电磁彩球', '魔法城堡',
+    '强手棋', '接水管', '同色方块', '华容道', '智慧之光', '电磁彩球', '魔法城堡', '独粒钻石',
     '推箱子', '推箱子四', '推箱子五', '连结电线二', '像素岛', '禅宗花园', '禅宗迷宫', '航海迷题', '下一百层', '打砖块', '海底寻宝',
     '爆破彩球', '七盏灯', '交换彩球', '碰撞彩球', '反射镜',
     '摘花朵', '木乃伊',
-    '建筑制造', '宇宙黑洞', '同步移动', '魔法城堡二', '上一百层'
+    '建筑制造', '宇宙黑洞', '同步移动', '魔法城堡二', '上一百层', '飞一百米', '跟花二'
 ]);
 const nativeAdapterFullFlowMigrated = new Set(Array.from(nativeAdapterRulesMigrated).filter(name => name !== '强手棋'));
 const nativeAdapterPlayableMigrated = new Set([
     ...nativeAdapterRulesMigrated,
     '魔塔', '魔塔二', '魔塔三', '魔塔四',
-    '独粒钻石', '建筑制造', '上一百层', '飞一百米', '魔法城堡二', '摘花朵', '木乃伊', '同步移动', '坦克大战', '宇宙黑洞', '七巧板', '立体魔方二', '跟花二'
+    '独粒钻石', '建筑制造', '上一百层', '飞一百米', '魔法城堡二', '摘花朵', '木乃伊', '同步移动', '宇宙黑洞', '爆破彩球二'
 ]);
 const embeddedLevelAdapterMigrated = new Set(['魔塔', '魔塔二', '魔塔三', '魔塔四']);
 if (structuredPayloads) {
@@ -128,6 +143,7 @@ catalogRows.forEach(record => {
 // variants dispatcher scan above. Keep them explicit until the catalog has
 // a machine-readable renderer manifest.
 ['魔塔', '强手棋', '智慧之光', '独粒钻石', '木乃伊', '电磁彩球', '建筑制造', '同色方块'].forEach(name => rendererNames.add(name));
+['飞行棋', '前进棋', '赛马', '轮盘', '老虎机', '神符', '原子', '开心辞典', '开心灯谜'].forEach(name => rendererNames.add(name));
 
 const rows = ledger.records.map(record => {
     const resources = resourceById.get(record.id) || null;
@@ -148,10 +164,10 @@ const rows = ledger.records.map(record => {
         : 'catalog-only';
     const migration = {
         assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || (resources && resources.resourcePackageBound === true),
-        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && (structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name))) || boardRulesMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
+        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && (structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name))) || boardRulesMigrated.has(name) || strategySingleFlowMigrated.has(name) || helpTextFlowMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
         adapterPlayableMigrated: genericAdapterNames.has(name) || nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name),
-        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name) || nativeAdapterRulesMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
-        fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true || structuredFullFlowMigrated.has(name) || boardFullFlowMigrated.has(name) || nativeAdapterFullFlowMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
+        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name) || nativeAdapterRulesMigrated.has(name) || strategySingleFlowMigrated.has(name) || helpTextFlowMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
+        fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true || structuredFullFlowMigrated.has(name) || boardFullFlowMigrated.has(name) || nativeAdapterFullFlowMigrated.has(name) || strategySingleFlowMigrated.has(name) || helpTextFlowMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
         evidenceAdapterMigrated: catalogEvidenceAdapterBound,
         flowContentMigrated: !!(flowContentRecord && flowContentRecord.contentEvidenceMigrated)
     };
@@ -199,9 +215,13 @@ const rows = ledger.records.map(record => {
         rulesMigratedByStructureFamily: structuredRulesMigrated.has(name) && candidateData ? candidateData.dataKind : null,
         rulesMigratedByBoardEngine: boardRulesMigrated.has(name),
         rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(name),
+        rulesMigratedByStrategyAdapter: strategySingleFlowMigrated.has(name),
+        rulesMigratedByHelpTextAdapter: helpTextFlowMigrated.has(name),
         fullFlowMigratedByStructureFamily: structuredFullFlowMigrated.has(name),
         fullFlowMigratedByBoardEngine: boardFullFlowMigrated.has(name),
         fullFlowMigratedByNativeAdapter: nativeAdapterFullFlowMigrated.has(name),
+        fullFlowMigratedByStrategyAdapter: strategySingleFlowMigrated.has(name),
+        fullFlowMigratedByHelpTextAdapter: helpTextFlowMigrated.has(name),
         rulesMigratedByStandardSingleFlow: standardSingleFlowRulesMigrated.has(name),
         embeddedLevelAdapterBound: embeddedLevelAdapterMigrated.has(name),
         playableNativeAdapterBound: nativeAdapterPlayableMigrated.has(name),

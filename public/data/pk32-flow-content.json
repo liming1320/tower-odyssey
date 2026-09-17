@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-17T03:14:17.232Z",
+  "generatedAt": "2026-09-17T05:22:15.813Z",
   "source": [
     "public/js/minigames/pk32.js",
     "public/data/pk32-native-catalog.json",
@@ -11030,8 +11030,8 @@
       "levelText": "原版关数：待核对",
       "launcherTypes": [
         {
-          "type": "casual",
-          "value": "bubble-match"
+          "type": "variant",
+          "value": "爆破彩球二"
         }
       ],
       "nativePayloadCount": 0,

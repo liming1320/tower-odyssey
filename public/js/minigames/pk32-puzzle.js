@@ -60,6 +60,71 @@
             }
         }); b.className = 'tile ' + (c || 'empty'); b.setAttribute('aria-label', c || '空位'); grid.appendChild(b); }); area.appendChild(grid); status('点击方块操作；移彩球先后点击两个位置');
     }
+    function gemSwapGame(area, status, reset, redraw, state) {
+        var size = 8, colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+        state = state || {};
+        if (!Array.isArray(state.board) || state.board.length !== size * size) {
+            state.board = Array.from({ length: size * size }, function () { return colors[Math.floor(Math.random() * colors.length)]; });
+            state.selected = -1; state.score = 0; state.moves = 0;
+        }
+        function matches() {
+            var hit = {};
+            for (var y = 0; y < size; y++) {
+                var run = [];
+                for (var x = 0; x <= size; x++) {
+                    var indexInRow = y * size + x, value = x < size ? state.board[indexInRow] : null;
+                    if (run.length && value !== state.board[run[0]]) { if (run.length >= 3) run.forEach(function (i) { hit[i] = true; }); run = []; }
+                    if (value) run.push(indexInRow);
+                }
+            }
+            for (var col = 0; col < size; col++) {
+                var colRun = [];
+                for (var row = 0; row <= size; row++) {
+                    var indexInCol = row * size + col, colValue = row < size ? state.board[indexInCol] : null;
+                    if (colRun.length && colValue !== state.board[colRun[0]]) { if (colRun.length >= 3) colRun.forEach(function (i) { hit[i] = true; }); colRun = []; }
+                    if (colValue) colRun.push(indexInCol);
+                }
+            }
+            return Object.keys(hit).map(Number);
+        }
+        function collapse() {
+            for (var x = 0; x < size; x++) {
+                var stack = [];
+                for (var y = size - 1; y >= 0; y--) if (state.board[y * size + x]) stack.push(state.board[y * size + x]);
+                for (var fillY = size - 1; fillY >= 0; fillY--) state.board[fillY * size + x] = stack[size - 1 - fillY] || colors[Math.floor(Math.random() * colors.length)];
+            }
+        }
+        function clearMatches() {
+            var found = matches();
+            if (!found.length) return 0;
+            found.forEach(function (index) { state.board[index] = null; });
+            state.score += found.length * 10;
+            collapse();
+            return found.length;
+        }
+        function adjacent(a, b) { return Math.abs(Math.floor(a / size) - Math.floor(b / size)) + Math.abs((a % size) - (b % size)) === 1; }
+        function swap(a, b) { var t = state.board[a]; state.board[a] = state.board[b]; state.board[b] = t; }
+        area.appendChild(btn('重新开始', function () { state.board = null; redraw(); }));
+        var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(8,42px)';
+        state.board.forEach(function (color, index) {
+            var b = btn('', function () {
+                if (state.selected < 0) { state.selected = index; redraw(); return; }
+                if (state.selected === index) { state.selected = -1; redraw(); return; }
+                if (!adjacent(state.selected, index)) { state.selected = index; redraw(); return; }
+                swap(state.selected, index);
+                var cleared = clearMatches();
+                if (!cleared) { swap(state.selected, index); status('交换后没有出现三颗或三颗以上连续相同的宝石。'); }
+                else { state.moves++; status('消去 ' + cleared + ' 颗宝石；得分 ' + state.score + '；交换 ' + state.moves + ' 次。'); }
+                state.selected = -1;
+                redraw();
+            });
+            b.className = 'tile ' + color + (state.selected === index ? ' selected' : '');
+            b.setAttribute('aria-label', color + '宝石');
+            grid.appendChild(b);
+        });
+        area.appendChild(grid);
+        status('七彩宝石：交换上下左右相邻宝石，横线或竖线出现三颗以上相同宝石即可消去。得分 ' + state.score);
+    }
     function sudoku(area, status, reset, redraw) { var answer = [5,3,4,6,7,8,9,1,2,6,7,2,1,9,5,3,4,8,1,9,8,3,4,2,5,6,7,8,5,9,7,6,1,4,2,3,4,2,6,8,5,3,7,9,1,7,1,3,9,2,4,8,5,6,9,6,1,5,3,7,2,8,4,2,8,7,4,1,9,6,3,5,3,4,5,2,8,6,1,7,9,1,9,6,3,7,2,4,5,8]; var given = [0,1,4,5,6,8,9,11,13,15,17,19,22,24,26,27,30,31,33,35,37,40,42,44,45,48,50,52,54,56,57,60,62,64,66,68,70,72,73,75,77,79,80]; var values = answer.map(function (v, i) { return given.indexOf(i) >= 0 ? String(v) : ''; }); area.appendChild(btn('检查', function () { var ok = values.every(function (v, i) { return String(v) === String(answer[i]); }); status(ok ? '完成：当前数独填写正确' : '还有数字需要修正'); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(9,38px)'; answer.forEach(function (v, i) { var input = document.createElement('input'); input.maxLength = 1; input.value = values[i]; input.disabled = given.indexOf(i) >= 0; input.style.width = '38px'; input.style.height = '38px'; input.oninput = function () { values[i] = input.value.replace(/[^1-9]/g, ''); }; grid.appendChild(input); }); area.appendChild(grid); status('填写空格后点击检查'); }
     function maze(area, status, reset, redraw, state) {
         var n = 9, start = 10, goal = 70;
@@ -299,7 +364,30 @@
     }
     function moveBalls(area, status, reset, redraw, state) { var size = 5; state = state || { board: Array(25).fill(0), selected: -1, moves: 0, limit: 20 }; if (!state.board.some(Boolean)) { state.board[0] = 1; state.board[24] = 2; } function draw() { area.innerHTML = ''; area.appendChild(btn('重新开始', function () { state.board = Array(25).fill(0); state.board[0] = 1; state.board[24] = 2; state.selected = -1; state.moves = 0; redraw(); })); var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(5,42px)'; state.board.forEach(function (v, i) { var b = btn(v ? (v === 1 ? '●' : '○') : '', function () { if (state.selected < 0 && v) { state.selected = i; redraw(); return; } if (state.selected >= 0 && !v) { var sr = Math.floor(state.selected / size), sc = state.selected % size, tr = Math.floor(i / size), tc = i % size; if (Math.abs(sr - tr) + Math.abs(sc - tc) === 1) { state.board[i] = state.board[state.selected]; state.board[state.selected] = 0; state.moves++; state.selected = -1; redraw(); } } }); b.className = 'tile ' + (v ? (v === 1 ? 'red' : 'blue') : 'empty') + (state.selected === i ? ' selected' : ''); grid.appendChild(b); }); area.appendChild(grid); status(state.board[24] && state.board[0] === 0 ? '已连接最左与最右电线；移动：' + state.moves : '原版规则：在限定移动次数内连接最左和最右电线；移动：' + state.moves + ' / ' + state.limit); } draw(); }
     function simple(area, status, reset, redraw, title) { var count = 0; var grid = document.createElement('div'); grid.className = 'grid'; grid.style.gridTemplateColumns = 'repeat(5,44px)'; for (var i = 0; i < 25; i++) { var b = btn('', function () { this.classList.toggle('filled'); count += this.classList.contains('filled') ? 1 : -1; status('已完成 ' + count + ' 个格位'); }); b.className = 'tile empty'; grid.appendChild(b); } area.appendChild(btn('重新开始', function () { redraw(); })); area.appendChild(grid); status(title || '点击格位进行操作'); }
-    function dispatch(container, name, opts) { var canonical = ALIASES[name] || name; if (!SPECS[canonical]) throw new Error('未建立 PK32 益智玩法：' + name); var state = null; var factory; if (canonical === '数独') factory = sudoku; else if (canonical === '迷宫') factory = function (a, s, r, d) { state = state || { pos: 10, done: false }; maze(a, s, r, d, state); }; else if (canonical === '华容道' || canonical === '拼图') factory = function (a, s, r, d) { state = state || { cells: [1, 2, 3, 4, 5, 6, 0, 7, 8], done: false, moves: 0 }; slide(a, s, r, d, state); }; else if (canonical === '汉诺塔') factory = function (a, s, r, d) { state = state || { pegs: [[3, 2, 1], [], []], selected: null, done: false, moves: 0 }; hanoi(a, s, r, d, state); }; else if (canonical === '找不同') factory = findDifferent; else if (canonical === '找彩球') factory = findBall; else if (canonical === '七巧板') factory = tangram; else if (canonical === '十字绣') factory = embroidery; else if (canonical === '推箱子变体') factory = function (a, s, r, d) { state = state || {}; sokoban(a, s, r, d, state); }; else if (canonical === '独粒钻石') factory = function (a, s, r, d) { state = state || {}; nativePeg(a, s, r, d, state); }; else if (canonical === '立体魔方') factory = function (a, s, r, d) { state = state || {}; cube(a, s, r, d, state); }; else if (canonical === '五彩连珠') factory = function (a, s, r, d) { state = state || {}; lineGame(a, s, r, d, state); }; else if (canonical === '同色方块' || canonical === '七彩宝石' || canonical === '宝石方块') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'match', state); }; else if (canonical === '移彩球' || canonical === '变化彩球') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'swap', state); }; else if (canonical.indexOf('连结电线') === 0 || canonical === '扩展线路' || canonical === '接水管变体') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'line', state); }; else factory = function (a, s, r, d) { simple(a, s, r, d, canonical + '独立玩法'); }; return mount(container, canonical, factory, function (redraw) { state = null; redraw(); }); }
+    function dispatch(container, name, opts) {
+        var canonical = ALIASES[name] || name;
+        if (!SPECS[canonical]) throw new Error('未建立 PK32 益智玩法：' + name);
+        var state = null;
+        var factory;
+        if (canonical === '数独') factory = sudoku;
+        else if (canonical === '迷宫') factory = function (a, s, r, d) { state = state || { pos: 10, done: false }; maze(a, s, r, d, state); };
+        else if (canonical === '华容道' || canonical === '拼图') factory = function (a, s, r, d) { state = state || { cells: [1, 2, 3, 4, 5, 6, 0, 7, 8], done: false, moves: 0 }; slide(a, s, r, d, state); };
+        else if (canonical === '汉诺塔') factory = function (a, s, r, d) { state = state || { pegs: [[3, 2, 1], [], []], selected: null, done: false, moves: 0 }; hanoi(a, s, r, d, state); };
+        else if (canonical === '找不同') factory = findDifferent;
+        else if (canonical === '找彩球') factory = findBall;
+        else if (canonical === '七巧板') factory = tangram;
+        else if (canonical === '十字绣') factory = embroidery;
+        else if (canonical === '推箱子变体') factory = function (a, s, r, d) { state = state || {}; sokoban(a, s, r, d, state); };
+        else if (canonical === '独粒钻石') factory = function (a, s, r, d) { state = state || {}; nativePeg(a, s, r, d, state); };
+        else if (canonical === '立体魔方') factory = function (a, s, r, d) { state = state || {}; cube(a, s, r, d, state); };
+        else if (canonical === '五彩连珠') factory = function (a, s, r, d) { state = state || {}; lineGame(a, s, r, d, state); };
+        else if (canonical === '七彩宝石') factory = function (a, s, r, d) { state = state || {}; gemSwapGame(a, s, r, d, state); };
+        else if (canonical === '同色方块' || canonical === '宝石方块') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'match', state); };
+        else if (canonical === '移彩球' || canonical === '变化彩球') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'swap', state); };
+        else if (canonical.indexOf('连结电线') === 0 || canonical === '扩展线路' || canonical === '接水管变体') factory = function (a, s, r, d) { state = state || {}; colorGame(a, s, r, d, 'line', state); };
+        else factory = function (a, s, r, d) { simple(a, s, r, d, canonical + '独立玩法'); };
+        return mount(container, canonical, factory, function (redraw) { state = null; redraw(); });
+    }
     function connectWires2(container) {
         var payloads = ['33033035404550550252', '003200000300503004100100331000001000', '000000300404050000010000033100000000'];
         var state = { level: 0, pieces: [], moves: 0 };

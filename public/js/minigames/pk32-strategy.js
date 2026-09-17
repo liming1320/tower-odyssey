@@ -9,7 +9,7 @@
         '赛马': { id: 'horse-race', flow: '下注后掷骰子推进赛马，首匹到达终点获胜' },
         '轮盘': { id: 'roulette', flow: '选择下注区域后旋转轮盘，结算赔率' },
         '老虎机': { id: 'slot', flow: '拉动摇杆，三列图案按原版回合结算' },
-        '神符': { id: 'rune', flow: '选择神符并翻开结果，累计分数完成流程' },
+        '神符': { id: 'rune', flow: '按原版帮助文本放置神符：同色/同形相邻、灰石通配、骷髅消除、满行列清除' },
         '原子': { id: 'atom', flow: '原版 300 关；移动彩色原子，组成 2x2 同色区域即可消除；特殊原子能力仍在反汇编' },
         '开心辞典': { id: 'quiz', flow: '逐题答题，使用道具并累计奖金' },
         '开心灯谜': { id: 'riddle', flow: '逐题猜灯谜，答对推进原版题目流程' },
@@ -62,7 +62,7 @@
         const finishButton = button('结束', end);
         bar.append(restart, finishButton); root.append(title, meta, status, bar, body); container.appendChild(root);
         function setMessage(v) { status.textContent = v; }
-        function reset() { state = { turn: 1, score: 0, ended: false, position: 0, pawns: [0, 0, 0, 0], money: opts.money == null ? 100 : opts.money }; body.innerHTML = ''; draw(); }
+        function reset() { state = { turn: 1, score: 0, ended: false, position: 0, pawns: [0, 0, 0, 0], players: Array.from({ length: 4 }, function () { return Array(4).fill(-1); }), activePlayer: 0, selectedPawn: -1, lastRoll: 0, money: opts.money == null ? 100 : opts.money, coins: 100, spinning: false, spins: 0, reels: ['?', '?', '?'] }; body.innerHTML = ''; draw(); }
         function end() { state.ended = true; setMessage('本局已结束。'); body.querySelectorAll('button').forEach(b => b.disabled = true); }
         function guard(fn) { return function () { if (!state.ended) fn(); }; }
         function draw() {
@@ -78,21 +78,94 @@
             else if (id === 'lights') drawLights();
         }
         function drawLudo() {
-            body.innerHTML = ''; var max = 40;
-            var info = el('div', 'meta', '四枚棋子：' + state.pawns.map(function (p, i) { return '飞机' + (i + 1) + ' ' + p + '/' + max; }).join('　') + '　回合：' + state.turn);
-            var roll = button('掷骰子', guard(function () {
-                var n = 1 + Math.floor(Math.random() * 6), index = state.pawns.findIndex(function (p) { return p < max; });
-                state.lastRoll = n;
-                if (index < 0) return;
-                if (state.pawns[index] === 0 && n !== 6) { state.turn++; setMessage('掷出 ' + n + ' 点，尚未起飞。'); return drawLudo(); }
-                var next = state.pawns[index] === 0 ? 1 : state.pawns[index] + n;
-                if (next <= max) state.pawns[index] = next;
-                state.score += n; state.turn++;
-                if (state.pawns.every(function (p) { return p === max; })) { state.ended = true; finish('四架飞机全部到达终点！'); } else setMessage('掷出 ' + n + ' 点，推进飞机 ' + (index + 1) + '。');
+            body.innerHTML = '';
+            const max = 57;
+            const colors = ['#55a7e8', '#e85d75', '#65c878', '#e4b84c'];
+            function movable(player, pawn, roll) {
+                const position = state.players[player][pawn];
+                return position < max && (position < 0 ? roll === 6 : position + roll <= max);
+            }
+            function globalPosition(player, pawn) {
+                const position = state.players[player][pawn];
+                return position >= 0 && position < 52 ? (player * 13 + position) % 52 : -1;
+            }
+            function nextTurn(extra) {
+                state.selectedPawn = -1;
+                state.activePlayer = extra ? state.activePlayer : (state.activePlayer + 1) % 4;
+                state.turn += extra ? 0 : 1;
                 drawLudo();
+                if (!ended && state.activePlayer !== 0) setTimeout(aiTurn, 300);
+            }
+            function movePawn(player, pawn, roll) {
+                if (!movable(player, pawn, roll)) return;
+                const old = state.players[player][pawn];
+                state.players[player][pawn] = old < 0 ? 0 : old + roll;
+                const landed = globalPosition(player, pawn);
+                if (landed >= 0) {
+                    state.players.forEach(function (pieces, otherPlayer) {
+                        if (otherPlayer === player) return;
+                        pieces.forEach(function (position, otherPawn) {
+                            if (globalPosition(otherPlayer, otherPawn) === landed) state.players[otherPlayer][otherPawn] = -1;
+                        });
+                    });
+                }
+                state.score += roll;
+                if (state.players[player].every(function (position) { return position >= max; })) {
+                    ended = true;
+                    return finish((player === 0 ? '你' : '电脑' + player) + '的四架飞机全部到达终点！');
+                }
+                setMessage((player === 0 ? '你' : '电脑' + player) + '移动飞机 ' + (pawn + 1) + ' ' + roll + ' 格。');
+                nextTurn(roll === 6);
+            }
+            function aiTurn() {
+                if (ended || state.activePlayer === 0) return;
+                const roll = 1 + Math.floor(Math.random() * 6);
+                state.lastRoll = roll;
+                const choices = state.players[state.activePlayer].map(function (_, pawn) { return pawn; }).filter(function (pawn) { return movable(state.activePlayer, pawn, roll); });
+                if (!choices.length) {
+                    setMessage('电脑' + state.activePlayer + '掷出 ' + roll + ' 点，没有可移动的飞机。');
+                    return nextTurn(roll === 6);
+                }
+                movePawn(state.activePlayer, choices[0], roll);
+            }
+            const info = el('div', 'meta', '你：' + state.players[0].map(function (p) { return p < 0 ? '未起飞' : p >= max ? '终点' : p + '/' + max; }).join('、') + '　当前回合：' + (state.activePlayer === 0 ? '你' : '电脑' + state.activePlayer) + '　上次骰子：' + (state.lastRoll || '未掷'));
+            const track = el('div', 'board');
+            track.style.gridTemplateColumns = 'repeat(13, minmax(32px, 1fr))';
+            track.style.maxWidth = '560px';
+            for (let cell = 0; cell < 52; cell += 1) {
+                const occupants = [];
+                state.players.forEach(function (pieces, player) { pieces.forEach(function (position, pawn) { if (globalPosition(player, pawn) === cell) occupants.push('' + (player + 1) + '-' + (pawn + 1)); }); });
+                const tile = el('div', 'cell', occupants.length ? occupants.join(' ') : String(cell + 1));
+                tile.style.borderColor = occupants.length ? colors[Number(occupants[0].split('-')[0]) - 1] : '';
+                track.appendChild(tile);
+            }
+            const roll = button(state.activePlayer === 0 ? '掷骰子' : '电脑回合', guard(function () {
+                if (state.activePlayer !== 0) return;
+                const n = 1 + Math.floor(Math.random() * 6);
+                state.lastRoll = n;
+                const choices = state.players[0].map(function (_, pawn) { return pawn; }).filter(function (pawn) { return movable(0, pawn, n); });
+                if (!choices.length) {
+                    setMessage('你掷出 ' + n + ' 点，没有可移动的飞机。');
+                    return nextTurn(n === 6);
+                }
+                if (choices.length === 1) return movePawn(0, choices[0], n);
+                state.selectedPawn = -1;
+                setMessage('掷出 ' + n + ' 点，请选择要移动的飞机。');
+                drawLudo();
+                body.querySelectorAll('[data-ludo-pawn]').forEach(function (node) {
+                    node.disabled = choices.indexOf(Number(node.dataset.ludoPawn)) < 0;
+                    node.onclick = function () { movePawn(0, Number(node.dataset.ludoPawn), n); };
+                });
             }));
-            body.append(info, roll, el('div', 'meta', '规则：掷出 6 点起飞，超过终点不移动，四架全部到达终点结束。'));
-            if (!state.ended) setMessage('请掷骰子。');
+            const pieces = el('div', 'bar');
+            state.players[0].forEach(function (position, pawn) {
+                const piece = button('飞机 ' + (pawn + 1) + ' · ' + (position < 0 ? '灰色' : position >= max ? '旗帜' : position), function () {});
+                piece.dataset.ludoPawn = String(pawn);
+                piece.disabled = true;
+                pieces.appendChild(piece);
+            });
+            body.append(info, track, roll, pieces, el('div', 'meta', '掷出 6 点起飞；落到其他颜色飞机会将其撞回原点；四架飞机全部到达终点才获胜。'));
+            if (!ended && state.activePlayer === 0) setMessage(state.lastRoll ? '轮到你，请掷骰子。' : '请掷骰子。');
         }
         function drawTrack(id) {
             body.innerHTML = ''; const max = id === 'ludo' ? 40 : 100;
@@ -102,19 +175,162 @@
             body.append(info, track, roll); if (!state.ended) setMessage('请掷骰子。');
         }
         function drawRoulette() {
-            body.innerHTML = ''; const info = el('div', 'meta', '筹码：' + state.money + '　上次结果：' + (state.result || '尚未旋转'));
-            const input = document.createElement('input'); input.type = 'number'; input.min = 0; input.max = 36; input.value = 7;
-            const spin = button('下注并旋转', guard(function () { const bet = 10; if (state.money < bet) { state.ended = true; return finish('筹码耗尽，本局结束。'); } state.money -= bet; state.result = Math.floor(Math.random() * 37); state.rounds = (state.rounds || 0) + 1; if (Number(input.value) === state.result) { state.money += bet * 36; setMessage('命中！赢得 ' + bet * 35 + ' 筹码。'); } else setMessage('结果为 ' + state.result + '。'); if (state.rounds >= 20) { state.ended = true; finish('完成 20 回合轮盘流程，最终筹码：' + state.money); } else drawRoulette(); }));
-            body.append(info, el('div', 'bar', '号码 0-36：'), input, spin, el('div', 'meta', '回合：' + (state.rounds || 0) + ' / 20'));
+            body.innerHTML = '';
+            const info = el('div', 'meta', '筹码：' + state.money + '　上次结果：' + (state.result == null ? '尚未旋转' : state.result) + '　回合：' + (state.rounds || 0) + ' / 20');
+            const type = document.createElement('select');
+            [['number', '单个号码（35:1）'], ['red', '红（1:1）'], ['black', '黑（1:1）'], ['odd', '单（1:1）'], ['even', '双（1:1）'], ['low', '低半区 1-18（1:1）'], ['high', '高半区 19-36（1:1）'], ['dozen1', '第一组十二个号码（2:1）'], ['dozen2', '第二组十二个号码（2:1）'], ['dozen3', '第三组十二个号码（2:1）']].forEach(function (item) { const option = document.createElement('option'); option.value = item[0]; option.textContent = item[1]; type.appendChild(option); });
+            const choice = document.createElement('input'); choice.type = 'number'; choice.min = 0; choice.max = 36; choice.value = 7; choice.setAttribute('aria-label', '轮盘下注号码');
+            const amount = document.createElement('input'); amount.type = 'number'; amount.min = 1; amount.max = Math.max(1, state.money); amount.value = Math.min(10, Math.max(1, state.money)); amount.setAttribute('aria-label', '轮盘下注筹码');
+            function matches(kind, value) {
+                if (kind === 'number') return Number(choice.value) === value;
+                if (value === 0) return false;
+                if (kind === 'red') return [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].indexOf(value) >= 0;
+                if (kind === 'black') return !matches('red', value);
+                if (kind === 'odd') return value % 2 === 1;
+                if (kind === 'even') return value % 2 === 0;
+                if (kind === 'low') return value >= 1 && value <= 18;
+                if (kind === 'high') return value >= 19 && value <= 36;
+                if (kind === 'dozen1') return value >= 1 && value <= 12;
+                if (kind === 'dozen2') return value >= 13 && value <= 24;
+                if (kind === 'dozen3') return value >= 25 && value <= 36;
+                return false;
+            }
+            const spin = button('下注并旋转', guard(function () {
+                const bet = Math.max(1, Math.min(state.money, Number(amount.value) || 1));
+                if (!bet) { state.ended = true; return finish('筹码耗尽，本局结束。'); }
+                state.money -= bet;
+                state.result = Math.floor(Math.random() * 37);
+                state.rounds = (state.rounds || 0) + 1;
+                const payout = type.value === 'number' ? 35 : /^dozen/.test(type.value) ? 2 : 1;
+                if (matches(type.value, state.result)) {
+                    state.money += bet * (payout + 1);
+                    setMessage('结果为 ' + state.result + '，命中，赔率 ' + payout + ':1。');
+                } else {
+                    setMessage('结果为 ' + state.result + '，未命中。');
+                }
+                if (state.rounds >= 20) { state.ended = true; return finish('完成 20 回合轮盘流程，最终筹码：' + state.money); }
+                drawRoulette();
+            }));
+            body.append(info, el('div', 'bar', '下注类型：'), type, el('div', 'bar', '号码（仅单号下注使用）：'), choice, el('div', 'bar', '下注筹码：'), amount, spin, el('div', 'meta', '0 为绿色；支持单号、红黑、单双、大小和三组十二号码。'));
         }
         function drawSlot() {
-            body.innerHTML = ''; const nums = state.reels || ['?', '?', '?']; const view = el('div', 'numbers', nums.join(' | '));
-            const pull = button('拉动老虎机', guard(function () { state.reels = [0, 0, 0].map(() => ['🍒', '7', '★', '铃'][Math.floor(Math.random() * 4)]); state.spins = (state.spins || 0) + 1; state.score += state.reels[0] === state.reels[1] && state.reels[1] === state.reels[2] ? 100 : 0; setMessage(state.reels[0] === state.reels[1] && state.reels[1] === state.reels[2] ? '三连！' : '再试一次。'); if (state.spins >= 30) { state.ended = true; finish('完成 30 回合老虎机流程。'); } else drawSlot(); })); body.append(view, pull, el('div', 'meta', '得分：' + state.score + '　回合：' + (state.spins || 0) + ' / 30'));
+            body.innerHTML = '';
+            const symbols = ['樱桃', '铃', '星', '7'];
+            const nums = state.reels || ['?', '?', '?'];
+            const view = el('div', 'numbers', nums.join(' | '));
+            const pull = button('拉动老虎机', guard(function () {
+                if (state.coins <= 0) { state.coins = 1; setMessage('筹码用完，免费补发 1 个筹码。'); }
+                state.coins -= 1;
+                state.reels = [0, 0, 0].map(function () { return symbols[Math.floor(Math.random() * symbols.length)]; });
+                state.spins = (state.spins || 0) + 1;
+                const same = state.reels[0] === state.reels[1] && state.reels[1] === state.reels[2];
+                const pair = state.reels[0] === state.reels[1] || state.reels[1] === state.reels[2] || state.reels[0] === state.reels[2];
+                const payout = same ? (state.reels[0] === '7' ? 50 : state.reels[0] === '星' ? 20 : 10) : pair ? 2 : 0;
+                state.coins += payout;
+                state.score += payout;
+                setMessage(payout ? '图案 ' + state.reels.join('、') + '，获得 ' + payout + ' 个筹码。' : '图案 ' + state.reels.join('、') + '，未中奖。');
+                if (state.spins >= 30) { state.ended = true; return finish('完成 30 回合老虎机流程，剩余筹码：' + state.coins); }
+                drawSlot();
+            }));
+            body.append(view, pull, el('div', 'meta', '筹码：' + state.coins + '　得分：' + state.score + '　回合：' + (state.spins || 0) + ' / 30'));
         }
         function drawRune() {
-            body.innerHTML = ''; const grid = el('div', 'board'); grid.style.gridTemplateColumns = 'repeat(3,1fr)';
-            for (let i = 0; i < 9; i++) { const b = button(state.revealed && state.revealed[i] ? ['火', '水', '风'][i % 3] : '神符', guard(function () { state.revealed = state.revealed || {}; state.revealed[i] = true; state.score += i % 3 + 1; if (Object.keys(state.revealed).length === 9) { state.ended = true; finish('九枚神符全部翻开，流程完成。'); } else drawRune(); })); b.className = 'cell'; grid.appendChild(b); }
-            body.append(grid, el('div', 'meta', '累计神符能量：' + state.score));
+            body.innerHTML = '';
+            const size = 8;
+            const colors = ['红', '蓝', '绿', '黄'];
+            const shapes = ['日', '月', '星', '石'];
+            function makeRune(forceNormal) {
+                const roll = Math.random();
+                if (!forceNormal && roll < 0.08) return { type: 'skull', label: '骷髅', color: '黑', shape: '骷' };
+                if (!forceNormal && roll < 0.20) return { type: 'gray', label: '灰石', color: '灰', shape: '石' };
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const shape = shapes[Math.floor(Math.random() * (shapes.length - 1))];
+                return { type: 'normal', label: color + shape, color, shape };
+            }
+            function sameLine(a, b) {
+                return Math.floor(a / size) === Math.floor(b / size) || a % size === b % size;
+            }
+            function neighbors(index) {
+                return [index - size, index + size, index - 1, index + 1].filter(function (target) {
+                    return target >= 0 && target < size * size && (Math.abs(target - index) === size || Math.floor(target / size) === Math.floor(index / size));
+                });
+            }
+            function canTouch(rune, cell) {
+                if (cell && cell.circle) return true;
+                if (!cell || !cell.rune) return false;
+                if (rune.type === 'gray' || cell.rune.type === 'gray') return true;
+                return rune.color === cell.rune.color || rune.shape === cell.rune.shape;
+            }
+            function canPlace(index, rune) {
+                if (rune.type === 'skull') return !!(state.runeBoard[index] && state.runeBoard[index].rune);
+                if (state.runeBoard[index] && state.runeBoard[index].rune) return false;
+                const occupied = state.runeBoard.some(function (cell) { return cell && cell.rune; });
+                return !occupied || neighbors(index).some(function (target) { return canTouch(rune, state.runeBoard[target]); });
+            }
+            function clearLines() {
+                const clear = new Set();
+                for (let y = 0; y < size; y += 1) {
+                    const row = Array.from({ length: size }, function (_, x) { return y * size + x; });
+                    if (row.every(function (index) { return state.runeBoard[index] && state.runeBoard[index].rune; })) row.forEach(function (index) { clear.add(index); });
+                }
+                for (let x = 0; x < size; x += 1) {
+                    const col = Array.from({ length: size }, function (_, y) { return y * size + x; });
+                    if (col.every(function (index) { return state.runeBoard[index] && state.runeBoard[index].rune; })) col.forEach(function (index) { clear.add(index); });
+                }
+                clear.forEach(function (index) { state.runeBoard[index] = { rune: null, circle: true, visited: true }; });
+                return clear.size;
+            }
+            function playable() {
+                return state.runeBoard.some(function (_, index) { return canPlace(index, state.currentRune); });
+            }
+            state.runeBoard = state.runeBoard || Array.from({ length: size * size }, function () { return { rune: null, circle: false, visited: false }; });
+            state.currentRune = state.currentRune || makeRune(true);
+            state.runeSwaps = Number.isInteger(state.runeSwaps) ? state.runeSwaps : 10;
+            const grid = el('div', 'board');
+            grid.style.gridTemplateColumns = 'repeat(' + size + ', minmax(30px, 1fr))';
+            state.runeBoard.forEach(function (cell, index) {
+                const label = cell.rune ? cell.rune.label : cell.circle ? '○' : '·';
+                const b = button(label, guard(function () {
+                    const rune = state.currentRune;
+                    if (!canPlace(index, rune)) {
+                        setMessage(playable() ? '这个位置不符合相同颜色、相同图案或灰石相邻规则。' : '当前神符没有可放位置，请使用换符。');
+                        return;
+                    }
+                    if (rune.type === 'skull') {
+                        state.runeBoard[index].rune = null;
+                        state.score += 1;
+                        setMessage('骷髅神符消去了一个方格。');
+                    } else {
+                        state.runeBoard[index] = { rune, circle: cell.circle, visited: true };
+                        state.score += 2;
+                        state.runeSwaps = Math.min(10, state.runeSwaps + 1);
+                        const cleared = clearLines();
+                        if (cleared) {
+                            state.score += cleared;
+                            setMessage('满行/满列清除 ' + cleared + ' 格，并转为圆圈方格。');
+                        } else {
+                            setMessage('放置 ' + rune.label + '。');
+                        }
+                    }
+                    state.currentRune = makeRune(false);
+                    if (state.runeBoard.every(function (item) { return item.visited; })) {
+                        state.ended = true;
+                        return finish('神符流程完成：所有方格都放置过神符。得分：' + state.score);
+                    }
+                    drawRune();
+                }));
+                b.className = 'cell ' + (cell.rune ? 'on' : 'off');
+                if (!canPlace(index, state.currentRune)) b.style.opacity = '0.58';
+                grid.appendChild(b);
+            });
+            const swap = button('换符', guard(function () {
+                if (state.runeSwaps <= 0) { setMessage('换符机会已用完。'); return; }
+                state.runeSwaps -= 1;
+                state.currentRune = makeRune(false);
+                setMessage('已更换神符，剩余换符机会：' + state.runeSwaps);
+                drawRune();
+            }));
+            body.append(el('div', 'meta', '当前神符：' + state.currentRune.label + '　换符机会：' + state.runeSwaps + ' / 10　已覆盖：' + state.runeBoard.filter(function (cell) { return cell.visited; }).length + ' / ' + (size * size)), grid, el('div', 'bar'), swap, el('div', 'meta', '放置规则来自 PK32 帮助文本：同色或同形相邻，灰色神石可邻接任意神符，骷髅消除已有神符，满行或满列会清除并变成圆圈方格。'));
         }
         function drawAtom() {
             body.innerHTML = ''; state.atoms = state.atoms || Array(25).fill(0); const colors = ['红', '蓝', '绿', '黄']; const grid = el('div', 'board'); grid.style.gridTemplateColumns = 'repeat(5,1fr)';

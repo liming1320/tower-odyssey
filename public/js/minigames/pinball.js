@@ -31,6 +31,10 @@ window.MiniGames = window.MiniGames || {};
     const PLG_PULL = 26;                     // 满蓄力后退距离
 
     const DMD = { x: 20, y: 14, w: 380, h: 84 };   // 加高：第三行显示当前任务与进度
+    const CADET_LOGO = new Image();
+    CADET_LOGO.src = '/img/pinball/cadet-logo.bmp';
+    const CADET_TABLE = new Image();
+    CADET_TABLE.src = '/img/pinball/cadet-table.bmp';
 
     // 顶部涡轮引擎 ×3（倒三角布置，原版 turbo bumper 位）
     const BUMPERS = [
@@ -1562,6 +1566,11 @@ window.MiniGames = window.MiniGames || {};
             function drawPlayfield() {
                 if (BG) ctx.drawImage(BG, 0, 0, GW, GH);
                 else { ctx.fillStyle = '#0a1028'; ctx.fillRect(0, 88, GW, GH - 88); }
+                if (CADET_TABLE.complete && CADET_TABLE.naturalWidth) {
+                    const tableW = LANE.r - PF.l;
+                    const tableH = CADET_TABLE.naturalHeight * tableW / CADET_TABLE.naturalWidth;
+                    ctx.drawImage(CADET_TABLE, PF.l, 140, tableW, tableH);
+                }
 
                 ctx.save();
                 ctx.beginPath();
@@ -2489,6 +2498,10 @@ window.MiniGames = window.MiniGames || {};
                 ctx.font = `bold ${Math.round(10 * FS)}px "Segoe UI",sans-serif`;
                 ctx.fillStyle = 'rgba(255,220,150,0.55)';
                 ctx.fillText('塔界远征 · 太空军校生', lx + 14, ly + 92);
+                if (CADET_LOGO.complete && CADET_LOGO.naturalWidth) {
+                    const logoSize = Math.min(lw - 18, lh - 18);
+                    ctx.drawImage(CADET_LOGO, lx + (lw - logoSize) / 2, ly + (lh - logoSize) / 2, logoSize, logoSize);
+                }
                 ctx.restore();
 
                 /* ── ② BALL 行 ── */
