@@ -1,0 +1,10 @@
+﻿warp probe: warpHold=0 live=1
+after warp1: hyperStage=1 score=4200
+warp 1: hyperStage=1 score=5790
+warp 2: hyperStage=0 score=6410
+warp 3: hyperStage=0 score=7030
+warp 4: hyperStage=0 score=7650
+warp 5: hyperStage=0 score=13270
+warp 6: hyperStage=0 score=13890
+tilt test: tiltWarn=0
+OK: scoreCalls=1447, liveBalls=1, finalScore=13890
