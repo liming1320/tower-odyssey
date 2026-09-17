@@ -559,6 +559,8 @@ MG.canvas = function (parent, w, h) {
     parent.innerHTML = '';
     parent.appendChild(c);
     const ctx = c.getContext('2d');
+    // 启动即解锁音频（游戏均在用户点击「开始」手势内启动，满足 Web Audio 策略）
+    try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
     const dpr = Math.max(1, window.devicePixelRatio || 1);
     let deviceScale = dpr;          // 第一次 fit 之前先给个初值
     const applyTransform = () => ctx.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);

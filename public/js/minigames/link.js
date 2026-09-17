@@ -289,7 +289,7 @@ function linkRound(container, opts, level, api, onBack, onReplay) {
         if (rocks.has(i * COLS + j)) return;
         const cur = board[i][j];
         if (!cur) return;
-        if (!sel) { sel = [i, j]; path = null; }
+        if (!sel) { sel = [i, j]; path = null; try { MG.audio && MG.audio.sfx('click'); } catch (e) { } }
         else if (sel[0] === i && sel[1] === j) { sel = null; path = null; }
         else if (board[sel[0]][sel[1]] === cur) {
             const pth = canConnect(sel, [i, j]);
@@ -298,6 +298,7 @@ function linkRound(container, opts, level, api, onBack, onReplay) {
                 board[i][j] = ''; board[sel[0]][sel[1]] = '';
                 cleared++; sel = null;
                 draw();
+                try { MG.audio && MG.audio.sfx('target'); } catch (e) { }
                 setTimeout(() => { path = null; draw(); }, 260);
                 if (cleared >= totalPairs) return finish(true);
                 if (!findAllPairs().length) autoShuffle();  // 死局自动重排

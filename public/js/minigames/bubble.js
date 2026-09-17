@@ -29,6 +29,7 @@ window.MiniGames = window.MiniGames || {};
             cvs.style.cssText = 'max-width:100%;max-height:100%;touch-action:none;cursor:crosshair;';
             container.appendChild(cvs);
             const ctx = cvs.getContext('2d');
+            try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
             const rndC = () => MG.ri(0, nColors - 1);
 
             function cellX(r, c) { return W / 2 - COLS * R + (c + 0.5) * 2 * R + (r % 2 ? R : 0); }
@@ -73,12 +74,14 @@ window.MiniGames = window.MiniGames || {};
                     if (inGrid(r2, c2) && board[r2][c2] >= 0 && !reach.has(r2 + ',' + c2)) { board[r2][c2] = -1; fell++; }
                 }
                 score += group.length * 20 + fell * 15;
+                try { MG.audio && MG.audio.sfx(fell > 0 ? 'coin' : 'target'); } catch (e) { }
                 return group.length;
             }
             function shoot() {
                 shot = { x: W / 2, y: H - 56, vx: Math.cos(aim) * 520, vy: Math.sin(aim) * 520, c: cur };
                 cur = next; next = rndC();
                 shotsFired++;
+                try { MG.audio && MG.audio.sfx('launch'); } catch (e) { }
             }
             function stick(s) {
                 let r = Math.max(0, rowAt(s.y)), c = Math.max(0, colAt(r, s.x));

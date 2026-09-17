@@ -115,6 +115,7 @@ MiniGames.jump = {
             const hitPlat = platforms.find(p => targetX > p.x + 8 && targetX < p.x + p.w - 8);
             if (hitPlat) {
                 player.x = targetX; score++;
+                try { MG.audio && MG.audio.sfx('coin'); } catch (e) { }
                 if (score >= targetScore) { alive = false; draw(); finalize(true); return; }
                 target.x = player.x + 100 + Math.random() * 60;
                 target.w = Math.max(18, basePlatformW - Math.floor(score / 3));

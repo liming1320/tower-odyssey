@@ -331,6 +331,10 @@ window.MG = window.MG || {};
             if (done || rt.stopped || paused) return;
             try { c.setPointerCapture && c.setPointerCapture(e.pointerId); } catch (_) {}
             const p = pos(e);
+            // 统一触感反馈（2026-09-17）：所有 E.def 画布游戏点按即有一圈柔和涟漪 + 解锁音频。
+            // 一次手势即可解锁整局音频；涟漪走实例 fx 池，自清除、不串场、零回归。
+            try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (_) {}
+            if (fx) { try { fx.ring(p.x, p.y, { r0: 2, r1: 30, lw: 2.5, color: 'rgba(255,255,255,0.55)', life: 0.32 }); } catch (_) {} }
             if (cfg.tap) safe('tap', () => { cfg.tap(S, p.x, p.y, P, api); paint(); });
             if (cfg.drag) api._dragStart = { x: p.x, y: p.y, ox: (S.ox != null ? S.ox : 0), oy: (S.oy != null ? S.oy : 0) };
         };

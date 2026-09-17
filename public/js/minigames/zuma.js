@@ -72,6 +72,7 @@ window.MiniGames = window.MiniGames || {};
             cvs.style.cssText = 'max-width:100%;max-height:100%;touch-action:none;cursor:crosshair;';
             container.appendChild(cvs);
             const ctx = cvs.getContext('2d');
+            try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
 
             const hud = t => opts.onScore && opts.onScore(`得分 ${score} · 余球 ${spawnLeft + chain.length}`);
             const over2 = win => {
@@ -92,6 +93,7 @@ window.MiniGames = window.MiniGames || {};
                 while (b < chain.length - 1 && chain[b + 1].c === c) b++;
                 if (b - a + 1 >= 3) {
                     const n = b - a + 1;
+                    try { MG.audio && MG.audio.sfx(combo > 1 ? 'jackpot' : 'coin'); } catch (e) { }
                     let cx = 0, cy = 0;
                     for (let i = a; i <= b; i++) { const p = ptAt(path, chain[i].d); cx += p.x; cy += p.y; }
                     cx /= n; cy /= n;
@@ -451,6 +453,7 @@ window.MiniGames = window.MiniGames || {};
                 shots.push({ x: frog.x + Math.cos(ang) * 26, y: frog.y + Math.sin(ang) * 26, vx: Math.cos(ang) * 430, vy: Math.sin(ang) * 430, c: cur });
                 cur = next; next = MG.ri(0, nColors - 1);
                 cool = 0.24;
+                try { MG.audio && MG.audio.sfx('launch'); } catch (e) { }
             });
 
             draw();

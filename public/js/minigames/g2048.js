@@ -379,12 +379,14 @@ function g2048Round(container, opts, level, api) {
         if (JSON.stringify(board) !== before) {
             moves++;
             // 标记升级格（闪光）与移动格（重置闲置相位）
+            let merged = false;
             for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
                 if (board[i][j] && board[i][j] > (before[i][j] || 0)) {
-                    tileAt(i, j).flash = Date.now();
+                    tileAt(i, j).flash = Date.now(); merged = true;
                 }
             }
             add();
+            try { MG.audio && MG.audio.sfx(merged ? 'coin' : 'click'); } catch (e) { }
         }
         draw();
         if (level > 0 && board.flat().includes(target)) return finish(true, `在 ${moves} 步内合出了 ${MON_NAME(target)}！`);

@@ -55,6 +55,7 @@ MiniGames.reaction = {
         const [maxRound, waitMin, waitMax, s3, s2, s1] = this.PARAMS[pIdx] || this.PARAMS[0];
         const W = Math.min(container.clientWidth - 16, 400);
         const H = Math.min(window.innerHeight - 200, 360);
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
         const { c, ctx, w, h, destroy } = MG.canvas(container, W, H);
         let phase = 0, startT = 0, greenT = 0, results = [], round = 0, finished = false;
         const draw = (color, text, emoji) => {
@@ -102,6 +103,7 @@ MiniGames.reaction = {
             else if (phase === 2) {
                 const r = performance.now() - greenT;
                 results.push(r);
+                try { MG.audio && MG.audio.sfx('click'); } catch (e) { }
                 phase = 4; round++;
                 draw('#ffd56b', Math.round(r) + ' ms', '⚡');
                 if (round >= maxRound) setTimeout(finish, 800);

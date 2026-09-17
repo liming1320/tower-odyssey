@@ -52,6 +52,7 @@ MiniGames.mine = {
         const maxH = Math.min(window.innerHeight - 200, 560);
         const S = Math.max(18, Math.floor(Math.min(maxW / COLS, maxH / ROWS, 44)));
         const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (_) { }
         let board = [], revealed = [], flagged = [], over = false, win = false;
         let hit = null;                    // 踩中的那颗雷（失败演出用）
         let flash = 0, ring = 0;           // 爆炸动画
@@ -178,6 +179,7 @@ MiniGames.mine = {
         const toggleFlag = (i, j) => {
             if (over || !inBoard(i, j) || revealed[i][j]) return;
             flagged[i][j] = !flagged[i][j];
+            try { MG.audio && MG.audio.sfx && MG.audio.sfx('click'); } catch (_) { }
             draw();
             try { navigator.vibrate && navigator.vibrate(12); } catch (e) { }
         };
@@ -185,6 +187,7 @@ MiniGames.mine = {
             if (over || !inBoard(i, j) || flagged[i][j] || revealed[i][j]) return;
             if (board[i][j] === -1) { boom(i, j); return; }
             flood(i, j);
+            try { MG.audio && MG.audio.sfx && MG.audio.sfx('click'); } catch (_) { }
             if (checkWin()) {
                 win = true; over = true;
                 for (let a = 0; a < ROWS; a++) for (let b = 0; b < COLS; b++) if (board[a][b] === -1) flagged[a][b] = true;

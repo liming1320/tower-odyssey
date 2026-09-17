@@ -62,6 +62,7 @@ MiniGames.mole = {
         const cellSize = Math.floor(Math.min(maxW / cols, maxH / rows, 80));
         const grid = document.createElement('div');
         grid.style.cssText = `display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;padding:6px;`;
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
         const cells = [];
         for (let i = 0; i < cols * rows; i++) {
             const cell = document.createElement('div');
@@ -107,7 +108,7 @@ MiniGames.mole = {
         }, 1000);
         const loop = setInterval(showMole, interval);
         cells.forEach((c, i) => c.onclick = () => {
-            if (cur.has(i)) { score += 10; c.textContent = '💥'; c.style.transform = 'scale(1.2)'; opts.onScore && opts.onScore('分数：' + score + ' · 剩余 ' + timeLeft + 's'); setTimeout(() => { c.textContent = ''; c.style.transform = ''; }, 140); cur.delete(i); }
+            if (cur.has(i)) { score += 10; c.textContent = '💥'; c.style.transform = 'scale(1.2)'; try { MG.audio && MG.audio.sfx('coin'); } catch (e) { } opts.onScore && opts.onScore('分数：' + score + ' · 剩余 ' + timeLeft + 's'); setTimeout(() => { c.textContent = ''; c.style.transform = ''; }, 140); cur.delete(i); }
         });
         MG.hint(container, lv.desc);
         return { stop() { clearInterval(timer); clearInterval(loop); } };

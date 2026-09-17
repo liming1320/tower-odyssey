@@ -39,6 +39,7 @@ MiniGames.tetris = {
         const [baseDrop, target] = this.PARAMS[pIdx] || this.PARAMS[0];
         const COLS = 10, ROWS = 20, S = 22;
         const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (_) { }
         const SHAPES = [
             [[1, 1, 1, 1]], [[1, 1], [1, 1]], [[0, 1, 0], [1, 1, 1]],
             [[1, 0, 0], [1, 1, 1]], [[0, 0, 1], [1, 1, 1]], [[1, 1, 0], [0, 1, 1]], [[0, 1, 1], [1, 1, 0]],
@@ -74,7 +75,7 @@ MiniGames.tetris = {
                 if (board[i].every(v => v)) { board.splice(i, 1); board.unshift(Array(COLS).fill(0)); lines++; i++; }
             }
             score += lines * 100 + (lines > 1 ? lines * 50 : 0);
-            if (lines > 0) dropInt = Math.max(60, dropInt - lines * 15);
+            if (lines > 0) { dropInt = Math.max(60, dropInt - lines * 15); try { MG.audio && MG.audio.sfx && MG.audio.sfx(lines > 1 ? 'jackpot' : 'click'); } catch (_) { } }
             if (score >= target) { alive = false; draw(); finalize(true); return; }
             spawn();
             if (collide(cur.x, cur.y, cur.s)) { alive = false; }

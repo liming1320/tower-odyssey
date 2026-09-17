@@ -40,6 +40,7 @@ MiniGames.piano = {
         const W = Math.min(container.clientWidth - 16, 380);
         const H = Math.min(window.innerHeight - 200, 480);
         const laneW = W / LANES;
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
         const { c, ctx, w, h, destroy } = MG.canvas(container, W, H);
         let blocks = [], score = 0, alive = true, speed = startSpeed;
         const spawn = () => { blocks.push({ x: MG.ri(0, LANES - 1) * laneW, y: -50, lane: MG.ri(0, LANES - 1), hit: false }); };
@@ -96,13 +97,15 @@ MiniGames.piano = {
             }
             opts.onScore && opts.onScore('分数：' + score + ' / ' + target + ' · 速度 ' + speed);
         };
+        const NOTES = [523.25, 587.33, 659.25, 698.46, 783.99];
         const onTap = p => {
             if (!alive) return;
             const lane = Math.floor(p.x / laneW);
             for (const b of blocks) {
-                if (!b.hit && b.lane === lane && b.y > H - 120 && b.y < H) { b.hit = true; score++; speed = startSpeed + Math.floor(score / 25); draw(); if (score >= target) { alive = false; opts.onComplete && opts.onComplete({ win: true, stars: 3, lines: ['达成目标 ' + score + ' 分！', lv.desc] }); } return; }
+                if (!b.hit && b.lane === lane && b.y > H - 120 && b.y < H) { b.hit = true; score++; speed = startSpeed + Math.floor(score / 25); try { MG.audio && MG.audio.tone({ freq: NOTES[b.lane % NOTES.length], dur: 0.12, type: 'triangle', gain: 0.18 }); } catch (e) { } draw(); if (score >= target) { alive = false; try { MG.audio && MG.audio.sfx('levelup'); } catch (e) { } opts.onComplete && opts.onComplete({ win: true, stars: 3, lines: ['达成目标 ' + score + ' 分！', lv.desc] }); } return; }
             }
             alive = false;
+            try { MG.audio && MG.audio.sfx('fail'); } catch (e) { }
             const stars = score >= target ? 3 : score >= target * 0.7 ? 2 : score >= target * 0.4 ? 1 : 0;
             opts.onComplete && opts.onComplete({
                 win: false, stars,

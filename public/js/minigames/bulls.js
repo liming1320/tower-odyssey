@@ -39,6 +39,7 @@ MiniGames.bulls = {
         const pIdx = idx >= 0 ? Math.min(idx, this.PARAMS.length - 1) : (opts.endless ? this.PARAMS.length - 1 : 0);
         const [digits, maxTries] = this.PARAMS[pIdx] || this.PARAMS[0];
         container.innerHTML = '';
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
         const wrap = document.createElement('div');
         wrap.style.cssText = 'padding:16px;color:#f3f0e0;width:100%;max-width:380px;margin:0 auto;';
         let secret = [];
@@ -79,9 +80,11 @@ MiniGames.bulls = {
             const arr = v.split('').map(Number);
             let a = 0, b = 0;
             for (let i = 0; i < digits; i++) { if (arr[i] === secret[i]) a++; else if (secret.includes(arr[i])) b++; }
+            const hit = (a === digits);
             history.unshift({ g: v, a, b });
             opts.onScore && opts.onScore('已猜：' + history.length + ' / ' + maxTries);
-            if (a === digits) { over = true; won = true; }
+            try { MG.audio && MG.audio.sfx(hit ? 'coin' : 'click'); } catch (e) { }
+            if (hit) { over = true; won = true; }
             else if (history.length >= maxTries) { over = true; }
             render();
             tryEnd();

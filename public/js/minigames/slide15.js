@@ -42,6 +42,7 @@ MiniGames.slide15 = {
         const [ROWS, COLS, shuffles] = this.PARAMS[pIdx] || this.PARAMS[0];
         const maxW = Math.min(container.clientWidth - 16, 460);
         const S = Math.floor(Math.min(maxW / COLS, 80));
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
         const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);
         let board = [], moves = 0, won = false;
         const init = () => {
@@ -96,9 +97,11 @@ MiniGames.slide15 = {
                 const ni = i + di, nj2 = j + dj;
                 if (ni >= 0 && ni < ROWS && nj2 >= 0 && nj2 < COLS && board[ni][nj2] === 0) {
                     board[ni][nj2] = board[i][j]; board[i][j] = 0; moves++;
+                    try { MG.audio && MG.audio.sfx('click'); } catch (e) { }
                     draw();
                     if (isWin()) {
                         won = true;
+                        try { MG.audio && MG.audio.sfx('coin'); } catch (e) { }
                         const stars = moves <= ROWS * COLS * 6 ? 3 : moves <= ROWS * COLS * 10 ? 2 : 1;
                         opts.onComplete && opts.onComplete({
                             win: true, stars,

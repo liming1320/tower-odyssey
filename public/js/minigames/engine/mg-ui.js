@@ -29,6 +29,57 @@ MG.btn = function (parent, text, onClick) {
     return b;
 };
 
+// ================= 胜利/失败 演出特效（juice）=================
+// 彩带、闪屏：所有游戏在 MG.result 自动调用，零改动即获得通关庆祝 / 失败反馈。
+// 不依赖任何外部素材；canvas 覆盖层自动清理，不影响游戏实例回收。
+MG.juice = {
+    confetti(parent, opt) {
+        opt = opt || {};
+        try {
+            const W = Math.max(160, parent.clientWidth || 320);
+            const H = Math.max(200, parent.clientHeight || 420);
+            const cv = document.createElement('canvas');
+            cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:40;';
+            if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+            parent.appendChild(cv);
+            const dpr = Math.min(2, window.devicePixelRatio || 1);
+            cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+            const x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const colors = opt.colors || ['#ffd56b', '#7adf7a', '#5cc7ff', '#ff7a8b', '#c79bff', '#ff9d5c', '#ffe896'];
+            const N = opt.count || 90;
+            const ps = [];
+            for (let i = 0; i < N; i++) ps.push({ x: Math.random() * W, y: -20 - Math.random() * H * 0.5, vx: (Math.random() - 0.5) * 2.6, vy: 2 + Math.random() * 3, r: 4 + Math.random() * 5, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.35, c: colors[i % colors.length] });
+            const start = performance.now();
+            const tick = () => {
+                const el = (performance.now() - start) / 1000;
+                x.clearRect(0, 0, W, H);
+                let onscreen = false;
+                for (const p of ps) {
+                    p.vy += 0.16; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+                    if (p.y < H + 24) onscreen = true;
+                    const a = Math.max(0, Math.min(1, (H - p.y + 60) / H));
+                    x.save(); x.translate(p.x, p.y); x.rotate(p.rot); x.globalAlpha = a;
+                    x.fillStyle = p.c; x.fillRect(-p.r / 2, -p.r * 0.6, p.r, p.r * 1.2);
+                    x.restore();
+                }
+                if (onscreen && el < 2.2) requestAnimationFrame(tick);
+                else cv.remove();
+            };
+            requestAnimationFrame(tick);
+        } catch (e) { }
+    },
+    flash(parent, color) {
+        try {
+            const d = document.createElement('div');
+            d.style.cssText = 'position:absolute;inset:0;background:' + (color || 'rgba(255,60,80,0.28)') + ';pointer-events:none;z-index:35;opacity:1;transition:opacity .5s ease';
+            if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+            parent.appendChild(d);
+            requestAnimationFrame(() => { d.style.opacity = '0'; });
+            setTimeout(() => { try { d.remove(); } catch (_) { } }, 540);
+        } catch (e) { }
+    },
+};
+
 // ================= 关卡选择界面 =================
 // cfg: { game, title, levels:[{name,desc}], onStart(idx, lv), extra:[{label,onClick}] }
 MG.levelSelect = function (container, cfg) {
@@ -94,6 +145,16 @@ MG.result = function (container, cfg) {
             </div>
         </div>`;
     container.appendChild(o);
+    try {
+        MG.audio && MG.audio.unlock && MG.audio.unlock();
+        if (cfg.win) {
+            MG.audio && MG.audio.sfx && MG.audio.sfx('levelup');
+            MG.juice && MG.juice.confetti(o, {});
+        } else {
+            MG.audio && MG.audio.sfx && MG.audio.sfx('fail');
+            MG.juice && MG.juice.flash(o, 'rgba(255,60,80,0.22)');
+        }
+    } catch (e) { }
     o.querySelector('[data-a=retry]').onclick = () => { o.remove(); cfg.onRetry && cfg.onRetry(); };
     const nb = o.querySelector('[data-a=next]');
     if (nb) nb.onclick = () => { o.remove(); cfg.onNext && cfg.onNext(); };

@@ -237,6 +237,7 @@ window.MiniGames = window.MiniGames || {};
                 const fire = p => {
                     if (!p || !p.joined || !p.active || over || p.fireCd > 0) return;
                     p.fireCd = p.weapon === 'M' ? 0.1 : 0.2;
+                    try { MG.audio && MG.audio.sfx('launch'); } catch (e) { }
                     const cy = p.y + (p.crouch ? 4 : 7);
                     const shots = p.weapon === 'S' ? [-0.28, 0, 0.28] : [0];
                     for (const a of shots) {

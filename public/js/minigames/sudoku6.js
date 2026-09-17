@@ -132,6 +132,7 @@ MiniGames.sudoku6 = {
             if (i < 0 || i >= N || j < 0 || j >= N) return;
             if (initial[i][j]) { sel = null; render(); return; }
             sel = { i, j };
+            try { MG.audio && MG.audio.sfx('click'); } catch (e) { }
             render();
         };
         MG.bind(c, onTap); render();

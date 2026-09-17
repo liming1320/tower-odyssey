@@ -92,7 +92,7 @@ MiniGames.shooter = {
             for (const b of bullets) for (const e of enemies) {
                 if (b.x > e.x - e.w / 2 && b.x < e.x + e.w / 2 && b.y > e.y - e.h / 2 && b.y < e.y + e.h / 2) {
                     b.y = -10; e.hp--;
-                    if (e.hp <= 0) { e.y = H + 100; score += 10; kills++; if (kills % 30 === 0) lvUp = Math.min(5, lvUp + 1); }
+                    if (e.hp <= 0) { e.y = H + 100; score += 10; kills++; try { MG.audio && MG.audio.sfx('coin'); } catch (e) { } if (kills % 30 === 0) lvUp = Math.min(5, lvUp + 1); }
                     break;
                 }
             }

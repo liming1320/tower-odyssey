@@ -319,6 +319,7 @@ window.MiniGames = window.MiniGames || {};
                 const maxB = p.power >= 2 ? 2 : 1;
                 if (bullets.filter(b => b.owner === p).length >= maxB) return;
                 p.fireCd = 0.24;
+                try { MG.audio && MG.audio.sfx('launch'); } catch (e) { }
                 const d = DIRS[p.dir], cx = p.x + p.size / 2, cy = p.y + p.size / 2;
                 bullets.push({
                     x: cx + d.x * 14 - 2, y: cy + d.y * 14 - 2, size: 4,

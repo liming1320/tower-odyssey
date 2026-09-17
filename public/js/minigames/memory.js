@@ -64,6 +64,7 @@ MiniGames.memory = {
             if (flipped.some(f => f[0] === i && f[1] === j)) return;
             if (flipped.length === 2) return;
             flipped.push([i, j]); draw();
+            try { MG.audio && MG.audio.sfx('click'); } catch (e) { }
             if (flipped.length === 2) {
                 moves++;
                 const [a, b] = flipped;
@@ -71,6 +72,7 @@ MiniGames.memory = {
                     busy = true; setTimeout(() => {
                         board[a[0]][a[1]] = null; board[b[0]][b[1]] = null;
                         flipped = []; matched++; busy = false; draw();
+                        try { MG.audio && MG.audio.sfx('coin'); } catch (e) { }
                         if (matched === realPairs) {
                             won = true;
                             // 评分：完成+步数（步数 ≤ 配对数×2.2 = 3★，×2.8 = 2★，否则 1★）

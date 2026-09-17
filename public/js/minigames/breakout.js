@@ -41,6 +41,7 @@ MiniGames.breakout = {
         const W = Math.min(container.clientWidth - 16, 400);
         const H = Math.min(window.innerHeight - 200, 480);
         const { c, ctx, w, h, destroy } = MG.canvas(container, W, H);
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (_) { }
         const COLORS = ['#ff5252', '#ff9d5c', '#ffd56b', '#5cd65c', '#5cc7ff', '#b78bff', '#ff7a8b', '#5b8cff', '#7adf7a', '#9aa2b5', '#5cd65c', '#ff5252'];
         let ball = { x: W / 2, y: H - 50, vx: ballSpd * 0.7, vy: -ballSpd, r: 6 };
         let paddle = { x: W / 2 - 35, y: H - 20, w: 70, h: 8 };
@@ -95,12 +96,15 @@ MiniGames.breakout = {
             if (ball.y > H) {
                 lives--; if (lives <= 0) { alive = false; draw(); finalize(false); return; }
                 ball.x = W / 2; ball.y = H - 50; ball.vy = -ballSpd;
+                try { MG.audio && MG.audio.sfx && MG.audio.sfx('drain'); } catch (_) { }
             }
-            if (ball.y > paddle.y - ball.r && ball.y < paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.w) ball.vy = -Math.abs(ball.vy);
+            if (ball.y > paddle.y - ball.r && ball.y < paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.w) { ball.vy = -Math.abs(ball.vy); try { MG.audio && MG.audio.sfx && MG.audio.sfx('bumper'); } catch (_) { } }
             for (const b of bricks) {
                 if (!b.alive) continue;
                 if (ball.x > b.x && ball.x < b.x + b.w && ball.y > b.y && ball.y < b.y + b.h) {
-                    b.alive = false; score += 10; ball.vy = -ball.vy; break;
+                    b.alive = false; score += 10; ball.vy = -ball.vy;
+                    try { MG.audio && MG.audio.sfx && MG.audio.sfx('target'); } catch (_) { }
+                    break;
                 }
             }
             if (!bricks.some(b => b.alive)) { alive = false; draw(); finalize(true); return; }

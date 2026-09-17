@@ -152,6 +152,7 @@ function match3Round(container, opts, level, api, onBack, onReplay) {
                 else burst(2 + j * cellW + cellW / 2, 2 + i * cellH + cellH / 2, COL[v] || '#fff');
             });
             score += cnt * 10;
+            try { MG.audio && MG.audio.sfx('target'); } catch (e) { }
             for (const k in clearedColors) if (quota[k] != null) quota[k] = Math.max(0, quota[k] - clearedColors[k]);
             if (rockCnt) score += rockCnt * 80;
             // 下落（石块也随重力下落）
@@ -367,6 +368,7 @@ function match3Round(container, opts, level, api, onBack, onReplay) {
             if (objectivesDone()) { finish(true, '目标全部达成！'); return; }
             if (moves <= 0) { finish(false, '步数用完，目标未达成'); return; }
         } else {
+            try { MG.audio && MG.audio.sfx('click'); } catch (e) { }
             anim.swap = { a: [si, sj], b: [i, j], t0: now(), dur: 140, back: true };  // 滑过去…
             await new Promise(r => setTimeout(r, 140));
             [board[si][sj], board[i][j]] = [board[i][j], board[si][sj]];              // …滑回来

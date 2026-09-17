@@ -45,6 +45,7 @@ MiniGames.snake = {
         const maxW = Math.min(container.clientWidth - 16, 480);
         const S = Math.floor(Math.min(maxW / COLS, 28));
         const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);
+        try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (_) { }
         let snake = [{ x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) }], dir = { x: 0, y: 0 }, food = null, alive = true, won = false;
         const spawnFood = () => {
             while (true) {
@@ -61,6 +62,7 @@ MiniGames.snake = {
             if (snake.some(s => s.x === head.x && s.y === head.y)) { alive = false; finalize(false); return; }
             snake.unshift(head);
             if (head.x === food.x && head.y === food.y) {
+                try { MG.audio && MG.audio.sfx && MG.audio.sfx('coin'); } catch (_) { }
                 spawnFood();
                 if (snake.length >= target) { alive = false; finalize(true); return; }
             } else snake.pop();
