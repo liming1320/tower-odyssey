@@ -66,12 +66,14 @@ const sharedRuntimeMethodTableBound = !!(runtimeMethodEvidence && runtimeMethodE
 const runtimePcodeSlicesFile = path.join(reference, 'runtime-pcode-slices.json');
 const runtimePcodeSlices = fs.existsSync(runtimePcodeSlicesFile) ? JSON.parse(fs.readFileSync(runtimePcodeSlicesFile, 'utf8')) : null;
 const sharedRuntimePcodeSlicesBound = !!(runtimePcodeSlices && runtimePcodeSlices.summary && runtimePcodeSlices.summary.trustedPcodeSlices > 0);
-const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试', '24点二', '21点二', '记忆考验', '汉诺塔', '老虎机', '三张牌', '梭哈六', '海豚骰', '彩球迷宫']);
+const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试', '24点二', '21点二', '考眼力', '记忆考验', '汉诺塔', '老虎机', '三张牌', '梭哈六', '接龙二', '海豚骰', '彩球迷宫', '多彩泡泡', '变色彩球']);
+const structuredAdapterPlayableMigrated = new Set(['激光坦克', '找彩球', '变化彩球', '推箱子二']);
 const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '斗兽棋', '四子棋']);
 const nativeAdapterRulesMigrated = new Set([
     '强手棋', '接水管', '同色方块', '华容道', '智慧之光', '电磁彩球', '魔法城堡',
     '推箱子', '推箱子四', '推箱子五', '连结电线二', '像素岛', '禅宗花园', '禅宗迷宫', '航海迷题', '下一百层', '打砖块', '海底寻宝',
-    '爆破彩球', '七盏灯', '交换彩球', '碰撞彩球', '反射镜'
+    '爆破彩球', '七盏灯', '交换彩球', '碰撞彩球', '反射镜',
+    '摘花朵', '木乃伊'
 ]);
 const nativeAdapterPlayableMigrated = new Set([
     ...nativeAdapterRulesMigrated,
@@ -130,8 +132,8 @@ const rows = ledger.records.map(record => {
         : 'catalog-only';
     const migration = {
         assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || (resources && resources.resourcePackageBound === true),
-        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && structuredRulesMigrated.has(name)) || boardRulesMigrated.has(name),
-        adapterPlayableMigrated: nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name),
+        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && (structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name))) || boardRulesMigrated.has(name),
+        adapterPlayableMigrated: nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name),
         rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name) || nativeAdapterRulesMigrated.has(name),
         fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true,
         evidenceAdapterMigrated: catalogEvidenceAdapterBound
@@ -179,7 +181,7 @@ const rows = ledger.records.map(record => {
         rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(name),
         embeddedLevelAdapterBound: embeddedLevelAdapterMigrated.has(name),
         playableNativeAdapterBound: nativeAdapterPlayableMigrated.has(name),
-        playableAdapterBound: nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name)
+        playableAdapterBound: nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name)
     };
     const migrationPhase = verification.verificationComplete ? 'verification-complete'
         : migration.migrationComplete ? 'content-migration-complete'

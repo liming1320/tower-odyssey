@@ -240,8 +240,9 @@ window.MiniGames = window.MiniGames || {};
             container.style.overflow = 'hidden';
 
             // 台面画布：伪 3D 倾斜（原版 Space Cadet 的纵深俯视感）
-            c.style.transformOrigin = 'center 84%';
-            c.style.transform = 'perspective(1150px) rotateX(17deg)';
+            // 以「底部」为支点翻起，并补纵向缩放，使台面投影高度与右侧正立的计分板对齐（不再一高一矮）
+            c.style.transformOrigin = 'center 100%';
+            c.style.transform = 'perspective(1150px) rotateX(13deg) scaleY(1.15)';
 
             // GC = 当前绘图上下文（台面用 ctx，面板用 pctx）
             let GC = ctx;

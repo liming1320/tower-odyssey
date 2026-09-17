@@ -29,9 +29,9 @@
 | Games with embedded level adapters | 4 |
 | Games with candidate data renderers | 38 |
 | Assets migrated | 213 |
-| Levels migrated | 66 |
-| Playable adapters migrated | 66 |
-| Rules migrated | 50 |
+| Levels migrated | 74 |
+| Playable adapters migrated | 74 |
+| Rules migrated | 56 |
 | Full flow migrated | 0 |
 | Auto-bindable content games | 40 |
 | Content migration complete | 0 |
@@ -105,7 +105,7 @@
 | pk32-046 | 空当接龙 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-047 | 蜘蛛纸牌 | partial-content-migration | content-bound | shared atlases 28 | 0 |  | 6 | 0 | no | no | no | rules not fully migrated; full flow not migrated |
 | pk32-048 | 14点 | partial-content-migration | content-bound | shared atlases 28 | 0 |  | 4 | 0 | no | no | no | rules not fully migrated; full flow not migrated |
-| pk32-049 | 考眼力 | partial-content-migration | content-bound | shared atlases 28 | 0 | paired-code-candidate / 5 | 5 | 0 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
+| pk32-049 | 考眼力 | partial-content-migration | content-bound | shared atlases 28 | 0 | paired-code-candidate / 5 | 5 | 0 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-050 | 21点 | evidence-adapter-migration | catalog-launch | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-051 | 读心术二 | evidence-adapter-migration | catalog-only | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-052 | 13点 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
@@ -138,7 +138,7 @@
 | pk32-079 | 梭哈七 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-080 | 魔力纸牌 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 12 | 0 | no | no | no | rules not fully migrated; full flow not migrated |
 | pk32-081 | 跟花二 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 28 | 0 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-082 | 接龙二 | partial-content-migration | content-bound | shared atlases 28 | 0 | fixed-area-candidate / 20 | 20 | 0 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
+| pk32-082 | 接龙二 | partial-content-migration | content-bound | shared atlases 28 | 0 | fixed-area-candidate / 20 | 20 | 0 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-083 | 扫雷 | evidence-adapter-migration | catalog-only | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-084 | 赛马 | evidence-adapter-migration | catalog-only | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-085 | 俄罗斯方块 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
@@ -151,7 +151,7 @@
 | pk32-092 | 黑白棋 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 18 | 0 | yes | no | no | full flow not migrated |
 | pk32-093 | 同色方块 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 5 | 0 | yes | no | no | full flow not migrated |
 | pk32-094 | 同步移动 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 261 | 0 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-095 | 摘花朵 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 12 | 0 | yes | no | no | rules not fully migrated; full flow not migrated |
+| pk32-095 | 摘花朵 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 12 | 0 | yes | no | no | full flow not migrated |
 | pk32-096 | 平面魔方 | partial-content-migration | content-bound | shared atlases 28 | 0 | fixed-area-candidate / 9 | 9 | 0 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-097 | 激光坦克 | partial-content-migration | content-bound | shared atlases 28 | 0 | paired-code-candidate / 50 | 50 | 0 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
 | pk32-098 | 华容道 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 11 | 0 | yes | no | no | full flow not migrated |
@@ -184,7 +184,7 @@
 | pk32-125 | 海盗船 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-126 | 神符 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-127 | 原子 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
-| pk32-128 | 木乃伊 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 222 | 0 | yes | no | no | rules not fully migrated; full flow not migrated |
+| pk32-128 | 木乃伊 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 222 | 0 | yes | no | no | full flow not migrated |
 | pk32-129 | 记忆考验 | partial-content-migration | content-bound | shared atlases 28 | 0 | legacy-100-stream / 2 | 2 | 0 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-130 | 反应测试 | partial-content-migration | content-bound | shared atlases 28 | 0 | legacy-100-stream / 1 | 1 | 0 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-131 | 海豚骰 | partial-content-migration | content-bound | shared atlases 28 | 0 | legacy-100-stream / 3 | 3 | 0 | no | no | no | payload semantics not level-ready; full flow not migrated |
@@ -211,7 +211,7 @@
 | pk32-152 | 麻将王二 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-153 | 麻将王三 | partial-content-migration | content-bound | shared atlases 28 | 0 |  | 68 | 0 | no | no | no | rules not fully migrated; full flow not migrated |
 | pk32-154 | 魔塔二 | partial-content-migration | content-bound | shared atlases 28 | 0 |  | 1 | 0 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-155 | 多彩泡泡 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 27 | 0 | no | no | no | rules not fully migrated; full flow not migrated |
+| pk32-155 | 多彩泡泡 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 27 | 0 | no | no | no | full flow not migrated |
 | pk32-156 | 魔塔三 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 26 | 0 | yes | no | no | rules not fully migrated; full flow not migrated |
 | pk32-157 | 过河 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-158 | 电磁彩球 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 160 | 0 | yes | no | no | full flow not migrated |
@@ -240,7 +240,7 @@
 | pk32-181 | 推箱子六 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-182 | 拼疑犯 | partial-content-migration | content-bound | shared atlases 28 | 0 | paired-code-candidate / 14 | 14 | 0 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-183 | 十字绣 | evidence-adapter-migration | catalog-launch | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
-| pk32-184 | 变色彩球 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 43 | 0 | no | no | no | rules not fully migrated; full flow not migrated |
+| pk32-184 | 变色彩球 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 43 | 0 | no | no | no | full flow not migrated |
 | pk32-185 | 扩展线路 | partial-content-migration | content-bound | shared atlases 28 | 0 | dimension-prefix-paired-cell-with-trailer / 5 | 5 | 0 | no | no | no | payload semantics not level-ready; full flow not migrated |
 | pk32-186 | 禅宗迷宫 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 7 | 0 | yes | no | no | full flow not migrated |
 | pk32-187 | 飞镖王 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |

@@ -1391,6 +1391,7 @@ body.in-battle .avatar-btn { display: none; }
 .pk32v-card { min-width: 42px; min-height: 56px; display: inline-flex; align-items: center; justify-content: center;
     border-radius: 8px; border: 1px solid rgba(255,255,255,.28); background: linear-gradient(180deg, #fffaf0, #e8d9b8);
     color: #1f2937; font-size: 20px; font-weight: 800; box-shadow: 0 3px 8px rgba(0,0,0,.25); }
+.pk32v-card[data-playable="true"] { outline: 3px solid #22c55e; outline-offset: -2px; }
 .pk32v-hanoi { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: min(100%, 520px); }
 .pk32v-hanoi-tower { min-height: 190px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
     gap: 4px; padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,.16);
@@ -1403,7 +1404,23 @@ body.in-battle .avatar-btn { display: none; }
     border: 1px solid rgba(255,213,107,.42); background: linear-gradient(180deg, #352b55, #171827);
     color: #ffd56b; font-size: 24px; font-weight: 800; box-shadow: inset 0 0 18px rgba(0,0,0,.35); }
 .pk32v-card-table { display: grid; gap: 8px; width: min(100%, 420px); }
+.pk32v-solitaire-hand { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: min(100%, 560px); }
 .pk32v-card[data-kept="true"] { outline: 3px solid #ffd56b; outline-offset: -2px; }
+.pk32v-next-card { display: flex; gap: 10px; align-items: center; justify-content: center; width: min(100%, 420px); color: #dfe6ff; font-size: 12px; }
+.pk32v-three-areas { display: grid; grid-template-columns: repeat(7, minmax(48px, 1fr)); gap: 6px; width: min(100%, 560px); }
+.pk32v-three-area { min-height: 142px; padding: 5px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; justify-content: flex-start; overflow: hidden; }
+.pk32v-area-title { color: #ffd56b; font-size: 11px; font-weight: 800; }
+.pk32v-area-stack { display: flex; flex-direction: column-reverse; gap: 2px; align-items: center; }
+.pk32v-card-mini { width: 38px; min-height: 19px; border-radius: 5px; background: #fff8e7; color: #1f2937; font-size: 10px; font-style: normal; font-weight: 800; line-height: 19px; }
+.pk32v-stud-board { display: grid; gap: 7px; width: min(100%, 520px); }
+.pk32v-stud-row { display: grid; grid-template-columns: repeat(5, minmax(42px, 1fr)) minmax(42px, .75fr); gap: 5px; align-items: center; }
+.pk32v-card-slot { min-height: 54px; padding: 0; font-size: 17px; font-weight: 800; }
+.pk32v-card-slot[data-empty="true"] { background: rgba(15,23,42,.72); border-style: dashed; }
+.pk32v-row-score { min-width: 42px; color: #ffd56b; font-size: 11px; font-weight: 800; text-align: center; }
+.pk32v-eye-board { display: grid; grid-template-columns: repeat(3, minmax(78px, 1fr)); gap: 10px; width: min(100%, 420px); }
+.pk32v-eye-card { aspect-ratio: 1; padding: 7px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.pk32v-eye-dot { border-radius: 50%; background: rgba(255,255,255,.08); }
+.pk32v-eye-dot[data-active="true"] { background: #ffd56b; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
 .pk32v-color-palette { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: min(100%, 420px); }
 .pk32-index-board { width: min(100%, 360px); overflow: hidden; }
 .pk32-dolphin-board { width: min(100%, 390px); overflow: hidden; }
@@ -1413,6 +1430,13 @@ body.in-battle .avatar-btn { display: none; }
     .pk32v-hanoi-tower { min-height: 156px; padding: 6px 2px; }
     .pk32v-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .pk32v-slots span { min-height: 58px; font-size: 18px; }
+    .pk32v-three-areas { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .pk32v-three-area { min-height: 118px; }
+    .pk32v-card-mini { width: 32px; font-size: 9px; }
+    .pk32v-stud-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .pk32v-row-score { grid-column: 1 / -1; min-height: 14px; }
+    .pk32v-eye-board { gap: 6px; }
+    .pk32v-eye-card { padding: 5px; gap: 2px; }
     .pk32-index-board { width: min(100%, 320px); }
     .pk32-dolphin-board, .pk32-color-maze-board { width: min(100%, 340px); }
 }

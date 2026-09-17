@@ -11,9 +11,9 @@
     "catalogAssignmentConflictGames": 69,
     "ownershipVerified": 0,
     "assetsMigrated": 213,
-    "levelsMigrated": 66,
-    "adapterPlayableMigrated": 66,
-    "rulesMigrated": 50,
+    "levelsMigrated": 74,
+    "adapterPlayableMigrated": 74,
+    "rulesMigrated": 56,
     "fullFlowMigrated": 0,
     "sharedResourcePackagesBound": 213,
     "gameSpecificAssetMappings": 0,
@@ -2881,9 +2881,9 @@
       "name": "考眼力",
       "migration": {
         "assetsMigrated": true,
-        "levelsMigrated": false,
-        "adapterPlayableMigrated": false,
-        "rulesMigrated": false,
+        "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "migrationComplete": false
@@ -2925,12 +2925,12 @@
         "candidateDataRendererBound": true,
         "contentComplete": false,
         "verificationComplete": false,
-        "rulesMigratedByStructureFamily": null,
+        "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
         "rulesMigratedByNativeAdapter": false,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
-        "playableAdapterBound": false
+        "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4828,9 +4828,9 @@
       "name": "接龙二",
       "migration": {
         "assetsMigrated": true,
-        "levelsMigrated": false,
-        "adapterPlayableMigrated": false,
-        "rulesMigrated": false,
+        "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "migrationComplete": false
@@ -4872,12 +4872,12 @@
         "candidateDataRendererBound": true,
         "contentComplete": false,
         "verificationComplete": false,
-        "rulesMigratedByStructureFamily": null,
+        "rulesMigratedByStructureFamily": "structured-native-payloads",
         "rulesMigratedByBoardEngine": false,
         "rulesMigratedByNativeAdapter": false,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
-        "playableAdapterBound": false
+        "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5597,7 +5597,7 @@
         "assetsMigrated": true,
         "levelsMigrated": true,
         "adapterPlayableMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "migrationComplete": false
@@ -5641,7 +5641,7 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false,
+        "rulesMigratedByNativeAdapter": true,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "playableAdapterBound": true
@@ -5713,8 +5713,8 @@
       "name": "激光坦克",
       "migration": {
         "assetsMigrated": true,
-        "levelsMigrated": false,
-        "adapterPlayableMigrated": false,
+        "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5762,7 +5762,7 @@
         "rulesMigratedByNativeAdapter": false,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
-        "playableAdapterBound": false
+        "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7544,7 +7544,7 @@
         "assetsMigrated": true,
         "levelsMigrated": true,
         "adapterPlayableMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "migrationComplete": false
@@ -7588,7 +7588,7 @@
         "verificationComplete": false,
         "rulesMigratedByStructureFamily": null,
         "rulesMigratedByBoardEngine": false,
-        "rulesMigratedByNativeAdapter": false,
+        "rulesMigratedByNativeAdapter": true,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "playableAdapterBound": true
@@ -8604,8 +8604,8 @@
       "name": "找彩球",
       "migration": {
         "assetsMigrated": true,
-        "levelsMigrated": false,
-        "adapterPlayableMigrated": false,
+        "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8653,7 +8653,7 @@
         "rulesMigratedByNativeAdapter": false,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
-        "playableAdapterBound": false
+        "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -8663,8 +8663,8 @@
       "name": "变化彩球",
       "migration": {
         "assetsMigrated": true,
-        "levelsMigrated": false,
-        "adapterPlayableMigrated": false,
+        "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8712,7 +8712,7 @@
         "rulesMigratedByNativeAdapter": false,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
-        "playableAdapterBound": false
+        "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -9135,9 +9135,9 @@
       "name": "多彩泡泡",
       "migration": {
         "assetsMigrated": true,
-        "levelsMigrated": false,
-        "adapterPlayableMigrated": false,
-        "rulesMigrated": false,
+        "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "migrationComplete": false
@@ -9179,12 +9179,12 @@
         "candidateDataRendererBound": true,
         "contentComplete": false,
         "verificationComplete": false,
-        "rulesMigratedByStructureFamily": null,
+        "rulesMigratedByStructureFamily": "native-grid-record-candidate",
         "rulesMigratedByBoardEngine": false,
         "rulesMigratedByNativeAdapter": false,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
-        "playableAdapterBound": false
+        "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -9548,8 +9548,8 @@
       "name": "推箱子二",
       "migration": {
         "assetsMigrated": true,
-        "levelsMigrated": false,
-        "adapterPlayableMigrated": false,
+        "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9597,7 +9597,7 @@
         "rulesMigratedByNativeAdapter": false,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
-        "playableAdapterBound": false
+        "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -10846,9 +10846,9 @@
       "name": "变色彩球",
       "migration": {
         "assetsMigrated": true,
-        "levelsMigrated": false,
-        "adapterPlayableMigrated": false,
-        "rulesMigrated": false,
+        "levelsMigrated": true,
+        "adapterPlayableMigrated": true,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "migrationComplete": false
@@ -10890,12 +10890,12 @@
         "candidateDataRendererBound": true,
         "contentComplete": false,
         "verificationComplete": false,
-        "rulesMigratedByStructureFamily": null,
+        "rulesMigratedByStructureFamily": "native-grid-record-candidate",
         "rulesMigratedByBoardEngine": false,
         "rulesMigratedByNativeAdapter": false,
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
-        "playableAdapterBound": false
+        "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false

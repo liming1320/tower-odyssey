@@ -1021,28 +1021,235 @@
                     drawBoard();
                 }
                 function renderStudSixNative(payload, nav, detail) {
-                    let round = 0, kept = new Set(), player = [], dealer = [], compared = false;
-                    function deal() { const cards = payloadCards(payload, 10, round); player = cards.slice(0, 5); dealer = cards.slice(5, 10); kept = new Set(); compared = false; ended = false; drawBoard(); }
-                    function drawOnce() { const replacements = payloadCards(payload, 5, round + 3); player = player.map(function (card, index) { return kept.has(index) ? card : replacements[index]; }); compared = true; drawBoard(); }
+                    let cursor = 0, chains = 0;
+                    const deck = payloadCards(payload, 220, level + 6);
+                    const rows = Array.from({ length: 4 }, function () { return Array(5).fill(null); });
+                    const scoreTable = { '一对': 1, '两对': 2, '三条': 4, '顺子': 6, '同花': 4, '葫芦': 8, '四条': 12, '同花顺': 24 };
+                    function nextCard() { const card = deck[cursor % deck.length]; cursor += 1; return card; }
+                    let incoming = nextCard();
+                    function place(rowIndex, colIndex) {
+                        if (ended || rows[rowIndex][colIndex]) return;
+                        rows[rowIndex][colIndex] = incoming;
+                        const row = rows[rowIndex];
+                        if (row.every(Boolean)) {
+                            const result = handScore(row);
+                            const base = scoreTable[result.name] || 0;
+                            if (base > 0) {
+                                chains += 1;
+                                rows[rowIndex] = Array(5).fill(null);
+                                setScore(score + base * chains);
+                            } else {
+                                chains = 0;
+                            }
+                        }
+                        if (rows.every(function (row) { return row.every(Boolean); })) { drawBoard(); finish('梭哈六中间四行已经放满，游戏结束。'); return; }
+                        incoming = nextCard();
+                        drawBoard();
+                    }
                     function drawBoard() {
                         panel.innerHTML = '';
-                        const row = el('div', { className: 'pk32v-controls' });
-                        player.forEach(function (card, index) {
-                            const cardNode = button(card.text, function () { if (compared) return; if (kept.has(index)) kept.delete(index); else kept.add(index); drawBoard(); });
-                            cardNode.className += ' pk32v-card';
-                            cardNode.dataset.kept = String(kept.has(index));
-                            row.appendChild(cardNode);
+                        const next = el('div', { className: 'pk32v-next-card' });
+                        next.append(el('span', {}, '右侧来牌'), el('strong', { className: 'pk32v-card' }, incoming.text));
+                        const board = el('div', { className: 'pk32v-stud-board' });
+                        rows.forEach(function (row, rowIndex) {
+                            const rowNode = el('div', { className: 'pk32v-stud-row' });
+                            row.forEach(function (card, colIndex) {
+                                const slot = button(card ? card.text : '', function () { place(rowIndex, colIndex); });
+                                slot.className += ' pk32v-card-slot';
+                                slot.dataset.empty = String(!card);
+                                rowNode.appendChild(slot);
+                            });
+                            const ready = row.every(Boolean) ? handScore(row).name : '';
+                            rowNode.append(el('span', { className: 'pk32v-row-score' }, ready));
+                            board.appendChild(rowNode);
                         });
-                        const dealerScore = handScore(dealer), playerScore = handScore(player);
-                        const actions = el('div', { className: 'pk32v-toolbar' });
-                        actions.append(button(compared ? '比牌' : '换牌', function () {
-                            if (!compared) { drawOnce(); return; }
-                            if (playerScore.value >= dealerScore.value) { setScore(score + 30); finish('梭哈六本局玩家胜。'); } else finish('梭哈六本局电脑胜。');
-                        }), button('下一局', function () { round += 1; deal(); }));
-                        panel.append(nav, row, el('p', { className: 'pk32v-prompt' }, '玩家：' + playerScore.name + '；电脑暗牌已发出' + (compared ? '，电脑牌型：' + dealerScore.name : '')), actions, detail);
-                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；点击手牌保留，换牌后比五张牌牌型。';
+                        panel.append(nav, next, board, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；四行五列摆牌，满行按牌型计分消去，连消 ' + chains + ' 次。';
                     }
-                    deal();
+                    drawBoard();
+                }
+                function renderSolitaire2Native(payload, nav, detail) {
+                    const deck = payloadCards(payload, 72, level + 82).concat([{ rank: 0, suit: 4, point: 0, text: '大王', joker: 'big' }, { rank: 0, suit: 5, point: 0, text: '小王', joker: 'small' }]);
+                    let cursor = 0, player = [], computer = [], table = [], turn = 'player', pendingDraw = 0;
+                    function drawCard() { const card = deck[cursor % deck.length]; cursor += 1; return card; }
+                    function resetGame() {
+                        cursor = (level * 9) % deck.length; player = []; computer = []; table = []; turn = 'player'; pendingDraw = 0; ended = false;
+                        for (let index = 0; index < 7; index += 1) { player.push(drawCard()); computer.push(drawCard()); }
+                        table.push(drawCard()); drawBoard();
+                    }
+                    function canPlay(card) {
+                        if (card.joker) return true;
+                        const top = table[table.length - 1];
+                        if (!top || top.joker) return true;
+                        if (card.suit === top.suit) return true;
+                        return card.rank <= 10 && top.rank <= 10 && card.rank === top.rank;
+                    }
+                    function penalty(card) { return card.rank === 11 ? 1 : card.rank === 12 ? 2 : card.rank === 13 ? 3 : 0; }
+                    function playHand(hand, index) {
+                        if (ended) return false;
+                        const card = hand[index];
+                        if (!card || !canPlay(card)) return false;
+                        hand.splice(index, 1); table.push(card); pendingDraw += penalty(card); setScore(score + (turn === 'player' ? 3 : 1));
+                        if (!hand.length) { drawBoard(); finish((turn === 'player' ? '玩家' : '电脑') + '出完手牌，接龙二结束。'); return true; }
+                        turn = turn === 'player' ? 'computer' : 'player';
+                        drawBoard();
+                        if (turn === 'computer') setTimeout(computerTurn, 350);
+                        return true;
+                    }
+                    function takeCards(hand, count) { for (let index = 0; index < count; index += 1) hand.push(drawCard()); }
+                    function drawOrPass() {
+                        if (ended || turn !== 'player') return;
+                        takeCards(player, Math.max(1, pendingDraw)); pendingDraw = 0; turn = 'computer'; drawBoard(); setTimeout(computerTurn, 350);
+                    }
+                    function computerTurn() {
+                        if (ended || turn !== 'computer') return;
+                        if (pendingDraw) { takeCards(computer, pendingDraw); pendingDraw = 0; turn = 'player'; drawBoard(); return; }
+                        const index = computer.findIndex(canPlay);
+                        if (index >= 0) playHand(computer, index);
+                        else { takeCards(computer, 1); turn = 'player'; drawBoard(); }
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const top = table[table.length - 1];
+                        const tableNode = el('div', { className: 'pk32v-next-card' });
+                        tableNode.append(el('span', {}, '桌面牌'), el('strong', { className: 'pk32v-card' }, top ? top.text : ''));
+                        const hand = el('div', { className: 'pk32v-hand pk32v-solitaire-hand' });
+                        player.forEach(function (card, index) {
+                            const cardNode = button(card.text, function () { if (turn === 'player') playHand(player, index); });
+                            cardNode.className += ' pk32v-card';
+                            cardNode.dataset.playable = String(canPlay(card) && turn === 'player');
+                            hand.appendChild(cardNode);
+                        });
+                        const actions = el('div', { className: 'pk32v-toolbar' });
+                        actions.append(button(pendingDraw ? '摸罚牌 ' + pendingDraw : '摸一张', drawOrPass), button('重开本局', resetGame));
+                        panel.append(nav, tableNode, hand, actions, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；同花色可接，A-10 同数字可换花色，J/Q/K 让下家摸 1/2/3 张。玩家 ' + player.length + ' 张，电脑 ' + computer.length + ' 张，轮到' + (turn === 'player' ? '玩家' : '电脑') + '。';
+                    }
+                    resetGame();
+                }
+                function renderSharpEyesNative(payload, nav, detail) {
+                    const points = (payload.units || []).map(function (value) {
+                        const n = Math.abs(Number(value) || 0);
+                        return { x: n % 10, y: Math.floor(n / 10) % 10 };
+                    }).filter(function (point) { return point.x < 7 && point.y < 7; });
+                    const base = points.length ? points : [{ x: 2, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 2 }, { x: 3, y: 3 }];
+                    const odd = (level + base.length) % 3;
+                    function pattern(index) {
+                        const out = base.slice();
+                        if (index === odd) {
+                            const changeIndex = (level + index) % out.length;
+                            const changed = out[changeIndex] || { x: 0, y: 0 };
+                            out[changeIndex] = { x: (changed.x + 1) % 7, y: changed.y };
+                        }
+                        return new Set(out.map(function (point) { return point.y * 7 + point.x; }));
+                    }
+                    function choose(index) {
+                        if (ended) return;
+                        if (index === odd) { setScore(score + 10); finish('考眼力选择正确。'); }
+                        else finish('选错了，这一张不是不同牌。');
+                    }
+                    function drawPattern(index) {
+                        const active = pattern(index), card = button('', function () { choose(index); });
+                        card.className += ' pk32v-eye-card';
+                        for (let cell = 0; cell < 49; cell += 1) {
+                            const dot = el('span', { className: 'pk32v-eye-dot' });
+                            dot.dataset.active = String(active.has(cell));
+                            card.appendChild(dot);
+                        }
+                        return card;
+                    }
+                    panel.innerHTML = '';
+                    const board = el('div', { className: 'pk32v-eye-board' });
+                    [0, 1, 2].forEach(function (index) { board.appendChild(drawPattern(index)); });
+                    panel.append(nav, board, detail);
+                    prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；从三张图案牌里找出与众不同的一张。';
+                }
+                function renderLaserTankNative(payload, nav, detail) {
+                    const digits = (payload.units || []).map(Number).filter(Number.isFinite).flatMap(function (value) {
+                        const text = payload.family === 'paired-code-candidate' ? String(Math.abs(value)).padStart(2, '0') : String(Math.abs(value));
+                        return text.split('').map(Number).filter(Number.isFinite);
+                    });
+                    const width = Math.min(20, Math.max(10, chooseShape(payload).width || 15));
+                    const height = Math.max(6, Math.ceil(digits.length / width));
+                    const cells = digits.concat(Array(width * height).fill(7)).slice(0, width * height);
+                    const floorCells = cells.map(function (value, index) { return value === 7 || value === 8 ? index : -1; }).filter(function (index) { return index >= 0; });
+                    let tank = floorCells[0] || 0, flag = floorCells[floorCells.length - 1] || cells.length - 1, facing = -width, shots = 0;
+                    function sameRow(a, b) { return Math.floor(a / width) === Math.floor(b / width); }
+                    function blocked(index) { return index < 0 || index >= cells.length || cells[index] === 9; }
+                    function water(index) { return index >= 0 && index < cells.length && cells[index] === 0; }
+                    function move(delta) {
+                        if (ended) return;
+                        const next = tank + delta;
+                        facing = delta;
+                        if ((delta === 1 || delta === -1) && !sameRow(tank, next) || blocked(next)) return;
+                        if (water(next)) { finish('激光坦克掉到河里了，请重开本关。'); return; }
+                        tank = next; setScore(score + 1); drawBoard();
+                        if (tank === flag) finish('激光坦克夺到军旗，本关完成。');
+                    }
+                    function fire() {
+                        if (ended) return;
+                        let probe = tank + facing; shots += 1;
+                        while (probe >= 0 && probe < cells.length && (facing !== 1 && facing !== -1 || sameRow(probe - facing, probe))) {
+                            if (cells[probe] === 9) { cells[probe] = 7; setScore(score + 5); break; }
+                            if (cells[probe] === 8) { cells[probe] = 7; setScore(score + 10); break; }
+                            probe += facing;
+                        }
+                        drawBoard();
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const grid = renderGrid(width, height, 'pk32-laser-tank-board');
+                        cells.forEach(function (value, index) {
+                            const label = index === tank ? '坦' : index === flag ? '旗' : value === 9 ? '墙' : value === 8 ? '炮' : value === 0 ? '水' : '';
+                            const cell = button(label, function () { const delta = index - tank; if ([1, -1, width, -width].indexOf(delta) >= 0) move(delta); });
+                            cell.dataset.code = String(value); cell.dataset.player = String(index === tank);
+                            cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (index === tank ? '#22c55e' : index === flag ? '#facc15' : value === 9 ? '#57534e' : value === 8 ? '#dc2626' : value === 0 ? '#2563eb' : '#0f172a') + ';color:#fff;font-size:10px;font-weight:700;line-height:1;overflow:hidden';
+                            grid.appendChild(cell);
+                        });
+                        const controls = el('div', { className: 'pk32v-controls' });
+                        [['上', -width], ['下', width], ['左', -1], ['右', 1], ['发射', 0]].forEach(function (entry) { controls.append(button(entry[0], function () { if (entry[1]) move(entry[1]); else fire(); })); });
+                        panel.append(nav, grid, controls, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始载荷；方向键移动和改变朝向，发射激光可摧毁砖墙/反坦克武器，发射 ' + shots + ' 次。';
+                    }
+                    drawBoard();
+                }
+                function renderFindDifferenceNative(payload, nav, detail) {
+                    const points = (payload.units || []).map(indexPoint).map(function (point) { return point.y * 16 + point.x; });
+                    const base = new Set(points);
+                    const changed = new Set(points);
+                    const moved = points[(level * 5 + points.length) % Math.max(1, points.length)] || 0;
+                    changed.delete(moved);
+                    changed.add((moved + 17) % 256);
+                    let chances = 5;
+                    function isDiff(index) { return base.has(index) !== changed.has(index); }
+                    function choose(index) {
+                        if (ended) return;
+                        if (isDiff(index)) { setScore(score + 10); finish('找不同命中差异点。'); return; }
+                        chances -= 1; drawBoard();
+                        if (chances <= 0) finish('机会用完了，请重开本关。');
+                    }
+                    function drawSide(title, active) {
+                        const side = el('div', { className: 'pk32v-diff-side' });
+                        side.append(el('span', { className: 'pk32v-area-title' }, title));
+                        const grid = renderGrid(16, 16, 'pk32-index-board');
+                        for (let index = 0; index < 256; index += 1) {
+                            const on = active.has(index);
+                            const cell = button(on ? '●' : '', function () { choose(index); });
+                            cell.dataset.active = String(on); cell.dataset.diff = String(isDiff(index));
+                            cell.style.cssText = 'min-width:16px;min-height:16px;padding:0;background:' + (on ? '#eab308' : '#0f172a') + ';color:#111;font-size:8px;line-height:1;overflow:hidden';
+                            grid.appendChild(cell);
+                        }
+                        side.appendChild(grid);
+                        return side;
+                    }
+                    function drawBoard() {
+                        panel.innerHTML = '';
+                        const board = el('div', { className: 'pk32v-diff-board' });
+                        board.append(drawSide('左图', base), drawSide('右图', changed));
+                        panel.append(nav, board, detail);
+                        prompt.textContent = config.name + '：第 ' + (level + 1) + ' / ' + game.payloads.length + ' 条原始坐标载荷；比较左右图案，剩余机会 ' + chances + '。';
+                    }
+                    drawBoard();
                 }
                 function indexPoint(value) {
                     const n = Number(value) || 0;
@@ -1222,6 +1429,10 @@
                     if (config.name === '21点二') return renderBlackjackNative(payload, nav, detail);
                     if (config.name === '三张牌') return renderThreeCardsNative(payload, nav, detail);
                     if (config.name === '梭哈六') return renderStudSixNative(payload, nav, detail);
+                    if (config.name === '接龙二') return renderSolitaire2Native(payload, nav, detail);
+                    if (config.name === '考眼力' && payload.family === 'paired-code-candidate') return renderSharpEyesNative(payload, nav, detail);
+                    if (config.name === '激光坦克') return renderLaserTankNative(payload, nav, detail);
+                    if (config.name === '找不同' && payload.family === 'three-digit-index-candidate') return renderFindDifferenceNative(payload, nav, detail);
                     if (config.name === '找彩球' && payload.family === 'three-digit-index-candidate') return renderFindColorBalls(payload, nav, detail);
                     if (config.name === '变化彩球' && payload.family === 'three-digit-index-candidate') return renderChangingColorBalls(payload, nav, detail);
                     if (config.name === '海豚骰' && payload.family === 'legacy-100-stream') return renderDolphinDiceNative(payload, nav, detail);
@@ -1252,6 +1463,119 @@
                     const colors = ['#0f172a', '#334155', '#2563eb', '#16a34a', '#eab308', '#dc2626', '#7c3aed', '#0891b2', '#f97316', '#be123c'];
                     return Number.isFinite(n) ? colors[Math.abs(n) % colors.length] : '#475569';
                 }
+                function tokenGrid(item) {
+                    const width = Math.max(1, item.width || 10), height = Math.max(1, item.height || Math.ceil(String(item.cells || '').length / width));
+                    const cellWidth = Math.max(1, item.cellWidth || 1);
+                    const tokens = String(item.cells || '').match(new RegExp('.{1,' + cellWidth + '}', 'g')) || [];
+                    while (tokens.length < width * height) tokens.push('0'.repeat(cellWidth));
+                    return { width: width, height: height, cellWidth: cellWidth, tokens: tokens.slice(0, width * height) };
+                }
+                function renderCandidateBubble() {
+                    let cells = [], width = 0, height = 0;
+                    function reset() {
+                        const grid = tokenGrid((data.levels || [])[level] || {});
+                        width = grid.width; height = grid.height; cells = grid.tokens.slice(); ended = false; drawBubble();
+                    }
+                    function empty(value) { return /^0+$/.test(String(value)); }
+                    function neighbors(index) {
+                        const x = index % width, y = Math.floor(index / width), out = [];
+                        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (dir) { const nx = x + dir[0], ny = y + dir[1]; if (nx >= 0 && nx < width && ny >= 0 && ny < height) out.push(ny * width + nx); });
+                        return out;
+                    }
+                    function connected(start) {
+                        const value = cells[start];
+                        if (empty(value)) return [];
+                        const found = [], seen = new Set([start]), queue = [start];
+                        while (queue.length) {
+                            const index = queue.shift();
+                            found.push(index);
+                            neighbors(index).forEach(function (next) { if (!seen.has(next) && cells[next] === value) { seen.add(next); queue.push(next); } });
+                        }
+                        return found;
+                    }
+                    function collapse() {
+                        for (let x = 0; x < width; x += 1) {
+                            const column = [];
+                            for (let y = height - 1; y >= 0; y -= 1) if (!empty(cells[y * width + x])) column.push(cells[y * width + x]);
+                            for (let y = height - 1; y >= 0; y -= 1) cells[y * width + x] = column[height - 1 - y] || '0';
+                        }
+                    }
+                    function hasMove() { return cells.some(function (value, index) { return !empty(value) && connected(index).length >= 3; }); }
+                    function drawBubble() {
+                        panel.innerHTML = '';
+                        const nav = el('div', { className: 'pk32v-toolbar' });
+                        nav.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min((data.levels || []).length - 1, level + 1); select.value = String(level); reset(); }), select, button('重置本关', reset));
+                        const board = renderGrid(width, height, 'pk32-candidate-bubble-board');
+                        cells.forEach(function (value, index) {
+                            const cell = button(empty(value) ? '' : '●', function () {
+                                if (ended || empty(value)) return;
+                                const group = connected(index);
+                                if (group.length < 3) { prompt.textContent = config.name + '：请选择空间上连续三个以上同色彩球。'; return; }
+                                group.forEach(function (target) { cells[target] = '0'; });
+                                collapse(); setScore(score + group.length * 3); drawBubble();
+                                if (!cells.some(function (item) { return !empty(item); })) finish(config.name + '本关彩球全部消去。');
+                                else if (!hasMove()) finish(config.name + '没有可消去的三连彩球。');
+                            });
+                            cell.dataset.code = value;
+                            cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (empty(value) ? '#0f172a' : colorForToken(value)) + ';color:#fff;font-size:12px;line-height:1;overflow:hidden';
+                            board.appendChild(cell);
+                        });
+                        panel.append(nav, board);
+                        prompt.textContent = config.name + '：候选原生关卡 ' + (level + 1) + ' / ' + (data.levels || []).length + '；上下左右连通三个以上同色彩球会消去并下落。';
+                    }
+                    reset();
+                }
+                function renderCandidateColorChange() {
+                    let cells = [], width = 0, height = 0, left = new Set(), right = new Set(), leftColor = '', rightColor = '';
+                    function reset() {
+                        const grid = tokenGrid((data.levels || [])[level] || {});
+                        width = grid.width; height = grid.height; cells = grid.tokens.slice(); ended = false;
+                        const filled = cells.map(function (value, index) { return /^0+$/.test(value) ? -1 : index; }).filter(function (index) { return index >= 0; });
+                        const leftStart = filled[0] || 0, rightStart = filled[filled.length - 1] || cells.length - 1;
+                        left = new Set([leftStart]); right = new Set([rightStart]); leftColor = cells[leftStart] || '1'; rightColor = cells[rightStart] || '2'; drawColorChange();
+                    }
+                    function neighbors(index) {
+                        const x = index % width, y = Math.floor(index / width), out = [];
+                        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (dir) { const nx = x + dir[0], ny = y + dir[1]; if (nx >= 0 && nx < width && ny >= 0 && ny < height) out.push(ny * width + nx); });
+                        return out;
+                    }
+                    function expand(area, color, otherArea) {
+                        const queue = Array.from(area);
+                        while (queue.length) neighbors(queue.shift()).forEach(function (next) {
+                            if (!area.has(next) && !otherArea.has(next) && cells[next] === color) { area.add(next); queue.push(next); }
+                        });
+                    }
+                    function colors() { return Array.from(new Set(cells.filter(function (value) { return !/^0+$/.test(value); }))).sort(); }
+                    function choose(color) {
+                        if (ended || color === leftColor || color === rightColor) return;
+                        leftColor = color; expand(left, color, right);
+                        const ai = colors().filter(function (value) { return value !== leftColor && value !== rightColor; }).sort(function (a, b) {
+                            const ar = new Set(right), br = new Set(right); expand(ar, a, left); expand(br, b, left); return br.size - ar.size;
+                        })[0];
+                        if (ai) { rightColor = ai; expand(right, ai, left); }
+                        setScore(left.size); drawColorChange();
+                        if (left.size + right.size >= cells.filter(function (value) { return !/^0+$/.test(value); }).length) finish(left.size >= right.size ? '变色彩球左方获胜。' : '变色彩球右方获胜。');
+                    }
+                    function drawColorChange() {
+                        panel.innerHTML = '';
+                        const nav = el('div', { className: 'pk32v-toolbar' });
+                        nav.append(button('上一关', function () { level = Math.max(0, level - 1); select.value = String(level); reset(); }), button('下一关', function () { level = Math.min((data.levels || []).length - 1, level + 1); select.value = String(level); reset(); }), select, button('重置本关', reset));
+                        const palette = el('div', { className: 'pk32v-color-palette' });
+                        colors().forEach(function (color) { const pick = button(color, function () { choose(color); }); pick.style.cssText = 'background:' + colorForToken(color) + ';color:#fff;min-width:44px;min-height:34px;padding:0;font-weight:800'; palette.appendChild(pick); });
+                        const board = renderGrid(width, height, 'pk32-candidate-color-board');
+                        cells.forEach(function (value, index) {
+                            const cell = button(left.has(index) ? '左' : right.has(index) ? '右' : /^0+$/.test(value) ? '' : '●', function () { if (!/^0+$/.test(value)) choose(value); });
+                            cell.dataset.code = value; cell.dataset.owner = left.has(index) ? 'left' : right.has(index) ? 'right' : '';
+                            cell.style.cssText = 'min-width:24px;min-height:24px;padding:0;background:' + (/^0+$/.test(value) ? '#0f172a' : colorForToken(value)) + ';color:#fff;font-size:10px;font-weight:800;line-height:1;overflow:hidden;outline:' + (left.has(index) ? '2px solid #fff' : right.has(index) ? '2px solid #111' : 'none');
+                            board.appendChild(cell);
+                        });
+                        panel.append(nav, palette, board);
+                        prompt.textContent = config.name + '：候选原生关卡 ' + (level + 1) + ' / ' + (data.levels || []).length + '；左方 ' + left.size + '，右方 ' + right.size + '，不能选择自己或对方当前颜色。';
+                    }
+                    reset();
+                }
+                if (config.name === '多彩泡泡') return renderCandidateBubble();
+                if (config.name === '变色彩球') return renderCandidateColorChange();
                 function draw() {
                     const item = (data.levels || [])[level];
                     panel.innerHTML = '';
