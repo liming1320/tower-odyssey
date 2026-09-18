@@ -16,6 +16,7 @@
         #touch-left { left: 0; bottom: 0; width: 32%; height: 31%; }
         #touch-right { right: 0; bottom: 0; width: 32%; height: 31%; }
         #touch-launch { right: 0; top: 28%; width: 13%; height: 47%; }
+        #touch-hint { position: absolute; right: 1.5%; top: 47%; width: 10%; color: rgba(255,235,170,.86); font: 700 11px/1.35 Arial, sans-serif; letter-spacing: .3px; text-align: center; pointer-events: none; text-shadow: 0 1px 3px #000; }
         @media (pointer: coarse), (max-width: 600px) {
             #touch-controls { display: block; }
         }
@@ -30,6 +31,7 @@
             <button id="touch-left" class="touch-key" type="button" aria-label="Left flipper"></button>
             <button id="touch-right" class="touch-key" type="button" aria-label="Right flipper"></button>
             <button id="touch-launch" class="touch-key" type="button" aria-label="Launch ball"></button>
+            <div id="touch-hint">HOLD<br>RELEASE</div>
         </div>
     </main>
     <script>
@@ -50,18 +52,19 @@
         window.addEventListener('pointerdown', () => canvas.focus());
 
         const touchKeys = {
-            'touch-left': 'ArrowLeft',
-            'touch-right': 'ArrowRight',
-            'touch-launch': 'Space',
+            'touch-left': ['_spacecadet_left_down', '_spacecadet_left_up'],
+            'touch-right': ['_spacecadet_right_down', '_spacecadet_right_up'],
+            'touch-launch': ['_spacecadet_launch_down', '_spacecadet_launch_up'],
         };
         Object.keys(touchKeys).forEach(id => {
             const button = document.getElementById(id);
-            const code = touchKeys[id];
+            const functions = touchKeys[id];
             const send = (type, event) => {
                 event.preventDefault();
                 canvas.focus();
                 button.classList.toggle('pressed', type === 'keydown');
-                window.dispatchEvent(new KeyboardEvent(type, { code, key: code === 'Space' ? ' ' : code, bubbles: true }));
+                const fn = Module[functions[type === 'keydown' ? 0 : 1]];
+                if (typeof fn === 'function') fn();
             };
             button.addEventListener('pointerdown', event => {
                 button.setPointerCapture(event.pointerId);
@@ -74,7 +77,7 @@
 
         var Module = {
             canvas,
-            locateFile: path => `${path}?v=5`,
+            locateFile: path => `${path}?v=6`,
             print: text => console.log(text),
             printErr: text => console.error(text),
             onRuntimeInitialized() {
@@ -107,6 +110,6 @@
             },
         };
     </script>
-    <script async src="SpaceCadetPinball.js?v=5"></script>
+    <script async src="SpaceCadetPinball.js?v=6"></script>
 </body>
 </html>
