@@ -185,7 +185,7 @@ MiniGames.xiangqi = {
         // 联机对战（状态同步，opt-in）：side 0 执红(RED)先手，side 1 执黑(BLACK)后手。
         let pvp = null, myColor = RED;
         if (MG.pvp && MG.pvp.shouldBegin('xiangqi')) {
-            myColor = MG.pvp.side === 0 ? RED : BLACK;
+            // 必须先 begin 再读取 side（MG.pvp.side 仅在 begin 后写入），否则 side 1 方会按 side 0 计算 myColor
             pvp = MG.pvp.begin({
                 setState(m) {
                     board = m.board;
@@ -198,6 +198,7 @@ MiniGames.xiangqi = {
                     }
                 },
             });
+            myColor = MG.pvp.side === 0 ? RED : BLACK;
         }
         const { c, ctx, w, h, destroy } = MG.canvas(container, C * S + 20, R * S + 20);
         const finalize = (win) => {

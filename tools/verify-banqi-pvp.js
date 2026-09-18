@@ -9,8 +9,6 @@ const path = require('path');
 const NODE = process.execPath;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-process.on('uncaughtException', e => { console.log('   [UNCAUGHT]', e && e.message, e && e.stack); });
-process.on('unhandledRejection', e => { console.log('   [UNHANDLED]', e && e.message); });
 const src = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'minigames', 'banqi.js'), 'utf8');
 
 // ---------- DOM 桩 ----------
@@ -65,9 +63,9 @@ function makePvp(net) {
         get active() { return active; }, get side() { return side; },
         arm(game, sd, opp) { armed = { game, side: sd || 0, opp: opp || null }; },
         shouldBegin(g) { return !!(armed && armed.game === g); },
-        begin(ad) { if (!armed) return false; active = true; side = armed.side; turn = 0; adapter = ad || null; const self = this; net.on('input', function (m) { console.log(`   [pvp] ${self.side === 0 ? 'A' : 'B'} _recv input (turn=${m && m.turn}, over=${m && m.over})`); self._recv(m || {}); }); return true; },
+        begin(ad) { if (!armed) return false; active = true; side = armed.side; turn = 0; adapter = ad || null; const self = this; net.on('input', function (m) { self._recv(m || {}); }); return true; },
         canMove() { return !active || turn === side; },
-        commit(state) { console.log(`   [pvp] ${side === 0 ? 'A' : 'B'} commit active=${active} turn=${state && state.turn}`); if (!active) return; turn = state && state.turn != null ? state.turn : (1 - side); try { net.send('input', state); } catch (e) {} },
+        commit(state) { if (!active) return; turn = state && state.turn != null ? state.turn : (1 - side); try { net.send('input', state); } catch (e) {} },
         _recv(m) { if (!active || !m) return; if (m.turn != null) turn = m.turn; try { if (adapter && adapter.setState) adapter.setState(m); } catch (e) { console.log('setState err', e.message); } if (m.over != null && adapter && adapter.onOver) { try { adapter.onOver(m.over); } catch (e) {} } },
         end() { active = false; adapter = null; armed = null; turn = 0; },
     };
@@ -81,7 +79,7 @@ function makeClient(side) {
     ctx.setTimeout = setTimeout;
     ctx.clearTimeout = clearTimeout;
     const MG = Object.assign({}, MG_base);
-    const net = { _h: {}, _room: 'TESTROOM', peer: null, _tag: side === 0 ? 'A' : 'B', on(e, cb) { (this._h[e] || (this._h[e] = [])).push(cb); }, send(e, p) { console.log(`   [relay] ${this._tag} -> peer.${e} (turn=${p && p.turn}, over=${p && p.over})`); if (this.peer) (this.peer._h[e] || []).forEach(cb => cb(p)); } };
+    const net = { _h: {}, _room: 'TESTROOM', peer: null, on(e, cb) { (this._h[e] || (this._h[e] = [])).push(cb); }, send(e, p) { if (this.peer) (this.peer._h[e] || []).forEach(cb => cb(p)); } };
     const pvp = makePvp(net);
     Object.defineProperty(MG, 'pvp', { get: () => pvp });
     Object.defineProperty(MG, 'net', { get: () => net });
@@ -112,9 +110,6 @@ function makeClient(side) {
 
     await sleep(50);
     const ba = A.ctx.window.__banqi, bb = B.ctx.window.__banqi;
-    const _at = ba.tap, _bt = bb.tap;
-    ba.tap = (i, j) => { console.log(`   [tap] A.tap(${i},${j}) turn=${ba.turn}`); _at(i, j); };
-    bb.tap = (i, j) => { console.log(`   [tap] B.tap(${i},${j}) turn=${bb.turn}`); _bt(i, j); };
     console.log('   [post-start] A.over=', ba.over, 'B.over=', bb.over, 'A.turn=', ba.turn, 'B.turn=', bb.turn);
     const boardA = ba.board.map(r => r.map(p => p ? { id: p.id, n: p.n, r: p.r, color: p.color, faceUp: p.faceUp } : null));
     const boardB = bb.board.map(r => r.map(p => p ? { id: p.id, n: p.n, r: p.r, color: p.color, faceUp: p.faceUp } : null));
@@ -139,14 +134,12 @@ function makeClient(side) {
     bb.tap(0, 1);
     await sleep(450);
     const aAfter = ba.board[0][1];
-    console.log('   DEBUG A.board[0][1]=', aAfter && { id: aAfter.id, faceUp: aAfter.faceUp }, 'A.over=', ba.over, 'A.turn=', ba.turn, 'A.busy=', ba.busy, 'B.over=', bb.over, 'B.turn=', bb.turn);
     ok(aAfter && aAfter.faceUp === true, 'A 的 (0,1) 已翻面');
     ok(aAfter && aAfter.id === id01, 'A 的 (0,1) 同一棋子 id');
 
     console.log('[4] 终局传播：A 直接 finish(true) → 双方结果相反');
     ba.finish(true, '测试终局');
     await sleep(50);
-    console.log('   DEBUG onCompleteA=', JSON.stringify(onCompleteA.map(r => ({ win: r && r.win }))), 'onCompleteB=', JSON.stringify(onCompleteB.map(r => ({ win: r && r.win }))));
     ok(onCompleteA.length === 1 && onCompleteA[0].win === true, 'A onComplete 收到 win=true');
     ok(onCompleteB.length === 1 && onCompleteB[0].win === false, 'B 收到对手终局，win=false');
     ok(ba.over === true && bb.over === true, '双方 over 标记均为 true');

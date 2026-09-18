@@ -95,7 +95,7 @@
             const S = { b: cBoard(), turn: 1, sel: null, moves: [], msg: '你的回合（白）', cap: 0 };
             if (MG.pvp && MG.pvp.shouldBegin('chess')) {
                 S._pvp = true;
-                S._my = MG.pvp.side === 0 ? 1 : 2;        // side 0 执白(1)先手，side 1 执黑(2)
+                // 必须先 begin 再读取 side（MG.pvp.side 仅在 begin 后写入），否则 side 1 方会按 side 0 计算 S._my
                 MG.pvp.begin({
                     setState(m) {
                         S.b = m.b; S.turn = m.turn; S.sel = null; S.moves = [];
@@ -106,6 +106,7 @@
                         if (apiRef) apiRef.finish({ win, stars: win ? 3 : 0, lines: [win ? '将死对方！' : '被将死'] });
                     },
                 });
+                S._my = MG.pvp.side === 0 ? 1 : 2;        // side 0 执白(1)先手，side 1 执黑(2)
             }
             return S;
         },
@@ -213,11 +214,12 @@
         const need = Math.floor(n * n / 2);
         while (pool.length < need) pool.push(33);
         pool.length = need;
-        const all = [];
+        let all = [];
         pool.forEach(r => { all.push(jMake(1, r)); all.push(jMake(2, r)); });
         while (all.length < n * n) all.push(0);
         all.length = n * n;
-        if (shuf) shuf(all); else MG.shuffle(all);
+        // 注意：makeRng().shuffle 返回「新数组」而非原地修改，必须接住返回值（否则联机双方种子洗牌失效）
+        all = shuf ? shuf(all) : MG.shuffle(all);
         const b = [];
         for (let i = 0; i < n; i++) b.push(all.slice(i * n, i * n + n));
         return b;
@@ -237,8 +239,7 @@
             };
             if (net) {
                 S._pvp = true;
-                S._my = MG.pvp.side === 0 ? 1 : 2;        // side 0 执我方(1)先手
-                S.turn = S._my;
+                // 必须先 begin 再读取 side（MG.pvp.side 仅在 begin 后写入），否则 side 1 方会按 side 0 计算 S._my
                 MG.pvp.begin({
                     setState(m) { S.b = m.b; S.open = m.open; S.turn = m.turn; S.sel = null; if (m.over != null) S._over = m.over; },
                     onOver(over) {
@@ -246,6 +247,8 @@
                         if (apiRef) apiRef.finish({ win, stars: win ? 3 : 0, lines: [win ? '夺取敌军旗！' : '军旗被夺'] });
                     },
                 });
+                S._my = MG.pvp.side === 0 ? 1 : 2;        // side 0 执我方(1)先手
+                S.turn = 1;                               // side 0 永远先手（side 1 初始锁定，等对方走子）
             }
             return S;
         },

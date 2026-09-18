@@ -394,7 +394,7 @@ window.MiniGames = window.MiniGames || {};
             };
             if (net) {
                 S._pvp = true;
-                S._my = MG.pvp.side === 0 ? 1 : 0;        // side 0 执红(1)先手，side 1 执黑(0)
+                // 必须先 begin 再读取 side（MG.pvp.side 仅在 begin 后写入），否则 side 1 方会按 side 0 计算 S._my
                 MG.pvp.begin({
                     setState(m) {
                         S.B = m.B; S.turn = m.turn;
@@ -406,6 +406,7 @@ window.MiniGames = window.MiniGames || {};
                         if (apiRef) apiRef.finish({ win, stars: win ? 3 : 0, lines: [win ? '攻入兽穴！' : '被攻入兽穴'] });
                     },
                 });
+                S._my = MG.pvp.side === 0 ? 1 : 0;        // side 0 执红(1)先手，side 1 执黑(0)
             }
             return S;
         },
