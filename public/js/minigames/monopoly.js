@@ -600,7 +600,9 @@ window.MiniGames = window.MiniGames || {};
         start(c, o) {
             opts = o; dead = false;
             net = !!(MG.pvp && MG.pvp.shouldBegin && MG.pvp.shouldBegin('monopoly'));
-            mySide = net ? (MG.pvp.side || 0) : 0;
+            // MG.pvp.side 只在 MG.pvp.begin() 内部赋值（begin 在本函数后面才调用），此处须从
+            // _armed.side 读取真实座位，否则 4 人局所有客户端都误算成 side 0 → 输入锁锁死 → 死锁。
+            mySide = net ? (MG.pvp._armed ? MG.pvp._armed.side : (MG.pvp.side || 0)) : 0;
             levelIdx = o.levelIdx == null ? 0 : o.levelIdx;
             endless = !!o.endless;
             cfgLevel = endless ? ENDLESS : (o.level || LEVELS[0]);
@@ -628,7 +630,9 @@ window.MiniGames = window.MiniGames || {};
                 });
                 S._done = false;
                 MG.pvp.begin({
-                    setState: (m) => { try { Object.assign(S, m); render(); } catch (e) {} },
+                    // 忽略过期 commit：中继异步投递可能把上一回合的 commit 在轮到本端之后才送达，
+                    // 直接 Object.assign 会覆盖本端刚走的棋 → 多端分叉。整盘快照中 turn 更小即已过期，安全丢弃。
+                    setState: (m) => { try { if (m && m.turn != null && m.turn < S.turn) return; Object.assign(S, m); render(); } catch (e) {} },
                     onOver: () => completeOnce(),
                 });
             }

@@ -8,6 +8,11 @@
   （回调在收到消息时才执行，此时 begin 早已完成）。
 - 已踩坑并修复：`banqi` / `xiangqi` / `jungle` / `mg-chess`(chess+junqi) 原先都在 begin 之前读 side。
 - 终局防回环：收到对手 `over` 时只做**展示**（`showResult`），绝不再 `commit`；本地判定才 `commit`。
+- **`setState` 里切勿重新赋值 `const` 棋盘/状态**：`MG.pvp._recv` 把 `setState` 包在 `try/catch` 里，
+  重赋值 `const` 会抛 `TypeError` 被**静默吞掉** → 对手落子永远进不了本地棋盘（症状：两方各下各的、
+  互相看不到对方棋子、还能下同一位置）。gomoku 曾因此炸（board 是 const，`setState` 里 `board = m.board`）。
+  **正确做法**：要么 `board` 声明为 `let`（xiangqi/banqi 已如此），要么在 `setState` 原地拷贝
+  （gomoku 修法：`for(... ) board[i][j] = m.board[i][j]`），要么 `Object.assign(S, m)`（monopoly/richman/ludo）。
 
 ## 工程约束（来自用户/项目）
 - `pinball.js` 严禁修改；`pk32*` 系列排除；`arcade.js`/`emulator.js` 封装层与 `optimized/` 死代码跳过。

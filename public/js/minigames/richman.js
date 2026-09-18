@@ -942,7 +942,10 @@ window.MiniGames = window.MiniGames || {};
         start(c, o) {
             opts = o; dead = false;
             net = !!(MG.pvp && MG.pvp.shouldBegin && MG.pvp.shouldBegin('richman'));
-            mySide = net ? (MG.pvp.side || 0) : 0;
+            // 关键：MG.pvp.side 只在 MG.pvp.begin() 内部被赋值；begin 在本函数后面才调用，
+            // 所以此处必须从 _armed.side 读取真实座位（arm 阶段已由服务端下发），否则 4 人局
+            // 所有客户端都误算成 side 0 → onAct 输入锁 S.turn!==mySide 把非 0 号玩家全部锁死 → 死锁。
+            mySide = net ? (MG.pvp._armed ? MG.pvp._armed.side : (MG.pvp.side || 0)) : 0;
             levelIdx = o.levelIdx == null ? 0 : o.levelIdx;
             endless = !!o.endless;
             cfgLevel = endless ? ENDLESS : (o.level || LEVELS[0]);
@@ -970,7 +973,10 @@ window.MiniGames = window.MiniGames || {};
                 });
                 S._done = false;
                 MG.pvp.begin({
-                    setState: (m) => { try { Object.assign(S, m); render(); } catch (e) {} },
+                    // 忽略「过期」commit：中继异步投递可能把上一回合的 commit 在轮到本端之后才送达，
+                    // 若直接 Object.assign 会把本端刚走出的棋覆盖回旧状态 → 多端分叉。
+                    // 状态同步每份 commit 都是整盘快照，turn 更小即已被本端当前状态取代，故安全丢弃。
+                    setState: (m) => { try { if (m && m.turn != null && m.turn < S.turn) return; Object.assign(S, m); render(); } catch (e) {} },
                     onOver: () => completeOnce(),
                 });
             }

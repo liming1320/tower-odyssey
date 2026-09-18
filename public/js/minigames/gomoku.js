@@ -80,7 +80,9 @@ MiniGames.gomoku = {
         if (MG.pvp && MG.pvp.shouldBegin('gomoku')) {
             pvp = MG.pvp.begin({
                 setState(m) {
-                    board = m.board;
+                    // 注意：board 是 const，不能整体重赋值（重赋值会抛 TypeError 且被 _recv 的 try/catch 静默吞掉，
+                    // 导致对手落子永远进不了本地棋盘 —— 即「各下各的、互相看不到对方棋子」）。必须原地拷贝。
+                    if (m.board) for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) board[i][j] = (m.board[i] && m.board[i][j]) || 0;
                     if (m.winLine) winLine = m.winLine;
                     draw();
                     if (m.over != null) {
@@ -298,6 +300,10 @@ MiniGames.gomoku = {
 
         draw();
         MG.hint(container, `${lv.name}（${lv.desc}） · 点击棋盘落子，五连成线获胜`);
+        // 无头回归钩子（仅 __MG_TEST 下挂，不影响真实运行）：暴露棋盘供 E2E 收敛检查与驱动
+        if (window.__MG_TEST) window.__gomokuDbg = {
+            getState: () => ({ board: board.map(r => r.slice()), over, winLine: winLine ? winLine.slice() : null, turn: pvp ? MG.pvp._turn : 0, pvp: !!pvp }),
+        };
         return { stop() { destroy(); } };
     }
 };

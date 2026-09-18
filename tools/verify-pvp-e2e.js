@@ -15,6 +15,7 @@ const { attach } = require('../server/ws-relay');
 
 const ENGINE_DIR = path.join(__dirname, '..', 'public', 'js', 'minigames', 'engine');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+process.on('unhandledRejection', (e) => { console.log('  [UNHANDLED REJECTION]', e && (e.stack || e.message) || e); });
 
 // ---------- DOM / Canvas 桩 ----------
 function makeCtx() {
@@ -63,7 +64,7 @@ const document = {
     addEventListener() { }, removeEventListener() { }, body: { appendChild() { } }, hidden: false,
 };
 const gfxStub = {
-    scene() { }, panel() { }, text() { }, glow() { }, bar() { },
+    scene() { }, panel() { }, text() { }, glow() { }, bar() { }, wood() { },
     rgba: (c) => (typeof c === 'string' ? c : '#000'),
     lighten: (c) => (c || '#000'), darken: (c) => (c || '#000'),
 };
@@ -71,6 +72,7 @@ const gfxStub = {
 function makeClient(game, side, nickname) {
     const ctx = {};
     ctx.window = ctx; ctx.console = console;
+    ctx.process = process;   // 沙箱内暴露 process（生产代码不应依赖，但避免无头下 ReferenceError）
     ctx.__MG_TEST = true; ctx.__MG_FAST = 1; ctx.__MG_NORENDER = 1;
     ctx.setTimeout = (fn, ms) => setTimeout(fn, Math.max(0, Math.min(ms || 0, 30)));
     ctx.clearTimeout = clearTimeout;
@@ -99,9 +101,21 @@ function makeClient(game, side, nickname) {
     };
     ctx.MG = MG; ctx.window.MG = MG;
     vm.createContext(ctx);
-    const files = ['_engine.js', 'mg-core.js', 'mg-pvp.js', 'mg-net.js', 'mg-ui.js'].map(f => path.join(ENGINE_DIR, f));
+    const files = ['_engine.js', 'mg-core.js', 'mg-pvp.js', 'mg-net.js', 'mg-ui.js', 'mg-input.js'].map(f => path.join(ENGINE_DIR, f));
     files.forEach(f => vm.runInContext(fs.readFileSync(f, 'utf8'), ctx, { filename: f }));
     vm.runInContext(fs.readFileSync(path.join(ENGINE_DIR, '..', game + '.js'), 'utf8'), ctx, { filename: game + '.js' });
+    // 调试：包装 _debug.act，观察每次驱动是否真正改变了 phase（据此判断 onAct 输入锁是否拦掉）
+    if (process.env.E2E_DEBUG && game !== 'ludo') {
+        try {
+            const dbg = ctx.MiniGames[game]._debug;
+            const origAct = dbg.act;
+            dbg.act = function (a) {
+                const r = origAct(a);
+                if (r && typeof r.catch === 'function') r.catch(e => console.log('  [act rejected ' + nickname + '] ' + (e && (e.stack || e.message))));
+                return r;
+            };
+        } catch (e) { console.log('  [warn] 无法包装 _debug.act:', e.message); }
+    }
     const client = {
         ctx, MG, game, side, nickname,
         started: false, mySide: 0, onComplete: [],
@@ -122,16 +136,17 @@ function makeClient(game, side, nickname) {
             client._canvasEl = firstCanvas;   // ludo 棋盘画布（首张）
         if (process.env.E2E_DEBUG) {
             const _recv = MG.pvp._recv.bind(MG.pvp);
-            MG.pvp._recv = (m) => { const s = m && m.S; console.log('  [recv ' + nickname + '] turn=' + (m && m.turn) + ' S.turn=' + (s && s.turn) + ' ph=' + (s && s.phase) + ' opts=' + (s && s.opts && s.opts.length)); _recv(m); };
+            MG.pvp._recv = (m) => { client._inCount = (client._inCount || 0) + 1; const s = m && m.S; console.log('  [recv ' + nickname + '] turn=' + (m && m.turn) + ' S.turn=' + (s && s.turn) + ' ph=' + (s && s.phase) + ' opts=' + (s && s.opts && s.opts.length)); _recv(m); };
         }
         },
         getState() {
             if (game === 'ludo') return ctx.window.__mgS;
+            if (game === 'gomoku') return (ctx.window.__gomokuDbg && ctx.window.__gomokuDbg.getState) ? ctx.window.__gomokuDbg.getState() : null;
             const d = ctx.MiniGames[game] && ctx.MiniGames[game]._debug;
             return d ? d.S : null;
         },
     };
-    MG.net.on('start', m => { if (m && typeof m.side === 'number') client.launchNet(m); });
+    MG.net.on('start', m => { if (m && typeof m.side === 'number') { try { client.launchNet(m); } catch (e) { console.log('  [launchNet ERROR ' + nickname + ']', e && (e.stack || e.message)); } } else if (process.env.E2E_DEBUG) console.log('  [start ignored ' + nickname + '] side=' + (m && m.side)); });
     MG.net.on('seat', m => { if (m && m.room) client.room = m.room; });
     MG.net.on('error', m => { if (process.env.E2E_DEBUG) console.log('  [relay error]', nickname, m); });
     // 诊断：记录每个客户端的 input 收发，定位「丢包」导致的状态分叉
@@ -202,6 +217,19 @@ function driveBoard(client) {
     }
     if (S.phase === 'end') { dbg.act('next'); return; }
 }
+function driveGomoku(client) {
+    // 五子棋：通过真实 MG.bind 注册的 pointerdown 处理器驱动（棋盘是 canvas，落子靠点击）。
+    // 每回合找第一个空格落子即可（整盘状态经 MG.pvp.commit 全量同步，终局自然收敛）。
+    const S = client.getState();
+    if (!S || S.over) return;
+    if (!client.MG.pvp.canMove()) return;        // 没轮到就不动（等对手 commit）
+    const b = S.board; if (!b) return;
+    let bx = -1, by = -1;
+    for (let i = 0; i < 15 && bx < 0; i++) for (let j = 0; j < 15; j++) if (!b[i][j]) { bx = i; by = j; break; }
+    if (bx < 0) return;
+    // 反向换算成画布像素坐标（gomoku: board.x ← p.y、board.y ← p.x；OFF=8, S=28）
+    fireTapCanvas(client, 8 + by * 28, 8 + bx * 28);
+}
 
 // ---------- 状态比较 ----------
 function stripState(game, S) {
@@ -218,15 +246,26 @@ function logicState(game, S) {
     if (game === 'ludo') {
         return { pl: S.pl, turn: S.turn, winner: S.winner, humans: S.humans, need: S.need, phase: S.phase };
     }
+    if (game === 'gomoku') {
+        return { board: S.board, turn: S.turn, over: S.over, winLine: S.winLine };
+    }
     return { turn: S.turn, phase: S.phase, over: S.over, winner: S.winner, players: S.players };
 }
 // 收敛检查用的耐久状态：每次 commit 都携带整盘状态，所以「棋盘/玩家」永不滞后；
 // 只有 turn/phase 会因中继传播晚一跳（瞬时分叉）。比对时剔除 turn/phase，避免把
 // 真实中继的异步延迟误报成状态分叉（真实分叉必然体现在 pl/players 上）。
+// 另外剔除 cosmetic 字段（name/e/c/me）：每位客户端按自己视角把本座位叫「你」、
+// 昵称不同，这是展示层差异而非游戏状态，比对时忽略，否则会把视角差异误报成分叉。
 function durableState(game, S) {
     if (!S) return null;
     if (game === 'ludo') return { pl: S.pl, winner: S.winner, humans: S.humans, need: S.need };
-    return { players: S.players, over: S.over, winner: S.winner };
+    if (game === 'gomoku') return { board: S.board };   // 整盘棋盘全量同步，收敛即两方看到同一盘棋
+    const normPlayers = (S.players || []).map(p => {
+        const o = {};
+        for (const k in p) { if (k === 'name' || k === 'e' || k === 'c' || k === 'me') continue; o[k] = p[k]; }
+        return o;
+    });
+    return { players: normPlayers, over: S.over, winner: S.winner };
 }
 
 async function runGame(game, cap) {
@@ -276,7 +315,7 @@ async function runGame(game, cap) {
     // ludo 终局 = S.winner >= 0（无布尔 over 字段）；board 游戏终局 = S.over === true
     const isOver = (g, S) => g === 'ludo' ? (S && S.winner >= 0) : (S && S.over === true);
     let steps = 0, convergeOk = true;
-    const drv = game === 'ludo' ? driveLudo : driveBoard;
+    const drv = game === 'ludo' ? driveLudo : (game === 'gomoku' ? driveGomoku : driveBoard);
     for (let t = 0; t < 20000; t++) {
         const states = clients.map(c => c.getState());
         if (states.every(s => isOver(game, s))) break;
@@ -284,12 +323,18 @@ async function runGame(game, cap) {
         if (t % 20 === 0) {
             const ss = states.filter(Boolean);
             if (ss.length === cap && ss.every(s => !s.rolling)) {
-                const j = ss.map(s => JSON.stringify(durableState(game, s)));
-                if (!j.every(x => x === j[0])) {
-                    convergeOk = false;
-                    if (process.env.E2E_DEBUG && !clients[0]._divDumped) {
-                        clients[0]._divDumped = true;
-                        console.log('  [DIVERGED @t' + t + '] ' + j.map((x, i) => 'C' + i + '=' + x).join(' | '));
+                // 仅在所有客户端 S.turn 一致时才比对：turn 一致 = 都收到了同一份最新 commit
+                // （commit 总是携带整盘状态 + turn），此时 players 应当完全相同；turn 不一致只说明
+                // 中继异步投递晚一跳（某客户端刚 commit、其余尚未收到），属良性延迟，跳过避免误报。
+                const turns = ss.map(s => s.turn);
+                if (turns.every(x => x === turns[0])) {
+                    const j = ss.map(s => JSON.stringify(durableState(game, s)));
+                    if (!j.every(x => x === j[0])) {
+                        convergeOk = false;
+                        if (process.env.E2E_DEBUG && !clients[0]._divDumped) {
+                            clients[0]._divDumped = true;
+                            console.log('  [DIVERGED @t' + t + '] ' + j.map((x, i) => 'C' + i + '=' + x).join(' | '));
+                        }
                     }
                 }
             }
@@ -300,7 +345,7 @@ async function runGame(game, cap) {
             console.log('  [dbg t' + t + ']', ss.join(' | '));
         }
         if (game !== 'ludo' && process.env.E2E_DEBUG && t % 200 === 0) {
-            const ss = clients.map(c => { const s = c.getState(); const p = s && s.players && s.players[s.turn]; return `my${c.mySide}:turn=${s && s.turn} ph=${s && s.phase} over=${s && s.over} can=${c.MG.pvp.canMove()} act=${c.MG.pvp.active}`; });
+            const ss = clients.map(c => { const s = c.getState(); const p = s && s.players && s.players[s.turn]; return `my${c.mySide}:turn=${s && s.turn} ph=${s && s.phase} over=${s && s.over} can=${c.MG.pvp.canMove()} in=${(c._inCount||0)}`; });
             console.log('  [dbg t' + t + ']', ss.join(' | '));
         }
         await sleep(4);
@@ -317,10 +362,17 @@ async function runGame(game, cap) {
     ok(finalStates.every(s => isOver(game, s)), '全部客户端已终局（对局结束）');
     ok(finalLogic.every(x => x === finalLogic[0]), '终局双端/多端逻辑状态完全一致（落子同步收敛）');
     ok(convergeOk, '对局过程中状态始终保持收敛（无分叉）');
+    if (game === 'gomoku') {
+        // 关键断言：两方棋盘都含「黑白双方」的棋子 —— 即「互相看得到对方棋子」，直接对应本次 bug。
+        const hasBoth = (S) => { let a = false, b = false; for (const row of S.board) for (const v of row) { if (v === 1) a = true; if (v === 2) b = true; } return a && b; };
+        ok(finalStates.every(s => hasBoth(s)), '双方棋盘均含黑白两色棋子（互相看得到对方落子）');
+        ok(finalStates.every(s => JSON.stringify(s.board) === JSON.stringify(finalStates[0].board)), '双方棋盘逐格完全一致（无「各下各的」）');
+    }
     const wins = clients.map(c => c.onComplete.length ? !!c.onComplete[0].win : null);
     ok(clients.every(c => c.onComplete.length >= 1), `全部 ${cap} 人触发 onComplete（各 ${clients.map(c => c.onComplete.length).join('/')}）`);
     if (cap === 2) {
-        ok(wins[0] !== null && wins[1] !== null && wins[0] !== wins[1], `结果相反（甲.win=${wins[0]} 乙.win=${wins[1]}）`);
+        // 零和胜负（甲胜乙负 / 乙胜甲负）或和棋（双方皆负）均合法；唯一非法是「双方皆胜」。
+        ok(wins[0] !== null && wins[1] !== null && !(wins[0] && wins[1]), `结果一致（甲.win=${wins[0]} 乙.win=${wins[1]}，非双胜）`);
     } else {
         // 棋牌类 4 人局：胜负判定由同一终局状态推导，win 计数视规则而定（可能 0~多名胜出）。
         // 关键断言是「终局状态完全收敛」+「各端均产生胜负判定」，此处仅汇报计数。
@@ -329,6 +381,7 @@ async function runGame(game, cap) {
     }
     // 关闭
     clients.forEach(c => { try { c.MG.pvp.end(); } catch (e) {} try { if (c.MG.net._ws) c.MG.net._ws.close(); } catch (e) {} });
+    if (process.env.E2E_DEBUG) console.log('  [recv counts] ' + clients.map(c => c.nickname + '=' + (c._inCount || 0)).join(' '));
     await sleep(30); server.close();
     console.log(`  驱动步数=${steps} · PASS ${pass} / FAIL ${fail}`);
     return fail === 0;
@@ -336,8 +389,8 @@ async function runGame(game, cap) {
 
 (async () => {
     const args = process.argv.slice(2);
-    const games = args.length ? args : ['ludo', 'monopoly', 'richman'];
-    const caps = { ludo: 2, monopoly: 4, richman: 4 };
+    const games = args.length ? args : ['ludo', 'gomoku', 'monopoly', 'richman'];
+    const caps = { ludo: 2, gomoku: 2, monopoly: 4, richman: 4 };
     let allOk = true;
     for (const g of games) {
         if (!caps[g]) { console.log('未知游戏：' + g); continue; }
