@@ -8,7 +8,7 @@
 //   顶部 habitrail 管道：发射后沿管道跨顶，从左上落入台面（原版行为）
 //
 // 控制：← / → 挡板 · 空格/↓ 按住蓄力松手发射 · M 静音 · 触屏左右半屏=挡板
-// 50 关军衔 + ∞ 无尽；3 球制；倍率 ×1~×5
+        // 50 关目标分数 + ∞ 无尽；3 球制
 window.MiniGames = window.MiniGames || {};
 (function () {
     'use strict';
@@ -56,8 +56,8 @@ window.MiniGames = window.MiniGames || {};
         { rest: cadetImage('cadet-kick-right-rest.png'), hit: cadetImage('cadet-kick-right-hit.png'), restPos: [435, 379], hitPos: [434, 370], x: cadetX(439), y: cadetY(396), vx: -105 },
     ];
     const CADET_REBOUNDERS = [
-        { image: cadetImage('cadet-rebound-1.png'), pos: [245, 291], x: 254.5, y: 313.5 },
-        { image: cadetImage('cadet-rebound-2.png'), pos: [375, 291], x: 384.5, y: 313.5 },
+        { image: cadetImage('cadet-rebound-1.png'), pos: [245, 291], x: 254.5, y: 313.5, surface: [245, 334, 264, 291] },
+        { image: cadetImage('cadet-rebound-2.png'), pos: [375, 291], x: 384.5, y: 313.5, surface: [394, 334, 375, 291] },
         { image: cadetImage('cadet-rebound-3.png'), pos: [367, 110], x: 379.5, y: 129 },
         { image: cadetImage('cadet-rebound-4.png'), pos: [234, 130], x: 252, y: 139.5 },
     ];
@@ -99,6 +99,62 @@ window.MiniGames = window.MiniGames || {};
         warp: [[268, [343, 113]], [269, [359, 113]], [270, [351, 124]]]
             .map(([group, pos]) => ({ image: cadetImage(`cadet-lite-${group}.png`), pos })),
     };
+    const CADET_LIGHT_GROUPS = {
+        worm_hole_lights: [244, 245, 246],
+        fuel_bargraph: [374, 375, 376, 377, 378, 379],
+        l_trek_lights: [341, 342, 343, 344, 345],
+        r_trek_lights: [336, 337, 338, 339, 340],
+        bsink_arrow_lights: [235, 238, 241],
+        hyperspace_lights: [258, 259, 260, 261],
+        ramp_tgt_lights: [301, 302, 303],
+        goal_lights: [351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373],
+        bpr_solotgt_lights: [307, 308, 309],
+        top_circle_tgt_lights: [295, 296, 297],
+        lchute_tgt_lights: [304, 305, 306],
+        right_target_lights: [286, 285, 284, 283],
+        skill_shot_lights: [292, 293, 294, 312, 313, 314],
+        top_target_lights: [291, 290, 289, 288],
+        bumper_target_lights: [252, 251, 250],
+        bmpr_inc_lights: [247, 248, 249],
+        ramp_bmpr_inc_lights: [335, 334, 333],
+    };
+    const CADET_LIGHT_POSITIONS = {
+        244: [348, 47], 245: [276, 54], 246: [405, 204],
+        247: [332, 52], 248: [315, 49], 249: [298, 52],
+        250: [305, 169], 251: [305, 158], 252: [305, 149],
+        258: [390, 117], 259: [394, 98], 260: [387, 77], 261: [375, 60],
+        283: [377, 175], 284: [372, 188], 285: [372, 204], 286: [378, 217],
+        288: [294, 74], 289: [283, 79], 290: [274, 83], 291: [262, 86],
+        301: [243, 220], 302: [242, 231], 303: [241, 242],
+        333: [190, 183], 334: [206, 187], 335: [222, 190],
+        304: [234, 104], 305: [233, 114], 306: [235, 123],
+        307: [359, 88], 308: [363, 95], 309: [367, 103],
+        310: [360, 148], 311: [351, 181], 312: [419, 96],
+        313: [407, 64], 314: [380, 41], 315: [314, 225],
+        316: [342, 234], 317: [358, 256], 318: [354, 285],
+        319: [366, 302], 320: [308, 293], 321: [288, 281],
+        322: [284, 263], 323: [292, 247], 324: [197, 171],
+        325: [290, 195], 326: [251, 205], 327: [254, 234],
+        328: [186, 266], 329: [227, 263], 330: [308, 293],
+        331: [288, 281], 332: [284, 263],
+        336: [424, 67], 337: [404, 47], 338: [377, 31],
+        339: [349, 22], 340: [324, 17], 341: [204, 74],
+        342: [214, 55], 344: [274, 23], 345: [305, 17],
+        346: [419, 207], 347: [179, 254], 348: [196, 160],
+        349: [247, 380], 350: [380, 380],
+        351: [361, 308], 352: [419, 266], 353: [399, 266],
+        354: [362, 212], 355: [348, 194], 356: [392, 147],
+        357: [353, 103], 358: [335, 41], 359: [241, 58],
+        360: [276, 92], 361: [249, 96], 362: [285, 116],
+        363: [212, 89], 364: [243, 113], 365: [284, 158],
+        366: [315, 154], 367: [197, 171], 368: [290, 195],
+        369: [251, 205], 370: [254, 234], 371: [186, 266],
+        372: [227, 263], 373: [262, 306], 374: [235, 190],
+        375: [227, 177], 376: [220, 165], 377: [214, 153],
+        378: [210, 141], 379: [207, 129],
+    };
+    const CADET_LIGHT_IMAGES = Object.fromEntries(Object.keys(CADET_LIGHT_POSITIONS)
+        .map(id => [id, cadetImage(`cadet-lite-${id}.png`)]));
     const CADET_LITE_POS = [[190, 183], [206, 187], [222, 190], [234, 104]];
     const CADET_FLIPPERS = [
         Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-flip-left-${frame}.png`)),
@@ -140,6 +196,7 @@ window.MiniGames = window.MiniGames || {};
         [303.5, 139.5, 13, 11, 1], [313.5, 142.5, 13, 11, 1], [323.5, 145.5, 13, 11, 1],
         [275, 77.5, 12, 13, 2], [283, 73.5, 12, 13, 2], [292, 70.5, 12, 13, 2],
     ].map(([x, y, w, h, group], i) => ({ i, group, x: cadetX(x), y: cadetY(y), w: w * CADET_SCALE, h: h * CADET_SCALE, down: false }));
+    const REBOUND = CADET_REBOUNDERS.map((rp, i) => ({ x: cadetX(rp.x), y: cadetY(rp.y), i }));
     // 旋转门
     const SPIN = { x: 128, y: 430, w: 30, h: 9 };
     // 计分洞
@@ -275,7 +332,7 @@ window.MiniGames = window.MiniGames || {};
     MiniGames.pinball = {
         LEVELS: NAMES.map((name, i) => {
             const P = lvP(i);
-            return { name, desc: `军衔挑战 · 目标 ${P.goal.toLocaleString()} 分 · 3 球` };
+            return { name, desc: `第 ${i + 1} 关 · 目标 ${P.goal.toLocaleString()} 分 · 3 球` };
         }),
         ENDLESS: { name: '∞ 无尽', desc: '无限球数挑战最高分，重力强化' },
 
@@ -294,227 +351,6 @@ window.MiniGames = window.MiniGames || {};
             // 台面、DMD 与计分板共用同一画布，缩放时始终保持为一体。
             let GC = ctx;
 
-    /* ── 新增组件（对齐百科 55 项：落下靶组 / 指示灯 / 三色旋涡 / 黑洞 / 中央立柱 / 反弹器）── */
-            function mkBank(lbl, color, x0, y0, dx, dy, n, w, h) {
-                const subs = [];
-                for (let i = 0; i < n; i++) subs.push({ x: x0 + dx * i, y: y0 + dy * i, w: w || 8, h: h || 22, down: false });
-                return { lbl, color, subs, bonus: 4500 };
-            }
-            const FUEL = mkBank('燃料目标', '#5fd0ff', 46, 116, 0, 26, 3);
-            const EXPAND = mkBank('扩张战场', '#ffd166', 300, 470, 0, 26, 3);
-            const HAZ_L = mkBank('危险材料', '#ff6a4d', 46, 474, 0, 26, 3);
-            const HAZ_R = mkBank('危险材料', '#ff6a4d', 300, 116, 0, 26, 3);
-            const MEDAL = mkBank('奖章', '#b58bff', 120, 212, 26, 0, 3);
-            const MISSION = mkBank('使命目标', '#5fd0ff', 206, 212, 26, 0, 3);
-            const BOOST = mkBank('增强器', '#ff9a3d', 252, 300, 0, 26, 3);
-            const BANKS = [FUEL, EXPAND, HAZ_L, HAZ_R, MEDAL, MISSION, BOOST];
-    
-            // 旗帜 ×2（原版：燃料指示灯上方 + 超空间入口）
-            const FLAGS = [{ x: 70, y: 104 }, { x: 300, y: 210 }];
-            // 三色旋涡（绿 / 红 / 黄），对应百科旋涡式星体
-            const VORT = [
-                { x: 64, y: 232, r: 15, color: '#46d97a', hue: 120, name: '绿' },
-                { x: 270, y: 250, r: 15, color: '#ff5a5a', hue: 0, name: '红' },
-                { x: 300, y: 300, r: 15, color: '#ffd23d', hue: 48, name: '黄' },
-            ];
-            // 黑洞
-            const BLACKHOLE = { x: 240, y: 176, r: 14 };
-            // 中央立柱（挡板正上方，防正中漏球）
-            const CPOST = { x: 176, y: 600, r: 6 };
-            // 反弹器 ×2（内道上方）
-            const REBOUND = CADET_REBOUNDERS.map((rp, i) => ({ x: cadetX(rp.x), y: cadetY(rp.y), i }));
-            // 指示灯 / 滚道灯（重新上场灯 / 发射坡道灯 / 接受使命灯 / 超空间灯 / 加分球灯 / 调度灯 / 重玩灯）
-            const LAMPS = [
-                { id: 're1', x: 150, y: 150, r: 6, color: '#ff7a3d', group: 're', label: '重新上场' },
-                { id: 're2', x: 176, y: 144, r: 6, color: '#ff7a3d', group: 're', label: '重新上场' },
-                { id: 're3', x: 202, y: 150, r: 6, color: '#ff7a3d', group: 're', label: '重新上场' },
-                { id: 'rl1', x: 286, y: 400, r: 6, color: '#ffd166', group: 'rl', rollover: true, label: '发射坡道' },
-                { id: 'rl2', x: 300, y: 420, r: 6, color: '#ffd166', group: 'rl', rollover: true, label: '发射坡道' },
-                { id: 'rl3', x: 292, y: 440, r: 6, color: '#ffd166', group: 'rl', rollover: true, label: '发射坡道' },
-                { id: 'am', x: 312, y: 456, r: 6, color: '#3dff9e', label: '接受使命' },
-                { id: 'hs1', x: 102, y: 182, r: 5, color: '#c79bff', group: 'hs', label: '超空间' },
-                { id: 'hs2', x: 132, y: 212, r: 5, color: '#c79bff', group: 'hs', label: '超空间' },
-                { id: 'hs3', x: 102, y: 242, r: 5, color: '#c79bff', group: 'hs', label: '超空间' },
-                { id: 'hs4', x: 72, y: 212, r: 5, color: '#c79bff', group: 'hs', label: '超空间' },
-                { id: 'bb1', x: 54, y: 602, r: 6, color: '#3dff9e', group: 'bb', label: '加分球' },
-                { id: 'bb2', x: 298, y: 602, r: 6, color: '#3dff9e', group: 'bb', label: '加分球' },
-                { id: 'rp', x: 60, y: 560, r: 6, color: '#ff5a8a', label: '重玩' },
-                { id: 'd1', x: LNCX, y: 470, r: 5, color: '#ffd166', rollover: true, score: 600, label: '调度' },
-                { id: 'd2', x: LNCX, y: 420, r: 5, color: '#ffd166', rollover: true, score: 900, label: '调度' },
-                { id: 'd3', x: LNCX, y: 370, r: 5, color: '#ffd166', rollover: true, score: 1500, label: '调度' },
-                { id: 'd4', x: LNCX, y: 320, r: 5, color: '#ffd166', rollover: true, score: 900, label: '调度' },
-                { id: 'd5', x: LNCX, y: 270, r: 5, color: '#ffd166', rollover: true, score: 600, label: '调度' },
-                { id: 'd6', x: LNCX, y: 220, r: 5, color: '#ffd166', rollover: true, score: 300, label: '调度' },
-            ];
-    
-            /* ── 新组件碰撞（落下靶组 / 指示灯 / 三色旋涡 / 黑洞入口 / 中央立柱 / 反弹器）── */
-            function collideNew() {
-                // 落下靶组
-                BANKS.forEach(B => {
-                    B.subs.forEach(s => {
-                        if (s.down) return;
-                        const v = hitSeg(ball, { x1: s.x, y1: s.y - s.h / 2, x2: s.x, y2: s.y + s.h / 2, r: 3 }, 0.35, 50);
-                        if (v > 80) {
-                            s.down = true;
-                            addScore(700, 'target'); combo++; comboT = 2.2;
-                            flash.target = 1; sfx('target');
-                            spawn(s.x, s.y, 10, 40, 1);
-                            shake = Math.max(shake, 0.06); shakeMag = Math.max(shakeMag, 1.8);
-                            if (B.subs.every(z => z.down)) {
-                                addScore(B.bonus); show(B.lbl + ' 组全清 +' + B.bonus, 1.6); sfx('jackpot');
-                                shake = Math.max(shake, 0.28); shakeMag = Math.max(shakeMag, 5);
-                                const BB = B; setTimeout(() => BB.subs.forEach(z => z.down = false), 900);
-                            }
-                        }
-                    });
-                });
-                // 指示灯 / 滚道灯
-                LAMPS.forEach(L => {
-                    if (L.group && L.on) return;
-                    if (Math.hypot(ball.x - L.x, ball.y - L.y) < L.r + 7 && canTrigger('lamp' + L.id, 0.35)) {
-                        if (L.rollover) { addScore(L.score || 300); sfx('rollover'); spawn(L.x, L.y, 6, 50, 0.7); }
-                        else { addScore(400); sfx('rollover'); spawn(L.x, L.y, 6, 50, 0.7); }
-                        if (L.group) LAMPS.forEach(z => { if (z.group === L.group) z.on = true; });
-                        else L.on = !L.on;
-                    }
-                });
-                // 三色旋涡（击中得分，走马旋转）
-                VORT.forEach(v => {
-                    if (hitCircle(ball, v.x, v.y, v.r, 0.5, 130) > 0 && canTrigger('vort' + v.name, 0.4)) {
-                        addScore(900, 'warp'); combo++; comboT = 2.2; sfx('saucer');
-                        spawn(v.x, v.y, 12, v.hue, 1.1);
-                        shake = Math.max(shake, 0.07); shakeMag = Math.max(shakeMag, 2);
-                    }
-                });
-                // 黑洞入口：吸入（仅在非轨道、低速时）→ 暂存后高速反向弹出
-                if (!bhHold && !onRail && ball === live[0] &&
-                    Math.hypot(ball.x - BLACKHOLE.x, ball.y - BLACKHOLE.y) < BLACKHOLE.r + 4 &&
-                    Math.hypot(ball.vx, ball.vy) < 1700) {
-                    bhHold = 0.46; ball.vx = ball.vy = 0;
-                    addScore(1500, 'warp'); sfx('saucer'); show('黑洞吸入！', 1.2);
-                    shake = Math.max(shake, 0.2); shakeMag = Math.max(shakeMag, 4);
-                    spawn(BLACKHOLE.x, BLACKHOLE.y, 16, 280, 1.2);
-                }
-                // 中央立柱
-                if (hitCircle(ball, CPOST.x, CPOST.y, CPOST.r, 0.5, 60) > 0) sfx('click');
-                // 反弹器
-                REBOUND.forEach(rp => {
-                    if (hitCircle(ball, rp.x, rp.y, 7, 0.6, 360) > 0) {
-                        reboundHit[rp.i] = 1;
-                        pulseTableObject('rebound' + rp.i, 0.28);
-                        sfx('sling'); spawn(rp.x, rp.y, 6, 30, 0.9);
-                    }
-                });
-            }
-    
-            /* ── 新组件绘制 ── */
-            function drawNew() {
-                // 落下靶组
-                BANKS.forEach(B => {
-                    ctx.save();
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.font = 'bold 7px "Segoe UI",sans-serif';
-                    B.subs.forEach(s => {
-                        const x = s.x, y = s.y, w = s.w, h = s.h;
-                        if (s.down) {
-                            ctx.fillStyle = 'rgba(20,28,46,0.92)';
-                            rr(x - w / 2 - 1, y - h / 2, w + 2, h, 2); ctx.fill();
-                            ctx.strokeStyle = 'rgba(90,110,160,0.5)'; ctx.lineWidth = 1; ctx.stroke();
-                        } else {
-                            const g = ctx.createLinearGradient(x + 5, y, x - 5, y);
-                            g.addColorStop(0, '#5c6a94'); g.addColorStop(0.32, B.color); g.addColorStop(1, '#fff3c4');
-                            ctx.fillStyle = g;
-                            rr(x - w / 2 - 1, y - h / 2, w + 2, h, 2.5); ctx.fill();
-                            ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.1; ctx.stroke();
-                            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                            ctx.fillRect(x - 1.4, y - h / 2 + 3, 1.4, h - 8);
-                        }
-                    });
-                    // 组名丝印
-                    const cy = B.subs[0].y + (B.subs[B.subs.length - 1].y - B.subs[0].y) / 2;
-                    const cx = B.subs[0].x + (B.subs[B.subs.length - 1].x - B.subs[0].x) / 2;
-                    ctx.fillStyle = 'rgba(255,225,170,0.32)';
-                    if (B.subs[0].x === B.subs[B.subs.length - 1].x) ctx.fillText(B.lbl, cx - 16, cy);
-                    else ctx.fillText(B.lbl, cx, cy - 16);
-                    ctx.restore();
-                });
-                // 旗帜
-                FLAGS.forEach(f => {
-                    ctx.save();
-                    ctx.strokeStyle = '#c9b48d'; ctx.lineWidth = 2;
-                    ctx.beginPath(); ctx.moveTo(f.x, f.y + 14); ctx.lineTo(f.x, f.y - 12); ctx.stroke();
-                    const wv = Math.sin(t * 4 + f.x) * 2;
-                    ctx.fillStyle = '#ff5a3d';
-                    ctx.beginPath();
-                    ctx.moveTo(f.x, f.y - 12); ctx.lineTo(f.x + 16, f.y - 8 + wv); ctx.lineTo(f.x, f.y - 2);
-                    ctx.closePath(); ctx.fill();
-                    ctx.restore();
-                });
-                // 三色旋涡
-                VORT.forEach(v => {
-                    ctx.save();
-                    const gg = ctx.createRadialGradient(v.x, v.y, 1, v.x, v.y, v.r + 8);
-                    gg.addColorStop(0, v.color);
-                    gg.addColorStop(0.5, 'rgba(255,255,255,0.18)');
-                    gg.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = gg;
-                    ctx.beginPath(); ctx.arc(v.x, v.y, v.r + 8, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#05080f';
-                    ctx.beginPath(); ctx.arc(v.x, v.y, v.r * 0.6, 0, Math.PI * 2); ctx.fill();
-                    ctx.save(); ctx.translate(v.x, v.y); ctx.rotate(t * 3 + (v.name === '红' ? 1 : v.name === '黄' ? 2 : 0));
-                    ctx.strokeStyle = v.color; ctx.lineWidth = 2; ctx.lineCap = 'round';
-                    for (let s = 0; s < 3; s++) {
-                        ctx.beginPath();
-                        const a0 = s / 3 * Math.PI * 2;
-                        for (let k = 0; k <= 22; k++) {
-                            const u = k / 22, ang = a0 + u * 3.4, rad = v.r * 0.62 * (1 - u * 0.8);
-                            const px = Math.cos(ang) * rad, py = Math.sin(ang) * rad;
-                            if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-                        }
-                        ctx.stroke();
-                    }
-                    ctx.restore();
-                    ctx.restore();
-                });
-                // 黑洞
-                ctx.save();
-                const bhg = ctx.createRadialGradient(BLACKHOLE.x, BLACKHOLE.y, 1, BLACKHOLE.x, BLACKHOLE.y, BLACKHOLE.r + 10);
-                bhg.addColorStop(0, '#000000'); bhg.addColorStop(0.6, '#1a0a2a'); bhg.addColorStop(1, 'rgba(120,60,200,0)');
-                ctx.fillStyle = bhg;
-                ctx.beginPath(); ctx.arc(BLACKHOLE.x, BLACKHOLE.y, BLACKHOLE.r + 10, 0, Math.PI * 2); ctx.fill();
-                ctx.save(); ctx.translate(BLACKHOLE.x, BLACKHOLE.y); ctx.rotate(-t * 2.4);
-                ctx.strokeStyle = 'rgba(180,120,255,0.8)'; ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.arc(0, 0, BLACKHOLE.r + 4, 0, Math.PI * 1.4); ctx.stroke();
-                ctx.restore();
-                ctx.restore();
-                // 中央立柱
-                ctx.fillStyle = '#caa24a';
-                ctx.beginPath(); ctx.arc(CPOST.x, CPOST.y, CPOST.r + 1, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#4a2c05'; ctx.lineWidth = 1.2; ctx.stroke();
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                ctx.beginPath(); ctx.arc(CPOST.x - 1.5, CPOST.y - 1.5, 1.6, 0, Math.PI * 2); ctx.fill();
-                // 反弹器
-                REBOUND.forEach(rp => {
-                    ctx.fillStyle = '#3a4a78';
-                    ctx.beginPath(); ctx.arc(rp.x, rp.y, 5, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = 'rgba(160,190,240,0.7)'; ctx.lineWidth = 1.4; ctx.stroke();
-                });
-                // 指示灯 / 滚道灯
-                LAMPS.forEach(L => {
-                    ctx.save();
-                    if (L.on || (L.rollover)) {
-                        const gr = ctx.createRadialGradient(L.x, L.y, 0.5, L.x, L.y, L.r + 6);
-                        gr.addColorStop(0, L.color); gr.addColorStop(1, 'rgba(0,0,0,0)');
-                        ctx.fillStyle = gr;
-                        ctx.beginPath(); ctx.arc(L.x, L.y, L.r + 6, 0, Math.PI * 2); ctx.fill();
-                    }
-                    ctx.fillStyle = L.on ? L.color : 'rgba(70,80,110,0.55)';
-                    ctx.beginPath(); ctx.arc(L.x, L.y, L.r, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = L.on ? '#fff3c4' : 'rgba(150,175,225,0.6)';
-                    ctx.lineWidth = 1.3; ctx.stroke();
-                    ctx.restore();
-                });
-            }
             let t = 0, over = false;
 
             /* ── 音效 ── */
@@ -557,22 +393,17 @@ window.MiniGames = window.MiniGames || {};
                 if (cadetMusicTimer) { clearTimeout(cadetMusicTimer); cadetMusicTimer = null; }
                 try { AU.bgm.stop(); } catch (e) { }
             };
-            const CADET_PROGRAMS = [
-                { max: 7, type: 'triangle', lp: 1800 },
-                { max: 15, type: 'sine', lp: 2400 },
-                { max: 23, type: 'square', lp: 2200 },
-                { max: 31, type: 'sawtooth', lp: 1500 },
-                { max: 39, type: 'square', lp: 1700 },
-                { max: 47, type: 'sawtooth', lp: 1200 },
-                { max: 63, type: 'triangle', lp: 2100 },
-                { max: 79, type: 'sine', lp: 2600 },
-                { max: 95, type: 'square', lp: 1900 },
-                { max: 111, type: 'sawtooth', lp: 1300 },
-                { max: 127, type: 'triangle', lp: 1800 },
-            ];
+            const CADET_PROGRAMS = {
+                0: { type: 'triangle', lp: 2100 },
+                5: { type: 'sine', lp: 2600 },
+                11: { type: 'sine', lp: 3200 },
+                28: { type: 'triangle', lp: 1900 },
+                38: { type: 'sawtooth', lp: 1200 },
+                83: { type: 'square', lp: 1800 },
+            };
             const playCadetNote = (note, delay) => {
                 const [,, pitch, velocity, channel, program] = note;
-                const profile = CADET_PROGRAMS.find(x => program <= x.max) || CADET_PROGRAMS[0];
+                const profile = CADET_PROGRAMS[program] || CADET_PROGRAMS[0];
                 const gain = Math.min(0.075, 0.010 + velocity / 2400);
                 if (channel === 9) {
                     AU.noise({ dur: 0.055, freq: pitch < 45 ? 150 : 1900, type: pitch < 45 ? 'lowpass' : 'highpass', gain, delay });
@@ -640,45 +471,23 @@ window.MiniGames = window.MiniGames || {};
             const flash = { ramp: 0, spin: 0, saucer: 0, target: 0, warp: 0, tube: 0 };
             let targetFlashGroup = -1;
 
-            /* ── 任务 / 军衔（Space Cadet 风格：达成目标 → 晋升军衔 → 领取大奖）──
-               每个任务盯一类得分事件（kw），累计 need 次即完成并结算 jackpot；
-               带 mb 的任务完成后额外开启多球。全部走完停在最终任务继续刷分。 */
-            const MISSIONS = [
-                { n: '基础训练', hint: '撞击顶部引擎', kw: 'bumper', need: 6, jack: 5000 },
-                { n: '引擎试车', hint: '撞击左侧引擎', kw: 'jet', need: 8, jack: 14000 },
-                { n: '轨道练习', hint: '冲上坡道', kw: 'ramp', need: 3, jack: 12000 },
-                { n: '目标练习', hint: '打落靶子', kw: 'target', need: 5, jack: 9000, mb: 2 },
-                { n: '旋转突击', hint: '转动旋门', kw: 'spin', need: 6, jack: 8000 },
-                { n: '航道点亮', hint: '点亮滚道灯', kw: 'lane', need: 4, jack: 10000 },
-                { n: '徽章收集', hint: '翻开徽章牌', kw: 'card', need: 6, jack: 25000, mb: 3 },
-                { n: '虫洞跳跃', hint: '吸入涡轮虫洞', kw: 'warp', need: 2, jack: 18000, mb: 2 },
-                { n: '计分洞', hint: '打入计分洞', kw: 'saucer', need: 3, jack: 15000, mb: 2 },
-                { n: '连击大师', hint: '累计得分次数', kw: 'any', need: 40, jack: 30000 },
-                { n: '最终任务', hint: '累计得分次数', kw: 'any', need: 80, jack: 60000, mb: 3 },
-            ];
-            const RANKS = ['学员', '少尉', '中尉', '上尉', '少校', '中校', '上校', '准将', '舰队上将'];
-
             /* ── 状态 ── */
             let score = 0, balls = endless ? Infinity : 3, launched = false;
             let ball = { x: LNCX, y: BALL_REST_Y, vx: 0, vy: 0 };
             const live = [ball];        // 台面上的球：live[0] 恒为主球（多球时长度 > 1）
             const trail = [];
-            let missionIdx = 0, missionProg = 0, missionFlash = 0, mbCount = 0;
+            let mbCount = 0;
             let onRail = false, railU = 0, railSpeed = 0, railMode = RAIL.LAUNCH;
             let plunger = 0, plungerHold = false, chargeSfx = true;
             let combo = 0, comboT = 0, mult = 1;
             let saucerHold = 0;
             let warpHold = 0, warpLock = 0, warpSpin = 0, warpPull = 0, warpFlash = 0;
-            let bhHold = 0;                 // 黑洞吸入暂存计时
-            let dispatchHit = {};           // 本回合发射已点亮的调度灯（防重复计分）
-            let mbCd = 0;                     // 多球冷却：防任务/翻牌连锁把台面刷成球海
+            let mbCd = 0;                     // 多球冷却
             let hyperStage = 0;              // 超空间阶段 0..5：每次虫洞跃迁 +1，满 5 触发超空间大赏
             let tiltWarn = 0;                // 倾斜警告灯 0..3：3 盏全亮 → TILT 失球
             let tiltActive = false;
             let nudgeCd = 0;                 // 推挤冷却，防连按刷满倾斜灯
             TARGETS.forEach(x => { x.down = false; });
-            BANKS.forEach(B => B.subs.forEach(s => s.down = false));
-            LAMPS.forEach(L => { L.on = false; });
             let toast = '', toastT = 0;
             const lanesOn = [false, false, false, false];
             const kickback = { L: true, R: true };
@@ -696,14 +505,14 @@ window.MiniGames = window.MiniGames || {};
             const FR = { ...FLIP_R, ang: FLIP_R.rest, omega: 0, held: false };
 
             const TABLE_OBJECTS = [
-                ...BUMPERS.map((ref, i) => ({ id: 'bumper' + i, kind: 'bumper', ref, shape: { type: 'circle', r: ref.r }, state: 'idle', timer: 0, frame: 0, frames: 8 })),
-                ...JETS.map((ref, i) => ({ id: 'jet' + i, kind: 'jet', ref, shape: { type: 'circle', r: ref.r }, state: 'idle', timer: 0, frame: 0, frames: 8 })),
-                ...TARGETS.map((ref, i) => ({ id: 'target' + i, kind: 'target', ref, shape: { type: 'segment', r: 3 }, state: 'ready', timer: 0, frame: 0, frames: 3 })),
-                ...CADET_GATES.map((ref, i) => ({ id: 'gate' + i, kind: 'gate', ref, shape: { type: 'segment', r: 2 }, state: 'closed', timer: 0, frame: 0, frames: 1 })),
-                ...CADET_KICKERS.map((ref, i) => ({ id: 'kicker' + i, kind: 'kicker', ref, shape: { type: 'circle', r: 7 }, state: 'idle', timer: 0, frame: 0, frames: 2 })),
-                ...REBOUND.map((ref, i) => ({ id: 'rebound' + i, kind: 'rebound', ref, shape: { type: 'circle', r: 7 }, state: 'idle', timer: 0, frame: 0, frames: 2 })),
+                ...BUMPERS.map((ref, i) => ({ id: 'bumper' + i, resource: 'a_bump' + (i + 1), kind: 'bumper', ref, shape: { type: 'circle', r: ref.r }, state: 'idle', timer: 0, frame: 0, frames: 8 })),
+                ...JETS.map((ref, i) => ({ id: 'jet' + i, resource: 'a_bump' + (i + 5), kind: 'jet', ref, shape: { type: 'circle', r: ref.r }, state: 'idle', timer: 0, frame: 0, frames: 8 })),
+                ...TARGETS.map((ref, i) => ({ id: 'target' + i, resource: 'a_targ' + (i + 1), kind: 'target', ref, shape: { type: 'segment', r: 3 }, state: 'ready', timer: 0, frame: 0, frames: 3 })),
+                ...CADET_GATES.map((ref, i) => ({ id: 'gate' + i, resource: 'v_gate' + (i + 1), kind: 'gate', ref, shape: { type: 'segment', r: 2 }, state: 'closed', timer: 0, frame: 0, frames: 1 })),
+                ...CADET_KICKERS.map((ref, i) => ({ id: 'kicker' + i, resource: 'a_kick' + (i + 1), kind: 'kicker', ref, shape: { type: 'circle', r: 7 }, state: 'idle', timer: 0, frame: 0, frames: 2 })),
+                ...REBOUND.map((ref, i) => ({ id: 'rebound' + i, resource: 'v_rebo' + (i + 1), kind: 'rebound', ref, shape: { type: 'segment', r: 3 }, state: 'idle', timer: 0, frame: 0, frames: 2 })),
                 ...CADET_ROLLERS.map((ref, i) => ({ id: 'roller' + i, kind: 'roller', ref, shape: { type: 'circle', r: 6 }, state: 'idle', timer: 0, frame: 0, frames: ref.length })),
-                ...LAMPS.map(ref => ({ id: 'lamp:' + ref.id, kind: 'lamp', ref, shape: { type: 'circle', r: ref.r }, state: 'off', timer: 0, frame: 0, frames: 1 })),
+                ...Object.keys(CADET_LIGHT_GROUPS).map(id => ({ id: 'light:' + id, kind: 'light-group', ref: CADET_LIGHT_GROUPS[id], shape: { type: 'group' }, state: 'off', timer: 0, frame: 0, frames: 1 })),
                 { id: 'flipperL', kind: 'flipper', ref: FL, shape: { type: 'capsule', r: 8 }, state: 'rest', timer: 0, frame: 0, frames: 8 },
                 { id: 'flipperR', kind: 'flipper', ref: FR, shape: { type: 'capsule', r: 8 }, state: 'rest', timer: 0, frame: 0, frames: 8 },
             ];
@@ -716,11 +525,12 @@ window.MiniGames = window.MiniGames || {};
                 object.frame = state === 'hit' ? 1 : 0;
             };
             const pulseTableObject = (id, duration) => setTableObjectState(id, 'hit', duration || 0.5);
+            const pulseCadetLightGroup = (id, duration) => pulseTableObject('light:' + id, duration || 0.42);
             const updateTableObjects = dt => TABLE_OBJECTS.forEach(object => {
                 if (object.timer <= 0) return;
                 object.timer = Math.max(0, object.timer - dt);
                 if (object.timer <= 0) {
-                    object.state = object.kind === 'gate' ? 'closed' : object.kind === 'target' ? 'ready' : 'idle';
+                    object.state = object.kind === 'gate' ? 'closed' : object.kind === 'target' ? 'ready' : object.kind === 'light-group' ? 'off' : 'idle';
                     object.frame = 0;
                     return;
                 }
@@ -728,36 +538,11 @@ window.MiniGames = window.MiniGames || {};
             });
 
             const show = (s, d) => { toast = s; toastT = d || 1.4; };
-            // ev：得分事件标签（bumper/ramp/target/spin/lane/saucer），用于推进当前任务
-            const addScore = (n, ev) => {
+            const addScore = n => {
                 score += Math.round(n * mult);
-                if (ev) missionHit(ev, 1);
             };
-
-            /* ── 任务推进 ── */
-            function missionHit(ev, k) {
-                if (over) return;
-                const m = MISSIONS[missionIdx];
-                if (!m) return;
-                if (m.kw !== 'any' && m.kw !== ev) return;
-                missionProg += k;
-                if (missionProg >= m.need) completeMission();
-            }
-            function completeMission() {
-                const m = MISSIONS[missionIdx];
-                missionProg = 0;
-                if (missionIdx < MISSIONS.length - 1) missionIdx++;
-                missionFlash = 1.6;
-                score += m.jack;            // 直接加分：避免 addScore→missionHit 递归
-                sfx('jackpot');
-                shake = Math.max(shake, 0.55); shakeMag = Math.max(shakeMag, 8);
-                spawn(176, 300, 34, 260, 1.4);
-                const rk = RANKS[Math.min(RANKS.length - 1, missionIdx)];
-                show(m.mb ? '★ ' + m.n + ' 达成 · 晋升' + rk : '✔ ' + m.n + ' 达成 · 晋升' + rk, 2.2);
-                if (m.mb) startMultiball(m.mb);
-            }
             // 多球：额外球自计分洞喷出；主球漏掉时其余球顶上，不算失球
-            // 防球海三保险：台面球数封顶(4) / 自动触发 8s 冷却 / 新球 1.2s 保护期(不翻牌不被吸入)
+            // 防球海三保险：台面球数封顶(4) / 自动触发 8s 冷却 / 新球 1.2s 保护期
             const MAX_LIVE = 4, MB_CD = 8;
             function startMultiball(n, viaApi) {
                 if (!viaApi && mbCd > 0) return;                 // 自动触发受冷却（测试直连绕过）
@@ -1142,18 +927,34 @@ window.MiniGames = window.MiniGames || {};
                         sfx('click'); spawn(p.x, p.y, 3, 200, 0.5);
                     }
                 }
+                REBOUND.forEach((rp, i) => {
+                    const source = CADET_REBOUNDERS[i];
+                    const surface = source.surface;
+                    const impact = surface
+                        ? hitSeg(ball, {
+                            x1: cadetX(surface[0]), y1: cadetY(surface[1]),
+                            x2: cadetX(surface[2]), y2: cadetY(surface[3]), r: 3,
+                        }, 0.72, 360)
+                        : hitCircle(ball, rp.x, rp.y, 7, 0.6, 360);
+                    if (impact > 0) {
+                        reboundHit[i] = 1;
+                        pulseTableObject('rebound' + i, 0.28);
+                        sfx('sling');
+                    }
+                });
                 BUMPERS.forEach((bp, i) => {
                     const hit = touchCircle(ball, bp.x, bp.y, bp.r, 0.55, 520);
                     if (hit.touch) bumps[i] = 1;
                     if (hit.touch && !bumperContact[i] && canTrigger('bumper' + i, 0.12)) {
                         bumps[i] = 1;
                         pulseTableObject('bumper' + i, 0.5);
+                        pulseCadetLightGroup('bumper_target_lights');
+                        pulseCadetLightGroup('bmpr_inc_lights');
                         turboLit[i] = true;
                         addScore(120, 'bumper'); combo++; comboT = 2.2;
                         sfx('bumper'); spawn(bp.x, bp.y, 12, bp.hue, 1.1);
                         shake = Math.max(shake, 0.09); shakeMag = Math.max(shakeMag, 2.2);
                         if (turboLit.every(Boolean)) {
-                            LAMPS.filter(L => L.group === 're').forEach(L => L.on = true);
                             addScore(1500, 'bumper'); show('涡轮引擎全亮 +1,500', 1.4); sfx('jackpot');
                             turboLit.fill(false);
                         }
@@ -1167,6 +968,7 @@ window.MiniGames = window.MiniGames || {};
                     if (hit.touch && !jetContact[i] && canTrigger('jet' + i, 0.12)) {
                         jets[i] = 1;
                         pulseTableObject('jet' + i, 0.5);
+                        pulseCadetLightGroup('ramp_bmpr_inc_lights');
                         jetLit[i] = true;
                         addScore(150, 'jet'); combo++; comboT = 2.2;
                         sfx('jet');
@@ -1176,7 +978,6 @@ window.MiniGames = window.MiniGames || {};
                         spawn(jt.x + Math.cos(a) * jt.r, jt.y + Math.sin(a) * jt.r, 5, jt.hue, 1.5, a);
                         shake = Math.max(shake, 0.08); shakeMag = Math.max(shakeMag, 2);
                         if (jetLit.every(Boolean)) {
-                            LAMPS.filter(L => L.group === 'hs').forEach(L => L.on = true);
                             addScore(1800, 'jet'); show('左路引擎全亮 +1,800', 1.4); sfx('jackpot');
                             jetLit.fill(false);
                         }
@@ -1221,6 +1022,7 @@ window.MiniGames = window.MiniGames || {};
                     }, 0.35, 60);
                     if (v > 90) {
                         tg.down = true; setTableObjectState('target' + tg.i, 'down'); addScore(600, 'target'); combo++; comboT = 2.2;
+                        pulseCadetLightGroup(tg.group === 0 ? 'right_target_lights' : tg.group === 1 ? 'top_target_lights' : 'top_circle_tgt_lights');
                             flash.target = 1; targetFlashGroup = tg.group; sfx('target');
                         spawn(tg.x - 4, tg.y, 12, 40, 1.1, Math.PI);
                         shake = Math.max(shake, 0.08); shakeMag = Math.max(shakeMag, 2);
@@ -1262,6 +1064,7 @@ window.MiniGames = window.MiniGames || {};
                     Math.hypot(ball.x - RAMP_ENTRY[0], ball.y - RAMP_ENTRY[1]) < 20 &&
                     canTrigger('ramp', 0.8)) {
                     onRail = true; railU = 0; railMode = RAIL.RAMP; railSpeed = 640;
+                    pulseCadetLightGroup('ramp_tgt_lights');
                     addScore(1800, 'ramp'); combo++; comboT = 2.2; sfx('ramp'); flash.ramp = 1;
                     show('坡道达成 +1,800', 1.2);
                 }
@@ -1270,6 +1073,7 @@ window.MiniGames = window.MiniGames || {};
                     Math.hypot(ball.x - SAUCER.x, ball.y - SAUCER.y) < SAUCER.r - 3 &&
                     Math.hypot(ball.vx, ball.vy) < 1500) {
                     saucerHold = 1.15; ball.vx = ball.vy = 0;
+                    pulseCadetLightGroup('bsink_arrow_lights');
                     const win = 2500 + 1500 * (mult - 1);
                     addScore(win, 'saucer'); sfx('saucer'); flash.saucer = 1;
                     show('计分洞 +' + win.toLocaleString(), 1.4);
@@ -1281,6 +1085,7 @@ window.MiniGames = window.MiniGames || {};
                     Math.hypot(ball.x - WARP.x, ball.y - WARP.y) < WARP.r - 2 &&
                     Math.hypot(ball.vx, ball.vy) < 1700) {
                     warpHold = 0.72; warpPull = 0; warpFlash = 1; flash.warp = 1;
+                    pulseCadetLightGroup('worm_hole_lights');
                     ball.vx = ball.vy = 0;
                     hyperStage = Math.min(5, hyperStage + 1);          // 超空间阶段递进
                     addScore(3000 + (hyperStage - 1) * 2000, 'warp'); combo++; comboT = 2.2;
@@ -1300,7 +1105,6 @@ window.MiniGames = window.MiniGames || {};
                     canTrigger('tubeIn', 0.5)) {
                     enterTube(660);
                 }
-                collideNew();
                 hitFlipper(ball, FL);
                 hitFlipper(ball, FR);
             }
@@ -1312,8 +1116,7 @@ window.MiniGames = window.MiniGames || {};
                 hyperStage = 0; tiltWarn = 0;
                 for (let i = 0; i < lanesOn.length; i++) lanesOn[i] = false;
                 TARGETS.forEach(x => x.down = false);
-                BANKS.forEach(B => B.subs.forEach(s => s.down = false));
-                LAMPS.forEach(L => { L.on = false; });
+                TARGETS.forEach(x => setTableObjectState('target' + x.i, 'ready'));
                 turboLit.fill(false); jetLit.fill(false);
                 bumperContact.fill(false); jetContact.fill(false);
                 slingHit.fill(0);
@@ -1373,7 +1176,6 @@ window.MiniGames = window.MiniGames || {};
                     lines: [
                         `得分 ${score.toLocaleString()}${endless ? '' : ' / 目标 ' + P.goal.toLocaleString()}`,
                         `最高连击 ×${combo} · 倍率 ×${mult}`,
-                        `军衔 ${RANKS[Math.min(RANKS.length - 1, missionIdx)]} · 任务推进 ${missionIdx}/${MISSIONS.length}`,
                         mbCount > 1 ? `多球最高同时 ${mbCount} 颗` : '',
                         endless ? '重力强化 · 目标即挑战' : '',
                     ].filter(Boolean),
@@ -1410,7 +1212,7 @@ window.MiniGames = window.MiniGames || {};
                         if (chargeSfx) { sfx('charge'); chargeSfx = false; }
                         plunger = Math.min(1, plunger + dt * 1.4);
                     } else if (plunger > 0.08) {
-                        onRail = true; railU = 0; railMode = RAIL.LAUNCH; dispatchHit = {};
+                        onRail = true; railU = 0; railMode = RAIL.LAUNCH;
                         railSpeed = 1150 + 620 * plunger;
                         launched = true; plunger = 0; chargeSfx = true;
                         sfx('launch'); shake = Math.max(shake, 0.12); shakeMag = Math.max(shakeMag, 3);
@@ -1434,16 +1236,6 @@ window.MiniGames = window.MiniGames || {};
                     const p = path.at(railU);
                     ball.x = p.x; ball.y = p.y;
                     ball.vx = p.tx * railSpeed; ball.vy = p.ty * railSpeed;
-                    // 发射巷调度灯（球沿发射道上行经过即计分，原版“高技能发射”）
-                    if (railMode === RAIL.LAUNCH) {
-                        LAMPS.forEach(L => {
-                            if (!L.score) return;
-                            if (!dispatchHit[L.id] && Math.hypot(ball.x - L.x, ball.y - L.y) < 11) {
-                                dispatchHit[L.id] = true; addScore(L.score); sfx('rollover');
-                                spawn(L.x, L.y, 5, 50, 0.6);
-                            }
-                        });
-                    }
                     if (railU >= 1) {
                         onRail = false;
                         const pl = path.at(1);
@@ -1488,17 +1280,6 @@ window.MiniGames = window.MiniGames || {};
                             ball.x = TUBE_ENTRY[0]; ball.y = TUBE_ENTRY[1];
                             warpPull = 0;
                             enterTube(880);
-                        }
-                        mainFrozen = true;
-                    }
-
-                    // 黑洞：吸入暂存 → 高速反向弹出（原版“球也会随即弹出，且反向一定”）
-                    if (bhHold > 0) {
-                        bhHold -= dt;
-                        ball.x = BLACKHOLE.x; ball.y = BLACKHOLE.y; ball.vx = ball.vy = 0;
-                        if (bhHold <= 0) {
-                            ball.vy = -940; ball.vx = (Math.random() - 0.5) * 260;
-                            sfx('kick'); spawn(ball.x, ball.y, 14, 280, 1.1);
                         }
                         mainFrozen = true;
                     }
@@ -1678,20 +1459,14 @@ window.MiniGames = window.MiniGames || {};
                 dmdText('×' + mult, cx, y2, 14, '#ff6a3d', 'center');
                 dmdText(endless ? 'ENDLESS' : NAMES[Math.min(49, idx0)], DMD.x + DMD.w - 10, y2, 11, '#ffb85c', 'right');
 
-                // 第三行：军衔 + 当前任务 + 进度条 —— 台面上永远有个目标在追
-                const m = MISSIONS[missionIdx];
-                if (m) {
-                    const y3 = DMD.y + 70;
-                    const rk = RANKS[Math.min(RANKS.length - 1, missionIdx)];
-                    const col = missionFlash > 0 ? '#ffe9b0' : '#ff8a3d';
-                    dmdText(rk + ' · ' + m.n + '：' + m.hint, DMD.x + 10, y3, 11, col, 'left');
-                    dmdText(Math.min(missionProg, m.need) + '/' + m.need, DMD.x + DMD.w - 10, y3, 12, '#ffd56b', 'right');
-                    const bw = 78, bx = DMD.x + DMD.w - 58 - bw, by = y3 - 4;
-                    ctx.fillStyle = 'rgba(255,140,60,0.20)';
-                    ctx.fillRect(bx, by, bw, 5);
-                    ctx.fillStyle = col;
-                    ctx.fillRect(bx, by, bw * Math.min(1, missionProg / m.need), 5);
-                }
+                const y3 = DMD.y + 70;
+                const progress = Math.min(1, score / Math.max(1, P.goal));
+                dmdText('第 ' + (idx0 + 1) + '/50 关 · 目标分数', DMD.x + 10, y3, 11, '#ff8a3d', 'left');
+                dmdText(Math.round(score) + '/' + P.goal, DMD.x + DMD.w - 10, y3, 11, '#ffd56b', 'right');
+                ctx.fillStyle = 'rgba(255,140,60,0.20)';
+                ctx.fillRect(DMD.x + 10, y3 + 5, DMD.w - 20, 4);
+                ctx.fillStyle = '#ff9a2e';
+                ctx.fillRect(DMD.x + 10, y3 + 5, (DMD.w - 20) * progress, 4);
                 // 亮后轻打点阵（让数字也带颗粒感，但不破坏可读性）
                 dmdDots(4, 1.0, 0.30);
             }
@@ -2233,38 +2008,6 @@ window.MiniGames = window.MiniGames || {};
                 ctx.restore();
             }
 
-            /* ── 翻牌 ×3：Space Cadet 式翻转徽章牌 ── */
-            function drawBadge(k) {
-                ctx.save();
-                ctx.translate(0, -6);
-                ctx.fillStyle = '#8a4c05';
-                if (k === 0) {
-                    ctx.beginPath();
-                    for (let i = 0; i < 10; i++) {
-                        const a = -Math.PI / 2 + i * Math.PI / 5;
-                        const rr2 = i % 2 ? 3.4 : 8.2;
-                        const px = Math.cos(a) * rr2, py = Math.sin(a) * rr2;
-                        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-                    }
-                    ctx.closePath(); ctx.fill();
-                } else if (k === 1) {
-                    ctx.beginPath();
-                    ctx.moveTo(-9, 2); ctx.quadraticCurveTo(-4, -7, 0, -1);
-                    ctx.quadraticCurveTo(4, -7, 9, 2);
-                    ctx.quadraticCurveTo(4, 1, 0, 5);
-                    ctx.quadraticCurveTo(-4, 1, -9, 2);
-                    ctx.closePath(); ctx.fill();
-                } else {
-                    ctx.beginPath();
-                    ctx.moveTo(-7, -7); ctx.lineTo(7, -7); ctx.lineTo(7, 1);
-                    ctx.quadraticCurveTo(0, 9, -7, 1);
-                    ctx.closePath(); ctx.fill();
-                    ctx.fillStyle = '#ffd77a';
-                    ctx.fillRect(-1.2, -5, 2.4, 8);
-                    ctx.fillRect(-4.5, -2.6, 9, 1.8);
-                }
-                ctx.restore();
-            }
             function drawRamp() {
                 const P = RAMP_PATH.pts;
                 ctx.save();
@@ -2470,6 +2213,14 @@ window.MiniGames = window.MiniGames || {};
             }
 
             function drawCadetDynamicEffects() {
+                Object.entries(CADET_LIGHT_GROUPS).forEach(([id, groups]) => {
+                    const object = TABLE_OBJECT_BY_ID['light:' + id];
+                    if (!object || object.state !== 'hit') return;
+                    groups.forEach(group => {
+                        const position = CADET_LIGHT_POSITIONS[group];
+                        if (position) drawCadetSprite(CADET_LIGHT_IMAGES[group], position[0], position[1]);
+                    });
+                });
                 CADET_KICKERS.forEach((kb, i) => {
                     drawCadetSprite(kickerHit[i] > 0.02 ? kb.hit : kb.rest,
                         kickerHit[i] > 0.02 ? kb.hitPos[0] : kb.restPos[0],
@@ -2871,7 +2622,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.fillText(sTxt, px + lw - 10, sy2 + 31);
                 ctx.shadowBlur = 0;
 
-                /* ── ③b 状态灯阵（倍率阶梯 / 超空间 / 倾斜 / 军衔 / 进度）── */
+                /* ── ③b 状态灯阵（倍率阶梯 / 超空间 / 倾斜 / 关卡进度）── */
                 const iy = sy2 + 72;
                 const drawLightRow = (lab, y, n, lit, col) => {
                     ctx.font = `bold ${Math.round(10 * FS)}px "Consolas",monospace`;
@@ -2892,13 +2643,13 @@ window.MiniGames = window.MiniGames || {};
                 drawLightRow('倍率', iy, 9, Math.min(9, mult), '#ff6a3d');
                 drawLightRow('超空间', iy + rowP, 5, hyperStage, '#c79bff');
                 drawLightRow('倾斜', iy + rowP * 2, 3, tiltWarn, tiltWarn >= 2 ? '#ff4a3d' : '#ffb84d');
-                drawLightRow('军衔', iy + rowP * 3, 9, Math.min(9, missionIdx + 1), '#5fd0ff');
+                drawLightRow('关卡', iy + rowP * 3, 9, Math.min(9, Math.ceil((idx0 + 1) / 6)), '#5fd0ff');
                 // 进度灯阵（18 格总体进度，两行）
                 ctx.font = `bold ${Math.round(10 * FS)}px "Consolas",monospace`;
                 ctx.fillStyle = 'rgba(220,210,190,0.75)';
                 ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
                 ctx.fillText('进度', px + 16, iy + rowP * 4.5);
-                const progAll = (missionIdx + Math.min(1, (MISSIONS[missionIdx] ? missionProg / MISSIONS[missionIdx].need : 0))) / MISSIONS.length;
+                const progAll = Math.min(1, score / Math.max(1, P.goal));
                 const litP = Math.round(progAll * 18);
                 const gapP = Math.min(14, (pw - 86) / 9);
                 for (let i = 0; i < 18; i++) {
@@ -2910,7 +2661,7 @@ window.MiniGames = window.MiniGames || {};
                     ctx.fill(); ctx.shadowBlur = 0;
                 }
 
-                /* ── ④ 任务黑框（原版底部任务文字区）── */
+                /* ── ④ 关卡目标黑框 ── */
                 const my = iy + rowP * 5 + 16, mh = GH - 24 - my;
                 ctx.fillStyle = '#04050a';
                 rr(px + 12, my, lw, mh, 5); ctx.fill();
@@ -2920,7 +2671,7 @@ window.MiniGames = window.MiniGames || {};
                 ctx.textAlign = 'left';
                 ctx.font = `bold ${Math.round(11 * FS)}px "Consolas",monospace`;
                 ctx.fillStyle = 'rgba(255,150,60,0.75)';
-                ctx.fillText('· MISSION ·', px + 22, my + 18);
+                ctx.fillText('· LEVEL GOAL ·', px + 22, my + 18);
                 const wrap = (txt, x, y, maxW, lh3, size, color, glow) => {
                     ctx.font = `bold ${size}px "Consolas","Courier New",monospace`;
                     let line = '', yy = y;
@@ -2941,21 +2692,14 @@ window.MiniGames = window.MiniGames || {};
                     dmdText('等待部署', px + 24, my + 52, Math.round(24 * FS), '#ff9a2e', 'left');
                     wrap('按住空格蓄力，松手发射', px + 22, my + 96, lw - 40, 20, Math.round(12 * FS), '#c8bfa8');
                 } else {
-                    const m = MISSIONS[missionIdx];
-                    const rk = RANKS[Math.min(RANKS.length - 1, missionIdx)];
-                    if (missionFlash > 0) {
-                        dmdText('任务完成!', px + 24, my + 52, Math.round(22 * FS), '#ffe9b0', 'left');
-                    } else if (m) {
-                        let yy = wrap(m.n, px + 22, my + 42, lw - 40, Math.round(24 * FS), Math.round(17 * FS), '#ff9a2e', true);
-                        yy = wrap('目标：' + m.hint, px + 22, yy + 4, lw - 40, Math.round(20 * FS), Math.round(12 * FS), '#d8cdb2');
-                        dmdText(`进度 ${Math.min(missionProg, m.need)}/${m.need} · 军衔 ${rk}`, px + 22, yy + 8, Math.round(12 * FS), '#ffb85c', 'left');
-                        // 进度条
-                        const bw2 = lw - 44, bx2 = px + 22, byy = yy + 28;
-                        ctx.fillStyle = 'rgba(255,140,60,0.18)';
-                        ctx.fillRect(bx2, byy, bw2, 7);
-                        ctx.fillStyle = '#ff9a2e';
-                        ctx.fillRect(bx2, byy, bw2 * Math.min(1, missionProg / m.need), 7);
-                    }
+                    let yy = wrap('第 ' + (idx0 + 1) + ' 关 · ' + NAMES[Math.min(49, idx0)], px + 22, my + 42, lw - 40, Math.round(24 * FS), Math.round(17 * FS), '#ff9a2e', true);
+                    yy = wrap('目标分数：' + P.goal.toLocaleString(), px + 22, yy + 4, lw - 40, Math.round(20 * FS), Math.round(12 * FS), '#d8cdb2');
+                    dmdText('当前分数：' + Math.round(score).toLocaleString(), px + 22, yy + 8, Math.round(12 * FS), '#ffb85c', 'left');
+                    const bw2 = lw - 44, bx2 = px + 22, byy = yy + 28;
+                    ctx.fillStyle = 'rgba(255,140,60,0.18)';
+                    ctx.fillRect(bx2, byy, bw2, 7);
+                    ctx.fillStyle = '#ff9a2e';
+                    ctx.fillRect(bx2, byy, bw2 * Math.min(1, score / Math.max(1, P.goal)), 7);
                     if (mbCount > 1 && live.length > 1)
                         dmdText('MULTIBALL ×' + live.length, px + 22, my + mh - 16, Math.round(13 * FS), '#ff6a3d', 'left');
                 }
@@ -2980,7 +2724,6 @@ window.MiniGames = window.MiniGames || {};
                 for (let i = 0; i < gateHit.length; i++) gateHit[i] = Math.max(0, gateHit[i] - dt * 6);
                 for (const k in flash) flash[k] = Math.max(0, flash[k] - dt * 2.4);
                 if (flash.target <= 0.02) targetFlashGroup = -1;
-                missionFlash = Math.max(0, missionFlash - dt * 1.2);
                 shake = Math.max(0, shake - dt * 3.4);
                 toastT = Math.max(0, toastT - dt);
                 nudgeCd = Math.max(0, nudgeCd - dt);
@@ -3014,7 +2757,6 @@ window.MiniGames = window.MiniGames || {};
                     drawBumpers();
                     drawJets();
                     drawWarpJet();
-                    drawNew();
                     drawPosts();
                     drawSlings();
                     drawKickback();
@@ -3058,14 +2800,11 @@ window.MiniGames = window.MiniGames || {};
                     get tiltWarn() { return tiltWarn; },
                     get score() { return score; },
                     get liveCount() { return live.length; },
-                    get mission() {
-                        const m = MISSIONS[missionIdx];
-                        return { i: missionIdx, prog: missionProg, name: m && m.n, need: m && m.need, rank: RANKS[Math.min(RANKS.length - 1, missionIdx)] };
-                    },
+                    get mission() { return { i: idx0, prog: score, name: NAMES[Math.min(49, idx0)], need: P.goal, rank: idx0 + 1 }; },
                     get objects() { return TABLE_OBJECTS.map(object => ({ id: object.id, kind: object.kind, state: object.state, frame: object.frame })); },
                     get warpHold() { return warpHold; },
                     get railMode() { return railMode; },
-                    addScore, finish, missionHit, startMultiball: n => startMultiball(n, true), enterTube,
+                    addScore, finish, startMultiball: n => startMultiball(n, true), enterTube,
                     relaunch: () => manualRelaunch(),
                     nudge: () => doNudge(),
                     get stuckT() { return stuckT; },

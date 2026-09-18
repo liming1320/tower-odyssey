@@ -18,7 +18,7 @@ MG.net = {
     },
     on(type, fn) { this._handlers[type] = fn; },
     send(type, data) { try { if (this._ws && this._ws.readyState === 1) this._ws.send(JSON.stringify({ type, data })); } catch (e) {} },
-    join(room) { this._room = room; this.send('join', { room }); },
+    join(room, game) { this._room = room; this.send('join', { room: room || '', game: game || (MG._curGame) || 'unknown', me: (MG.me && MG.me.nickname) || '我' }); },
     leave() { this.send('leave', { room: this._room }); this._room = null; },
 };
 MG.cloud = {
@@ -43,4 +43,52 @@ MG.leaderboard = {
     top(game, n) {
         try { return fetch('/api/minigame/leaderboard?game=' + encodeURIComponent(game) + '&n=' + (n || 10)).then(r => r.json()).catch(function () { return []; }); } catch (e) { return Promise.resolve([]); }
     },
+};
+
+// ================= 2P 对战会话（本地双人 / 真实联机 共用）=================
+// MG.match 持有当前对战双方信息；游戏顶栏 HUD（MG.matchBar）从这里读昵称。
+// 本地双人：由 MinigamesView 直接 begin；真实联机：由 MG.net.versus 在收到 room/peer 消息时填充 opp。
+// 我方昵称来自顶栏头像的 app.user.nickname（MinigamesView.open 时写入 MG.me）。
+MG.match = {
+    active: false, mode: 'local',          // mode: 'local' 同设备轮流 | 'net' 真实联机
+    me: null, opp: null, side: 0, room: null, _parent: null, _sMe: null, _sOpp: null,
+    begin(o) {
+        o = o || {};
+        this.active = true;
+        this.mode = o.mode || 'local';
+        this.me = o.me || (MG.me && MG.me.nickname) || '我';
+        this.opp = o.opp || '对手';
+        this.side = o.side || 0;
+        this.room = o.room || null;
+        this.render();
+        return this;
+    },
+    setOpp(n) { if (n) this.opp = n; this.render(); },
+    setSide(s) { this.side = s; this.render(); },
+    setScore(me, opp) { this._sMe = me; this._sOpp = opp; this.render(); },
+    snapshot() { return { me: this.me, opp: this.opp, side: this.side, scoreMe: this._sMe, scoreOpp: this._sOpp }; },
+    render() { if (this._parent) { try { this._parent.innerHTML = ''; MG.matchBar(this._parent, this.snapshot()); } catch (e) {} } },
+    end() { this.active = false; this.mode = 'local'; this.opp = null; this.room = null; this._parent = null; this._sMe = this._sOpp = null; try { MG.net && MG.net.leave(); } catch (e) {} },
+};
+
+// 真实联机对战入口：连接后端 WS 中继 /ws/minigame，按「游戏」匹配（绝不串游戏），等待对手加入。
+// opts: { game, room?, me?, url? }
+//   - 不带 room：快速匹配（服务端在同游戏等待队列里凑对手）
+//   - 带 room：好友邀请（创建者先建房，好友拿房间码加入）
+// 端点缺失则 MG.net.connect 返回 false，调用方静默降级提示。
+MG.net.versus = function (opts) {
+    opts = opts || {};
+    const game = opts.game || (MG._curGame) || 'unknown';
+    const url = opts.url || ((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame');
+    const room = opts.room || null;            // 有房间码=好友邀请；无=快速匹配
+    const me = (MG.me && MG.me.nickname) || opts.me || '我';
+    MG.net.on('room', m => { try { MG.match.begin({ mode: 'net', me: me, opp: (m && m.opp) || '对手', room: (m && m.room) || room, side: (m && m.side) || 0 }); } catch (e) {} });
+    MG.net.on('peer', m => { try { MG.match.setOpp((m && m.nickname) || '对手'); if (typeof m.side === 'number') MG.match.setSide(m.side); } catch (e) {} });
+    MG.net.on('side', m => { try { MG.match.setSide((m && m.side) || 0); } catch (e) {} });
+    MG.net.on('waiting', () => { try { if (MG._onVersusWaiting) MG._onVersusWaiting(game); } catch (e) {} });
+    MG.net.on('peer_left', () => { try { MG.match.end(); if (MG._onVersusPeerLeft) MG._onVersusPeerLeft(); } catch (e) {} });
+    MG.net.on('error', m => { try { if (MG._onVersusError) MG._onVersusError((m && m.msg) || '联机出错'); } catch (e) {} });
+    const ok = MG.net.connect(url);
+    if (ok) MG.net.join(room, game);
+    return { ok: ok, room: room, url: url, game: game };
 };

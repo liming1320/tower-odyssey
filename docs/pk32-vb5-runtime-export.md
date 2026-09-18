@@ -1,10 +1,10 @@
 # PK32 VB5 Runtime Export
 
-- Source: `output/pk32-reference/memory-dumps/Pk32.DMP`
+- Source: `output/pk32-reference/memory-dumps/Pk32-full-memory.dmp`
 - Loaded image: `0x00400000`, 33767424 bytes
 - VB runtime build: 3724; forms: 6; objects: 221
-- Objects with captured method tables: 0
-- Objects with captured method bodies: 0
+- Objects with captured method tables: 1
+- Objects with captured method bodies: 1
 - Numbered game-module candidates: 214
 
 ## Evidence Boundary

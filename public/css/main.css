@@ -835,6 +835,48 @@ body.in-battle .avatar-btn { display: none; }
 .btn-back:active { background: rgba(255,255,255,.18); }
 .mini-title { font-size: 14px; color: #ffd56b; font-weight: bold; flex: 1; text-align: center; }
 .mini-score { font-size: 13px; color: #b9b3d8; min-width: 60px; text-align: right; }
+
+/* ---------- 小游戏 2P 对战（双人 / 联机）顶栏 ---------- */
+.mini-vs-actions { float: right; display: inline-flex; align-items: center; gap: 6px; }
+.mini-vs-btn {
+    background: rgba(255,255,255,.08); color: #cfd6ff; border: 1px solid rgba(255,255,255,.12);
+    border-radius: 6px; padding: 4px 9px; font-size: 12px; cursor: pointer; line-height: 1;
+}
+.mini-vs-btn:hover { background: rgba(255,255,255,.16); }
+.mini-vs-btn.on { background: #2f6df0; color: #fff; border-color: #5c8dff; }
+/* 对战双方昵称 HUD：替换 .mini-title 内容，显示「你(昵称) VS 对手(昵称)」 */
+.mg-matchbar { display: flex; align-items: center; justify-content: center; gap: 10px; flex: 1; min-width: 0; font-size: 13px; line-height: 1.15; }
+.mg-mb-side { display: flex; flex-direction: column; align-items: center; max-width: 40%; min-width: 0; }
+.mg-mb-role { font-size: 10px; opacity: .7; color: #b9b3d8; }
+.mg-mb-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.mg-mb-me .mg-mb-name { color: #5cc7ff; }
+.mg-mb-opp .mg-mb-name { color: #ff9d5c; }
+.mg-mb-side.turn .mg-mb-name { text-shadow: 0 0 7px currentColor; }
+.mg-mb-vs { font-weight: 800; color: #ffd56b; font-size: 12px; opacity: .9; }
+.mg-mb-score { font-size: 11px; color: #fff; opacity: .85; }
+/* 联网对战面板（startNetVersus）：快速匹配 / 创建房间 / 加入房间 */
+.mini-versus-panel {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(360px, 86vw); display: flex; flex-direction: column; gap: 12px;
+    background: rgba(20,22,40,.82); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px; padding: 22px 20px; box-shadow: 0 10px 40px rgba(0,0,0,.4);
+}
+.mvp-sub { font-size: 12px; color: #8fd0ff; text-align: center; line-height: 1.4; }
+.mvp-btn {
+    background: rgba(255,255,255,.08); color: #e8ecff; border: 1px solid rgba(255,255,255,.16);
+    border-radius: 9px; padding: 12px; font-size: 14px; cursor: pointer; transition: background .15s;
+}
+.mvp-btn:hover { background: rgba(255,255,255,.16); }
+.mvp-primary { background: #2f6df0; border-color: #5c8dff; color: #fff; }
+.mvp-primary:hover { background: #3f7dff; }
+.mvp-sm { padding: 10px 14px; font-size: 13px; }
+.mvp-join { display: flex; gap: 8px; }
+.mvp-input {
+    flex: 1; min-width: 0; background: rgba(0,0,0,.3); color: #fff;
+    border: 1px solid rgba(255,255,255,.18); border-radius: 9px; padding: 10px 12px; font-size: 13px;
+}
+.mvp-input::placeholder { color: #8a90a8; }
+.mvp-status { font-size: 12px; color: #cfd6ff; text-align: center; min-height: 18px; line-height: 1.4; }
 .mini-stage {
     flex: 1; position: relative; overflow: hidden;
     display: flex; align-items: center; justify-content: center;

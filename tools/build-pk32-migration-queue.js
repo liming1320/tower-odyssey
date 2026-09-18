@@ -74,22 +74,6 @@ const structuredAdapterPlayableMigrated = new Set(['找不同', '找彩球', '�
 const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '四子棋', '正方形棋']);
 const structuredFullFlowMigrated = new Set(structuredRulesMigrated);
 const boardFullFlowMigrated = new Set(boardRulesMigrated);
-const strategySingleFlowMigrated = new Set(['飞行棋', '轮盘', '老虎机', '神符']);
-const helpTextFlowMigrated = new Set(['白手起家', '猜数', '迷宫', '配对', '七彩宝石', '捡棋子', '过河', '火箭大战', '冒泡大战', '天地棋', '排数字', '40点', '成语填字']);
-const standardSingleFlowRulesMigrated = new Set([
-    '俄罗斯方块', '贪吃蛇', '打地鼠', '五彩连珠', '围棋', '连连看', '扫雷', '扫雷二',
-    '接龙', '空当接龙', '蜘蛛纸牌', '扑克扫雷', '比大小',
-    '跟花', '丰收', '钓鱼', '争上游', '同花', '挑选', '暗牌', '幸运',
-    '牌九', '扑克麻将', '百智牌', 'FF8卡片', '移动', '争夺', '三打三', '变幻牌', '炮牌',
-    '十点半', '21点', '24点', '13点', '14点',
-    '梭哈', '梭哈二', '梭哈三', '梭哈四', '梭哈五', '梭哈七',
-    '抽乌龟', '抽乌龟二', '抽乌龟三', '抽乌龟四', '抽乌龟五',
-    '拱猪', '记忆', '别棍', '扎金花', '剪刀石头布', '五连板', '六子连珠', '拼图', '飞镖王',
-    '纸牌魔法阵', '纸牌算命', '读心术', '读心术三', '读心术四', '塔罗牌',
-    '锄大地', '憋七', '7鬼523', '读心术二',
-    '追逐', '连击', '连珠牌', '宝石方块', '连结电线', '魔力珠宝', '泡泡彩球', '绿洲', '十字绣', '绝妙飞行', '立体魔方',
-    '记数', '转换', '超级99', '重合', '幸运数字'
-]);
 const nativeAdapterRulesMigrated = new Set([
     '强手棋', '接水管', '同色方块', '华容道', '智慧之光', '电磁彩球', '魔法城堡', '独粒钻石',
     '推箱子', '推箱子四', '推箱子五', '连结电线二', '像素岛', '禅宗花园', '禅宗迷宫', '航海迷题', '下一百层', '打砖块', '海底寻宝',
@@ -163,11 +147,15 @@ const rows = ledger.records.map(record => {
         : titleReferenceBound || helpTextEvidenceBound ? 'catalog-text'
         : 'catalog-only';
     const migration = {
-        assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || (resources && resources.resourcePackageBound === true),
-        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && (structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name))) || boardRulesMigrated.has(name) || strategySingleFlowMigrated.has(name) || helpTextFlowMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
+        // A shared atlas is extraction evidence only. It becomes migrated art
+        // only after an original object-to-region mapping is present for this game.
+        assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || !!(resources && resources.gameSpecificAssetMapping === true),
+        levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && (structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name))) || boardRulesMigrated.has(name),
         adapterPlayableMigrated: genericAdapterNames.has(name) || nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name),
-        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || structuredRulesMigrated.has(name) || boardRulesMigrated.has(name) || nativeAdapterRulesMigrated.has(name) || strategySingleFlowMigrated.has(name) || helpTextFlowMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
-        fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true || structuredFullFlowMigrated.has(name) || boardFullFlowMigrated.has(name) || nativeAdapterFullFlowMigrated.has(name) || strategySingleFlowMigrated.has(name) || helpTextFlowMigrated.has(name) || standardSingleFlowRulesMigrated.has(name),
+        // Existing renderers are implementation candidates, not proof that the
+        // corresponding PK32 rules or all original flow states were migrated.
+        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true,
+        fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true,
         evidenceAdapterMigrated: catalogEvidenceAdapterBound,
         flowContentMigrated: !!(flowContentRecord && flowContentRecord.contentEvidenceMigrated)
     };
@@ -203,6 +191,7 @@ const rows = ledger.records.map(record => {
         runtimePcodeTrustedTerminatedSlices: runtimePcodeSlices && runtimePcodeSlices.summary ? runtimePcodeSlices.summary.trustedTerminatedSlices || 0 : 0,
         methodBodyCaptured: !!(runtimePcodeSlices && runtimePcodeSlices.summary && runtimePcodeSlices.summary.methodBodyCaptured),
         evidenceConfidence,
+        sharedAssetsBound: resources ? resources.resourcePackageBound === true : false,
         resourcePackageBound: resources ? resources.resourcePackageBound === true : false,
         sharedAtlasCount: resources ? resources.atlasIds.length : 0,
         gameSpecificAssetMapping: resources ? resources.gameSpecificAssetMapping === true : false,
@@ -212,17 +201,12 @@ const rows = ledger.records.map(record => {
         candidateDataRendererBound: !!candidateData && renderer === 'dedicated-or-board',
         contentComplete: migration.migrationComplete,
         verificationComplete: verification.verificationComplete,
-        rulesMigratedByStructureFamily: structuredRulesMigrated.has(name) && candidateData ? candidateData.dataKind : null,
-        rulesMigratedByBoardEngine: boardRulesMigrated.has(name),
-        rulesMigratedByNativeAdapter: nativeAdapterRulesMigrated.has(name),
-        rulesMigratedByStrategyAdapter: strategySingleFlowMigrated.has(name),
-        rulesMigratedByHelpTextAdapter: helpTextFlowMigrated.has(name),
-        fullFlowMigratedByStructureFamily: structuredFullFlowMigrated.has(name),
-        fullFlowMigratedByBoardEngine: boardFullFlowMigrated.has(name),
-        fullFlowMigratedByNativeAdapter: nativeAdapterFullFlowMigrated.has(name),
-        fullFlowMigratedByStrategyAdapter: strategySingleFlowMigrated.has(name),
-        fullFlowMigratedByHelpTextAdapter: helpTextFlowMigrated.has(name),
-        rulesMigratedByStandardSingleFlow: standardSingleFlowRulesMigrated.has(name),
+        rulesImplementationCandidateByStructureFamily: structuredRulesMigrated.has(name) && candidateData ? candidateData.dataKind : null,
+        rulesImplementationCandidateByBoardEngine: boardRulesMigrated.has(name),
+        rulesImplementationCandidateByNativeAdapter: nativeAdapterRulesMigrated.has(name),
+        fullFlowImplementationCandidateByStructureFamily: structuredFullFlowMigrated.has(name),
+        fullFlowImplementationCandidateByBoardEngine: boardFullFlowMigrated.has(name),
+        fullFlowImplementationCandidateByNativeAdapter: nativeAdapterFullFlowMigrated.has(name),
         embeddedLevelAdapterBound: embeddedLevelAdapterMigrated.has(name),
         playableNativeAdapterBound: nativeAdapterPlayableMigrated.has(name),
         genericAdapterBound: genericAdapterNames.has(name),
@@ -246,6 +230,12 @@ const rows = ledger.records.map(record => {
     else if (migration.adapterPlayableMigrated) status = 'adapter-playable-needs-original-evidence';
     else if (migration.evidenceAdapterMigrated) status = 'catalog-evidence-adapter-bound';
     else if (renderer === 'shared-mode-or-placeholder') status = 'renderer-needs-original-evidence';
+    const nextEvidence = [];
+    if (!migrationEvidence.methodBodyCaptured) nextEvidence.push('single full-memory VB5 method capture');
+    if (!migration.assetsMigrated) nextEvidence.push('asset-to-object mapping');
+    if (!migration.levelsMigrated) nextEvidence.push('original level/content decode');
+    if (!migration.rulesMigrated) nextEvidence.push('game-specific rule recovery');
+    if (!migration.fullFlowMigrated) nextEvidence.push('complete original flow recovery');
     return {
         id: record.id,
         index: record.index,
@@ -254,6 +244,10 @@ const rows = ledger.records.map(record => {
         engineGroup: 'vb5-pk32-shared-host',
         sourceExePath: inventory.engineGroups[0] && inventory.engineGroups[0].executable,
         migrationStatus: status,
+        assetMigrationStatus: migrationEvidence.gameSpecificAssetMapping ? 'game-specific-assets-mapped'
+            : record.originalAssetsVerified === true ? 'original-assets-verified-without-manifest-mapping'
+            : migrationEvidence.sharedAssetsBound ? 'shared-assets-bound-awaiting-object-mapping'
+            : 'assets-unextracted',
         data: data,
         candidateData,
         resources,
@@ -280,7 +274,7 @@ const rows = ledger.records.map(record => {
         migrationEvidence,
         migrationPhase,
         originalComplete,
-        nextEvidence: originalComplete ? [] : ['original startup/menu capture', 'asset-to-object mapping', 'observable rule trace', 'complete first-flow verification']
+        nextEvidence: originalComplete ? [] : nextEvidence
     };
 });
 

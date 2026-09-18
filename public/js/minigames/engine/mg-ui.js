@@ -87,6 +87,30 @@ MG.juice = {
     },
 };
 
+// ================= 对战双方昵称 HUD（mg-matchbar）=================
+// 在游戏顶栏渲染「你(昵称) VS 对手(昵称)」。真实联机由 MG.match 驱动昵称/回合/比分。
+// 所有外部昵称经 MG.escapeHtml 转义，防 XSS（见 issue #7）。
+MG.matchBar = function (parent, cfg) {
+    cfg = cfg || {};
+    const me = cfg.me || '我', opp = cfg.opp || '对手';
+    const bar = document.createElement('div');
+    bar.className = 'mg-matchbar';
+    bar.innerHTML =
+        '<div class="mg-mb-side mg-mb-me' + (cfg.side === 0 ? ' turn' : '') + '">' +
+            '<span class="mg-mb-role">你</span>' +
+            '<span class="mg-mb-name">' + MG.escapeHtml(me) + '</span>' +
+            (cfg.scoreMe != null ? '<span class="mg-mb-score">' + MG.escapeHtml(String(cfg.scoreMe)) + '</span>' : '') +
+        '</div>' +
+        '<div class="mg-mb-vs">VS</div>' +
+        '<div class="mg-mb-side mg-mb-opp' + (cfg.side === 1 ? ' turn' : '') + '">' +
+            '<span class="mg-mb-role">对手</span>' +
+            '<span class="mg-mb-name">' + MG.escapeHtml(opp) + '</span>' +
+            (cfg.scoreOpp != null ? '<span class="mg-mb-score">' + MG.escapeHtml(String(cfg.scoreOpp)) + '</span>' : '') +
+        '</div>';
+    parent.appendChild(bar);
+    return bar;
+};
+
 // ================= 关卡选择界面 =================
 // cfg: { game, title, levels:[{name,desc}], onStart(idx, lv), extra:[{label,onClick}] }
 MG.levelSelect = function (container, cfg) {

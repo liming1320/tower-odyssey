@@ -5,7 +5,12 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const reference = path.join(root, 'output', 'pk32-reference');
-const dumpPath = path.join(reference, 'memory-dumps', 'Pk32.DMP');
+const dumpDirectory = path.join(reference, 'memory-dumps');
+const dumpCandidates = [
+  path.join(dumpDirectory, 'Pk32-full-memory.dmp'),
+  path.join(dumpDirectory, 'Pk32.DMP')
+];
+const dumpPath = dumpCandidates.find(candidate => fs.existsSync(candidate));
 const writeImage = process.argv.includes('--write-image');
 
 function fail(message) {
@@ -184,7 +189,7 @@ function writeDocumentation(runtime, definitions) {
   const lines = [
     '# PK32 VB5 Runtime Export',
     '',
-    `- Source: \`output/pk32-reference/memory-dumps/Pk32.DMP\``,
+    `- Source: \`${runtime.source}\``,
     `- Loaded image: \`${summary.imageBase}\`, ${summary.sizeOfImage} bytes`,
     `- VB runtime build: ${summary.runtimeBuild}; forms: ${summary.formCount}; objects: ${summary.objectCount}`,
     `- Objects with captured method tables: ${summary.methodTableCaptured}`,
@@ -206,7 +211,7 @@ function writeDocumentation(runtime, definitions) {
   fs.writeFileSync(path.join(root, 'docs', 'pk32-vb5-runtime-export.md'), lines.join('\n'));
 }
 
-if (!fs.existsSync(dumpPath)) fail(`MiniDump not found: ${dumpPath}`);
+if (!dumpPath) fail(`MiniDump not found. Checked: ${dumpCandidates.join(', ')}`);
 const dump = fs.readFileSync(dumpPath);
 const miniDump = parseMiniDump(dump);
 const readVa = createVaReader(dump, miniDump.ranges);

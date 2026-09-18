@@ -17,6 +17,7 @@
     "pk32:migrate-all": "node tools/run-pk32-content-migration.js --skip-reference",
     "pk32:migrate-content": "node tools/run-pk32-content-migration.js",
     "pk32:runtime-export": "node tools/extract-pk32-minidump-vb5.js --write-image",
+    "pk32:capture-full-memory": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/capture-pk32-full-memory.ps1 -Run",
     "pk32:capture-plan": "node tools/build-pk32-capture-plan.js",
     "pk32:capture-jobs": "node tools/export-pk32-capture-jobs.js",
     "pk32:scan-launcher": "powershell -ExecutionPolicy Bypass -File tools/scan-pk32-launcher.ps1",

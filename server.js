@@ -38,6 +38,8 @@ try {
 const Store = require('./server/store');
 // SillyTavern 网关：同域反向代理 + SSO 账号打通（详见 server/tavern.js 顶部说明）
 const Tavern = require('./server/tavern');
+// 小游戏联机中继：按游戏匹配的房间转发（WebSocket，挂 upgrade 钩子 /ws/minigame）。失败不阻断主服务。
+const WsRelay = (() => { try { return require('./server/ws-relay'); } catch (e) { return null; } })();
 
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
@@ -4098,6 +4100,8 @@ const server = http.createServer(async (req, res) => {
 });
 // WebSocket 透传：ST 的 socket.io 靠长连接收发消息，缺了它页面能开但聊天卡死
 Tavern.attachUpgrade(server, { getUserByToken, DB });
+// 小游戏联机中继：仅拦截 /ws/minigame，与上面 ST 的 upgrade 钩子互不干扰（两者都对非自身路径 return）
+if (WsRelay) WsRelay.attach(server); else console.warn('[game] 联机中继未启用（缺少 server/ws-relay 或 ws 模块）');
 
 // MySQL 模式：先连库载入真实数据（玩家 + 英雄），再开始监听，避免请求打到空数据
 //

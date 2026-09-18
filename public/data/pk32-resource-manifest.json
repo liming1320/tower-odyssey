@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-18T05:55:03.364Z",
+  "generatedAt": "2026-09-18T06:22:21.621Z",
   "policy": {
     "sharedAtlasBindingIsContentMigration": true,
     "sharedAtlasBindingDoesNotProveGameSpecificSpriteOwnership": true,
@@ -16,7 +16,7 @@
     "atlases": 28,
     "availableAtlases": 28,
     "sharedResourcePackagesBound": 213,
-    "gameSpecificAssetMappings": 0,
+    "gameSpecificAssetMappings": 5,
     "charGridCandidateGames": 1,
     "charGridCandidates": 213,
     "sourceBytesVerifiedAtlases": 28
@@ -365,6 +365,7 @@
       "name": "跟花",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -406,6 +407,7 @@
       "name": "丰收",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -447,6 +449,7 @@
       "name": "锄大地",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -488,6 +491,7 @@
       "name": "拱猪",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -529,6 +533,7 @@
       "name": "十点半",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -570,6 +575,7 @@
       "name": "钓鱼",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -611,6 +617,7 @@
       "name": "争上游",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -652,6 +659,7 @@
       "name": "抽乌龟",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -693,6 +701,7 @@
       "name": "梭哈",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -734,6 +743,7 @@
       "name": "牌九",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -775,6 +785,7 @@
       "name": "扑克麻将",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -816,6 +827,7 @@
       "name": "百智牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -857,6 +869,7 @@
       "name": "FF8卡片",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -898,6 +911,7 @@
       "name": "比大小",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -939,6 +953,7 @@
       "name": "移动",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -980,6 +995,7 @@
       "name": "接龙",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1021,6 +1037,7 @@
       "name": "争夺",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1062,6 +1079,7 @@
       "name": "同花",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1103,6 +1121,7 @@
       "name": "三打三",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1144,6 +1163,7 @@
       "name": "记忆",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1185,6 +1205,7 @@
       "name": "变幻牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1226,6 +1247,7 @@
       "name": "挑选",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1267,6 +1289,7 @@
       "name": "暗牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1308,6 +1331,7 @@
       "name": "扑克扫雷",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1349,6 +1373,7 @@
       "name": "24点",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1390,6 +1415,7 @@
       "name": "追逐",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1431,6 +1457,7 @@
       "name": "炮牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1472,6 +1499,7 @@
       "name": "记数",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1513,6 +1541,7 @@
       "name": "转换",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1554,6 +1583,7 @@
       "name": "配对",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1595,6 +1625,7 @@
       "name": "连击",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1636,6 +1667,7 @@
       "name": "猜数",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1677,6 +1709,7 @@
       "name": "连珠牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1718,6 +1751,7 @@
       "name": "幸运",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1759,6 +1793,7 @@
       "name": "读心术",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1800,6 +1835,7 @@
       "name": "梭哈二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1841,6 +1877,7 @@
       "name": "井字牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1882,6 +1919,7 @@
       "name": "憋七",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1923,6 +1961,7 @@
       "name": "FF9卡片",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -1964,6 +2003,7 @@
       "name": "7鬼523",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2005,6 +2045,7 @@
       "name": "斗地主",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2046,6 +2087,7 @@
       "name": "拖拉机-升级",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2087,6 +2129,7 @@
       "name": "纸牌魔法阵",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2128,6 +2171,7 @@
       "name": "别棍",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2169,6 +2213,7 @@
       "name": "纸牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2210,6 +2255,7 @@
       "name": "空当接龙",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2251,6 +2297,7 @@
       "name": "蜘蛛纸牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2292,6 +2339,7 @@
       "name": "14点",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2333,6 +2381,7 @@
       "name": "考眼力",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2374,6 +2423,7 @@
       "name": "21点",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2415,6 +2465,7 @@
       "name": "读心术二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2456,6 +2507,7 @@
       "name": "13点",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2497,6 +2549,7 @@
       "name": "24点二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2538,6 +2591,7 @@
       "name": "扎金花",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2579,6 +2633,7 @@
       "name": "纸牌算命",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2620,6 +2675,7 @@
       "name": "抽乌龟二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2661,6 +2717,7 @@
       "name": "排数字",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2702,6 +2759,7 @@
       "name": "变色龙",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2743,6 +2801,7 @@
       "name": "抽乌龟三",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2784,6 +2843,7 @@
       "name": "接水管",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2825,6 +2885,7 @@
       "name": "读心术三",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2866,6 +2927,7 @@
       "name": "超级99",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2907,6 +2969,7 @@
       "name": "重合",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2948,6 +3011,7 @@
       "name": "梭哈三",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -2989,6 +3053,7 @@
       "name": "桥桥",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3030,6 +3095,7 @@
       "name": "桥牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3071,6 +3137,7 @@
       "name": "梭哈四",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3112,6 +3179,7 @@
       "name": "读心术四",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3153,6 +3221,7 @@
       "name": "21点二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3194,6 +3263,7 @@
       "name": "塔罗牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3235,6 +3305,7 @@
       "name": "梭哈五",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3276,6 +3347,7 @@
       "name": "抽乌龟四",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3317,6 +3389,7 @@
       "name": "幸运数字",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3358,6 +3431,7 @@
       "name": "40点",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3399,6 +3473,7 @@
       "name": "抽乌龟五",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3440,6 +3515,7 @@
       "name": "梭哈六",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3481,6 +3557,7 @@
       "name": "数字魔方",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3522,6 +3599,7 @@
       "name": "三张牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3563,6 +3641,7 @@
       "name": "梭哈七",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3604,6 +3683,7 @@
       "name": "魔力纸牌",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3645,6 +3725,7 @@
       "name": "跟花二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3686,6 +3767,7 @@
       "name": "接龙二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3727,6 +3809,7 @@
       "name": "扫雷",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3768,6 +3851,7 @@
       "name": "赛马",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3809,6 +3893,7 @@
       "name": "俄罗斯方块",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3850,6 +3935,7 @@
       "name": "飞行棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3891,6 +3977,7 @@
       "name": "贪吃蛇",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3932,6 +4019,7 @@
       "name": "独粒钻石",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -3973,6 +4061,7 @@
       "name": "推箱子",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4014,6 +4103,7 @@
       "name": "火箭大战",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4055,6 +4145,7 @@
       "name": "打地鼠",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4096,6 +4187,7 @@
       "name": "黑白棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4137,6 +4229,7 @@
       "name": "同色方块",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4178,6 +4271,7 @@
       "name": "同步移动",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4219,6 +4313,7 @@
       "name": "摘花朵",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4260,6 +4355,7 @@
       "name": "平面魔方",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4301,6 +4397,7 @@
       "name": "激光坦克",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4342,6 +4439,7 @@
       "name": "华容道",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4381,37 +4479,18 @@
     {
       "id": "pk32-099",
       "name": "强手棋",
-      "assetBinding": "shared-module-atlas",
-      "gameSpecificAssetMapping": false,
+      "assetBinding": "native-object-atlas-mapping",
+      "gameSpecificAssetMapping": true,
+      "assetMapping": {
+        "atlasIds": [
+          "sheet-de1b36"
+        ],
+        "source": "public/js/minigames/pk32-richman.js",
+        "nativeSurface": "PicForm13",
+        "mapping": "40-cell board geometry and player/property sprite rectangles"
+      },
       "atlasIds": [
-        "sheet-42677e",
-        "sheet-4c14b5",
-        "sheet-5579f0",
-        "sheet-5cf6db",
-        "sheet-6bf3b6",
-        "sheet-7096ec",
-        "sheet-729953",
-        "sheet-786a2e",
-        "sheet-7a90dd",
-        "sheet-82e968",
-        "sheet-86c2d3",
-        "sheet-8c5aa6",
-        "sheet-915611",
-        "sheet-9acb24",
-        "sheet-9f4fa1",
-        "sheet-a8f814",
-        "sheet-b1b6ef",
-        "sheet-be5932",
-        "sheet-c313c5",
-        "sheet-cc2a98",
-        "sheet-d3525b",
-        "sheet-de1b36",
-        "sheet-f4cdff",
-        "sheet-f73902",
-        "sheet-f7aaec",
-        "sheet-1042962",
-        "sheet-1052078",
-        "sheet-1081001"
+        "sheet-de1b36"
       ],
       "nativePayloadCount": 0,
       "structuredPayloadCount": 0,
@@ -4424,6 +4503,7 @@
       "name": "五彩连珠",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4465,6 +4545,7 @@
       "name": "跳棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4506,6 +4587,7 @@
       "name": "中国象棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4547,6 +4629,7 @@
       "name": "五子棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4588,6 +4671,7 @@
       "name": "围棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4629,6 +4713,7 @@
       "name": "象棋-暗棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4670,6 +4755,7 @@
       "name": "国际象棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4711,6 +4797,7 @@
       "name": "军棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4752,6 +4839,7 @@
       "name": "斗兽棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4793,6 +4881,7 @@
       "name": "迷宫",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4834,6 +4923,7 @@
       "name": "正方形棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4875,6 +4965,7 @@
       "name": "军棋-暗棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4916,6 +5007,7 @@
       "name": "麻将",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4957,6 +5049,7 @@
       "name": "极品飞车",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -4998,6 +5091,7 @@
       "name": "六子连珠",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5039,6 +5133,7 @@
       "name": "拼图",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5080,6 +5175,7 @@
       "name": "天地棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5121,6 +5217,7 @@
       "name": "七彩宝石",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5162,6 +5259,7 @@
       "name": "宝石方块",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5203,6 +5301,7 @@
       "name": "连结电线",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5242,37 +5341,18 @@
     {
       "id": "pk32-120",
       "name": "魔塔",
-      "assetBinding": "shared-module-atlas",
-      "gameSpecificAssetMapping": false,
+      "assetBinding": "native-object-atlas-mapping",
+      "gameSpecificAssetMapping": true,
+      "assetMapping": {
+        "atlasIds": [
+          "sheet-915611"
+        ],
+        "source": "public/js/minigames/pk32-tower.js",
+        "nativeSurface": "PicForm22",
+        "mapping": "18-column, paired-33px rows, 32px SRCCOPY tile coordinates"
+      },
       "atlasIds": [
-        "sheet-42677e",
-        "sheet-4c14b5",
-        "sheet-5579f0",
-        "sheet-5cf6db",
-        "sheet-6bf3b6",
-        "sheet-7096ec",
-        "sheet-729953",
-        "sheet-786a2e",
-        "sheet-7a90dd",
-        "sheet-82e968",
-        "sheet-86c2d3",
-        "sheet-8c5aa6",
-        "sheet-915611",
-        "sheet-9acb24",
-        "sheet-9f4fa1",
-        "sheet-a8f814",
-        "sheet-b1b6ef",
-        "sheet-be5932",
-        "sheet-c313c5",
-        "sheet-cc2a98",
-        "sheet-d3525b",
-        "sheet-de1b36",
-        "sheet-f4cdff",
-        "sheet-f73902",
-        "sheet-f7aaec",
-        "sheet-1042962",
-        "sheet-1052078",
-        "sheet-1081001"
+        "sheet-915611"
       ],
       "nativePayloadCount": 0,
       "structuredPayloadCount": 0,
@@ -5285,6 +5365,7 @@
       "name": "开心辞典",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5326,6 +5407,7 @@
       "name": "开心灯谜",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5367,6 +5449,7 @@
       "name": "冒泡大战",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5408,6 +5491,7 @@
       "name": "剪刀石头布",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5449,6 +5533,7 @@
       "name": "海盗船",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5490,6 +5575,7 @@
       "name": "神符",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5531,6 +5617,7 @@
       "name": "原子",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5572,6 +5659,7 @@
       "name": "木乃伊",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5613,6 +5701,7 @@
       "name": "记忆考验",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5654,6 +5743,7 @@
       "name": "反应测试",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5695,6 +5785,7 @@
       "name": "海豚骰",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5736,6 +5827,7 @@
       "name": "汉诺塔",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5777,6 +5869,7 @@
       "name": "魔力珠宝",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5818,6 +5911,7 @@
       "name": "前进棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5859,6 +5953,7 @@
       "name": "智商测试",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5900,6 +5995,7 @@
       "name": "轮盘",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5941,6 +6037,7 @@
       "name": "老虎机",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -5982,6 +6079,7 @@
       "name": "五连板",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6023,6 +6121,7 @@
       "name": "白手起家",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6064,6 +6163,7 @@
       "name": "连连看",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6105,6 +6205,7 @@
       "name": "扫雷二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6146,6 +6247,7 @@
       "name": "泡泡彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6187,6 +6289,7 @@
       "name": "跳跃棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6228,6 +6331,7 @@
       "name": "像素岛",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6269,6 +6373,7 @@
       "name": "找不同",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6310,6 +6415,7 @@
       "name": "找彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6351,6 +6457,7 @@
       "name": "变化彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6392,6 +6499,7 @@
       "name": "捡棋子",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6433,6 +6541,7 @@
       "name": "成语填字",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6474,6 +6583,7 @@
       "name": "邻居",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6515,6 +6625,7 @@
       "name": "麻将王",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6556,6 +6667,7 @@
       "name": "麻将王二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6597,6 +6709,7 @@
       "name": "麻将王三",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6638,6 +6751,7 @@
       "name": "魔塔二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6679,6 +6793,7 @@
       "name": "多彩泡泡",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6720,6 +6835,7 @@
       "name": "魔塔三",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6761,6 +6877,7 @@
       "name": "过河",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6802,6 +6919,7 @@
       "name": "电磁彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6843,6 +6961,7 @@
       "name": "绿洲",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6884,6 +7003,7 @@
       "name": "魅力之球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6925,6 +7045,7 @@
       "name": "魔塔四",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -6966,6 +7087,7 @@
       "name": "推箱子二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7007,6 +7129,7 @@
       "name": "圈地",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7048,6 +7171,7 @@
       "name": "推箱子三",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7087,37 +7211,20 @@
     {
       "id": "pk32-165",
       "name": "推箱子四",
-      "assetBinding": "shared-module-atlas",
-      "gameSpecificAssetMapping": false,
+      "assetBinding": "native-object-atlas-mapping",
+      "gameSpecificAssetMapping": true,
+      "assetMapping": {
+        "atlasIds": [
+          "sheet-c313c5",
+          "sheet-d3525b"
+        ],
+        "source": "public/js/minigames/pk32-sokoban4.js",
+        "nativeSurface": "native dispatch table",
+        "mapping": "32px board sprites, player-direction frames, and frame atlas"
+      },
       "atlasIds": [
-        "sheet-42677e",
-        "sheet-4c14b5",
-        "sheet-5579f0",
-        "sheet-5cf6db",
-        "sheet-6bf3b6",
-        "sheet-7096ec",
-        "sheet-729953",
-        "sheet-786a2e",
-        "sheet-7a90dd",
-        "sheet-82e968",
-        "sheet-86c2d3",
-        "sheet-8c5aa6",
-        "sheet-915611",
-        "sheet-9acb24",
-        "sheet-9f4fa1",
-        "sheet-a8f814",
-        "sheet-b1b6ef",
-        "sheet-be5932",
         "sheet-c313c5",
-        "sheet-cc2a98",
-        "sheet-d3525b",
-        "sheet-de1b36",
-        "sheet-f4cdff",
-        "sheet-f73902",
-        "sheet-f7aaec",
-        "sheet-1042962",
-        "sheet-1052078",
-        "sheet-1081001"
+        "sheet-d3525b"
       ],
       "nativePayloadCount": 59,
       "structuredPayloadCount": 0,
@@ -7130,6 +7237,7 @@
       "name": "推箱子五",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7171,6 +7279,7 @@
       "name": "连结电线二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7212,6 +7321,7 @@
       "name": "移彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7253,6 +7363,7 @@
       "name": "数独",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7292,37 +7403,18 @@
     {
       "id": "pk32-170",
       "name": "智慧之光",
-      "assetBinding": "shared-module-atlas",
-      "gameSpecificAssetMapping": false,
+      "assetBinding": "native-object-atlas-mapping",
+      "gameSpecificAssetMapping": true,
+      "assetMapping": {
+        "atlasIds": [
+          "sheet-7a90dd"
+        ],
+        "source": "public/js/minigames/pk32-light.js",
+        "nativeSurface": "PicForm26",
+        "mapping": "42px sprites at 43px source intervals with recovered board offsets"
+      },
       "atlasIds": [
-        "sheet-42677e",
-        "sheet-4c14b5",
-        "sheet-5579f0",
-        "sheet-5cf6db",
-        "sheet-6bf3b6",
-        "sheet-7096ec",
-        "sheet-729953",
-        "sheet-786a2e",
-        "sheet-7a90dd",
-        "sheet-82e968",
-        "sheet-86c2d3",
-        "sheet-8c5aa6",
-        "sheet-915611",
-        "sheet-9acb24",
-        "sheet-9f4fa1",
-        "sheet-a8f814",
-        "sheet-b1b6ef",
-        "sheet-be5932",
-        "sheet-c313c5",
-        "sheet-cc2a98",
-        "sheet-d3525b",
-        "sheet-de1b36",
-        "sheet-f4cdff",
-        "sheet-f73902",
-        "sheet-f7aaec",
-        "sheet-1042962",
-        "sheet-1052078",
-        "sheet-1081001"
+        "sheet-7a90dd"
       ],
       "nativePayloadCount": 75,
       "structuredPayloadCount": 0,
@@ -7335,6 +7427,7 @@
       "name": "禅宗花园",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7376,6 +7469,7 @@
       "name": "骰子王",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7417,6 +7511,7 @@
       "name": "数谜",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7456,37 +7551,18 @@
     {
       "id": "pk32-174",
       "name": "航海迷题",
-      "assetBinding": "shared-module-atlas",
-      "gameSpecificAssetMapping": false,
+      "assetBinding": "native-object-atlas-mapping",
+      "gameSpecificAssetMapping": true,
+      "assetMapping": {
+        "atlasIds": [
+          "sheet-8c5aa6"
+        ],
+        "source": "public/js/minigames/pk32-variants.js",
+        "nativeSurface": "ship atlas",
+        "mapping": "ship and sea-monster color sprite rectangles"
+      },
       "atlasIds": [
-        "sheet-42677e",
-        "sheet-4c14b5",
-        "sheet-5579f0",
-        "sheet-5cf6db",
-        "sheet-6bf3b6",
-        "sheet-7096ec",
-        "sheet-729953",
-        "sheet-786a2e",
-        "sheet-7a90dd",
-        "sheet-82e968",
-        "sheet-86c2d3",
-        "sheet-8c5aa6",
-        "sheet-915611",
-        "sheet-9acb24",
-        "sheet-9f4fa1",
-        "sheet-a8f814",
-        "sheet-b1b6ef",
-        "sheet-be5932",
-        "sheet-c313c5",
-        "sheet-cc2a98",
-        "sheet-d3525b",
-        "sheet-de1b36",
-        "sheet-f4cdff",
-        "sheet-f73902",
-        "sheet-f7aaec",
-        "sheet-1042962",
-        "sheet-1052078",
-        "sheet-1081001"
+        "sheet-8c5aa6"
       ],
       "nativePayloadCount": 146,
       "structuredPayloadCount": 0,
@@ -7499,6 +7575,7 @@
       "name": "魔法城堡",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7540,6 +7617,7 @@
       "name": "弹力连珠",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7581,6 +7659,7 @@
       "name": "魔法城堡二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7622,6 +7701,7 @@
       "name": "潜艇大战",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7663,6 +7743,7 @@
       "name": "绝妙飞行",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7704,6 +7785,7 @@
       "name": "跳棋二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7745,6 +7827,7 @@
       "name": "推箱子六",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7786,6 +7869,7 @@
       "name": "拼疑犯",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7827,6 +7911,7 @@
       "name": "十字绣",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7868,6 +7953,7 @@
       "name": "变色彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7909,6 +7995,7 @@
       "name": "扩展线路",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7950,6 +8037,7 @@
       "name": "禅宗迷宫",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -7991,6 +8079,7 @@
       "name": "飞镖王",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8032,6 +8121,7 @@
       "name": "马跳棋盘",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8073,6 +8163,7 @@
       "name": "打砖块",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8114,6 +8205,7 @@
       "name": "爆破彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8155,6 +8247,7 @@
       "name": "爆破彩球二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8196,6 +8289,7 @@
       "name": "花式九球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8237,6 +8331,7 @@
       "name": "美式落袋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8278,6 +8373,7 @@
       "name": "斯诺克",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8319,6 +8415,7 @@
       "name": "七盏灯",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8360,6 +8457,7 @@
       "name": "交换彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8401,6 +8499,7 @@
       "name": "上一百层",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8442,6 +8541,7 @@
       "name": "下一百层",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8483,6 +8583,7 @@
       "name": "宇宙黑洞",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8524,6 +8625,7 @@
       "name": "飞一百米",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8565,6 +8667,7 @@
       "name": "七巧板",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8606,6 +8709,7 @@
       "name": "坦克大战",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8647,6 +8751,7 @@
       "name": "海底寻宝",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8688,6 +8793,7 @@
       "name": "碰撞彩球",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8729,6 +8835,7 @@
       "name": "四子棋",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8770,6 +8877,7 @@
       "name": "立体魔方",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8811,6 +8919,7 @@
       "name": "彩球迷宫",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8852,6 +8961,7 @@
       "name": "反射镜",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8893,6 +9003,7 @@
       "name": "企鹅",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8934,6 +9045,7 @@
       "name": "立体魔方二",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -8975,6 +9087,7 @@
       "name": "吃豆子",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -9016,6 +9129,7 @@
       "name": "彩球连线",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
@@ -9057,6 +9171,7 @@
       "name": "建筑制造",
       "assetBinding": "shared-module-atlas",
       "gameSpecificAssetMapping": false,
+      "assetMapping": null,
       "atlasIds": [
         "sheet-42677e",
         "sheet-4c14b5",
