@@ -477,6 +477,7 @@ window.MG = window.MG || {};
                     else if (L.perf.fps >= 55) quality = Math.min(1, quality + 0.005);
                 }
                 if (fx) fx._quality = quality;   // 让粒子池据画质减粒子（优化 P2-6）
+                if (MG.perfGuard && MG.perfGuard.enabled && L.perf) { try { quality = MG.perfGuard.tick(L.perf, quality); } catch (e) {} }  // 性能预算守卫（工程 F3）
                 MG._quality = quality;           // 供后处理 bloom 等读取全局画质
                 paint();
             },

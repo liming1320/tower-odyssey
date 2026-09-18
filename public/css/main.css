@@ -1474,3 +1474,10 @@ body.in-battle .avatar-btn { display: none; }
 .mg-hint-text { margin-top: 4px; line-height: 1.5; pointer-events: none; }
 .mg-hint-btn { pointer-events: auto; margin-top: 6px; display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,213,107,0.5); background: rgba(38,32,68,0.9); color: #ffd56b; cursor: pointer; }
 .mg-hint-btn:hover { background: rgba(58,49,96,0.95); }
+
+/* 引擎增强轮（D+E+F）：每日挑战面板（E4） */
+.mg-daily { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 58; text-align: left; color: #cfd2e2; font-size: 12px; pointer-events: none; }
+.mg-daily-badge { display: inline-block; background: rgba(255,213,107,0.15); color: #ffd56b; padding: 2px 8px; border-radius: 6px; }
+.mg-daily-code { margin-top: 4px; }
+.mg-daily-code code { background: rgba(0,0,0,0.4); padding: 1px 6px; border-radius: 4px; color: #9ad0ff; }
+.mg-daily-copy { pointer-events: auto; margin-left: 6px; font-size: 11px; padding: 2px 8px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); background: #3a3160; color: #e8e6f4; cursor: pointer; }

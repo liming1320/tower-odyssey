@@ -144,12 +144,6 @@ window.MiniGames = window.MiniGames || {};
     const SPIN = { x: 128, y: 430, w: 30, h: 9 };
     // 计分洞
     const SAUCER = { x: 176, y: 452, r: 17 };
-    // 翻牌 ×3（Space Cadet 式翻转徽章牌，集齐 3 张开大奖）
-    const CARDS = [
-        { x: 140, y: 354, w: 30, h: 36 },
-        { x: 176, y: 354, w: 30, h: 36 },
-        { x: 212, y: 354, w: 30, h: 36 },
-    ];
     // 顶部滚道灯
     const LANES = [{ x: 140, y: 194 }, { x: 172, y: 178 }, { x: 214, y: 180 }, { x: 250, y: 198 }];
     // 弹弓（三角形，斜边朝向台面中央）
@@ -643,11 +637,7 @@ window.MiniGames = window.MiniGames || {};
             const slingHit = [0, 0];
             const turboLit = [false, false, false];
             const jetLit = [false, false, false];
-            const cardFace = [0, 0, 0];       // 翻牌当前面：0 背面(未开) 1 正面(徽章)
-            const cardAnim = [0, 0, 0];       // 翻牌翻转进度 0→1
-            const cardOver = [false, false, false];       // 牌上正压着球（防同一球反复翻牌）
-            const cardFrameOver = [false, false, false];  // 本帧是否有球压牌（帧末回写 cardOver）
-            const flash = { ramp: 0, spin: 0, saucer: 0, target: 0, warp: 0, card: 0, tube: 0 };
+            const flash = { ramp: 0, spin: 0, saucer: 0, target: 0, warp: 0, tube: 0 };
             let targetFlashGroup = -1;
 
             /* ── 任务 / 军衔（Space Cadet 风格：达成目标 → 晋升军衔 → 领取大奖）──
@@ -679,7 +669,6 @@ window.MiniGames = window.MiniGames || {};
             let combo = 0, comboT = 0, mult = 1;
             let saucerHold = 0;
             let warpHold = 0, warpLock = 0, warpSpin = 0, warpPull = 0, warpFlash = 0;
-            let cardReset = 0;
             let bhHold = 0;                 // 黑洞吸入暂存计时
             let dispatchHit = {};           // 本回合发射已点亮的调度灯（防重复计分）
             let mbCd = 0;                     // 多球冷却：防任务/翻牌连锁把台面刷成球海
@@ -1082,6 +1071,22 @@ window.MiniGames = window.MiniGames || {};
                 return -Math.min(0, vn);
             }
 
+            function sweepStaticCollision(b, x0, y0, x1, y1) {
+                const distance = Math.hypot(x1 - x0, y1 - y0);
+                const samples = Math.max(1, Math.ceil(distance / (BALL_R * 0.45)));
+                for (let i = 1; i <= samples; i++) {
+                    const u = i / samples;
+                    b.x = x0 + (x1 - x0) * u;
+                    b.y = y0 + (y1 - y0) * u;
+                    for (const wall of WALLS) {
+                        if (hitSeg(b, wall, 0.42, 0) > 0) return true;
+                    }
+                }
+                b.x = x1;
+                b.y = y1;
+                return false;
+            }
+
             function hitFlipper(b, f) {
                 const cos = Math.cos(f.ang), sin = Math.sin(f.ang);
                 const dx = cos * f.len, dy = sin * f.len;
@@ -1289,28 +1294,6 @@ window.MiniGames = window.MiniGames || {};
                     shake = Math.max(shake, 0.24); shakeMag = Math.max(shakeMag, 5);
                     spawn(WARP.x, WARP.y, 20, 275, 1.2);
                 }
-                // 翻牌：球"新压上"徽章牌才翻转（防压牌连翻），集齐 3 张开大奖
-                CARDS.forEach((cd, i) => {
-                    const over = Math.abs(ball.x - cd.x) < cd.w / 2 + 3 &&
-                        Math.abs(ball.y - cd.y) < cd.h / 2 + 3;
-                    if (over) cardFrameOver[i] = true;
-                    if (!over || cardOver[i] || cardReset > 0 ||
-                        cardAnim[i] > 0 || cardFace[i] === 1 || (ball.grace || 0) > 0) return;
-                    cardOver[i] = true;
-                    cardFace[i] = 1; cardAnim[i] = 0.001;
-                    addScore(800, 'card'); combo++; comboT = 2.2;
-                    sfx('target'); flash.card = 1;
-                    spawn(cd.x, cd.y, 12, 45, 1);
-                    if (cardFace.every(v => v === 1)) {
-                        cardReset = 1.15;
-                        score += 15000;
-                        show('★ 徽章集齐 +15,000 ★', 2.0);
-                        sfx('jackpot');
-                        spawn(176, 354, 30, 50, 1.4);
-                        shake = Math.max(shake, 0.36); shakeMag = Math.max(shakeMag, 6);
-                        startMultiball(2);
-                    }
-                });
                 // 左侧火箭管道入口：向上冲进管口即被点火（仅主球，理由同坡道）
                 if (!onRail && ball === live[0] && ball.vy < -240 &&
                     Math.hypot(ball.x - TUBE_ENTRY[0], ball.y - TUBE_ENTRY[1]) < 24 &&
@@ -1408,22 +1391,6 @@ window.MiniGames = window.MiniGames || {};
                 dt = Math.min(dt, 0.05);
                 warpLock = Math.max(0, warpLock - dt);
                 warpFlash = Math.max(0, warpFlash - dt * 1.8);
-                // 集齐大奖后延时翻回背面
-                if (cardReset > 0) {
-                    cardReset = Math.max(0, cardReset - dt);
-                    if (cardReset === 0) {
-                        for (let i = 0; i < 3; i++) {
-                            if (cardFace[i] === 1) { cardFace[i] = 0; cardAnim[i] = 0.001; }
-                        }
-                    }
-                }
-                for (let i = 0; i < 3; i++) {
-                    if (cardAnim[i] > 0) {
-                        cardAnim[i] += dt * 2.4;
-                        if (cardAnim[i] >= 1) cardAnim[i] = 0;
-                    }
-                }
-
                 // 挡板
                 [FL, FR].forEach(f => {
                     const prev = f.ang;
@@ -1552,12 +1519,14 @@ window.MiniGames = window.MiniGames || {};
                         if (bi === 0 && (mainFrozen || onRailNow)) continue;
                         ball = b;
                         b.vy += GRAV * GRAVX * hd;
-                        b.x += b.vx * hd; b.y += b.vy * hd;
                         const sp2 = b.vx * b.vx + b.vy * b.vy;
                         if (sp2 > SPEED_CAP * SPEED_CAP) {
                             const k = SPEED_CAP / Math.sqrt(sp2);
                             b.vx *= k; b.vy *= k;
                         }
+                        const x0 = b.x, y0 = b.y;
+                        const x1 = x0 + b.vx * hd, y1 = y0 + b.vy * hd;
+                        sweepStaticCollision(b, x0, y0, x1, y1);
                         collide();
                         confineBall(b);
                     }
@@ -1582,9 +1551,6 @@ window.MiniGames = window.MiniGames || {};
                     if (live[bi].grace > 0) live[bi].grace -= dt;   // 新球保护期倒计时
                 }
                 ball = live[0] || ball;              // 复原：ball 恒为主球引用
-                // 翻牌压牌状态帧末回写：球离开牌面后才会再次判定"新压上"
-                for (let ci = 0; ci < cardOver.length; ci++) { cardOver[ci] = cardFrameOver[ci]; cardFrameOver[ci] = false; }
-
                 // 旋转门
                 spinnerAng += spinnerVel * dt;
                 spinnerVel *= (1 - 1.6 * dt);
@@ -2299,43 +2265,6 @@ window.MiniGames = window.MiniGames || {};
                 }
                 ctx.restore();
             }
-            function drawCards() {
-                CARDS.forEach((cd, i) => {
-                    const p = cardAnim[i];
-                    const sx = p > 0 ? Math.abs(Math.cos(p * Math.PI)) : 1;
-                    const face = (p > 0 && p < 0.5) ? 1 - cardFace[i] : cardFace[i];
-                    const w = cd.w, h = cd.h;
-                    ctx.save();
-                    ctx.translate(cd.x, cd.y);
-                    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                    ctx.beginPath();
-                    ctx.ellipse(0, h / 2 + 3, w * 0.42 * sx + 2, 3.6, 0, 0, Math.PI * 2); ctx.fill();
-                    ctx.scale(Math.max(0.03, sx), 1);
-                    if (face === 1) {
-                        const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
-                        g.addColorStop(0, '#fff3c0'); g.addColorStop(0.45, '#ffc93c'); g.addColorStop(1, '#b8790f');
-                        ctx.fillStyle = g; rr(-w / 2, -h / 2, w, h, 4); ctx.fill();
-                        ctx.strokeStyle = '#fff8dc'; ctx.lineWidth = 1.6; ctx.stroke();
-                        drawBadge(i);
-                        ctx.fillStyle = '#7a4b06';
-                        ctx.font = 'bold 7px "Segoe UI",sans-serif';
-                        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                        ctx.fillText(['CADET', 'PILOT', 'ACE'][i], 0, h / 2 - 7);
-                    } else {
-                        const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
-                        g.addColorStop(0, '#3d4c78'); g.addColorStop(0.5, '#26325a'); g.addColorStop(1, '#18213c');
-                        ctx.fillStyle = g; rr(-w / 2, -h / 2, w, h, 4); ctx.fill();
-                        ctx.strokeStyle = `rgba(150,180,240,${0.6 + flash.card * 0.4})`;
-                        ctx.lineWidth = 1.4; ctx.stroke();
-                        ctx.fillStyle = 'rgba(165,200,255,0.85)';
-                        ctx.font = 'bold 16px "Segoe UI",sans-serif';
-                        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                        ctx.fillText('?', 0, -2);
-                    }
-                    ctx.restore();
-                });
-            }
-
             function drawRamp() {
                 const P = RAMP_PATH.pts;
                 ctx.save();
@@ -2587,7 +2516,6 @@ window.MiniGames = window.MiniGames || {};
                 if (flash.spin > 0.02 || Math.abs(spinnerVel) > 0.8) drawSpinner();
                 if (flash.saucer > 0.02 || saucerHold > 0) drawSaucer();
                 if (warpHold > 0 || flash.warp > 0.02) drawWarpJet();
-                if (cardFace.some(Boolean) || cardAnim.some(v => v > 0)) drawCards();
                 if (flash.target > 0.02) {
                     TARGETS.forEach(tg => {
                         if (!tg.down) return;
@@ -3081,7 +3009,6 @@ window.MiniGames = window.MiniGames || {};
                     drawStructures();
                     drawLaunchTube();
                     drawSaucer();
-                    drawCards();
                     drawTargets();
                     drawSpinner();
                     drawBumpers();
@@ -3135,7 +3062,6 @@ window.MiniGames = window.MiniGames || {};
                         const m = MISSIONS[missionIdx];
                         return { i: missionIdx, prog: missionProg, name: m && m.n, need: m && m.need, rank: RANKS[Math.min(RANKS.length - 1, missionIdx)] };
                     },
-                    get cards() { return cardFace.slice(); },
                     get objects() { return TABLE_OBJECTS.map(object => ({ id: object.id, kind: object.kind, state: object.state, frame: object.frame })); },
                     get warpHold() { return warpHold; },
                     get railMode() { return railMode; },

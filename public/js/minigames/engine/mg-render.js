@@ -64,6 +64,19 @@ MG.gfx = {
     // broom/piece 离屏缓存（优化 P0-2）、text 字体串缓存（优化 P2-9）
     _broomCache: null, _pieceCache: null, _fontCache: null,
     MAX_CACHE: 48,
+    _MAX_BYTES: 48 * 1024 * 1024,   // 全部 gfx 缓存软内存上限（~48MB），超限按 LRU 跨桶淘汰（性能 D5）
+    _bytes(img) { return (img && img.width && img.height) ? img.width * img.height * 4 : 0; },
+    _evictMem() {
+        let total = 0; for (const b in this._caches) this._caches[b].forEach(function (v) { total += this._bytes(v); }.bind(this));
+        if (total <= this._MAX_BYTES) return;
+        const order = ['px', 'scene', 'wood', 'glow']; let guard = 0;
+        while (total > this._MAX_BYTES && guard++ < 256) {
+            let done = false;
+            for (const b of order) { const c = this._caches[b]; if (c.size) { c.delete(c.keys().next().value); done = true; break; } }
+            if (!done) break;
+            total = 0; for (const b in this._caches) this._caches[b].forEach(function (v) { total += this._bytes(v); }.bind(this));
+        }
+    },
 
     // ---------- 颜色算子 ----------
     // 支持 #rgb / #rrggbb / rgb(a) 三种写法，其余原样返回由 canvas 兜底
@@ -130,7 +143,7 @@ MG.gfx = {
             }
         }
         if (c.size >= this.MAX_CACHE * 4) c.delete(c.keys().next().value);
-        c.set(key, img);
+        c.set(key, img); this._evictMem();
         return img;
     },
     // 以目标尺寸绘制像素精灵（关闭平滑，保持硬边像素风）
@@ -158,7 +171,7 @@ MG.gfx = {
         if (img) { c.delete(key); c.set(key, img); return ctx.drawImage(img, 0, 0, W, H); }
         img = this._buildScene(W, H, c1, c2, scale);
         if (c.size >= this.MAX_CACHE) c.delete(c.keys().next().value);
-        c.set(key, img);
+        c.set(key, img); this._evictMem();
         ctx.drawImage(img, 0, 0, W, H);
     },
     // 手动清理缓存（切后台 / 大量换肤 / 内存紧张时调用）
@@ -430,7 +443,7 @@ MG.gfx = {
             // 若把 x,y 烤进像素，不同位置的木框会复用错位位图（右下露出透明底）。
             img = this._buildWood(0, 0, W, H, c1, c2, seed, scale);
             if (c.size >= this.MAX_CACHE) c.delete(c.keys().next().value);
-            c.set(key, img);
+            c.set(key, img); this._evictMem();
         }
         ctx.drawImage(img, x, y, W, H);
     },
@@ -521,7 +534,7 @@ MG.gfx = {
             g.addColorStop(1, this.rgba(color, 0));
             xc.fillStyle = g; xc.fillRect(0, 0, cv.width, cv.height);
             img = cv;
-            c.set(key, img);
+            c.set(key, img); this._evictMem();
             if (c.size >= this.MAX_CACHE) c.delete(c.keys().next().value);
         }
         ctx.drawImage(img, x - rr, y - rr, rr * 2, rr * 2);

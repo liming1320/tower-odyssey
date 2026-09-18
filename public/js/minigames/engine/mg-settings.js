@@ -11,6 +11,7 @@ MG.settings = {
     dynamicBg: false,     // 动态背景（A3）
     skin: 'default',      // 调色板皮肤（A5）
     assist: false,        // 辅助模式（B8）
+    perfGuard: false,     // 性能预算守卫（F3）
     lang: 'zh',           // 界面语言（C13）
     KEY: 'mg-settings-v1', AKEY: 'mg-a11y-v1', LKEY: 'mg-lang-v1',
     load() {
@@ -24,7 +25,7 @@ MG.settings = {
             localStorage.setItem(this.KEY, JSON.stringify({
                 volume: this.volume, haptics: this.haptics, autoQuality: this.autoQuality,
                 postfx: this.postfx, pixelated: this.pixelated, renderScale: this.renderScale,
-                dynamicBg: this.dynamicBg, skin: this.skin, assist: this.assist,
+                dynamicBg: this.dynamicBg, skin: this.skin, assist: this.assist, perfGuard: this.perfGuard,
             }));
         } catch (e) {}
     },
@@ -38,6 +39,7 @@ MG.settings = {
     setDynamicBg(v) { this.dynamicBg = !!v; try { MG.bg && MG.bg.set(this.dynamicBg); } catch (e) {} this.save(); },
     setSkin(n) { this.skin = n || 'default'; try { MG.skin && MG.skin.set(this.skin); } catch (e) {} this.save(); },
     setAssist(v) { this.assist = !!v; try { MG.assist && MG.assist.set(this.assist); } catch (e) {} this.save(); },
+    setPerfGuard(v) { this.perfGuard = !!v; try { MG.perfGuard && MG.perfGuard.set(this.perfGuard); } catch (e) {} this.save(); },
     setLang(l) { this.lang = l || 'zh'; try { localStorage.setItem(this.LKEY, this.lang); MG.i18n && MG.i18n.set(null, this.lang); } catch (e) {} },
     // 设置云同步（C12）：登录用户把设置/无障碍同步到账号（端点缺失则静默）
     sync() {
@@ -79,6 +81,7 @@ MG.settings = {
         html += '<label><input type="checkbox" ' + (this.dynamicBg ? 'checked' : '') + '> 动态背景</label>';
         html += '<label>皮肤 <select data-kind="skin"><option value="default"' + (this.skin === 'default' ? ' selected' : '') + '>默认</option><option value="neon">霓虹</option><option value="sunset">日落</option><option value="midnight">午夜</option><option value="mono">极简</option></select></label>';
         html += '<label><input type="checkbox" ' + (this.assist ? 'checked' : '') + '> 辅助模式</label>';
+        html += '<label><input type="checkbox" ' + (this.perfGuard ? 'checked' : '') + ' data-kind="perfGuard"> 性能预算守卫</label>';
         const langs = (MG.i18n && MG.i18n.languages) || [{ id: 'zh', name: '中文' }];
         html += '<label>语言 <select data-kind="lang">' + langs.map(function (l) { return '<option value="' + l.id + '"' + (l.id === MG.settings.lang ? ' selected' : '') + '>' + l.name + '</option>'; }).join('') + '</select></label>';
         html += '<label><input type="checkbox" ' + (MG.a11y.reducedMotion ? 'checked' : '') + '> 减弱动效</label>';
@@ -90,9 +93,10 @@ MG.settings = {
         const panel = wrap.querySelector('.mg-gear-panel');
         btn.onclick = () => { panel.hidden = !panel.hidden; };
         const vol = wrap.querySelector('input[type=range]'); vol.oninput = () => this.setVolume(+vol.value);
-        const chks = wrap.querySelectorAll('input[type=checkbox]');
+        const chks = wrap.querySelectorAll('input[type=checkbox]:not([data-kind])');
         const map = ['haptics', 'autoQuality', 'pixelated', 'dynamicBg', 'assist', 'reducedMotion', 'colorblind', 'largeText'];
         chks.forEach((c, i) => { c.onchange = () => { if (i === 0) this.setHaptics(c.checked); else if (i === 1) this.setAutoQuality(c.checked); else if (i === 2) this.setPixelated(c.checked); else if (i === 3) this.setDynamicBg(c.checked); else if (i === 4) this.setAssist(c.checked); else this.setA11y(map[i], c.checked); }; });
+        const _pg = wrap.querySelector('input[type=checkbox][data-kind="perfGuard"]'); if (_pg) _pg.onchange = () => this.setPerfGuard(_pg.checked);
         const sels = wrap.querySelectorAll('select');
         sels.forEach((s) => { s.onchange = () => { const k = s.getAttribute('data-kind'); if (k === 'postfx') this.setPostfx(s.value); else if (k === 'skin') this.setSkin(s.value); else if (k === 'lang') this.setLang(s.value); }; });
         container.appendChild(wrap);
