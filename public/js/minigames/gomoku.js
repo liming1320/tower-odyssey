@@ -245,6 +245,7 @@ MiniGames.gomoku = {
             const x = Math.round((p.y - OFF) / S), y = Math.round((p.x - OFF) / S);
             if (x < 0 || x >= N || y < 0 || y >= N || board[x][y]) return;
             place(x, y, human);
+            try { MG.audio.sfx('click'); } catch (e) {}
             if (!over) setTimeout(aiMove, 180);
         });
 

@@ -52,6 +52,7 @@ window.MiniGames = window.MiniGames || {};
             cvs.style.cssText = 'max-width:100%;max-height:100%;touch-action:none;cursor:crosshair;';
             container.appendChild(cvs);
             const ctx = cvs.getContext('2d');
+            try { MG.audio.unlock(); } catch (e) {}
 
             const done = (win, lines) => {
                 if (over) return; over = true; clearInterval(timer);
@@ -172,6 +173,7 @@ window.MiniGames = window.MiniGames || {};
                     const a = Math.atan2(aimWY - py, aimWX - px);
                     bullets.push({ x: px + Math.cos(a) * 22, y: py + Math.sin(a) * 22, vx: Math.cos(a) * 620, vy: Math.sin(a) * 620 });
                     cool = 0.13; muzzle = 0.06;
+                    try { MG.audio.sfx('launch'); } catch (e) {}
                 }
                 if (spawnT <= 0) { spawn(); spawnT = spawnInt * (0.7 + Math.random() * 0.6); }
                 // 子弹

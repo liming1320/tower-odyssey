@@ -170,6 +170,7 @@ window.MiniGames = window.MiniGames || {};
         api.later(() => {
             S.dice = 1 + Math.floor((S.rnd ? S.rnd() : Math.random()) * 6);
             S.rolling = false; S.busy = true;
+            try { MG.audio.sfx('click'); } catch (e) {}
             S.msg = `${NAMES[S.turn]}方掷出 ${S.dice}`;
             walk(S, P, api, S.dice);
         }, 400);

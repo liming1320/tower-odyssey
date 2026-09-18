@@ -50,6 +50,7 @@ MiniGames.hanoi = {
         container.appendChild(wrap);
         let pegs = [Array.from({ length: N }, (_, i) => N - i), [], []];
         let moves = 0, sel = null, won_score = 0;
+        try { MG.audio.unlock(); } catch (e) {}
         const draw = () => {
             pegDivs.forEach((d, i) => {
                 d.innerHTML = '';
@@ -80,7 +81,7 @@ MiniGames.hanoi = {
             if (sel === i) { sel = null; draw(); return; }
             const top = pegs[sel][pegs[sel].length - 1];
             const dest = pegs[i].length ? pegs[i][pegs[i].length - 1] : 99;
-            if (top < dest) { pegs[i].push(pegs[sel].pop()); moves++; }
+            if (top < dest) { pegs[i].push(pegs[sel].pop()); moves++; try { MG.audio.sfx('click'); } catch (e) {} }
             sel = null; draw();
             const win = pegs[2].length === N;
             if (win) {

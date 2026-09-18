@@ -18,6 +18,7 @@ window.MiniGames = window.MiniGames || {};
             const target = 320 + idx * 55;
             const N = 8, MOVES = 30;
             let board = [], score = 0, moves = MOVES, sel = null, busy = false, over = false;
+            try { MG.audio.unlock(); } catch (e) {}
 
             container.innerHTML = '';
             const wrap = document.createElement('div');
@@ -113,10 +114,12 @@ window.MiniGames = window.MiniGames || {};
                 const tmp = board[sel]; board[sel] = board[i]; board[i] = tmp;
                 if (findMatches(board).size) {
                     moves--; sel = null;
+                    try { MG.audio.sfx('coin'); } catch (e) {}
                     render(); setTimeout(() => { resolve(); busy = false; }, 180);
                 } else {
                     const t = board[sel]; board[sel] = board[i]; board[i] = t;
                     sel = null; render(); busy = false;
+                    try { MG.audio.sfx('click'); } catch (e) {}
                     MG.toast && MG.toast(container, '不能消，换回去');
                 }
             }

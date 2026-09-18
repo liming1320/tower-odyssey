@@ -122,7 +122,9 @@
                 const m = S.moves.find(m => m[2] === i && m[3] === j);
                 if (m) {
                     if (S.b[i][j]) S.cap += CV[S.b[i][j] % 8] || 0;
+                    const wasCap = !!S.b[i][j];
                     cDo(S.b, m); S.sel = null; S.moves = [];
+                    try { MG.audio.sfx(wasCap ? 'target' : 'click'); } catch (e) {}
                     if (!cKing(S.b, false)) return api.finish({ win: true, stars: 3, lines: ['将死对方！'] });
                     S.turn = 2; S.msg = '电脑思考…';
                     setTimeout(() => {
@@ -217,7 +219,7 @@
             if (i < 0 || i >= n || j < 0 || j >= n) return;
             const v = S.b[i][j];
             if (!v) return;
-            if (!S.open[i][j]) { S.open[i][j] = 1; jqAfter(S, api, P); return; }
+            if (!S.open[i][j]) { S.open[i][j] = 1; try { MG.audio.sfx('click'); } catch (e) {} jqAfter(S, api, P); return; }
             if (S.sel) {
                 const [si, sj] = S.sel;
                 if (si === i && sj === j) { S.sel = null; return; }
@@ -225,6 +227,7 @@
                 const mine = S.b[si][sj], foe = v;
                 if (jSide(foe) === jSide(mine)) { S.sel = null; return; }
                 jqBattle(S, si, sj, i, j); S.sel = null;
+                try { MG.audio.sfx('target'); } catch (e) {}
                 jqAfter(S, api, P);
                 return;
             }

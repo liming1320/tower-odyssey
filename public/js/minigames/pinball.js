@@ -69,15 +69,15 @@ window.MiniGames = window.MiniGames || {};
 
     // 顶部涡轮引擎 ×3（倒三角布置，原版 turbo bumper 位）
     const BUMPERS = [
-        { x: cadetX(319), y: cadetY(125), r: 13, hue: 5 },
+        { x: cadetX(319.5), y: cadetY(125), r: 13, hue: 5 },
         { x: cadetX(340), y: cadetY(91), r: 12, hue: 22 },
-        { x: cadetX(300), y: cadetY(98), r: 12, hue: 40 },
+        { x: cadetX(300), y: cadetY(98.5), r: 12, hue: 40 },
     ];
     // 左侧涡轮引擎 ×3（竖排，原版左路引擎带）
     const JETS = [
         { x: cadetX(222), y: cadetY(226), r: 10, hue: 145 },
-        { x: cadetX(188), y: cadetY(218), r: 10, hue: 180 },
-        { x: cadetX(198), y: cadetY(241), r: 10, hue: 210 },
+        { x: cadetX(188.5), y: cadetY(218), r: 10, hue: 180 },
+        { x: cadetX(198.5), y: cadetY(241.5), r: 10, hue: 210 },
     ];
     // 左上角第 7 只引擎：涡轮虫洞（吸入 → 送进左侧火箭管道重新发射）
     const WARP = { x: 102, y: 212, r: 16 };
@@ -478,10 +478,14 @@ window.MiniGames = window.MiniGames || {};
             };
             const cadetSfx = {};
             const cadetVoices = new Set();
+            const sfxLast = {};
+            const sfxGap = { bumper: 0.08, sling: 0.07, flip: 0.06, click: 0.04, spinner: 0.12, rollover: 0.08 };
             const setCadetMuted = muted => cadetVoices.forEach(voice => { voice.muted = muted; });
             const sfx = n => {
                 try {
                     if (AU.muted) return;
+                    if (sfxGap[n] && t - (sfxLast[n] || -Infinity) < sfxGap[n]) return;
+                    sfxLast[n] = t;
                     const file = CADET_SFX[n];
                     if (file && typeof Audio !== 'undefined') {
                         const source = cadetSfx[file] || (cadetSfx[file] = new Audio('/audio/pinball/' + file));
@@ -560,6 +564,10 @@ window.MiniGames = window.MiniGames || {};
             };
             const bumps = [0, 0, 0];          // 顶部 3 只引擎命中光
             const jets = [0, 0, 0];           // 左侧 3 只引擎命中光
+            const bumperContact = [false, false, false];
+            const jetContact = [false, false, false];
+            const turboLit = [false, false, false];
+            const jetLit = [false, false, false];
             const cardFace = [0, 0, 0];       // 翻牌当前面：0 背面(未开) 1 正面(徽章)
             const cardAnim = [0, 0, 0];       // 翻牌翻转进度 0→1
             const cardOver = [false, false, false];       // 牌上正压着球（防同一球反复翻牌）
@@ -915,8 +923,21 @@ window.MiniGames = window.MiniGames || {};
                 b.x = cx + nx * R; b.y = cy + ny * R;
                 const vn = b.vx * nx + b.vy * ny;
                 if (vn < 0) { b.vx -= (1 + rest) * vn * nx; b.vy -= (1 + rest) * vn * ny; }
-                if (kick) { b.vx += nx * kick; b.vy += ny * kick; }
+                if (kick && vn < 0) { b.vx += nx * kick; b.vy += ny * kick; }
                 return -Math.min(0, vn);
+            }
+
+            function touchCircle(b, cx, cy, cr, rest, kick) {
+                const touch = Math.hypot(b.x - cx, b.y - cy) < BALL_R + cr;
+                return { touch, impact: hitCircle(b, cx, cy, cr, rest, kick) };
+            }
+
+            function confineBall(b) {
+                const left = PF.l + BALL_R, right = LANE.r - BALL_R;
+                const top = PF.cy - PF.arcR + BALL_R;
+                if (b.x < left) { b.x = left; if (b.vx < 0) b.vx = -b.vx * 0.42; }
+                if (b.x > right) { b.x = right; if (b.vx > 0) b.vx = -b.vx * 0.42; }
+                if (b.y < top) { b.y = top; if (b.vy < 0) b.vy = -b.vy * 0.42; }
             }
 
             function hitSeg(b, s, rest, kick) {
@@ -940,7 +961,7 @@ window.MiniGames = window.MiniGames || {};
                     const vt = b.vx * tx + b.vy * ty;
                     b.vx -= vt * 0.06 * tx; b.vy -= vt * 0.06 * ty;
                 }
-                if (kick) { b.vx += nx * kick; b.vy += ny * kick; }
+                if (kick && vn < 0) { b.vx += nx * kick; b.vy += ny * kick; }
                 return -Math.min(0, vn);
             }
 
@@ -981,17 +1002,29 @@ window.MiniGames = window.MiniGames || {};
                     }
                 }
                 BUMPERS.forEach((bp, i) => {
-                    if (hitCircle(ball, bp.x, bp.y, bp.r, 0.55, 520) > 0) {
+                    const hit = touchCircle(ball, bp.x, bp.y, bp.r, 0.55, 520);
+                    if (hit.touch) bumps[i] = 1;
+                    if (hit.touch && !bumperContact[i] && canTrigger('bumper' + i, 0.12)) {
                         bumps[i] = 1;
+                        turboLit[i] = true;
                         addScore(120, 'bumper'); combo++; comboT = 2.2;
                         sfx('bumper'); spawn(bp.x, bp.y, 12, bp.hue, 1.1);
                         shake = Math.max(shake, 0.09); shakeMag = Math.max(shakeMag, 2.2);
+                        if (turboLit.every(Boolean)) {
+                            LAMPS.filter(L => L.group === 're').forEach(L => L.on = true);
+                            addScore(1500, 'bumper'); show('涡轮引擎全亮 +1,500', 1.4); sfx('jackpot');
+                            turboLit.fill(false);
+                        }
                     }
+                    bumperContact[i] = hit.touch;
                 });
                 // 左侧涡轮引擎：命中即喷射加速（比顶部引擎更“推”，负责把球送回上半场）
                 JETS.forEach((jt, i) => {
-                    if (hitCircle(ball, jt.x, jt.y, jt.r, 0.58, 470) > 0) {
+                    const hit = touchCircle(ball, jt.x, jt.y, jt.r, 0.58, 470);
+                    if (hit.touch) jets[i] = 1;
+                    if (hit.touch && !jetContact[i] && canTrigger('jet' + i, 0.12)) {
                         jets[i] = 1;
+                        jetLit[i] = true;
                         addScore(150, 'jet'); combo++; comboT = 2.2;
                         sfx('jet');
                         spawn(jt.x, jt.y, 13, jt.hue, 1.15);
@@ -999,7 +1032,13 @@ window.MiniGames = window.MiniGames || {};
                         const a = Math.atan2(ball.y - jt.y, ball.x - jt.x);
                         spawn(jt.x + Math.cos(a) * jt.r, jt.y + Math.sin(a) * jt.r, 5, jt.hue, 1.5, a);
                         shake = Math.max(shake, 0.08); shakeMag = Math.max(shakeMag, 2);
+                        if (jetLit.every(Boolean)) {
+                            LAMPS.filter(L => L.group === 'hs').forEach(L => L.on = true);
+                            addScore(1800, 'jet'); show('左路引擎全亮 +1,800', 1.4); sfx('jackpot');
+                            jetLit.fill(false);
+                        }
                     }
+                    jetContact[i] = hit.touch;
                 });
                 SLINGS.forEach(sl => {
                     const v = hitSeg(ball, { x1: sl.a[0], y1: sl.a[1], x2: sl.b[0], y2: sl.b[1], r: 3 }, 0.5, 430);
@@ -1130,6 +1169,8 @@ window.MiniGames = window.MiniGames || {};
                 TARGETS.forEach(x => x.down = false);
                 BANKS.forEach(B => B.subs.forEach(s => s.down = false));
                 LAMPS.forEach(L => { L.on = false; });
+                turboLit.fill(false); jetLit.fill(false);
+                bumperContact.fill(false); jetContact.fill(false);
                 if (balls === Infinity) { resetBall(); return; }
                 balls--;
                 if (balls <= 0) { finish(score >= P.goal); return; }
@@ -1347,6 +1388,7 @@ window.MiniGames = window.MiniGames || {};
                             b.vx *= k; b.vy *= k;
                         }
                         collide();
+                        confineBall(b);
                     }
                 }
                 // 引力井（中央轻微吸引，模拟原版引力井；主球冻结/在轨时跳过）
@@ -2757,6 +2799,7 @@ window.MiniGames = window.MiniGames || {};
                 last = ts; t += dt;
 
                 for (let i = 0; i < 3; i++) bumps[i] = Math.max(0, bumps[i] - dt * 3.2);
+                for (let i = 0; i < 3; i++) jets[i] = Math.max(0, jets[i] - dt * 3.2);
                 for (const k in flash) flash[k] = Math.max(0, flash[k] - dt * 2.4);
                 missionFlash = Math.max(0, missionFlash - dt * 1.2);
                 shake = Math.max(0, shake - dt * 3.4);

@@ -124,6 +124,7 @@ window.MiniGames = window.MiniGames || {};
             tip.textContent = '栅栏门只有你能通过，木乃伊会八向追踪（红的两倍速）· 点自己或空格=等待';
             wrap.appendChild(tip);
             container.appendChild(wrap);
+            try { MG.audio.unlock(); } catch (e) {}
 
             // ---------- 木乃伊 AI：八向贪心追踪（PopCap 规则） ----------
             const DIRS8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
@@ -160,7 +161,7 @@ window.MiniGames = window.MiniGames || {};
                 steps++;
                 // 拾取金像
                 const key = px + ',' + py;
-                if (golds.has(key)) { golds.delete(key); got++; }
+                if (golds.has(key)) { golds.delete(key); got++; try { MG.audio.sfx('coin'); } catch (e) {} }
                 // 到达楼梯
                 if (px === EX && py === EY) {
                     over = true;

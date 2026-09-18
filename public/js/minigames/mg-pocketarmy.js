@@ -324,6 +324,7 @@ window.MiniGames = window.MiniGames || {};
                 }
                 if (target) {
                     S.fireCd = 0.34;
+                    try { MG.audio.sfx('launch'); } catch (e) {}
                     const n = S.army >= 25 ? 3 : S.army >= 10 ? 2 : 1;   // 兵力 = 火力
                     for (let i = 0; i < n; i++) {
                         const sx0 = baseX + (i - (n - 1) / 2) * 10;
@@ -344,6 +345,7 @@ window.MiniGames = window.MiniGames || {};
                         S.sparks.push({ x: b.x, y: b.y, t: 0, col: '#ffd56b' });
                         if (o.hp <= 0) {
                             o.alive = false;
+                            try { MG.audio.sfx('target'); } catch (e) {}
                             S.sparks.push({ x: o.x, y: o.y, t: 0, col: '#ff9d5c' });
                             S.sparks.push({ x: o.x - 8, y: o.y + 6, t: -0.06, col: '#ffd56b' });
                             S.sparks.push({ x: o.x + 8, y: o.y - 4, t: -0.06, col: '#ffd56b' });
@@ -365,9 +367,11 @@ window.MiniGames = window.MiniGames || {};
                         if (o.val > 0) S.army = Math.max(1, S.army + o.val);
                         else S.army = Math.max(1, S.army + o.val);   // val 已是负数，最少 1
                         o.alive = false;
+                        try { MG.audio.sfx(o.val > 0 ? 'coin' : 'click'); } catch (e) {}
                     } else if (o.type === 'barrel' && !o.taken) {
                         o.taken = true;
                         S.buff = 6;
+                        try { MG.audio.sfx('coin'); } catch (e) {}
                     } else if (o.type === 'enemy' && o.alive) {
                         const atk = S.atk + (S.buff > 0 ? 1 : 0);
                         o.hp -= atk;

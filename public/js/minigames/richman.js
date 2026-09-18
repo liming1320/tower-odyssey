@@ -336,6 +336,7 @@ window.MiniGames = window.MiniGames || {};
             const i = p.pos;
             if (p.cash < S.price[i]) { S.msg = '现金不足'; render(); return; }
             p.cash -= priceAfterGod(p, S.price[i]); S.own[i] = p.id;
+            try { MG.audio.sfx('coin'); } catch (e) {}
             log(`🧑 买下【${CELLS[i].n}】-${money(S.price[i])}`, p.c);
             S.phase = 'end';
             S.msg = `买下 ${CELLS[i].n}${ownsGroup(p.id, CELLS[i].g) ? '，街区集齐，可建楼！' : ''}`;
@@ -465,6 +466,7 @@ window.MiniGames = window.MiniGames || {};
     // ---------------- 掷骰 & 移动 ----------------
     async function doRoll(p) {
         S.phase = 'rolling'; S.msg = '掷骰中…'; renderPanel();
+        try { MG.audio.sfx('click'); } catch (e) {}
         const d1 = ri(1, 6), d2 = ri(1, 6);
         await animDice(d1, d2);
         if (dead) return;
@@ -591,6 +593,7 @@ window.MiniGames = window.MiniGames || {};
                     if (owner.god && owner.god.k === 'wealth') r *= 2;
                     r = Math.round(r);
                     p.cash -= r; owner.cash += r;
+                    try { MG.audio.sfx('target'); } catch (e) {}
                     log(`💸 ${p.name} 在【${c.n}】付租 ${money(r)} → ${owner.name}`, owner.c);
                     S.msg = `${p.name} 付租 ${money(r)} 给 ${owner.name}`;
                 }
@@ -660,13 +663,15 @@ window.MiniGames = window.MiniGames || {};
             box.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
                 const k = +b.dataset.buy;
                 if (p.cash < S.stk.p[k]) return;
-                p.cash -= S.stk.p[k]; S.stk.h[0][k]++; log(`📈 买入 ${STOCKS[k].n} 1手 -${money(S.stk.p[k])}`, p.c);
+                p.cash -= S.stk.p[k]; S.stk.h[0][k]++; try { MG.audio.sfx('coin'); } catch (e) {}
+                log(`📈 买入 ${STOCKS[k].n} 1手 -${money(S.stk.p[k])}`, p.c);
                 refresh();
             });
             box.querySelectorAll('[data-sell]').forEach(b => b.onclick = () => {
                 const k = +b.dataset.sell;
                 if (S.stk.h[0][k] <= 0) return;
-                S.stk.h[0][k]--; p.cash += S.stk.p[k]; log(`📉 卖出 ${STOCKS[k].n} 1手 +${money(S.stk.p[k])}`, p.c);
+                S.stk.h[0][k]--; p.cash += S.stk.p[k]; try { MG.audio.sfx('coin'); } catch (e) {}
+                log(`📉 卖出 ${STOCKS[k].n} 1手 +${money(S.stk.p[k])}`, p.c);
                 refresh();
             });
         };
@@ -943,6 +948,7 @@ window.MiniGames = window.MiniGames || {};
                 <div class="mgy-tip">💡 集齐同色街区建楼 · 踩神庙得神明 · 股市低买高卖 · 卡牌点击即用 · 退出自动存档</div>`;
             c.innerHTML = '';
             c.appendChild(wrap);
+            try { MG.audio.unlock(); } catch (e) {}
             el = {
                 wrap,
                 plays: wrap.querySelector('#mgy-plays'),

@@ -37,6 +37,7 @@ window.MiniGames = window.MiniGames || {};
             cvs.style.cssText = 'max-width:100%;max-height:100%;touch-action:manipulation;cursor:pointer;';
             container.appendChild(cvs);
             const ctx = cvs.getContext('2d');
+            try { MG.audio.unlock(); } catch (e) {}
 
             function newTile() { return { t: rndType(), rot: MG.ri(0, 3) }; }
             function openings(cell) {
@@ -75,6 +76,7 @@ window.MiniGames = window.MiniGames || {};
                 const path = findPath();
                 if (!path) { combo = 0; return false; }
                 launched++; combo++;
+                try { MG.audio.sfx('coin'); } catch (e) {}
                 score += 120 * combo;
                 path.forEach(p => grid[p.r][p.c] = newTile()); // 通路管道消耗重置
                 return true;

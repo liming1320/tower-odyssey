@@ -122,12 +122,14 @@ window.MiniGames = window.MiniGames || {};
             return `<div class="sheep-board">${items.join('')}</div>`;
         },
         bind: (root, S, P, api) => {
+            try { MG.audio.unlock(); } catch (e) {}
             root.querySelectorAll('.sheep-tile.clickable').forEach(el => {
                 el.onclick = () => {
                     const i = +el.dataset.i;
                     if (S.deck[i] < 0 || S.locked[i]) return;
                     // 入槽
                     S.slot.push(S.deck[i]);
+                    try { MG.audio.sfx('click'); } catch (e) {}
                     S.deck[i] = -1;
                     // 重新计算锁定：本列 stackIdx 最大的为未锁
                     recomputeLocked(S);
@@ -141,6 +143,7 @@ window.MiniGames = window.MiniGames || {};
                         // 移除最早入槽的 3 张
                         let removed = 0;
                         S.slot = S.slot.filter(x => { if (x === tri && removed < 3) { removed++; return false; } return true; });
+                        try { MG.audio.sfx('coin'); } catch (e) {}
                     }
                     api.update();
                     // 终局
@@ -162,6 +165,7 @@ window.MiniGames = window.MiniGames || {};
                 if (S.undo) {
                     // 简单撤销：从槽位末尾弹回桌面
                     const last = S.slot.pop();
+                    try { MG.audio.sfx('click'); } catch (e) {}
                     if (last != null) {
                         for (let i = 0; i < S.deck.length; i++) if (S.deck[i] === -1) { S.deck[i] = last; break; }
                         recomputeLocked(S);
@@ -178,6 +182,7 @@ window.MiniGames = window.MiniGames || {};
                 for (let i = 0; i < S.deck.length; i++) if (S.deck[i] >= 0) S.deck[i] = alive[ai++];
                 recomputeLocked(S);
                 api.update();
+                try { MG.audio.sfx('click'); } catch (e) {}
             };
         },
         score: S => {

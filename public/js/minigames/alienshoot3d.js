@@ -139,6 +139,7 @@ window.MiniGames = window.MiniGames || {};
                 hud.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
                 stage.appendChild(hud);
                 const hctx = hud.getContext('2d');
+                try { MG.audio.unlock(); } catch (e) {}
 
                 const scene = new THREE.Scene();
                 scene.background = new THREE.Color(0x0e131c);
@@ -275,6 +276,7 @@ window.MiniGames = window.MiniGames || {};
                 const center = new THREE.Vector2(0, 0);
                 function fire() {
                     muzzle = 0.06; muzzleLight.intensity = 3.2; recoil = 0.05;
+                    try { MG.audio.sfx('launch'); } catch (e) {}
                     ray.setFromCamera(center, camera);
                     const objs = wallMeshes.concat(hitMeshes);
                     const hits = ray.intersectObjects(objs, false);
@@ -285,6 +287,7 @@ window.MiniGames = window.MiniGames || {};
                             a.hp--; a.hitT = 0.1;
                             if (a.hp <= 0) {
                                 kills++; score += a.type === 'tank' ? 50 : a.type === 'runner' ? 25 : 10;
+                                try { MG.audio.sfx('target'); } catch (e) {}
                                 removeAlienMesh(a);
                                 aliens = aliens.filter(z => z !== a);
                                 if (kills >= quota && aliens.length === 0) return done(true, ['区域肃清！', `击杀 ${kills} · 剩余 HP ${Math.round(hp)}`]);

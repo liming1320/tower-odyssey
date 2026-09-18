@@ -265,6 +265,7 @@ window.MiniGames = window.MiniGames || {};
             const i = p.pos;
             if (p.cash < S.price[i]) { S.msg = '现金不足'; render(); return; }
             p.cash -= S.price[i]; S.own[i] = p.id;
+            try { MG.audio.sfx('coin'); } catch (e) {}
             log(`🧑 买下【${CELLS[i].n}】-${money(S.price[i])}`, p.c);
             S.phase = 'end';
             S.msg = `买下 ${CELLS[i].n}${ownsGroup(p.id, CELLS[i].g) ? '，街区集齐，可建楼！' : ''}`;
@@ -275,9 +276,11 @@ window.MiniGames = window.MiniGames || {};
         else if (a === 'next') nextTurn();
         else if (a === 'card') {
             p.card = false; p.jail = 0; S.phase = 'idle';
+            try { MG.audio.sfx('click'); } catch (e) {}
             log('🎫 使用免罪卡出狱', p.c); S.msg = '重获自由，掷骰吧'; save(); render();
         } else if (a === 'fine') {
             p.cash -= 50; p.jail = 0; S.phase = 'idle';
+            try { MG.audio.sfx('click'); } catch (e) {}
             log('💸 缴纳 ¥50 出狱', p.c); S.msg = '交钱走人'; save(); render();
         }
     }
@@ -298,6 +301,7 @@ window.MiniGames = window.MiniGames || {};
             const i = +b.dataset.i, cost = S.hcost[CELLS[i].g];
             if (p.cash < cost || S.lv[i] >= 5) return;
             p.cash -= cost; S.lv[i]++;
+            try { MG.audio.sfx('coin'); } catch (e) {}
             log(`🏠 ${p.name} 在【${CELLS[i].n}】建到 Lv${S.lv[i]}`, p.c);
             box.remove(); save(); render();
         });
@@ -320,6 +324,7 @@ window.MiniGames = window.MiniGames || {};
     // ---------------- 掷骰 & 移动 ----------------
     async function doRoll(p) {
         S.phase = 'rolling'; S.msg = '掷骰中…'; renderPanel();
+        try { MG.audio.sfx('click'); } catch (e) {}
         const d1 = ri(1, 6), d2 = ri(1, 6);
         await animDice(d1, d2);
         if (dead) return;
@@ -411,6 +416,7 @@ window.MiniGames = window.MiniGames || {};
                 else {
                     const r = rentOf(i);
                     p.cash -= r; owner.cash += r;
+                    try { MG.audio.sfx('target'); } catch (e) {}
                     log(`💸 ${p.name} 在【${c.n}】付租 ${money(r)} → ${owner.name}`, owner.c);
                     S.msg = `${p.name} 付租 ${money(r)} 给 ${owner.name}`;
                 }
@@ -600,6 +606,7 @@ window.MiniGames = window.MiniGames || {};
                 <div class="mgy-tip">💡 集齐同色街区即可建楼收高租 · 退出自动存档，下次进来接着玩</div>`;
             c.innerHTML = '';
             c.appendChild(wrap);
+            try { MG.audio.unlock(); } catch (e) {}
             el = {
                 wrap,
                 plays: wrap.querySelector('#mgy-plays'),

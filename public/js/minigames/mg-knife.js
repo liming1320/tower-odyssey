@@ -124,6 +124,7 @@ window.MiniGames = window.MiniGames || {};
                         if (e.hp <= 0) {
                             S.enemies.splice(i, 1);
                             S.kills += 1;
+                            try { MG.audio.sfx('target'); } catch (e2) {}
                             S.orbs.push({ x: e.x, y: e.y, v: e.pts });
                             if (api.fx) api.fx.burst(e.x, e.y, { n: 6, color: e.col, speed: 90 });
                             // 道具掉落：约 20% 概率掉「飞刀 +1」或「转速 +」
@@ -163,6 +164,7 @@ window.MiniGames = window.MiniGames || {};
                     while (S.exp >= S.expNeed) {
                         S.exp -= S.expNeed;
                         S.lv++;
+                        try { MG.audio.sfx('coin'); } catch (e2) {}
                         S.expNeed = 4 + S.lv * 4;
                         S.upgrading = rollSkills();
                     }

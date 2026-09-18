@@ -455,6 +455,7 @@ window.MiniGames = window.MiniGames || {};
                     const mv = { fx: S.sel.x, fy: S.sel.y, tx: cx, ty: cy };
                     const cap = S.B[ix(cx, cy)];
                     apply(S.B, mv);
+                    try { MG.audio.sfx(cap ? 'target' : 'click'); } catch (e) {}
                     S.last = { from: { x: mv.fx, y: mv.fy }, to: { x: cx, y: cy } };
                     S.score += cap ? (MAT[cap.r] || 10) * 2 : 0;
                     S.msg = cap ? `吃掉 ${GLYPH[cap.r]}！` : '移动';
@@ -479,7 +480,7 @@ window.MiniGames = window.MiniGames || {};
                 }
             }
             S.sel = (p && p.s === 1) ? { x: cx, y: cy } : null;
-            if (S.sel) S.msg = '已选中，点击高亮格移动';
+            if (S.sel) { try { MG.audio.sfx('click'); } catch (e) {} S.msg = '已选中，点击高亮格移动'; }
         },
         score(S) { return S.score; },
         check(S) {

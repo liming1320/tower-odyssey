@@ -15,6 +15,7 @@ window.MiniGames = window.MiniGames || {};
             const idx = opts.levelIdx != null && opts.levelIdx >= 0 ? opts.levelIdx : 0;
             const defN = 3 + Math.min(5, Math.floor(idx / 10));
             let N = defN, over = false, t0 = Date.now();
+            try { MG.audio.unlock(); } catch (e) {}
             let srcCanvas = null, pieces = [], locked = 0;
 
             container.innerHTML = '';
@@ -164,6 +165,7 @@ window.MiniGames = window.MiniGames || {};
                     if (Math.hypot(item.x - item.home.x, item.y - item.home.y) < tol) {
                         item.locked = true; item.x = item.home.x; item.y = item.home.y;
                         place(el, item.x, item.y);
+                        try { MG.audio.sfx('coin'); } catch (e) {}
                         el.style.zIndex = 2; el.style.pointerEvents = 'none';
                         el.style.boxShadow = 'none'; el.style.borderColor = 'rgba(255,255,255,.08)';
                         locked++;

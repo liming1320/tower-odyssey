@@ -271,6 +271,7 @@ window.MiniGames = window.MiniGames || {};
         api.later(() => {
             S.dice = 1 + Math.floor((S.rnd ? S.rnd() : Math.random()) * 6);
             S.rolling = false;
+            try { MG.audio.sfx('click'); } catch (e) {}
             const opts = movable(S.pl, S.turn, S.dice, S.pl);
             if (!opts.length) {
                 S.msg = `${NAMES[S.turn]}方掷出 ${S.dice}，无棋可走`;
@@ -297,6 +298,7 @@ window.MiniGames = window.MiniGames || {};
         else a.rel += d;
         const hit = land(p, a.rel, S.pl);
         for (const h of hit) h.rel = -1;
+        try { MG.audio.sfx(hit.length ? 'target' : (a.rel >= FINISH ? 'coin' : 'click')); } catch (e) {}
         if (hit.length) S.msg = `${NAMES[p]}方撞掉了 ${hit.length} 架敌机！`;
         else if (a.rel >= FINISH) S.msg = `${NAMES[p]}方一架归航！`;
         if (homeCount(S.pl, p) >= S.need) { S.winner = p; S.opts = []; S.phase = 'over'; return; }

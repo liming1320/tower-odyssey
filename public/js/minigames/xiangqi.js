@@ -290,11 +290,13 @@ MiniGames.xiangqi = {
                     const target = board[i][j];
                     if (target && (target.ch === '帅' || target.ch === '将')) {
                         board[i][j] = moved; board[sel[0]][sel[1]] = null;
+                        try { MG.audio.sfx('target'); } catch (e) {}
                         draw();
                         finalize(true);
                         return;
                     }
                     board[i][j] = moved; board[sel[0]][sel[1]] = null;
+                    try { MG.audio.sfx(target ? 'target' : 'click'); } catch (e) {}
                     sel = null; turn = 3 - turn;
                     draw();
                     aiTurn();

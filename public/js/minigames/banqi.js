@@ -700,12 +700,15 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
     // 统一走子入口：先改棋盘逻辑，再放动画，动画结束回调继续回合流程
     const performMove = (m, done) => {
         busy = true;
+        try { MG.audio.unlock(); } catch (e) {}
         if (m.t === 'flip') {
             applyMove(m);
+            try { MG.audio.sfx('click'); } catch (e) {}
             flipAnim(board[m.i][m.j], () => { busy = false; done && done(null); });
         } else {
             const victim = applyMove(m);
             const attacker = board[m.ti][m.tj];
+            try { MG.audio.sfx(victim ? 'target' : 'click'); } catch (e) {}
             if (victim) attackAnim(attacker, victim, m, () => { busy = false; done && done(victim); });
             else slideAnim(attacker, m, () => { busy = false; done && done(null); });
         }
