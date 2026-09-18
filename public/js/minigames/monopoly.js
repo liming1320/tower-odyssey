@@ -109,6 +109,16 @@ window.MiniGames = window.MiniGames || {};
     function goto(p, t, pay) { if (pay && t < p.pos) p.cash += SALARY; p.pos = t; return '移动到 ' + CELLS[t].n; }
     function step(p, d) { p.pos = (p.pos + d + N) % N; return (d >= 0 ? '前进 ' : '后退 ') + Math.abs(d) + ' 步'; }
 
+    // ---------------- 联机同步辅助 ----------------
+    // 整盘 S 序列化后 commit 给对手（剔除下划线字段/函数；over 仅在对局结束时带上）。
+    // 状态同步模型：本地任意改变（掷骰/买地/建楼/过路费/卡牌/破产/换回合）后整盘广播，
+    // 对手 Object.assign 重绘；回合用 S.turn(0..3) 在 4 人间顺序轮转，_turn 即「当前该走方」。
+    function serialize(s) { return JSON.parse(JSON.stringify(s, (k, v) => (k.charCodeAt(0) === 95 ? undefined : v))); }
+    function commitNet() {
+        if (!net) return;
+        try { const d = serialize(S); d.turn = S.turn; d.over = S.over || undefined; MG.pvp.commit(d); } catch (e) {}
+    }
+
     // ---------------- 50 关 ----------------
     const NAMES = ['初入市井','布庄开张','米行小试','茶馆听风','镖局走镖','药铺问药','当铺典当','马市相马','铁铺打铁','木作营生',
         '染坊染色','钱庄存银','银号汇兑','金楼赌石','商街初成','富甲一坊','通衢要道','百货云集','码头集市','盐铁专营',
@@ -135,6 +145,7 @@ window.MiniGames = window.MiniGames || {};
 
     // ================= 主体 =================
     let S = null, el = {}, dead = false, opts = null, cfgLevel = null, levelIdx = 0, endless = false;
+    let net = false, mySide = 0;   // 联机模式：net=true 时 4 名玩家均为真人，mySide 为我方座位(0..3)
 
     function newState(lv) {
         const mk = (id, e, n, c, me) => ({ id, me, name: n, e, c, cash: lv.start, pos: 0, jail: 0, card: false, out: false });
@@ -257,6 +268,7 @@ window.MiniGames = window.MiniGames || {};
     // ---------------- 玩家操作 ----------------
     async function onAct(a) {
         if (dead || S.over) return;
+        if (net && (!MG.pvp.canMove() || S.turn !== mySide)) return;   // 联机：没轮到就锁输入
         const p = cur();
         if (a === 'roll') {
             if (S.phase === 'jail') return jailTry(p);
@@ -269,19 +281,19 @@ window.MiniGames = window.MiniGames || {};
             log(`🧑 买下【${CELLS[i].n}】-${money(S.price[i])}`, p.c);
             S.phase = 'end';
             S.msg = `买下 ${CELLS[i].n}${ownsGroup(p.id, CELLS[i].g) ? '，街区集齐，可建楼！' : ''}`;
-            save(); render();
+            save(); render(); commitNet();
         } else if (a === 'skip') {
-            S.phase = 'end'; S.msg = '放弃这块地'; save(); render();
+            S.phase = 'end'; S.msg = '放弃这块地'; save(); render(); commitNet();
         } else if (a === 'build') showBuild(p);
         else if (a === 'next') nextTurn();
         else if (a === 'card') {
             p.card = false; p.jail = 0; S.phase = 'idle';
             try { MG.audio.sfx('click'); } catch (e) {}
-            log('🎫 使用免罪卡出狱', p.c); S.msg = '重获自由，掷骰吧'; save(); render();
+            log('🎫 使用免罪卡出狱', p.c); S.msg = '重获自由，掷骰吧'; save(); render(); commitNet();
         } else if (a === 'fine') {
             p.cash -= 50; p.jail = 0; S.phase = 'idle';
             try { MG.audio.sfx('click'); } catch (e) {}
-            log('💸 缴纳 ¥50 出狱', p.c); S.msg = '交钱走人'; save(); render();
+            log('💸 缴纳 ¥50 出狱', p.c); S.msg = '交钱走人'; save(); render(); commitNet();
         }
     }
 
@@ -303,7 +315,7 @@ window.MiniGames = window.MiniGames || {};
             p.cash -= cost; S.lv[i]++;
             try { MG.audio.sfx('coin'); } catch (e) {}
             log(`🏠 ${p.name} 在【${CELLS[i].n}】建到 Lv${S.lv[i]}`, p.c);
-            box.remove(); save(); render();
+            box.remove(); save(); render(); commitNet();
         });
         box.querySelector('[data-close]').onclick = () => box.remove();
         box.onclick = e => { if (e.target === box) box.remove(); };
@@ -318,7 +330,7 @@ window.MiniGames = window.MiniGames || {};
             p.cash -= 50; p.jail = 0; S.phase = 'idle';
             log('💸 三次未掷出对子，付 ¥50 出狱', p.c); S.msg = '付 ¥50 出狱';
         } else { S.phase = 'end'; S.msg = `未掷出对子，还剩 ${p.jail} 次机会`; }
-        checkBroke(); save(); render();
+        checkBroke(); save(); render(); commitNet();
     }
 
     // ---------------- 掷骰 & 移动 ----------------
@@ -333,17 +345,17 @@ window.MiniGames = window.MiniGames || {};
         if (S.doubles >= 3) {
             log('🎲 连续三次对子：涉嫌作弊，押送监狱', '#ff7a8b');
             p.pos = JAIL; p.jail = 3; S.doubles = 0; S.phase = 'end';
-            save(); render(); return;
+            save(); render(); commitNet(); return;
         }
         log(`🎲 ${p.name} 掷出 ${d1}+${d2}=${sum}`, p.c);
         S.phase = 'moving';
         await walk(p, sum);
         if (dead) return;
         await onLand(p);
-        if (dead || S.over || S.phase === 'decide') { save(); render(); return; }
+        if (dead || S.over || S.phase === 'decide') { save(); render(); commitNet(); return; }
         if (dbl && !p.jail && !p.out) { S.phase = 'idle'; S.msg = '掷出对子，再来一次！'; }
         else S.phase = 'end';
-        save(); render();
+        save(); render(); commitNet();
     }
 
     // 移动中的格子高亮（.mgy-hopping），玩家 320ms/格、AI 180ms/格 —— 原速 110/70 太快看不清走到哪
@@ -461,12 +473,15 @@ window.MiniGames = window.MiniGames || {};
             }
         });
         const alive = S.players.filter(p => !p.out);
-        if (alive.length <= 1 || S.players[0].out) finish();
+        const meOut = net ? S.players[mySide].out : S.players[0].out;
+        if (alive.length <= 1 || meOut) finish();
     }
 
-    function finish() {
-        if (S.over) return;
-        const me = S.players[0];
+    // 终局结算（仅触发一次）：联机下 me 取「我方座位」，结算后整盘广播 over 给对手。
+    function completeOnce() {
+        if (S._done) return;
+        S._done = true;
+        const me = S.players[net ? mySide : 0];
         const alive = S.players.filter(p => !p.out);
         const nw = netWorth(me);
         let win = false, stars = 0;
@@ -479,23 +494,28 @@ window.MiniGames = window.MiniGames || {};
             const crush = alive.length <= 2;                                    // 干掉 2 个对手 → 3★
             stars = (nw >= S.goal * 1.25 || early || crush) ? 3 : 2;
         } else if (nw >= S.goal * 0.7) stars = 1;
-        S.over = true;
         clearSave();
         if (opts && opts.onComplete) opts.onComplete({
             win, stars, score: Math.round(nw),
             title: me.out ? '💀 破产收场' : (win ? '🏆 商界神话' : '⌛ 回合耗尽'),
             lines: [
                 `净资产 ${money(nw)} / 目标 ${S.goal === Infinity ? '∞' : money(S.goal)}`,
-                `地产 ${S.own.filter(o => o === 1).length} 块 · 建筑 ${S.lv.reduce((a, b, i) => a + (S.own[i] === 1 ? b : 0), 0)} 级 · 现金 ${money(me.cash)}`,
-                S.players.filter(p => p.id !== 1).map(p => `${p.e}${p.name} ${p.out ? '破产' : money(netWorth(p))}`).join(' · '),
+                `地产 ${S.own.filter(o => o === me.id).length} 块 · 建筑 ${S.lv.reduce((a, b, i) => a + (S.own[i] === me.id ? b : 0), 0)} 级 · 现金 ${money(me.cash)}`,
+                S.players.filter(p => p.id !== me.id).map(p => `${p.e}${p.name} ${p.out ? '破产' : money(netWorth(p))}`).join(' · '),
             ],
         });
         render();
     }
+    function finish() {
+        if (S.over) return;
+        S.over = true;
+        if (net) commitNet();            // 广播终局，对手收到 over 后各自结算
+        completeOnce();
+    }
 
     function nextTurn() {
         if (S.over) return;
-        const me = S.players[0];
+        const me = S.players[net ? mySide : 0];
         if (!endless && !me.out && netWorth(me) >= S.goal) return finish();
         let guard = 0;
         do {
@@ -509,12 +529,13 @@ window.MiniGames = window.MiniGames || {};
         S.doubles = 0;
         S.phase = p.jail > 0 ? 'jail' : 'idle';
         S.msg = p.me ? (p.jail > 0 ? '你在监狱里，掷对子 / 付 ¥50 / 用免罪卡' : '轮到你了，掷骰吧') : '';
-        save(); render();
-        if (!p.me) later(aiTurn, 380);
+        save(); render(); commitNet();
+        if (!p.me && !net) later(aiTurn, 380);
     }
 
     // ---------------- AI 回合 ----------------
     async function aiTurn() {
+        if (net) return;                 // 联机：4 人均为真人，绝不自动代打
         const p = cur();
         if (dead || S.over || p.me || p.out) return;
         await sleep(260);
@@ -578,6 +599,8 @@ window.MiniGames = window.MiniGames || {};
         LEVELS, ENDLESS,
         start(c, o) {
             opts = o; dead = false;
+            net = !!(MG.pvp && MG.pvp.shouldBegin && MG.pvp.shouldBegin('monopoly'));
+            mySide = net ? (MG.pvp.side || 0) : 0;
             levelIdx = o.levelIdx == null ? 0 : o.levelIdx;
             endless = !!o.endless;
             cfgLevel = endless ? ENDLESS : (o.level || LEVELS[0]);
@@ -593,6 +616,21 @@ window.MiniGames = window.MiniGames || {};
             } else {
                 S = newState(cfgLevel);
                 clearSave();
+            }
+
+            // 联机：4 名玩家全部为真人，我方置于 mySide（昵称取对手列表），并武装 MG.pvp 状态同步
+            if (net) {
+                const oppNames = (MG.pvp._armed && MG.pvp._armed.opp) || [];
+                S.players.forEach((p, i) => {
+                    p.me = (i === mySide);
+                    if (i === mySide) { p.name = '你'; p.e = '🧑'; p.c = '#ffd56b'; }
+                    else { p.name = oppNames[i] || p.name; }
+                });
+                S._done = false;
+                MG.pvp.begin({
+                    setState: (m) => { try { Object.assign(S, m); render(); } catch (e) {} },
+                    onOver: () => completeOnce(),
+                });
             }
 
             const wrap = document.createElement('div');
@@ -627,7 +665,7 @@ window.MiniGames = window.MiniGames || {};
             }
             render();
             const p = cur();
-            if (!p.me) later(aiTurn, 500);
+            if (!p.me && !net) later(aiTurn, 500);
 
             return { stop() { dead = true; save(); } };
         },

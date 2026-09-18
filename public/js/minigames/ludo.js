@@ -300,6 +300,7 @@ window.MiniGames = window.MiniGames || {};
             if (!opts.length) {
                 S.msg = `${NAMES[S.turn]}方掷出 ${S.dice}，无棋可走`;
                 S.opts = [];
+                S.phase = 'moving';   // 跳到下一回合前不暴露 roll：联机下本端/对端都不会误判为“该我掷骰”而重复落子
                 if (api.net && api.net.on) api.net.commit();
                 api.later(() => nextTurn(S, P, api), 700);
                 return;
@@ -319,6 +320,8 @@ window.MiniGames = window.MiniGames || {};
         }, 420);
     }
     function doMove(S, P, api, k) {
+        if (S.phase !== 'pick') return;   // 防御：自动走(api.later 380ms)与手动 tap 竞态时，
+                                          // 落子后 phase 已切走，旧定时器不要再重复移动（联机双落子分叉根因）
         const p = S.turn, a = S.pl[p][k], d = S.dice;
         if (a.rel < 0) { a.rel = 0; S.msg = `${NAMES[p]}方起飞！`; }
         else a.rel += d;
@@ -328,22 +331,25 @@ window.MiniGames = window.MiniGames || {};
         if (hit.length) S.msg = `${NAMES[p]}方撞掉了 ${hit.length} 架敌机！`;
         else if (a.rel >= FINISH) S.msg = `${NAMES[p]}方一架归航！`;
         if (homeCount(S.pl, p) >= S.need) { S.winner = p; S.opts = []; S.phase = 'over'; if (api.net && api.net.on) api.net.commit(); return; }
-        S.opts = []; S.phase = 'roll';
+        S.opts = []; S.phase = 'moving';   // 落子后先进入「移动结算」非交互态：联机下本端/对端都不会把它误判为“该我掷骰”，避免重复落子/状态分叉
         // 掷 6 再来一次，但连掷 3 次强制换人（防止无限回合卡住）
         if (d === 6) {
             S.six = (S.six || 0) + 1;
             if (S.six >= 3) {
                 S.six = 0;
                 S.msg += ' · 连掷 3 次，换人';
+                if (api.net && api.net.on) api.net.commit();   // 仍 moving，等 nextTurn 推进
                 api.later(() => nextTurn(S, P, api), 600);
                 return;
             }
             S.msg += ' · 掷出 6，再来一次';
+            S.phase = 'roll';               // 明确回到 roll：仍是当前行动方(mySide===turn)的回合，仅该端会驱动，不会双端同掷
+            if (api.net && api.net.on) api.net.commit();
             if (p >= S.humans) api.later(() => doRoll(S, P, api), 700);
             return;
         }
         S.six = 0;
-        if (api.net && api.net.on) api.net.commit();
+        if (api.net && api.net.on) api.net.commit();   // moving 态已广播，两端都不会再误掷
         api.later(() => nextTurn(S, P, api), 520);
     }
     function nextTurn(S, P, api) {

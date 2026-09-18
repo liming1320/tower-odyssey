@@ -324,7 +324,10 @@ window.MG = window.MG || {};
                     if (!MG.pvp.active) return;
                     let payload;
                     try { payload = cfg.net.ser ? cfg.net.ser(S, P, api) : serState(S); } catch (e) { return; }
-                    try { MG.pvp.commit({ S: payload }); } catch (e) {}
+                    // 顶层带当前回合 S.turn：commit 端与 _recv 端据此把 _turn 校正为「当前行动方」，
+                    // 多步回合（掷→选→走 同属一回合）不会在第一次 commit 后被锁死。_turn 最终以同步后的
+                    // S.turn 为准（见 begin 的 setState），整盘 S 一致故两端 _turn 必然一致。
+                    try { MG.pvp.commit({ S: payload, turn: S.turn }); } catch (e) {}
                 },
             };
             MG.pvp.begin({
@@ -335,6 +338,10 @@ window.MG = window.MG || {};
                         if (cfg.net.apply) cfg.net.apply(S, incoming, P, api);
                         else Object.assign(S, incoming);
                     } catch (e) { onError(e, 'net-set'); }
+                    // 用同步后的权威回合 S.turn 校正 pvp._turn：canMove() 据此判定「是否轮到我方」，
+                    // 避免 commit/_recv 竞态改 _turn 导致双端 _turn 分叉（联机死锁根因）。S.turn 经整盘
+                    // 同步天然一致，故两端 _turn 必然一致。
+                    try { if (MG.pvp && MG.pvp.active && typeof S.turn === 'number') MG.pvp._turn = S.turn; } catch (e) {}
                     paint();
                 },
                 onOver() { /* 引擎 cfg.check 会在下一帧判定终局并 finish，无需重复处理 */ },
