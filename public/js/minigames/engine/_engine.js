@@ -282,7 +282,18 @@ window.MG = window.MG || {};
             // issue #13：游戏在状态变化时调用，驱动背景层 / HUD 层重绘（分层模式才生效）
             markBgDirty: () => layered && layered.markBgDirty(),
             markHudDirty: () => layered && layered.markHudDirty(),
+            // ---- 通用撤销栈（Tier1-1）：游戏在改变状态前调 api.history.push()；撤销键/按钮调 api.history.undo()。
+            //      支持 cfg.snapshot(S)/cfg.restore(S,s)，否则自动结构化克隆 S。零回归、opt-in。----
+            history: (function () {
+                const MAX = 80; const st = [];
+                const snap = () => cfg.snapshot ? cfg.snapshot(S) : (typeof structuredClone === 'function' ? structuredClone(S) : JSON.parse(JSON.stringify(S)));
+                const rest = (s) => { if (cfg.restore) cfg.restore(S, s); else { for (const k in S) delete S[k]; Object.assign(S, s); } };
+                return { push() { try { st.push(snap()); if (st.length > MAX) st.shift(); } catch (e) {} }, undo() { if (!st.length) return false; try { rest(st.pop()); } catch (e) { return false; } return true; }, canUndo() { return st.length > 0; }, clear() { st.length = 0; }, size() { return st.length; } };
+            })(),
+            // ---- 回放钩子（Tier1-3）：api._rec 录制输入事件，api._replay 回放投递 ----
+            _rec: null, _recT0: 0, _replay: null,
         };
+        if (opts && opts.__replay) { api._replay = opts.__replay; api._replay.i = 0; }
         const paint = () => {
             // 离屏层跟随 deviceScale：旋转 / 缩放后 MG.canvas.fit() 会改倍率，这里同步重建（issue #4）
             if (layered && ctx.__mgScale && Math.abs(ctx.__mgScale - layered.scale) > 0.05) {
@@ -318,8 +329,9 @@ window.MG = window.MG || {};
                 ctx.restore();
             }
         };
+        let _rect = null;   // 拖拽期间缓存的画布矩形，避免 onMove 每次 getBoundingClientRect 触发 reflow（优化 P1-4）
         const pos = e => {
-            const r = c.getBoundingClientRect();
+            const r = _rect || c.getBoundingClientRect();
             const sx = W / (r.width || W), sy = H / (r.height || H);
             return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
         };
@@ -327,38 +339,77 @@ window.MG = window.MG || {};
         // 之前 dragend 的异常是被静默吞掉的，线上出了问题完全没痕迹（见 issue #P1）。
         const safe = (phase, fn) => { try { fn(); } catch (e) { onError(e, phase); } };
         // ---- Pointer Events 统一鼠标 + 触摸（替代分散的 mouse*/touch* 监听，清理更可靠，见 issue #2/#15）----
+        // ---- 手势增强（Tier2-6）：双击 / 长按 / 双指捏合 / 多指，gated by cfg，不影响现有 tap/drag ----
+        const _ptrs = new Map();
+        let _lastTap = 0, _lastTapPos = null, _longActive = false;
+        const _dispatchTap = (x, y, fromInput) => {
+            if (api._replay) return;
+            if (cfg.tap) safe('tap', () => { cfg.tap(S, x, y, P, api); });
+            if (api._rec && fromInput) api._rec.events.push({ t: performance.now() - api._recT0, k: 'tap', x, y });
+            if (fromInput && cfg.doubletap) {
+                const now = performance.now();
+                if (_lastTapPos && now - _lastTap < 300 && Math.hypot(x - _lastTapPos.x, y - _lastTapPos.y) < 24) { try { cfg.doubletap(S, x, y, P, api); } catch (e) { onError(e, 'doubletap'); } _lastTap = 0; }
+                else { _lastTap = now; _lastTapPos = { x, y }; }
+            }
+            paint();
+        };
+        const _dispatchKey = (k, fromInput) => {
+            if (api._replay) return;
+            if (cfg.key) safe('key', () => { cfg.key(S, k, P, api); });
+            if (api._rec && fromInput) api._rec.events.push({ t: performance.now() - api._recT0, k: 'key', key: k });
+            paint();
+        };
         const onDown = e => {
+            if (api._replay) return;
             if (done || rt.stopped || paused) return;
             try { c.setPointerCapture && c.setPointerCapture(e.pointerId); } catch (_) {}
+            _rect = c.getBoundingClientRect();
+            _ptrs.set(e.pointerId, e);
             const p = pos(e);
-            // 统一触感反馈（2026-09-17）：所有 E.def 画布游戏点按即有一圈柔和涟漪 + 解锁音频。
-            // 一次手势即可解锁整局音频；涟漪走实例 fx 池，自清除、不串场、零回归。
             try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (_) {}
             if (fx) { try { fx.ring(p.x, p.y, { r0: 2, r1: 30, lw: 2.5, color: 'rgba(255,255,255,0.55)', life: 0.32 }); } catch (_) {} }
-            if (cfg.tap) safe('tap', () => { cfg.tap(S, p.x, p.y, P, api); paint(); });
+            // 双指捏合：进入 pinch 模式（不再触发 tap/drag）
+            if (_ptrs.size >= 2 && cfg.pinch) { api._pinch = true; api._pinchD = null; return; }
             if (cfg.drag) api._dragStart = { x: p.x, y: p.y, ox: (S.ox != null ? S.ox : 0), oy: (S.oy != null ? S.oy : 0) };
+            else _dispatchTap(p.x, p.y, true);
+            if (cfg.longpress) { _longActive = true; rt.later(() => { if (_longActive) { _longActive = false; try { cfg.longpress(S, p.x, p.y, P, api); } catch (er) { onError(er, 'longpress'); } paint(); } }, 500); }
         };
         const onMove = e => {
-            if (done || rt.stopped || paused || !api._dragStart || !cfg.drag) return;
+            if (api._replay) return;
+            if (done || rt.stopped || paused) return;
+            if (_ptrs.has(e.pointerId)) _ptrs.set(e.pointerId, e);
+            // 捏合：双指距离变化 → scale 反馈
+            if (api._pinch && cfg.pinch && _ptrs.size >= 2) {
+                const ps = [..._ptrs.values()]; const d = Math.hypot(ps[0].clientX - ps[1].clientX, ps[0].clientY - ps[1].clientY);
+                const scale = api._pinchD ? d / api._pinchD : 1; api._pinchD = d;
+                try { cfg.pinch(S, scale, P, api); } catch (er) { onError(er, 'pinch'); }
+                paint(); return;
+            }
+            if (!api._dragStart || !cfg.drag) return;
             e.preventDefault();
             const p = pos(e);
             const dx = p.x - api._dragStart.x, dy = p.y - api._dragStart.y;
+            if (Math.hypot(dx, dy) > 8) _longActive = false;  // 移动则取消长按
+            if (cfg.multitouch && _ptrs.size) { try { cfg.multitouch(S, [..._ptrs.values()].map(ev => pos(ev)), P, api); } catch (er) { onError(er, 'multitouch'); } }
             safe('drag', () => { cfg.drag(S, p.x, p.y, P, api, dx, dy); paint(); });
         };
         const onUp = e => {
+            if (api._replay) return;
+            _ptrs.delete(e.pointerId);
+            if (api._pinch) { if (_ptrs.size < 2) { api._pinch = false; api._pinchD = null; } return; }
+            _longActive = false;
             if (api._dragStart && cfg.dragend) {
                 let p = null;
                 try { const q = pos(e); p = { x: q.x, y: q.y }; } catch (_) {}
                 const pp = p;
                 safe('dragend', () => { cfg.dragend(S, pp ? pp.x : null, pp ? pp.y : null, P, api); paint(); });
             }
-            api._dragStart = null;
+            api._dragStart = null; _rect = null;
         };
         const onKey = e => {
             if (done || rt.stopped || paused || !cfg.key) return;
-            // 由游戏声明需要拦截的按键（如方向键/空格），只对这些键 preventDefault，避免误拦（见 issue #16）
             if (cfg.preventKeys && cfg.preventKeys.indexOf(e.key) >= 0) { try { e.preventDefault(); } catch (_) {} }
-            safe('key', () => { cfg.key(S, e.key, P, api); paint(); });
+            _dispatchKey(e.key, true);
         };
         // 全部经 rt.listen 登记 → stop() 自动解绑，不留悬挂监听
         rt.listen(c, 'pointerdown', onDown);
@@ -370,8 +421,18 @@ window.MG = window.MG || {};
         rt.listen(document, 'visibilitychange', () => { if (document.hidden) api.pause(); else api.resume(); });
 
         // 一帧逻辑推进：固定步与可变步共用同一段（dt 由循环决定，见 makeLoop 说明）
+        let _repClock = 0;
         const doTick = (dt) => {
             S.t += dt;
+            // 回放投递（Tier1-3）：按录制时间戳把输入事件重新喂给游戏（仅 E.def 画布游戏）
+            if (api._replay) {
+                _repClock += dt; const ms = _repClock * 1000; const q = (api._replay.events || []);
+                while (api._replay.i < q.length && q[api._replay.i].t <= ms) {
+                    const ev = q[api._replay.i++];
+                    try { if (ev.k === 'tap' && cfg.tap) cfg.tap(S, ev.x, ev.y, P, api); else if (ev.k === 'key' && cfg.key) cfg.key(S, ev.key, P, api); } catch (e) { onError(e, 'replay'); }
+                    paint();
+                }
+            }
             try {
                 if (fx && fx._hs > 0) {
                     // 顿帧：冻结 tick 与物理，营造打击感
@@ -404,10 +465,11 @@ window.MG = window.MG || {};
             variable: doTick,
             render() {
                 // 自适应画质：持续掉帧时逐步下调 quality（0.35~1），游戏可据此少放粒子/降级特效
-                if (cfg.autoQuality && L.perf.frames > 30) {
+                if ((cfg.autoQuality || (MG.settings && MG.settings.autoQuality)) && L.perf.frames > 30) {
                     if (L.perf.fps && L.perf.fps < 40) quality = Math.max(0.35, quality - 0.01);
                     else if (L.perf.fps >= 55) quality = Math.min(1, quality + 0.005);
                 }
+                if (fx) fx._quality = quality;   // 让粒子池据画质减粒子（优化 P2-6）
                 paint();
             },
         });
@@ -422,6 +484,7 @@ window.MG = window.MG || {};
                 if (tw) { try { tw.clear(); } catch (e) { } }
                 if (cam && cam.reset) { try { cam.reset(); } catch (e) { } }
                 rt.stop();          // 里面统一解绑全部监听 + 清理定时器 + 跑游戏登记的 cleanup
+                try { MG.audio && MG.audio.bgm && MG.audio.bgm.stop(); } catch (e) {}   // 优化 P2-7：游戏停止自动停 BGM，防定时器泄漏
                 try { cv.destroy(); } catch (e) { }   // 幂等，重复调用无害
             },
             pause: () => api.pause(),
@@ -513,6 +576,13 @@ window.MG = window.MG || {};
             get perf() { return L ? L.perf : null; },
             timeScale: 1,
             step: (ms) => (L ? L.advance(ms) : 0),
+            // 通用撤销栈（Tier1-1）：DOM 游戏用 cfg.snapshot/restore 或自动克隆 S
+            history: (function () {
+                const MAX = 80; const st = [];
+                const snap = () => cfg.snapshot ? cfg.snapshot(S) : (typeof structuredClone === 'function' ? structuredClone(S) : JSON.parse(JSON.stringify(S)));
+                const rest = (s) => { if (cfg.restore) cfg.restore(S, s); else { for (const k in S) delete S[k]; Object.assign(S, s); } };
+                return { push() { try { st.push(snap()); if (st.length > MAX) st.shift(); } catch (e) {} }, undo() { if (!st.length) return false; try { rest(st.pop()); } catch (e) { return false; } return true; }, canUndo() { return st.length > 0; }, clear() { st.length = 0; }, size() { return st.length; } };
+            })(),
         };
         if (cfg.hint) MG.hint(container, cfg.hint);
         paint();
@@ -522,6 +592,7 @@ window.MG = window.MG || {};
                 if (L) L.stop();
                 runDisposers();
                 rt.stop();
+                try { MG.audio && MG.audio.bgm && MG.audio.bgm.stop(); } catch (e) {}   // 优化 P2-7
                 // 真正移除 root：以前只置 stopped，DOM 节点留着，全局事件/定时器就泄漏了
                 try { if (root.remove) root.remove(); else if (root.parentNode) root.parentNode.removeChild(root); } catch (e) { }
             },
@@ -593,17 +664,22 @@ window.MG = window.MG || {};
         const p = cfg.params(LEVEL_COUNT - 1, 1) || {};
         return Object.assign({ name: '∞ 无尽', desc: '用最高难度持续挑战，直到失败/通关为止' }, p);
     }
+    // 关卡懒生成（优化 P1-3）：注册时只挂 getter，不立刻 buildLevels（旧实现在脚本解析时
+    // 就把全部 100+ 款游戏各 50 关的 params 算出来堆在启动路径上）。首次读取 LEVELS
+    // （用户点开某游戏的选关页）才真正构建并缓存，首屏加载零关卡成本、且行为完全一致。
     E.def = function (id, cfg) {
+        let _lv = null;
         const g = (window.MiniGames[id] = {
-            LEVELS: buildLevels(cfg),
+            get LEVELS() { if (!_lv) _lv = buildLevels(cfg); return _lv; },
             start(c, o) { return E.game(c, o, cfg); },
         });
         g.ENDLESS = cfg.endless || autoEndless(cfg);
         return g;
     };
     E.defd = function (id, cfg) {
+        let _lv = null;
         const g = (window.MiniGames[id] = {
-            LEVELS: buildLevels(cfg),
+            get LEVELS() { if (!_lv) _lv = buildLevels(cfg); return _lv; },
             start(c, o) { return E.dgame(c, o, cfg); },
         });
         g.ENDLESS = cfg.endless || autoEndless(cfg);
@@ -629,79 +705,114 @@ window.MG = window.MG || {};
     // 镶木框游戏房间（2026-09-12 视觉升级）：木纹外框 + 呢面/皮革内衬 + 内阴影 + 四角铜钉。
     // 棋类 / 牌类 / 益智类通用：把裸露的 flat 格子盘升级成「实体桌台」。
     // opt: { felt:'#2f5d43', frame:'#c9a06a', frame2:'#8a6234', seed:1, r:14, frameW:14, nail:true }
+    // 镶木框游戏房间（2026-09-12 视觉升级）：木纹外框 + 呢面/皮革内衬 + 内阴影 + 四角铜钉。
+    // 结果按 (尺寸+材质+seed+画质) 烘焙到离屏 canvas 缓存，之后每帧只 drawImage
+    // （原实现每帧重建木纹 + 多个径向渐变 + 四角铜钉，棋牌类每帧几十次渐变创建）。优化 P0-2。
+    // opt: { felt:'#2f5d43', frame:'#c9a06a', frame2:'#8a6234', seed:1, r:14, frameW:14, nail:true }
     E.broom = (ctx, x, y, w, h, opt) => {
         opt = opt || {};
         const fw = opt.frameW == null ? 14 : opt.frameW;
         const r = opt.r == null ? 14 : opt.r;
-        // 外框（木纹，带缓存）+ 立体描边
-        G.wood(ctx, x - fw, y - fw, w + fw * 2, h + fw * 2, opt.frame || '#c9a06a', opt.frame2 || '#8a6234', opt.seed || 1);
-        U.rr(ctx, x - fw, y - fw, w + fw * 2, h + fw * 2, r);
-        ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(40,22,8,0.55)'; ctx.stroke();
-        U.rr(ctx, x - fw + 1.5, y - fw + 1.5, w + fw * 2 - 3, h + fw * 2 - 3, Math.max(1, r - 1.5));
-        ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,235,200,0.30)'; ctx.stroke();
-        // 内衬呢面（径向光：中央受光、四角沉入阴影）
-        U.rr(ctx, x, y, w, h, Math.max(4, r * 0.55));
         const felt = opt.felt || '#2f5d43';
-        let fg = null;
-        try {
-            fg = ctx.createRadialGradient(x + w / 2, y + h * 0.42, 0, x + w / 2, y + h / 2, Math.max(w, h) * 0.75);
-            fg.addColorStop(0, G.lighten(felt, 0.16));
-            fg.addColorStop(0.65, felt);
-            fg.addColorStop(1, G.darken(felt, 0.32));
-        } catch (e) { }
-        ctx.fillStyle = fg || felt; ctx.fill();
-        // 内阴影（上侧重、下侧轻，让呢面「凹进」木框）
-        ctx.save();
-        U.rr(ctx, x, y, w, h, Math.max(4, r * 0.55)); ctx.clip();
-        let isg = null;
-        try { isg = ctx.createLinearGradient(x, y, x, y + 18); isg.addColorStop(0, 'rgba(0,0,0,0.30)'); isg.addColorStop(1, 'rgba(0,0,0,0)'); } catch (e) { }
-        ctx.fillStyle = isg || 'rgba(0,0,0,0.2)'; ctx.fillRect(x, y, w, 18);
-        try { isg = ctx.createLinearGradient(x, y + h - 12, x, y + h); isg.addColorStop(0, 'rgba(0,0,0,0)'); isg.addColorStop(1, 'rgba(0,0,0,0.20)'); } catch (e) { }
-        ctx.fillStyle = isg || 'rgba(0,0,0,0.12)'; ctx.fillRect(x, y + h - 12, w, 12);
-        ctx.restore();
-        // 呢面细织纹（斜细线，非常淡）
-        ctx.save();
-        U.rr(ctx, x, y, w, h, Math.max(4, r * 0.55)); ctx.clip();
-        ctx.strokeStyle = 'rgba(255,255,255,0.022)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (let s = -h; s < w; s += 7) { ctx.moveTo(x + s, y); ctx.lineTo(x + s + h, y + h); }
-        ctx.stroke();
-        ctx.restore();
-        // 四角铜钉
-        if (opt.nail !== false) {
-            const nr = Math.max(2.5, fw * 0.26);
-            for (const [nx, ny] of [[x - fw / 2, y - fw / 2], [x + w + fw / 2, y - fw / 2], [x - fw / 2, y + h + fw / 2], [x + w + fw / 2, y + h + fw / 2]]) {
-                const ng = ctx.createRadialGradient(nx - nr * 0.3, ny - nr * 0.3, 0, nx, ny, nr);
-                ng.addColorStop(0, '#f0d9a0'); ng.addColorStop(0.6, '#b98d4a'); ng.addColorStop(1, '#5f3f18');
-                ctx.beginPath(); ctx.arc(nx, ny, nr, 0, 6.284);
-                ctx.fillStyle = ng; ctx.fill();
+        const frame = opt.frame || '#c9a06a';
+        const frame2 = opt.frame2 || '#8a6234';
+        const seed = opt.seed || 1;
+        const nail = opt.nail !== false;
+        const ow = w + fw * 2, oh = h + fw * 2;
+        const scale = (ctx && ctx.__mgScale) || 1;
+        const key = 'broom|' + ow + 'x' + oh + '|' + r + '|' + felt + '|' + frame + '|' + frame2 + '|' + seed + '|' + (nail ? 1 : 0) + '|' + scale.toFixed(2);
+        let cv = G._broomCache && G._broomCache.get(key);
+        if (!cv) {
+            cv = document.createElement('canvas');
+            cv.width = Math.max(1, Math.round(ow * scale));
+            cv.height = Math.max(1, Math.round(oh * scale));
+            const xc = cv.getContext('2d');
+            try { xc.setTransform(scale, 0, 0, scale, 0, 0); } catch (e) {}
+            try { xc.__mgScale = scale; } catch (e) {}
+            // ---- 与旧实现等价的绘制，但在局部坐标 (0,0) 起算，内区位于 (fw,fw) ----
+            G.wood(xc, 0, 0, ow, oh, frame, frame2, seed);
+            U.rr(xc, 0, 0, ow, oh, r);
+            xc.lineWidth = 2.5; xc.strokeStyle = 'rgba(40,22,8,0.55)'; xc.stroke();
+            U.rr(xc, 1.5, 1.5, ow - 3, oh - 3, Math.max(1, r - 1.5));
+            xc.lineWidth = 1; xc.strokeStyle = 'rgba(255,235,200,0.30)'; xc.stroke();
+            U.rr(xc, fw, fw, w, h, Math.max(4, r * 0.55));
+            let fg = null;
+            try {
+                fg = xc.createRadialGradient(fw + w / 2, fw + h * 0.42, 0, fw + w / 2, fw + h / 2, Math.max(w, h) * 0.75);
+                fg.addColorStop(0, G.lighten(felt, 0.16));
+                fg.addColorStop(0.65, felt);
+                fg.addColorStop(1, G.darken(felt, 0.32));
+            } catch (e) {}
+            xc.fillStyle = fg || felt; xc.fill();
+            xc.save();
+            U.rr(xc, fw, fw, w, h, Math.max(4, r * 0.55)); xc.clip();
+            let isg = null;
+            try { isg = xc.createLinearGradient(0, fw, 0, fw + 18); isg.addColorStop(0, 'rgba(0,0,0,0.30)'); isg.addColorStop(1, 'rgba(0,0,0,0)'); } catch (e) {}
+            xc.fillStyle = isg || 'rgba(0,0,0,0.2)'; xc.fillRect(fw, fw, w, 18);
+            try { isg = xc.createLinearGradient(0, fw + h - 12, 0, fw + h); isg.addColorStop(0, 'rgba(0,0,0,0)'); isg.addColorStop(1, 'rgba(0,0,0,0.20)'); } catch (e) {}
+            xc.fillStyle = isg || 'rgba(0,0,0,0.12)'; xc.fillRect(fw, fw + h - 12, w, 12);
+            xc.restore();
+            xc.save();
+            U.rr(xc, fw, fw, w, h, Math.max(4, r * 0.55)); xc.clip();
+            xc.strokeStyle = 'rgba(255,255,255,0.022)';
+            xc.lineWidth = 1;
+            xc.beginPath();
+            for (let s = -h; s < w; s += 7) { xc.moveTo(fw + s, fw); xc.lineTo(fw + s + h, fw + h); }
+            xc.stroke();
+            xc.restore();
+            if (nail) {
+                const nr = Math.max(2.5, fw * 0.26);
+                for (const [nx, ny] of [[fw / 2, fw / 2], [ow - fw / 2, fw / 2], [fw / 2, oh - fw / 2], [ow - fw / 2, oh - fw / 2]]) {
+                    const ng = xc.createRadialGradient(nx - nr * 0.3, ny - nr * 0.3, 0, nx, ny, nr);
+                    ng.addColorStop(0, '#f0d9a0'); ng.addColorStop(0.6, '#b98d4a'); ng.addColorStop(1, '#5f3f18');
+                    xc.beginPath(); xc.arc(nx, ny, nr, 0, 6.284); xc.fillStyle = ng; xc.fill();
+                }
             }
+            G._broomCache = G._broomCache || new Map();
+            if (G._broomCache.size >= (G.MAX_CACHE || 48)) G._broomCache.delete(G._broomCache.keys().next().value);
+            G._broomCache.set(key, cv);
         }
+        ctx.drawImage(cv, x - fw, y - fw, ow, oh);
     };
     // 光泽棋子（圆盘：径向渐变 + 环口 + 顶高光 + 投影）。黑白棋/四子棋/跳棋等通用
     // c1/c2 为主体渐变（上亮下暗），rim 为环口色
+    // 光泽棋子（圆盘：径向渐变 + 环口 + 顶高光 + 投影）。黑白棋/四子棋/跳棋等通用。
+    // 按 (c1/c2/rim/r/画质) 烘焙到离屏 canvas 缓存，之后每帧只 drawImage
+    // （原实现每个棋子每帧都建 createRadialGradient）。优化 P0-2。
     E.piece = (ctx, cx, cy, r, c1, c2, rim) => {
-        // 落地投影
-        ctx.beginPath(); ctx.ellipse(cx + r * 0.08, cy + r * 0.18, r * 0.98, r * 0.9, 0, 0, 6.284);
-        ctx.fillStyle = 'rgba(0,0,0,0.30)'; ctx.fill();
-        // 主体
-        let g = null;
-        try {
-            g = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.15, cx, cy, r * 1.05);
-            g.addColorStop(0, G.lighten(c1, 0.35));
-            g.addColorStop(0.55, c1);
-            g.addColorStop(1, c2 || G.darken(c1, 0.35));
-        } catch (e) { }
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.284);
-        ctx.fillStyle = g || c1; ctx.fill();
-        // 环口
-        ctx.lineWidth = Math.max(1.2, r * 0.10);
-        ctx.strokeStyle = rim || 'rgba(0,0,0,0.4)';
-        ctx.stroke();
-        // 顶高光（椭圆弧面反光）
-        ctx.beginPath(); ctx.ellipse(cx - r * 0.28, cy - r * 0.42, r * 0.42, r * 0.26, -0.5, 0, 6.284);
-        ctx.fillStyle = 'rgba(255,255,255,0.34)'; ctx.fill();
+        const scale = (ctx && ctx.__mgScale) || 1;
+        const pad = Math.ceil(r * 1.2);                 // 给投影/高光留出余量
+        const S = Math.max(2, Math.ceil(r * 2.2));       // 离屏逻辑尺寸
+        const key = 'piece|' + (c1 || '') + '|' + (c2 || '') + '|' + (rim || '') + '|' + Math.round(r * 1000) + '|' + scale.toFixed(2);
+        let cv = G._pieceCache && G._pieceCache.get(key);
+        if (!cv) {
+            cv = document.createElement('canvas');
+            cv.width = Math.max(1, Math.round(S * scale));
+            cv.height = Math.max(1, Math.round(S * scale));
+            const xc = cv.getContext('2d');
+            try { xc.setTransform(scale, 0, 0, scale, 0, 0); } catch (e) {}
+            const px0 = pad, py0 = pad;                   // 棋子中心在离屏中的位置
+            xc.beginPath(); xc.ellipse(px0 + r * 0.08, py0 + r * 0.18, r * 0.98, r * 0.9, 0, 0, 6.284);
+            xc.fillStyle = 'rgba(0,0,0,0.30)'; xc.fill();
+            let g = null;
+            try {
+                g = xc.createRadialGradient(px0 - r * 0.35, py0 - r * 0.4, r * 0.15, px0, py0, r * 1.05);
+                g.addColorStop(0, G.lighten(c1, 0.35));
+                g.addColorStop(0.55, c1);
+                g.addColorStop(1, c2 || G.darken(c1, 0.35));
+            } catch (e) { }
+            xc.beginPath(); xc.arc(px0, py0, r, 0, 6.284);
+            xc.fillStyle = g || c1; xc.fill();
+            xc.lineWidth = Math.max(1.2, r * 0.10);
+            xc.strokeStyle = rim || 'rgba(0,0,0,0.4)';
+            xc.stroke();
+            xc.beginPath(); xc.ellipse(px0 - r * 0.28, py0 - r * 0.42, r * 0.42, r * 0.26, -0.5, 0, 6.284);
+            xc.fillStyle = 'rgba(255,255,255,0.34)'; xc.fill();
+            G._pieceCache = G._pieceCache || new Map();
+            if (G._pieceCache.size >= (G.MAX_CACHE || 48)) G._pieceCache.delete(G._pieceCache.keys().next().value);
+            G._pieceCache.set(key, cv);
+        }
+        ctx.drawImage(cv, cx - pad, cy - pad, S, S);
     };
     E.btnBox = (ctx, x, y, w, h, label, c1, c2) => {
         E.card(ctx, x, y, w, h, c1, c2, 10);

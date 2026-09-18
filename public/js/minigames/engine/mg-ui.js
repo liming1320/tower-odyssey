@@ -261,6 +261,8 @@ MG.runGame = function (container, cfg) {
     };
     const runLevel = (idx, lv) => {
         clearCurrent();
+        // 每关挂设置齿轮（Tier1-2）：音量/震动/自动画质/无障碍，opt-in 可关
+        try { MG.settings && MG.settings.gear && MG.settings.gear(container); } catch (e) {}
         const scoreEl = cfg.scoreEl || null;
         const onScore = cfg.onScore || (scoreEl ? (s => scoreEl.textContent = s != null ? s : '') : null);
         const endless = idx < 0;
@@ -275,6 +277,8 @@ MG.runGame = function (container, cfg) {
                 const stars = result.stars || 0;
                 if (!endless) this.recordStars(cfg.id, idx + 1, stars);
                 else this.setBest(cfg.id, result.score || 0);
+                // 玩法埋点（Tier3-8）：通关/失败/无尽分上报，用于关卡平衡
+                try { MG.telemetry && MG.telemetry.track(cfg.id, endless ? 'endless_end' : (result.win ? 'win' : 'lose'), { level: idx + 1, stars, score: result.score || 0 }); } catch (e) {}
                 // 上报排行榜（仅登录用户；分数取关卡星 ×100 或无尽分）
                 const score = endless ? (result.score || 0) : stars * 100 + (idx + 1) * 50;
                 try { MG.reportScore(cfg.id, score); } catch (e) { }

@@ -23,7 +23,7 @@ window.MiniGames = window.MiniGames || {};
     const SPEED_CAP = 1800;
 
     // 台面：左右直墙 + 顶部半圆拱
-    const PF = { l: 28, r: 324, cx: 176, cy: 300, arcR: 148, bot: 648 };
+    const PF = { l: 28, r: 324, cx: 176, cy: 300, arcR: 148, bot: 627 };
     const LANE = { l: 346, r: 402, top: 118, bot: 690 };
 
     const DMD = { x: 20, y: 14, w: 380, h: 84 };   // 加高：第三行显示当前任务与进度
@@ -55,6 +55,51 @@ window.MiniGames = window.MiniGames || {};
         { rest: cadetImage('cadet-kick-left-rest.png'), hit: cadetImage('cadet-kick-left-hit.png'), restPos: [168, 379], hitPos: [170, 370], x: cadetX(173), y: cadetY(396), vx: 105 },
         { rest: cadetImage('cadet-kick-right-rest.png'), hit: cadetImage('cadet-kick-right-hit.png'), restPos: [435, 379], hitPos: [434, 370], x: cadetX(439), y: cadetY(396), vx: -105 },
     ];
+    const CADET_REBOUNDERS = [
+        { image: cadetImage('cadet-rebound-1.png'), pos: [245, 291], x: 254.5, y: 313.5 },
+        { image: cadetImage('cadet-rebound-2.png'), pos: [375, 291], x: 384.5, y: 313.5 },
+        { image: cadetImage('cadet-rebound-3.png'), pos: [367, 110], x: 379.5, y: 129 },
+        { image: cadetImage('cadet-rebound-4.png'), pos: [234, 130], x: 252, y: 139.5 },
+    ];
+    const CADET_GATES = [
+        { image: cadetImage('cadet-gate-1.png'), pos: [170, 337], x: cadetX(170), y: cadetY(337), w: 22, h: 19 },
+        { image: cadetImage('cadet-gate-2.png'), pos: [424, 356], x: cadetX(424), y: cadetY(356), w: 23, h: 19 },
+    ];
+    const CADET_FLAGS = [
+        { image: cadetImage('cadet-flag-1.png'), pos: [202, 105] },
+        { image: cadetImage('cadet-flag-2.png'), pos: [380, 131] },
+    ];
+    const CADET_TARGET_FRAMES = [
+        [
+            { image: cadetImage('cadet-target-1.png'), pos: [385, 182] },
+            { image: cadetImage('cadet-target-2.png'), pos: [386, 193] },
+            { image: cadetImage('cadet-target-3.png'), pos: [387, 203] },
+        ],
+        [
+            { image: cadetImage('cadet-target-4.png'), pos: [297, 134] },
+            { image: cadetImage('cadet-target-5.png'), pos: [307, 137] },
+            { image: cadetImage('cadet-target-6.png'), pos: [317, 140] },
+        ],
+        [
+            { image: cadetImage('cadet-target-7.png'), pos: [269, 71] },
+            { image: cadetImage('cadet-target-8.png'), pos: [277, 67] },
+            { image: cadetImage('cadet-target-9.png'), pos: [286, 63] },
+        ],
+    ];
+    const CADET_ROLLERS = [
+        [[637, [299, 60]], [638, [317, 60]], [639, [334, 60]]].map(([group, pos]) => ({ image: cadetImage(`cadet-roll-${group}.png`), pos })),
+        [[640, [184, 297]], [641, [206, 297]], [642, [227, 297]]].map(([group, pos]) => ({ image: cadetImage(`cadet-roll-${group}.png`), pos })),
+        [[643, [404, 297]], [644, [425, 297]]].map(([group, pos]) => ({ image: cadetImage(`cadet-roll-${group}.png`), pos })),
+        [[645, [190, 190]], [646, [206, 194]], [647, [222, 199]]].map(([group, pos]) => ({ image: cadetImage(`cadet-roll-${group}.png`), pos })),
+    ];
+    const CADET_LITE = {
+        lanes: [333, 334, 335, 304].map(group => cadetImage(`cadet-lite-${group}.png`)),
+        ramp: [[271, [299, 227]], [272, [276, 243]], [273, [269, 270]], [274, [282, 297]], [275, [314, 309]], [276, [346, 297]], [277, [360, 271]], [278, [352, 243]], [279, [329, 227]]]
+            .map(([group, pos]) => ({ image: cadetImage(`cadet-lite-${group}.png`), pos })),
+        warp: [[268, [343, 113]], [269, [359, 113]], [270, [351, 124]]]
+            .map(([group, pos]) => ({ image: cadetImage(`cadet-lite-${group}.png`), pos })),
+    };
+    const CADET_LITE_POS = [[190, 183], [206, 187], [222, 190], [234, 104]];
     const CADET_FLIPPERS = [
         Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-flip-left-${frame}.png`)),
         Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-flip-right-${frame}.png`)),
@@ -89,8 +134,12 @@ window.MiniGames = window.MiniGames || {};
     // 小弹力柱
     const POSTS = [{ x: 116, y: 262, r: 6 }, { x: 280, y: 262, r: 6 },
     { x: 46, y: 466, r: 6 }, { x: 306, y: 466, r: 6 }];
-    // 落下靶（右排 3 只，靶面朝左）
-    const TARGETS = [300, 346, 392].map((y, i) => ({ i, x: 276, y, w: 7, h: 28, down: false }));
+    // 原版 3 组落下靶，每组 3 只；坐标来自 a_targ1..a_targ22 的 1x 资源。
+    const TARGETS = [
+        [388.5, 189.5, 7, 15, 0], [389.5, 200, 7, 14, 0], [390.5, 210.5, 7, 15, 0],
+        [303.5, 139.5, 13, 11, 1], [313.5, 142.5, 13, 11, 1], [323.5, 145.5, 13, 11, 1],
+        [275, 77.5, 12, 13, 2], [283, 73.5, 12, 13, 2], [292, 70.5, 12, 13, 2],
+    ].map(([x, y, w, h, group], i) => ({ i, group, x: cadetX(x), y: cadetY(y), w: w * CADET_SCALE, h: h * CADET_SCALE, down: false }));
     // 旋转门
     const SPIN = { x: 128, y: 430, w: 30, h: 9 };
     // 计分洞
@@ -181,8 +230,8 @@ window.MiniGames = window.MiniGames || {};
     const WALLS = (() => {
         const s = [];
         s.push(...polySegs(arcPts(PF.cx, PF.cy, PF.arcR, Math.PI, Math.PI * 2, 30), false, 2));
-        s.push({ x1: PF.l, y1: 300, x2: PF.l, y2: 648, r: 2 });
-        s.push({ x1: PF.r, y1: 300, x2: PF.r, y2: 648, r: 2 });
+        s.push({ x1: PF.l, y1: 300, x2: PF.l, y2: PF.bot, r: 2 });
+        s.push({ x1: PF.r, y1: 300, x2: PF.r, y2: PF.bot, r: 2 });
         s.push(...polySegs([[324, 300], [340, 244], [346, 208]], false, 2));
         s.push({ x1: LANE.l, y1: 208, x2: LANE.l, y2: 690, r: 2 });
         s.push({ x1: LANE.r, y1: 130, x2: LANE.r, y2: 690, r: 2 });
@@ -280,7 +329,7 @@ window.MiniGames = window.MiniGames || {};
             // 中央立柱（挡板正上方，防正中漏球）
             const CPOST = { x: 176, y: 600, r: 6 };
             // 反弹器 ×2（内道上方）
-            const REBOUND = [{ x: 132, y: 574 }, { x: 220, y: 574 }];
+            const REBOUND = CADET_REBOUNDERS.map((rp, i) => ({ x: cadetX(rp.x), y: cadetY(rp.y), i }));
             // 指示灯 / 滚道灯（重新上场灯 / 发射坡道灯 / 接受使命灯 / 超空间灯 / 加分球灯 / 调度灯 / 重玩灯）
             const LAMPS = [
                 { id: 're1', x: 150, y: 150, r: 6, color: '#ff7a3d', group: 're', label: '重新上场' },
@@ -357,7 +406,10 @@ window.MiniGames = window.MiniGames || {};
                 if (hitCircle(ball, CPOST.x, CPOST.y, CPOST.r, 0.5, 60) > 0) sfx('click');
                 // 反弹器
                 REBOUND.forEach(rp => {
-                    if (hitCircle(ball, rp.x, rp.y, 5, 0.6, 360) > 0) { sfx('sling'); spawn(rp.x, rp.y, 6, 30, 0.9); }
+                    if (hitCircle(ball, rp.x, rp.y, 7, 0.6, 360) > 0) {
+                        reboundHit[rp.i] = 1;
+                        sfx('sling'); spawn(rp.x, rp.y, 6, 30, 0.9);
+                    }
                 });
             }
     
@@ -511,15 +563,32 @@ window.MiniGames = window.MiniGames || {};
                 if (cadetMusicTimer) { clearTimeout(cadetMusicTimer); cadetMusicTimer = null; }
                 try { AU.bgm.stop(); } catch (e) { }
             };
+            const CADET_PROGRAMS = [
+                { max: 7, type: 'triangle', lp: 1800 },
+                { max: 15, type: 'sine', lp: 2400 },
+                { max: 23, type: 'square', lp: 2200 },
+                { max: 31, type: 'sawtooth', lp: 1500 },
+                { max: 39, type: 'square', lp: 1700 },
+                { max: 47, type: 'sawtooth', lp: 1200 },
+                { max: 63, type: 'triangle', lp: 2100 },
+                { max: 79, type: 'sine', lp: 2600 },
+                { max: 95, type: 'square', lp: 1900 },
+                { max: 111, type: 'sawtooth', lp: 1300 },
+                { max: 127, type: 'triangle', lp: 1800 },
+            ];
             const playCadetNote = (note, delay) => {
                 const [,, pitch, velocity, channel, program] = note;
-                const gain = Math.min(0.075, 0.012 + velocity / 2200);
+                const profile = CADET_PROGRAMS.find(x => program <= x.max) || CADET_PROGRAMS[0];
+                const gain = Math.min(0.075, 0.010 + velocity / 2400);
                 if (channel === 9) {
                     AU.noise({ dur: 0.055, freq: pitch < 45 ? 150 : 1900, type: pitch < 45 ? 'lowpass' : 'highpass', gain, delay });
                     return;
                 }
-                const type = program >= 80 ? 'square' : program >= 40 ? 'sawtooth' : 'triangle';
-                AU.tone({ freq: 440 * Math.pow(2, (pitch - 69) / 12), dur: Math.min(0.8, note[1] / 1000), type, gain, delay });
+                AU.tone({
+                    freq: 440 * Math.pow(2, (pitch - 69) / 12),
+                    dur: Math.min(0.8, note[1] / 1000),
+                    type: profile.type, lp: profile.lp, gain, delay,
+                });
             };
             const startCadetMusic = () => {
                 const token = ++cadetMusicToken;
@@ -579,6 +648,7 @@ window.MiniGames = window.MiniGames || {};
             const cardOver = [false, false, false];       // 牌上正压着球（防同一球反复翻牌）
             const cardFrameOver = [false, false, false];  // 本帧是否有球压牌（帧末回写 cardOver）
             const flash = { ramp: 0, spin: 0, saucer: 0, target: 0, warp: 0, card: 0, tube: 0 };
+            let targetFlashGroup = -1;
 
             /* ── 任务 / 军衔（Space Cadet 风格：达成目标 → 晋升军衔 → 领取大奖）──
                每个任务盯一类得分事件（kw），累计 need 次即完成并结算 jackpot；
@@ -615,6 +685,7 @@ window.MiniGames = window.MiniGames || {};
             let mbCd = 0;                     // 多球冷却：防任务/翻牌连锁把台面刷成球海
             let hyperStage = 0;              // 超空间阶段 0..5：每次虫洞跃迁 +1，满 5 触发超空间大赏
             let tiltWarn = 0;                // 倾斜警告灯 0..3：3 盏全亮 → TILT 失球
+            let tiltActive = false;
             let nudgeCd = 0;                 // 推挤冷却，防连按刷满倾斜灯
             TARGETS.forEach(x => { x.down = false; });
             BANKS.forEach(B => B.subs.forEach(s => s.down = false));
@@ -623,6 +694,9 @@ window.MiniGames = window.MiniGames || {};
             const lanesOn = [false, false, false, false];
             const kickback = { L: true, R: true };
             const kickerHit = [0, 0];
+            const reboundHit = [0, 0, 0, 0];
+            const rollerHit = [0, 0, 0, 0];
+            const gateHit = [0, 0];
             let spinnerAng = 0, spinnerVel = 0, spinnerAcc = 0;
             const cool = {};
 
@@ -993,6 +1067,11 @@ window.MiniGames = window.MiniGames || {};
                     const j = -(1 + 0.42) * vn;
                     b.vx += j * nx; b.vy += j * ny;
                 }
+                if (f.held && f.omega && vn > -120) {
+                    const kick = Math.min(760, 180 + Math.abs(f.omega) * 26);
+                    b.vx += nx * kick; b.vy += ny * kick;
+                    if (b.vy > -260) b.vy -= 260;
+                }
                 return true;
             }
 
@@ -1003,6 +1082,19 @@ window.MiniGames = window.MiniGames || {};
 
             function collide() {
                 for (const s of WALLS) hitSeg(ball, s, 0.42, 0);
+                CADET_GATES.forEach((gate, i) => {
+                    if (gateHit[i] > 0.02) return;
+                    const impact = hitSeg(ball, {
+                        x1: gate.x, y1: gate.y,
+                        x2: gate.x + gate.w * CADET_SCALE,
+                        y2: gate.y + gate.h * CADET_SCALE,
+                        r: 2,
+                    }, 0.5, 45);
+                    if (impact > 45 && canTrigger('gate' + i, 0.18)) {
+                        gateHit[i] = 1;
+                        addScore(125, 'spin'); sfx('click');
+                    }
+                });
                 for (const p of POSTS) {
                     if (hitCircle(ball, p.x, p.y, p.r, 0.62, 90) > 60) {
                         sfx('click'); spawn(p.x, p.y, 3, 200, 0.5);
@@ -1064,11 +1156,17 @@ window.MiniGames = window.MiniGames || {};
                     const v = hitSeg(ball, { x1: sl.a[0], y1: sl.a[1], x2: sl.b[0], y2: sl.b[1], r: 3 }, 0.5, 430);
                     if (v > 0) {
                         slingHit[si] = 1;
-                        addScore(60); sfx('sling');
-                        spawn((sl.a[0] + sl.b[0]) / 2, (sl.a[1] + sl.b[1]) / 2, 9, 30, 1);
+                        if (canTrigger('sling' + si, 0.12)) {
+                            addScore(60); sfx('sling');
+                            spawn((sl.a[0] + sl.b[0]) / 2, (sl.a[1] + sl.b[1]) / 2, 9, 30, 1);
+                        }
                     } else {
-                        hitSeg(ball, { x1: sl.b[0], y1: sl.b[1], x2: sl.c[0], y2: sl.c[1], r: 3 }, 0.4, 0);
-                        hitSeg(ball, { x1: sl.c[0], y1: sl.c[1], x2: sl.a[0], y2: sl.a[1], r: 3 }, 0.4, 0);
+                        const sideHit = hitSeg(ball, { x1: sl.b[0], y1: sl.b[1], x2: sl.c[0], y2: sl.c[1], r: 3 }, 0.4, 80);
+                        const baseHit = hitSeg(ball, { x1: sl.c[0], y1: sl.c[1], x2: sl.a[0], y2: sl.a[1], r: 3 }, 0.4, 80);
+                        if ((sideHit > 0 || baseHit > 0) && canTrigger('sling' + si, 0.12)) {
+                            slingHit[si] = 0.75;
+                            addScore(60); sfx('sling');
+                        }
                     }
                 });
                 TARGETS.forEach(tg => {
@@ -1078,13 +1176,13 @@ window.MiniGames = window.MiniGames || {};
                     }, 0.35, 60);
                     if (v > 90) {
                         tg.down = true; addScore(600, 'target'); combo++; comboT = 2.2;
-                        flash.target = 1; sfx('target');
+                            flash.target = 1; targetFlashGroup = tg.group; sfx('target');
                         spawn(tg.x - 4, tg.y, 12, 40, 1.1, Math.PI);
                         shake = Math.max(shake, 0.08); shakeMag = Math.max(shakeMag, 2);
-                        if (TARGETS.every(x => x.down)) {
+                        if (TARGETS.filter(x => x.group === tg.group).every(x => x.down)) {
                             addScore(4000); show('靶组全清 +4,000', 1.6); sfx('jackpot');
                             shake = Math.max(shake, 0.3); shakeMag = Math.max(shakeMag, 6);
-                            setTimeout(() => TARGETS.forEach(x => x.down = false), 900);
+                            setTimeout(() => TARGETS.filter(x => x.group === tg.group).forEach(x => x.down = false), 900);
                         }
                     }
                 });
@@ -1098,7 +1196,7 @@ window.MiniGames = window.MiniGames || {};
                 LANES.forEach((ln, i) => {
                     if (Math.hypot(ball.x - ln.x, ball.y - ln.y) < 13 && canTrigger('lane' + i, 0.4)) {
                         if (!lanesOn[i]) {
-                            lanesOn[i] = true; addScore(350, 'lane'); sfx('rollover');
+                            lanesOn[i] = true; rollerHit[i] = 1; addScore(350, 'lane'); sfx('rollover');
                             spawn(ln.x, ln.y, 8, 55, 0.8);
                             if (lanesOn.every(Boolean)) {
                                 if (mult < 9) {
@@ -1194,13 +1292,16 @@ window.MiniGames = window.MiniGames || {};
                 bumperContact.fill(false); jetContact.fill(false);
                 slingHit.fill(0);
                 kickerHit.fill(0);
+                reboundHit.fill(0);
+                rollerHit.fill(0);
+                gateHit.fill(0);
                 if (balls === Infinity) { resetBall(); return; }
                 balls--;
                 if (balls <= 0) { finish(score >= P.goal); return; }
                 resetBall();
             }
             function resetBall() {
-                launched = false; onRail = false; plunger = 0; plungerHold = false;
+                launched = false; onRail = false; plunger = 0; plungerHold = false; tiltActive = false;
                 ball = { x: LNCX, y: BALL_REST_Y, vx: 0, vy: 0 };
                 live.length = 0; live.push(ball);   // 失球/换球后回到单球状态
                 trail.length = 0;
@@ -1208,7 +1309,7 @@ window.MiniGames = window.MiniGames || {};
             }
             // 推挤：轻微扰动主球；累计倾斜警告，满 3 → TILT 失球惩罚
             function doNudge() {
-                if (over || !launched || onRail || warpHold > 0 || live.length === 0) return;
+                if (over || tiltActive || !launched || onRail || warpHold > 0 || live.length === 0) return;
                 if (nudgeCd > 0) return;
                 nudgeCd = 1.2;
                 const b = live[0];
@@ -1217,6 +1318,8 @@ window.MiniGames = window.MiniGames || {};
                 sfx('click');
                 if (tiltWarn >= 3) {
                     show('TILT！倾斜出局', 2); sfx('fail');
+                    tiltActive = true;
+                    FL.held = FR.held = false;
                     tiltWarn = 0;
                     loseBall();
                 } else {
@@ -2228,10 +2331,10 @@ window.MiniGames = window.MiniGames || {};
                 rr(LNCX - 15, headY + 1.5, 30, 3, 2); ctx.fill();
                 if (!launched && plunger > 0) {
                     ctx.fillStyle = 'rgba(6,10,20,0.8)';
-                    rr(LANE.r - 12, 400, 7, 190, 3); ctx.fill();
+                    rr(LNCX + 11, PLG_TOP + 6, 7, 190, 3); ctx.fill();
                     const ph = plunger * 184;
                     ctx.fillStyle = `hsl(${130 - plunger * 130},88%,56%)`;
-                    rr(LANE.r - 11, 586 - ph, 5, ph, 2); ctx.fill();
+                    rr(LNCX + 12, PLG_TOP + 196 - ph, 5, ph, 2); ctx.fill();
                 }
             }
 
@@ -2389,7 +2492,42 @@ window.MiniGames = window.MiniGames || {};
                         kickerHit[i] > 0.02 ? kb.hitPos[0] : kb.restPos[0],
                         kickerHit[i] > 0.02 ? kb.hitPos[1] : kb.restPos[1]);
                 });
+                CADET_REBOUNDERS.forEach((rp, i) => {
+                    if (reboundHit[i] > 0.02) drawCadetSprite(rp.image, rp.pos[0], rp.pos[1]);
+                });
+                CADET_GATES.forEach((gate, i) => {
+                    if (gateHit[i] <= 0.02) {
+                        drawCadetSprite(gate.image, gate.pos[0], gate.pos[1]);
+                        return;
+                    }
+                    const width = gate.image.naturalWidth * CADET_SCALE;
+                    const height = gate.image.naturalHeight * CADET_SCALE;
+                    ctx.save();
+                    ctx.translate(cadetX(gate.pos[0]) + width / 2, cadetY(gate.pos[1]) + height / 2);
+                    ctx.rotate((i ? -1 : 1) * gateHit[i] * 0.55);
+                    ctx.drawImage(gate.image, -width / 2, -height / 2, width, height);
+                    ctx.restore();
+                });
+                CADET_FLAGS.forEach(flag => drawCadetSprite(flag.image, flag.pos[0], flag.pos[1]));
+                if (flash.target > 0.02 && targetFlashGroup >= 0) {
+                    const frame = Math.min(2, Math.floor((1 - flash.target) * 3));
+                    const target = CADET_TARGET_FRAMES[targetFlashGroup][frame];
+                    drawCadetSprite(target.image, target.pos[0], target.pos[1]);
+                }
+                CADET_ROLLERS.forEach((frames, i) => {
+                    if (rollerHit[i] <= 0.02) return;
+                    const frame = Math.min(frames.length - 1, Math.floor((1 - rollerHit[i]) * frames.length));
+                    const sprite = frames[frame];
+                    drawCadetSprite(sprite.image, sprite.pos[0], sprite.pos[1]);
+                });
                 if (lanesOn.some(Boolean)) drawLanes();
+                lanesOn.forEach((on, i) => {
+                    if (!on) return;
+                    const image = CADET_LITE.lanes[i];
+                    if (image.complete && image.naturalWidth) drawCadetSprite(image, CADET_LITE_POS[i][0], CADET_LITE_POS[i][1]);
+                });
+                if (flash.ramp > 0.02) CADET_LITE.ramp.forEach(light => drawCadetSprite(light.image, light.pos[0], light.pos[1]));
+                if (flash.warp > 0.02) CADET_LITE.warp.forEach(light => drawCadetSprite(light.image, light.pos[0], light.pos[1]));
                 if (flash.spin > 0.02 || Math.abs(spinnerVel) > 0.8) drawSpinner();
                 if (flash.saucer > 0.02 || saucerHold > 0) drawSaucer();
                 if (warpHold > 0 || flash.warp > 0.02) drawWarpJet();
@@ -2852,7 +2990,11 @@ window.MiniGames = window.MiniGames || {};
                 for (let i = 0; i < 3; i++) jets[i] = Math.max(0, jets[i] - dt * 3.2);
                 for (let i = 0; i < 2; i++) slingHit[i] = Math.max(0, slingHit[i] - dt * 5.5);
                 for (let i = 0; i < 2; i++) kickerHit[i] = Math.max(0, kickerHit[i] - dt * 8);
+                for (let i = 0; i < reboundHit.length; i++) reboundHit[i] = Math.max(0, reboundHit[i] - dt * 7);
+                for (let i = 0; i < rollerHit.length; i++) rollerHit[i] = Math.max(0, rollerHit[i] - dt * 5);
+                for (let i = 0; i < gateHit.length; i++) gateHit[i] = Math.max(0, gateHit[i] - dt * 6);
                 for (const k in flash) flash[k] = Math.max(0, flash[k] - dt * 2.4);
+                if (flash.target <= 0.02) targetFlashGroup = -1;
                 missionFlash = Math.max(0, missionFlash - dt * 1.2);
                 shake = Math.max(0, shake - dt * 3.4);
                 toastT = Math.max(0, toastT - dt);

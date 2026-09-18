@@ -7,7 +7,7 @@ var MG = window.MG;
 // 设计：所有音色由振荡器/噪声缓冲实时合成，避免加载任何外部素材。
 // 浏览器要求「用户手势后才能出声」，故第一次发声前须调用 unlock()。
 MG.audio = {
-    ctx: null, master: null, muted: false, ready: false,
+    ctx: null, master: null, muted: false, ready: false, volume: 0.42, bgmGain: null,
     MUTE_KEY: 'mg-audio-mute',
     init() {
         if (this.ctx) return this.ctx;
@@ -23,6 +23,9 @@ MG.audio = {
             this.master = this.ctx.createGain();
             this.master.gain.value = this.muted ? 0 : 0.42;
             this.master.connect(this.ctx.destination);
+            this.bgmGain = this.ctx.createGain();
+            this.bgmGain.gain.value = 1;
+            this.bgmGain.connect(this.master);
             this.ready = true;
         } catch (e) { this.ctx = null; }
         return this.ctx;
@@ -40,6 +43,12 @@ MG.audio = {
         return this.muted;
     },
     toggleMuted() { return this.setMuted(!this.muted); },
+    // 音量（0~1）：受设置面板控制；与 mute 正交（mute 仍优先静音）
+    setVolume(v) {
+        this.volume = Math.max(0, Math.min(1, +v || 0));
+        if (this.master) { try { this.master.gain.value = this.muted ? 0 : this.volume; } catch (e) {} }
+        return this.volume;
+    },
     // 单音：freq→to 可做滑音（弹球 bumper 的「叮嘭」就靠它）
     tone(o) {
         if (this.muted) return;
@@ -62,7 +71,8 @@ MG.audio = {
                 f.type = 'lowpass'; f.frequency.value = o.lp;
                 osc.connect(f); node = f;
             }
-            node.connect(g); g.connect(this.master);
+            const out = o.dest || this.master;
+            node.connect(g); g.connect(out);
             osc.start(t0); osc.stop(t0 + dur + 0.03);
         } catch (e) { }
     },
@@ -94,12 +104,24 @@ MG.audio = {
             const g = ctx.createGain();
             g.gain.setValueAtTime(o.gain == null ? 0.18 : o.gain, t0);
             g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-            src.connect(f); f.connect(g); g.connect(this.master);
+            const out = o.dest || this.master;
+            src.connect(f); f.connect(g); g.connect(out);
             src.start(t0); src.stop(t0 + dur + 0.03);
         } catch (e) { }
     },
     // 常用音效预设（弹球 / 通用）
+    // 去抖 + 静音保护（优化 P1-5）：同音 20ms 内合并，避免高频游戏（弹幕/射击/弹球）
+    // 一帧触发几十次导致振荡器节点堆积、爆音；muted 时直接跳过，省去无谓合成。
+    SFX_DEDUP: 0.02,
     sfx(name) {
+        if (this.muted) return;
+        const ctx = this.init();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        this._sfxLast = this._sfxLast || {};
+        const last = this._sfxLast[name];
+        if (last != null && (now - last) < (this.SFX_DEDUP || 0.02)) return;
+        this._sfxLast[name] = now;
         const A = this;
         const P = {
             bumper: () => { A.tone({ freq: 440, to: 980, dur: 0.11, type: 'square', gain: 0.2 }); A.noise({ dur: 0.05, freq: 2600, gain: 0.1 }); },
@@ -123,6 +145,8 @@ MG.audio = {
         };
         const f = P[name];
         if (f) { try { f(); } catch (e) { } }
+        // BGM 闪避（ducking）：发声时短暂压低 BGM，避免抢戏（Tier1-2 增强）
+        try { if (!this.muted && this.bgmGain && this.bgm && this.bgm.playing) { const g = this.bgmGain.gain, c = this.ctx.currentTime; g.cancelScheduledValues(c); g.setValueAtTime(g.value, c); g.linearRampToValueAtTime(0.35, c + 0.02); g.linearRampToValueAtTime(1, c + 0.28); } } catch (e) {}
     },
     // ---------- 循环 BGM（16 分音符步进序列器 + 预调度，抗抖动）----------
     bgm: {
@@ -184,21 +208,23 @@ MG.audio = {
             const s = step % total;
             const bar = Math.floor(s / 16), b = s % 16;
             const when = Math.max(0, at - A.ctx.currentTime);
+            const tone = (o) => A.tone(Object.assign({ dest: A.bgmGain }, o));
+            const noise = (o) => A.noise(Object.assign({ dest: A.bgmGain }, o));
             // 主旋律
             const n = S.lead[bar][b];
-            if (n > 0) A.tone({ freq: this.mtof(n), dur: 0.14, type: 'square', gain: 0.075, delay: when });
+            if (n > 0) tone({ freq: this.mtof(n), dur: 0.14, type: 'square', gain: 0.075, delay: when });
             // 琶音（弱）
             if (b % 2 === 0) {
                 const ch = S.chords[bar];
                 const arp = ch[(b / 2) % ch.length];
-                A.tone({ freq: this.mtof(arp - 12), dur: 0.1, type: 'triangle', gain: 0.05, delay: when });
+                tone({ freq: this.mtof(arp - 12), dur: 0.1, type: 'triangle', gain: 0.05, delay: when });
             }
             // 贝斯（每拍）
-            if (b % 4 === 0) A.tone({ freq: this.mtof(S.bass[bar]), dur: 0.22, type: 'triangle', gain: 0.12, delay: when });
+            if (b % 4 === 0) tone({ freq: this.mtof(S.bass[bar]), dur: 0.22, type: 'triangle', gain: 0.12, delay: when });
             // 鼓
-            if (b === 0 || b === 8) A.tone({ freq: 150, to: 48, dur: 0.12, type: 'sine', gain: 0.2, delay: when });
-            if (b === 4 || b === 12) A.noise({ dur: 0.11, freq: 1700, q: 0.7, gain: 0.1, delay: when });
-            if (b % 2 === 0) A.noise({ dur: 0.03, freq: 7200, type: 'highpass', gain: 0.03, delay: when });
+            if (b === 0 || b === 8) tone({ freq: 150, to: 48, dur: 0.12, type: 'sine', gain: 0.2, delay: when });
+            if (b === 4 || b === 12) noise({ dur: 0.11, freq: 1700, q: 0.7, gain: 0.1, delay: when });
+            if (b % 2 === 0) noise({ dur: 0.03, freq: 7200, type: 'highpass', gain: 0.03, delay: when });
         },
     },
 };

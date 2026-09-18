@@ -40,7 +40,12 @@ MG.fxPool = function (max) {
         },
         burst(x, y, o) {
             o = o || {};
-            const n = Math.min(o.n != null ? o.n : 14, CAP - ps.length);
+            let n = Math.min(o.n != null ? o.n : 14, CAP - ps.length);
+            // 减弱动效（Tier1-2）：无障碍模式下大幅削减粒子（保留极少反馈），避免眩晕
+            if (MG.a11y && MG.a11y.reducedMotion) n = Math.min(n, 4);
+            // 自适应画质：quality<1 时按比例减粒子，低端机自动减负（优化 P2-6）
+            const q = (this._quality != null && this._quality < 1) ? this._quality : 1;
+            if (q < 1) n = Math.max(0, Math.round(n * q));
             const cs = o.colors || ['#ffd56b', '#ff9d5c', '#ff7a8b', '#fff3c4'];
             const ang = o.angle, spread = o.spread != null ? o.spread : TAU;
             for (let i = 0; i < n; i++) {
@@ -231,6 +236,8 @@ MG.cam = function () {
     let sx = 0, sy = 0, sAmt = 0, sT = 0, sDur = 0;
     return {
         shake(amt, dur) {
+            // 减弱动效（Tier1-2）：无障碍模式完全关闭震屏
+            if (MG.a11y && MG.a11y.reducedMotion) return this;
             amt = amt != null ? amt : 6;
             dur = dur != null ? dur : 0.28;
             if (amt >= sAmt || sT >= sDur) { sAmt = amt; sDur = dur; sT = 0; }

@@ -55,7 +55,14 @@ MG.ui = {
 //     按 (色+尺寸+锐度) 缓存成离屏位图复用，每帧只 drawImage
 //  ③ 分辨率感知 —— 离屏按 deviceScale 渲染，高分屏背景依然锐利
 MG.gfx = {
-    _cache: new Map(),
+    // 画质缓存按类型分桶：px/scene/wood/glow 各自独立 Map + 独立上限，
+    // 避免弹幕/射击游戏的 px 精灵大量生成把 scene/wood 挤掉，引发每帧重建
+    // 昂贵位图（含 1 万+ 次 fillRect 的 grain 循环）的缓存抖动（优化 P0-1）。
+    _caches: {
+        px: new Map(), scene: new Map(), wood: new Map(), glow: new Map(),
+    },
+    // broom/piece 离屏缓存（优化 P0-2）、text 字体串缓存（优化 P2-9）
+    _broomCache: null, _pieceCache: null, _fontCache: null,
     MAX_CACHE: 48,
 
     // ---------- 颜色算子 ----------
@@ -104,25 +111,26 @@ MG.gfx = {
     // 返回离屏 canvas（原始 1:1 点阵），绘制时配合 pxDraw 关闭平滑放大
     px(art, palette, key) {
         key = key || ('px|' + art.join('|') + '|' + JSON.stringify(palette));
-        let img = this._cache.get(key);
-        if (img) { this._cache.delete(key); this._cache.set(key, img); return img; }
+        const c = this._caches.px;
+        let img = c.get(key);
+        if (img) { c.delete(key); c.set(key, img); return img; }
         const w = art[0].length, h = art.length;
         img = document.createElement('canvas');
         img.width = w; img.height = h;
         const x = img.getContext('2d');
         for (let r = 0; r < h; r++) {
             const row = art[r];
-            for (let c = 0; c < w; c++) {
-                const ch = row[c];
+            for (let c0 = 0; c0 < w; c0++) {
+                const ch = row[c0];
                 if (ch === '.' || ch === ' ') continue;
                 const col = palette[ch];
                 if (!col) continue;
                 x.fillStyle = col;
-                x.fillRect(c, r, 1, 1);
+                x.fillRect(c0, r, 1, 1);
             }
         }
-        if (this._cache.size >= this.MAX_CACHE * 4) this._cache.delete(this._cache.keys().next().value);
-        this._cache.set(key, img);
+        if (c.size >= this.MAX_CACHE * 4) c.delete(c.keys().next().value);
+        c.set(key, img);
         return img;
     },
     // 以目标尺寸绘制像素精灵（关闭平滑，保持硬边像素风）
@@ -145,15 +153,19 @@ MG.gfx = {
     scene(ctx, W, H, c1, c2) {
         const scale = ctx.__mgScale || 1;
         const key = `s|${c1}|${c2}|${W}x${H}|${scale.toFixed(2)}`;
-        let img = this._cache.get(key);
-        if (img) { this._cache.delete(key); this._cache.set(key, img); return ctx.drawImage(img, 0, 0, W, H); }
+        const c = this._caches.scene;
+        let img = c.get(key);
+        if (img) { c.delete(key); c.set(key, img); return ctx.drawImage(img, 0, 0, W, H); }
         img = this._buildScene(W, H, c1, c2, scale);
-        if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
-        this._cache.set(key, img);
+        if (c.size >= this.MAX_CACHE) c.delete(c.keys().next().value);
+        c.set(key, img);
         ctx.drawImage(img, 0, 0, W, H);
     },
     // 手动清理缓存（切后台 / 大量换肤 / 内存紧张时调用）
-    clearCache() { this._cache.clear(); },
+    clearCache() {
+        for (const k in this._caches) this._caches[k].clear();
+        this._broomCache = null; this._pieceCache = null; this._fontCache = null;
+    },
     _buildScene(W, H, c1, c2, scale) {
         const cv = document.createElement('canvas');
         cv.width = Math.max(1, Math.round(W * scale));
@@ -364,7 +376,9 @@ MG.gfx = {
         const font = opt.font || `"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif`;
         const align = opt.align || 'center';
         ctx.save();
-        ctx.font = `${w} ${Math.round(size)}px ${font}`;
+        const _fk = w + '|' + Math.round(size) + '|' + font;
+        const _fc = this._fontCache || (this._fontCache = {});
+        ctx.font = _fc[_fk] || (_fc[_fk] = (w + ' ' + Math.round(size) + 'px ' + font));   // 字体串缓存（优化 P2-9）
         ctx.textAlign = align;
         ctx.textBaseline = opt.baseline || 'middle';
         if (isEmoji) {
@@ -409,13 +423,14 @@ MG.gfx = {
         seed = seed || 42;
         const scale = ctx.__mgScale || 1;
         const key = `w|${c1}|${c2}|${Math.round(W)}x${Math.round(H)}|${seed}|${scale.toFixed(2)}`;
-        let img = this._cache.get(key);
+        const c = this._caches.wood;
+        let img = c.get(key);
         if (!img) {
             // 只按 (0,0) 烘焙位图，再由 drawImage(img,x,y) 放置 —— 缓存 key 不含 x,y，
             // 若把 x,y 烤进像素，不同位置的木框会复用错位位图（右下露出透明底）。
             img = this._buildWood(0, 0, W, H, c1, c2, seed, scale);
-            if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
-            this._cache.set(key, img);
+            if (c.size >= this.MAX_CACHE) c.delete(c.keys().next().value);
+            c.set(key, img);
         }
         ctx.drawImage(img, x, y, W, H);
     },
@@ -493,7 +508,8 @@ MG.gfx = {
         const scale = (ctx && ctx.__mgScale) || 1;
         const rr = Math.max(2, Math.round(r));
         const key = 'g|' + color + '|' + rr + '|' + scale.toFixed(2);
-        let img = this._cache.get(key);
+        const c = this._caches.glow;
+        let img = c.get(key);
         if (!img) {
             const cv = document.createElement('canvas');
             cv.width = cv.height = Math.max(1, Math.round(rr * 2 * scale));
@@ -505,8 +521,8 @@ MG.gfx = {
             g.addColorStop(1, this.rgba(color, 0));
             xc.fillStyle = g; xc.fillRect(0, 0, cv.width, cv.height);
             img = cv;
-            this._cache.set(key, img);
-            if (this._cache.size >= this.MAX_CACHE) this._cache.delete(this._cache.keys().next().value);
+            c.set(key, img);
+            if (c.size >= this.MAX_CACHE) c.delete(c.keys().next().value);
         }
         ctx.drawImage(img, x - rr, y - rr, rr * 2, rr * 2);
     },
@@ -584,7 +600,13 @@ MG.canvas = function (parent, w, h) {
     fit();
     // 暴露给游戏在 viewport 变化后强制重排
     parent.__mgRefit = fit;
-    window.addEventListener('resize', fit);
+    // 窗口 resize 风暴在低端面会反复重建 backing store，用 rAF 节流（优化 P2-8）
+    let _resizeRAF = 0;
+    const onResize = () => {
+        if (_resizeRAF) return;
+        _resizeRAF = requestAnimationFrame(() => { _resizeRAF = 0; try { fit(); } catch (e) { } });
+    };
+    window.addEventListener('resize', onResize);
     // 监听父容器尺寸变化（侧栏展开 / 弹窗 / 旋转 / 容器变化但窗口不变），销毁时断开
     let ro = null;
     if (typeof ResizeObserver !== 'undefined') {
@@ -594,7 +616,7 @@ MG.canvas = function (parent, w, h) {
     // 绑在 canvas 上：让 MG.bind / 自定义事件处理能从 c.__mgW 推出 deviceScale
     // （不依赖 ctx.__mgScale，因为部分外部代码取不到 ctx）
     c.__mgW = w; c.__mgH = h;
-    return { c, ctx, w, h, fit, destroy() { window.removeEventListener('resize', fit); if (ro) { try { ro.disconnect(); } catch (e) { } } } };
+    return { c, ctx, w, h, fit, destroy() { window.removeEventListener('resize', onResize); if (ro) { try { ro.disconnect(); } catch (e) { } } } };
 };
 
 // ================= 分层渲染辅助（issue #13）=================

@@ -3,6 +3,7 @@
 const fs = require('fs');
 const dat = fs.readFileSync(process.argv[2] || 'F:/BaiduNetdiskDownload/FullTilt/CADET/CADET.DAT');
 const fixedSizes = [2, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0];
+const filter = new RegExp(process.argv[3] || 'bump|turbo|flip|ball|plunger', 'i');
 let offset = 183 + dat.readUInt16LE(181);
 const groupCount = dat.readUInt16LE(175);
 
@@ -27,5 +28,5 @@ for (let group = 0; group < groupCount; group++) {
         }
         offset += size;
     }
-    if (name && /bump|turbo|flip|ball|plunger/i.test(name)) console.log(group, name, JSON.stringify(bitmaps));
+    if (name && filter.test(name)) console.log(group, name, JSON.stringify(bitmaps));
 }
