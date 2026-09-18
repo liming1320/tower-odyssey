@@ -12,12 +12,19 @@ MG.overlay = function (parent, html) {
     parent.appendChild(o);
     return o;
 };
-MG.hint = function (parent, text) {
-    const h = document.createElement('div');
-    h.className = 'mg-hint';
-    h.textContent = text;
-    parent.appendChild(h);
-    return h;
+MG.hint = function (parent, cfg, api) {
+    const wrap = document.createElement('div');
+    wrap.className = 'mg-hint';
+    let text = cfg, solver = null, label = '提示';
+    if (cfg && typeof cfg === 'object') { text = cfg.text; solver = cfg.solver; label = cfg.label || '提示'; }
+    if (text) { const t = document.createElement('div'); t.className = 'mg-hint-text'; t.textContent = text; wrap.appendChild(t); }
+    if (solver) {
+        const b = document.createElement('button'); b.className = 'mg-hint-btn'; b.textContent = label;
+        b.onclick = () => { try { const r = solver(api); if (r && typeof r === 'string') { const m = document.createElement('div'); m.className = 'mg-hint-text'; m.textContent = r; wrap.appendChild(m); } } catch (e) {} };
+        wrap.appendChild(b);
+    }
+    parent.appendChild(wrap);
+    return wrap;
 };
 // 圆形按钮
 MG.btn = function (parent, text, onClick) {

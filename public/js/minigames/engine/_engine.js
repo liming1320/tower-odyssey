@@ -157,7 +157,11 @@ window.MG = window.MG || {};
             const raw = last ? (t - last) / 1000 : 0;
             last = t;
             if (o.paused && o.paused()) { if (o.render) o.render(perf.alpha); return; }   // 暂停只重绘不推进
-            advance(raw);
+            try { advance(raw); tick._errs = 0; }
+            catch (err) {
+                tick._errs = (tick._errs || 0) + 1;
+                if (tick._errs > 5) { running = false; rafId = null; try { (MG.onFatal || MG.showGameError)(err); } catch (_) {} return; }
+            }
         }
         return {
             perf,
@@ -322,12 +326,15 @@ window.MG = window.MG || {};
                 layered.blitHud(ctx);
             } else {
                 ctx.clearRect(0, 0, W, H);
+                if (MG.bg && MG.bg.on) { try { MG.bg.draw(ctx, W, H, S.t, ctx.__mgScale); } catch (e) {} }
                 ctx.save();
                 if (cam) cam.apply(ctx, W, H);
                 try { cfg.draw && cfg.draw(ctx, S, P, W, H, api); } catch (e) { onError(e, 'draw'); }
                 if (fx) fx.draw(ctx, W, H);
                 ctx.restore();
             }
+            // 后处理合成层（A2）：暗角 + 扫描线 + bloom 近似，opt-in
+            if (MG.postfx && MG.postfx.enabled && MG.postfx.enabled()) { try { MG.postfx.frame(ctx, c, W, H); } catch (e) {} }
         };
         let _rect = null;   // 拖拽期间缓存的画布矩形，避免 onMove 每次 getBoundingClientRect 触发 reflow（优化 P1-4）
         const pos = e => {
@@ -470,10 +477,11 @@ window.MG = window.MG || {};
                     else if (L.perf.fps >= 55) quality = Math.min(1, quality + 0.005);
                 }
                 if (fx) fx._quality = quality;   // 让粒子池据画质减粒子（优化 P2-6）
+                MG._quality = quality;           // 供后处理 bloom 等读取全局画质
                 paint();
             },
         });
-        if (cfg.hint) MG.hint(container, cfg.hint);
+        if (cfg.hint) MG.hint(container, cfg.hint, api);
         paint();
         if (opts.onScore && cfg.score) opts.onScore(cfg.score(S, P));
         L.start();
@@ -584,7 +592,7 @@ window.MG = window.MG || {};
                 return { push() { try { st.push(snap()); if (st.length > MAX) st.shift(); } catch (e) {} }, undo() { if (!st.length) return false; try { rest(st.pop()); } catch (e) { return false; } return true; }, canUndo() { return st.length > 0; }, clear() { st.length = 0; }, size() { return st.length; } };
             })(),
         };
-        if (cfg.hint) MG.hint(container, cfg.hint);
+        if (cfg.hint) MG.hint(container, cfg.hint, api);
         paint();
         if (L) L.start();
         return {

@@ -18,9 +18,11 @@ MG.fxPool = function (max) {
     const api = {
         list: ps,
         _flash: null,    // 全屏闪屏叠加 { color, amt, t, dur }
-        _hs: 0,          // 顿帧剩余秒数（命中/爆炸时冻结画面）
+        _hs: 0,
+        _W: 0, _H: 0,    // 天气生成所需画布尺寸（draw 时缓存）
+        _weather: null,  // 环境天气（A4）：rain/snow/embers          // 顿帧剩余秒数（命中/爆炸时冻结画面）
         get count() { return ps.length; },
-        clear() { ps.length = 0; this._flash = null; this._hs = 0; return this; },
+        clear() { ps.length = 0; this._flash = null; this._hs = 0; this._weather = null; return this; },
         // 全屏闪屏：color 闪光色，amt 0~1 强度，dur 秒
         flash(color, amt, dur, opt) {
             this._flash = { color: color || '#fff', amt: amt == null ? 0.55 : amt, t: 0, dur: dur || 0.26 };
@@ -28,6 +30,8 @@ MG.fxPool = function (max) {
         },
         // 顿帧（打击感）：ms 毫秒内冻结 tick（粒子/相机仍推进，闪屏仍播）
         hitstop(ms) { this._hs = Math.max(this._hs, (ms || 0) / 1000); return this; },
+        // 环境天气（A4）：type='rain'|'snow'|'embers'，不传则关闭
+        weather(type, opt) { if (!type) { this._weather = null; return this; } this._weather = { type: type, opt: opt || {}, acc: 0 }; return this; },
         // 运动拖尾：在 (x,y) 留一颗会淡出的小光点，连成尾迹
         trail(x, y, o) {
             o = o || {};
@@ -97,7 +101,19 @@ MG.fxPool = function (max) {
                 this._flash.t += dt;
                 if (this._flash.t >= this._flash.dur) this._flash = null;
             }
-            for (let i = ps.length - 1; i >= 0; i--) {
+            // 环境天气（A4）：持续生成粒子（减弱动效时跳过）
+        if (this._weather && this._W && !(MG.a11y && MG.a11y.reducedMotion)) {
+            const w = this._weather; w.acc = (w.acc || 0) + dt;
+            const isRain = w.type === 'rain', isSnow = w.type === 'snow';
+            const rate = w.opt.rate || (isRain ? 26 : isSnow ? 12 : 10);
+            while (w.acc > 1 / rate && ps.length < CAP - 24) {
+                w.acc -= 1 / rate;
+                if (isRain) ps.push({ k: 'spark', x: Math.random() * this._W, y: -10, vx: (w.opt.vx || 0) + (Math.random() - 0.5) * 20, vy: (w.opt.speed || 340) * (0.8 + Math.random() * 0.4), g: 0, drag: 1, r: 1.6, c: 'rgba(170,210,255,0.9)', t: 0, life: 1.4, rot: 0, vr: 0, glow: false });
+                else if (isSnow) ps.push({ k: 'dot', x: Math.random() * this._W, y: -10, vx: (Math.random() - 0.5) * 24, vy: 50 + Math.random() * 40, g: 0, drag: 1, r: 1.6 + Math.random() * 1.8, c: 'rgba(255,255,255,0.92)', t: 0, life: 3, rot: 0, vr: 0, glow: true });
+                else ps.push({ k: 'dot', x: Math.random() * this._W, y: this._H + 10, vx: (Math.random() - 0.5) * 20, vy: -(w.opt.speed || 60) * (0.7 + Math.random() * 0.6), g: 0, drag: 1, r: 1.4 + Math.random() * 1.4, c: 'rgba(255,170,90,0.9)', t: 0, life: 2.4, rot: 0, vr: 0, glow: true });
+            }
+        }
+        for (let i = ps.length - 1; i >= 0; i--) {
                 const p = ps[i];
                 p.t += dt;
                 if (p.t >= p.life) { ps.splice(i, 1); continue; }
@@ -109,7 +125,7 @@ MG.fxPool = function (max) {
             }
             return this;
         },
-        draw(ctx, W, H) {
+        draw(ctx, W, H) { this._W = W || this._W; this._H = H || this._H;
             if (!ps.length && !this._flash) return this;
             ctx.save();
             ctx.lineCap = 'round';

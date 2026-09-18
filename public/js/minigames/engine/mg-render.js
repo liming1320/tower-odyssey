@@ -578,6 +578,7 @@ MG.canvas = function (parent, w, h) {
     // 启动即解锁音频（游戏均在用户点击「开始」手势内启动，满足 Web Audio 策略）
     try { MG.audio && MG.audio.unlock && MG.audio.unlock(); } catch (e) { }
     const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const _S = (MG.settings || {});
     let deviceScale = dpr;          // 第一次 fit 之前先给个初值
     const applyTransform = () => ctx.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
     const fit = () => {
@@ -586,7 +587,8 @@ MG.canvas = function (parent, w, h) {
         c.style.width = (w * s) + 'px';
         c.style.height = (h * s) + 'px';
         // backing 像素 = 逻辑 * dpr * 显示放大，封顶 3（避免低端机过载）
-        const target = Math.min(3, dpr * Math.max(1, s));
+        const _rs = (_S.renderScale > 0 ? _S.renderScale : 1);
+        const target = Math.min(3, dpr * Math.max(1, s) * _rs);
         if (Math.abs(target - deviceScale) > 0.05 || c.width !== Math.round(w * target)) {
             deviceScale = target;
             c.width = Math.round(w * deviceScale);
@@ -595,6 +597,7 @@ MG.canvas = function (parent, w, h) {
         }
         // 暴露当前锐度倍率：MG.gfx 用它决定离屏缓存的分辨率，保证高分屏不糊
         ctx.__mgScale = deviceScale;
+        try { if (_S.pixelated) { c.style.imageRendering = 'pixelated'; ctx.imageSmoothingEnabled = false; } else { c.style.imageRendering = ''; ctx.imageSmoothingEnabled = true; } } catch (e) {}
     };
     // 初次也走一次真正的 backing 设置（让位图级 font/lineWidth 不糊）
     fit();

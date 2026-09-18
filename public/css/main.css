@@ -1469,3 +1469,8 @@ body.in-battle .avatar-btn { display: none; }
 .mg-coach-nav button { font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); background: #3a3160; color: #e8e6f4; cursor: pointer; }
 .mg-coach-nav button:disabled { opacity: .4; cursor: default; }
 .mg-devhud { position: absolute; top: 8px; left: 8px; z-index: 55; font: 11px/1.4 monospace; color: #7adf7a; background: rgba(0,0,0,.5); padding: 2px 6px; border-radius: 6px; pointer-events: none; }
+
+/* 引擎增强轮（A/B/C）：提示文本 + 解法按钮（mg-ui MG.hint 增强，B7） */
+.mg-hint-text { margin-top: 4px; line-height: 1.5; pointer-events: none; }
+.mg-hint-btn { pointer-events: auto; margin-top: 6px; display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,213,107,0.5); background: rgba(38,32,68,0.9); color: #ffd56b; cursor: pointer; }
+.mg-hint-btn:hover { background: rgba(58,49,96,0.95); }

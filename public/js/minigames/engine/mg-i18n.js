@@ -4,6 +4,7 @@ window.MG = window.MG || {}; var MG = window.MG;
 MG.i18n = {
     lang: 'zh',
     dict: {},
+    languages: [{ id: 'zh', name: '中文' }, { id: 'en', name: 'English' }],
     set(dict, lang) { if (lang) this.lang = lang; if (dict) Object.assign(this.dict, dict); },
     t(s) { return (this.dict[s] != null ? this.dict[s] : s); },
 };

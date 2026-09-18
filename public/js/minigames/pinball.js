@@ -238,7 +238,6 @@ window.MiniGames = window.MiniGames || {};
         s.push({ x1: LANE.l, y1: 690, x2: LANE.r, y2: 690, r: 2 });
         s.push(...polySegs(GUIDE_L, false, 3));
         s.push(...polySegs(GUIDE_R, false, 3));
-        SLINGS.forEach(sl => s.push(...polySegs([sl.a, sl.b, sl.c], true, 3)));
         return s;
     })();
 
@@ -408,6 +407,7 @@ window.MiniGames = window.MiniGames || {};
                 REBOUND.forEach(rp => {
                     if (hitCircle(ball, rp.x, rp.y, 7, 0.6, 360) > 0) {
                         reboundHit[rp.i] = 1;
+                        pulseTableObject('rebound' + rp.i, 0.28);
                         sfx('sling'); spawn(rp.x, rp.y, 6, 30, 0.9);
                     }
                 });
@@ -706,6 +706,38 @@ window.MiniGames = window.MiniGames || {};
             const FL = { ...FLIP_L, ang: FLIP_L.rest, omega: 0, held: false };
             const FR = { ...FLIP_R, ang: FLIP_R.rest, omega: 0, held: false };
 
+            const TABLE_OBJECTS = [
+                ...BUMPERS.map((ref, i) => ({ id: 'bumper' + i, kind: 'bumper', ref, shape: { type: 'circle', r: ref.r }, state: 'idle', timer: 0, frame: 0, frames: 8 })),
+                ...JETS.map((ref, i) => ({ id: 'jet' + i, kind: 'jet', ref, shape: { type: 'circle', r: ref.r }, state: 'idle', timer: 0, frame: 0, frames: 8 })),
+                ...TARGETS.map((ref, i) => ({ id: 'target' + i, kind: 'target', ref, shape: { type: 'segment', r: 3 }, state: 'ready', timer: 0, frame: 0, frames: 3 })),
+                ...CADET_GATES.map((ref, i) => ({ id: 'gate' + i, kind: 'gate', ref, shape: { type: 'segment', r: 2 }, state: 'closed', timer: 0, frame: 0, frames: 1 })),
+                ...CADET_KICKERS.map((ref, i) => ({ id: 'kicker' + i, kind: 'kicker', ref, shape: { type: 'circle', r: 7 }, state: 'idle', timer: 0, frame: 0, frames: 2 })),
+                ...REBOUND.map((ref, i) => ({ id: 'rebound' + i, kind: 'rebound', ref, shape: { type: 'circle', r: 7 }, state: 'idle', timer: 0, frame: 0, frames: 2 })),
+                ...CADET_ROLLERS.map((ref, i) => ({ id: 'roller' + i, kind: 'roller', ref, shape: { type: 'circle', r: 6 }, state: 'idle', timer: 0, frame: 0, frames: ref.length })),
+                ...LAMPS.map(ref => ({ id: 'lamp:' + ref.id, kind: 'lamp', ref, shape: { type: 'circle', r: ref.r }, state: 'off', timer: 0, frame: 0, frames: 1 })),
+                { id: 'flipperL', kind: 'flipper', ref: FL, shape: { type: 'capsule', r: 8 }, state: 'rest', timer: 0, frame: 0, frames: 8 },
+                { id: 'flipperR', kind: 'flipper', ref: FR, shape: { type: 'capsule', r: 8 }, state: 'rest', timer: 0, frame: 0, frames: 8 },
+            ];
+            const TABLE_OBJECT_BY_ID = Object.fromEntries(TABLE_OBJECTS.map(object => [object.id, object]));
+            const setTableObjectState = (id, state, duration) => {
+                const object = TABLE_OBJECT_BY_ID[id];
+                if (!object) return;
+                object.state = state;
+                object.timer = duration || 0;
+                object.frame = state === 'hit' ? 1 : 0;
+            };
+            const pulseTableObject = (id, duration) => setTableObjectState(id, 'hit', duration || 0.5);
+            const updateTableObjects = dt => TABLE_OBJECTS.forEach(object => {
+                if (object.timer <= 0) return;
+                object.timer = Math.max(0, object.timer - dt);
+                if (object.timer <= 0) {
+                    object.state = object.kind === 'gate' ? 'closed' : object.kind === 'target' ? 'ready' : 'idle';
+                    object.frame = 0;
+                    return;
+                }
+                object.frame = Math.min(object.frames - 1, 1 + Math.floor((1 - object.timer / 0.5) * (object.frames - 1)));
+            });
+
             const show = (s, d) => { toast = s; toastT = d || 1.4; };
             // ev：得分事件标签（bumper/ramp/target/spin/lane/saucer），用于推进当前任务
             const addScore = (n, ev) => {
@@ -1003,6 +1035,8 @@ window.MiniGames = window.MiniGames || {};
                 nx /= d; ny /= d;
                 b.x = cx + nx * R; b.y = cy + ny * R;
                 const vn = b.vx * nx + b.vy * ny;
+                if (vn >= 0) return 0;
+                b.__contactHits = (b.__contactHits || 0) + 1;
                 if (vn < 0) { b.vx -= (1 + rest) * vn * nx; b.vy -= (1 + rest) * vn * ny; }
                 if (kick && vn < 0) { b.vx += nx * kick; b.vy += ny * kick; }
                 return -Math.min(0, vn);
@@ -1035,6 +1069,8 @@ window.MiniGames = window.MiniGames || {};
                 nx /= d; ny /= d;
                 b.x = cx + nx * R; b.y = cy + ny * R;
                 const vn = b.vx * nx + b.vy * ny;
+                if (vn >= 0) return 0;
+                b.__contactHits = (b.__contactHits || 0) + 1;
                 if (vn < 0) {
                     b.vx -= (1 + rest) * vn * nx;
                     b.vy -= (1 + rest) * vn * ny;
@@ -1092,6 +1128,7 @@ window.MiniGames = window.MiniGames || {};
                     }, 0.5, 45);
                     if (impact > 45 && canTrigger('gate' + i, 0.18)) {
                         gateHit[i] = 1;
+                        pulseTableObject('gate' + i, 0.32);
                         addScore(125, 'spin'); sfx('click');
                     }
                 });
@@ -1105,6 +1142,7 @@ window.MiniGames = window.MiniGames || {};
                     if (hit.touch) bumps[i] = 1;
                     if (hit.touch && !bumperContact[i] && canTrigger('bumper' + i, 0.12)) {
                         bumps[i] = 1;
+                        pulseTableObject('bumper' + i, 0.5);
                         turboLit[i] = true;
                         addScore(120, 'bumper'); combo++; comboT = 2.2;
                         sfx('bumper'); spawn(bp.x, bp.y, 12, bp.hue, 1.1);
@@ -1123,6 +1161,7 @@ window.MiniGames = window.MiniGames || {};
                     if (hit.touch) jets[i] = 1;
                     if (hit.touch && !jetContact[i] && canTrigger('jet' + i, 0.12)) {
                         jets[i] = 1;
+                        pulseTableObject('jet' + i, 0.5);
                         jetLit[i] = true;
                         addScore(150, 'jet'); combo++; comboT = 2.2;
                         sfx('jet');
@@ -1145,6 +1184,7 @@ window.MiniGames = window.MiniGames || {};
                     if (hit.touch && kickback[side] && canTrigger('kickback' + i, 0.18)) {
                         kickback[side] = false;
                         kickerHit[i] = 1;
+                        pulseTableObject('kicker' + i, 0.24);
                         ball.vy = Math.min(ball.vy, -1050);
                         ball.vx += kb.vx;
                         addScore(500, 'kick'); combo++; comboT = 2.2;
@@ -1175,14 +1215,17 @@ window.MiniGames = window.MiniGames || {};
                         x1: tg.x, y1: tg.y - tg.h / 2, x2: tg.x, y2: tg.y + tg.h / 2, r: 3,
                     }, 0.35, 60);
                     if (v > 90) {
-                        tg.down = true; addScore(600, 'target'); combo++; comboT = 2.2;
+                        tg.down = true; setTableObjectState('target' + tg.i, 'down'); addScore(600, 'target'); combo++; comboT = 2.2;
                             flash.target = 1; targetFlashGroup = tg.group; sfx('target');
                         spawn(tg.x - 4, tg.y, 12, 40, 1.1, Math.PI);
                         shake = Math.max(shake, 0.08); shakeMag = Math.max(shakeMag, 2);
                         if (TARGETS.filter(x => x.group === tg.group).every(x => x.down)) {
                             addScore(4000); show('靶组全清 +4,000', 1.6); sfx('jackpot');
                             shake = Math.max(shake, 0.3); shakeMag = Math.max(shakeMag, 6);
-                            setTimeout(() => TARGETS.filter(x => x.group === tg.group).forEach(x => x.down = false), 900);
+                            setTimeout(() => TARGETS.filter(x => x.group === tg.group).forEach(x => {
+                                x.down = false;
+                                setTableObjectState('target' + x.i, 'ready');
+                            }), 900);
                         }
                     }
                 });
@@ -1196,7 +1239,7 @@ window.MiniGames = window.MiniGames || {};
                 LANES.forEach((ln, i) => {
                     if (Math.hypot(ball.x - ln.x, ball.y - ln.y) < 13 && canTrigger('lane' + i, 0.4)) {
                         if (!lanesOn[i]) {
-                            lanesOn[i] = true; rollerHit[i] = 1; addScore(350, 'lane'); sfx('rollover');
+                            lanesOn[i] = true; rollerHit[i] = 1; pulseTableObject('roller' + i, 0.5); addScore(350, 'lane'); sfx('rollover');
                             spawn(ln.x, ln.y, 8, 55, 0.8);
                             if (lanesOn.every(Boolean)) {
                                 if (mult < 9) {
@@ -1502,6 +1545,7 @@ window.MiniGames = window.MiniGames || {};
                 // including a speed boost applied halfway through this frame.
                 const subSteps = Math.max(SUB, Math.ceil(SPEED_CAP * dt / BALL_R));
                 const hd = dt / subSteps;
+                live.forEach(b => { b.__contactHits = 0; });
                 for (let i = 0; i < subSteps; i++) {
                     for (let bi = 0; bi < live.length; bi++) {
                         const b = live[bi];
@@ -1518,6 +1562,13 @@ window.MiniGames = window.MiniGames || {};
                         confineBall(b);
                     }
                 }
+                live.forEach(b => {
+                    if ((b.__contactHits || 0) < 24) return;
+                    const dir = b.x < PF.cx ? 1 : -1;
+                    b.vx += dir * 180;
+                    b.vy = Math.min(b.vy, -240);
+                    b.__contactHits = 0;
+                });
                 // 引力井（中央轻微吸引，模拟原版引力井；主球冻结/在轨时跳过）
                 for (let bi = 0; bi < live.length; bi++) {
                     const b = live[bi];
@@ -1827,7 +1878,10 @@ window.MiniGames = window.MiniGames || {};
             function drawCadetBumpers() {
                 CADET_BUMPERS.forEach((bumper, index) => {
                     const hit = index < 3 ? bumps[index] : jets[index - 3];
-                    const frame = hit > 0 ? 1 + (Math.floor((1 - hit) * 18) % 7) : 0;
+                    const object = TABLE_OBJECT_BY_ID[index < 3 ? 'bumper' + index : 'jet' + (index - 3)];
+                    const frame = object && object.state === 'hit'
+                        ? Math.min(7, Math.max(1, object.frame))
+                        : hit > 0 ? 1 + (Math.floor((1 - hit) * 18) % 7) : 0;
                     const pos = bumper.pos[frame & 1];
                     drawCadetSprite(bumper.frames[frame], pos[0], pos[1]);
                 });
@@ -2493,10 +2547,12 @@ window.MiniGames = window.MiniGames || {};
                         kickerHit[i] > 0.02 ? kb.hitPos[1] : kb.restPos[1]);
                 });
                 CADET_REBOUNDERS.forEach((rp, i) => {
-                    if (reboundHit[i] > 0.02) drawCadetSprite(rp.image, rp.pos[0], rp.pos[1]);
+                    const object = TABLE_OBJECT_BY_ID['rebound' + i];
+                    if ((object && object.state === 'hit') || reboundHit[i] > 0.02) drawCadetSprite(rp.image, rp.pos[0], rp.pos[1]);
                 });
                 CADET_GATES.forEach((gate, i) => {
-                    if (gateHit[i] <= 0.02) {
+                    const object = TABLE_OBJECT_BY_ID['gate' + i];
+                    if (gateHit[i] <= 0.02 && (!object || object.state !== 'hit')) {
                         drawCadetSprite(gate.image, gate.pos[0], gate.pos[1]);
                         return;
                     }
@@ -2985,6 +3041,7 @@ window.MiniGames = window.MiniGames || {};
                 raf = requestAnimationFrame(frame);
                 const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016;
                 last = ts; t += dt;
+                updateTableObjects(dt);
 
                 for (let i = 0; i < 3; i++) bumps[i] = Math.max(0, bumps[i] - dt * 3.2);
                 for (let i = 0; i < 3; i++) jets[i] = Math.max(0, jets[i] - dt * 3.2);
@@ -3079,6 +3136,7 @@ window.MiniGames = window.MiniGames || {};
                         return { i: missionIdx, prog: missionProg, name: m && m.n, need: m && m.need, rank: RANKS[Math.min(RANKS.length - 1, missionIdx)] };
                     },
                     get cards() { return cardFace.slice(); },
+                    get objects() { return TABLE_OBJECTS.map(object => ({ id: object.id, kind: object.kind, state: object.state, frame: object.frame })); },
                     get warpHold() { return warpHold; },
                     get railMode() { return railMode; },
                     addScore, finish, missionHit, startMultiball: n => startMultiball(n, true), enterTube,
