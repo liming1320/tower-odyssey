@@ -41,6 +41,48 @@ const Tavern = require('./server/tavern');
 // 小游戏联机中继：按游戏匹配的房间转发（WebSocket，挂 upgrade 钩子 /ws/minigame）。失败不阻断主服务。
 const WsRelay = (() => { try { return require('./server/ws-relay'); } catch (e) { return null; } })();
 
+// 游戏内容配置（品质 / 装备 / 英雄星级天赋 / 元素 / 城墙 / 材料英雄 / 许愿 / 锻造 / 塔与肉鸽 / Boss / 建筑 / 资源 / 展示ID / 短信）
+// 纯数据常量统一放在 server/config/，server.js 只保留路由、DB 与战斗逻辑。
+const {
+    QUALITIES,
+    QUALITY_NAME,
+    QUALITY_MUL,
+    QUALITY_COLOR,
+    TYPE_MIN_QUALITY,
+    EQUIP_SLOTS,
+    EQUIP_SLOT_NAME,
+    STAR_BASE,
+    STAR_MAX,
+    STAR_PERKS,
+    ELEMENTS,
+    ELEMENT_LABEL,
+    ELEMENT_COLOR,
+    ELEMENT_ALIAS,
+    HERO_TIER,
+    MATERIAL_HEROES,
+    WALL_SKILL_SEED,
+    WISH_PITY,
+    WISH_RATE,
+    FORGE_MAX_LV,
+    FORGE_LV_GAIN,
+    ENEMY_TYPES,
+    BOSS_TYPES,
+    CHAPTERS,
+    TIER_CN,
+    ROGUE_BUFFS,
+    BUILD_DEFS,
+    RES_LABEL,
+    OFFLINE_CAP_SEC,
+    RES_CN,
+    U_NUM,
+    DISPLAY_ID_CHARS,
+    DISPLAY_ID_LEN,
+    DISPLAY_NICK_MAX,
+    SMS_ENABLED,
+    SMS,
+} = require('./server/config');
+
+
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const DATA_DIR = path.join(ROOT, 'data');
@@ -67,40 +109,22 @@ const WISH_CARD_PRICE = 100;
 // 数值越大越稀有 / 基础属性越高。
 // 各品类的起品：装备从绿色起、戒指/神器/宝石/古宝从蓝色起、城墙从紫色起。
 // ============================================================
-const QUALITIES = ['green', 'blue', 'purple', 'orange', 'red', 'gold', 'rainbow'];
-const QUALITY_NAME = { green: '优秀', blue: '精良', purple: '史诗', orange: '传说', red: '远古', gold: '太古', rainbow: '神话' };
-const QUALITY_MUL = { green: 1, blue: 1.6, purple: 2.6, orange: 4.2, red: 6.5, gold: 10, rainbow: 16 };
-const QUALITY_COLOR = {
-    green: '#5cd65c', blue: '#5cc7ff', purple: '#b78bff',
-    orange: '#ff9d5c', red: '#ff5252', gold: '#ffd56b', rainbow: '#ff7adf',
-};
-const TYPE_MIN_QUALITY = {
-    equipment: 'green', ring: 'blue', artifact: 'blue',
-    gem: 'blue', wall: 'purple', treasure: 'blue',
-};
-const EQUIP_SLOTS = ['weapon', 'armor', 'helmet', 'boots'];
-const EQUIP_SLOT_NAME = { weapon: '武器', armor: '护甲', helmet: '头盔', boots: '鞋子' };
+// QUALITIES → server/config/qualities.js
+// QUALITY_NAME → server/config/qualities.js
+// QUALITY_MUL → server/config/qualities.js
+// QUALITY_COLOR → server/config/qualities.js
+// TYPE_MIN_QUALITY → server/config/qualities.js
+// EQUIP_SLOTS → server/config/qualities.js
+// EQUIP_SLOT_NAME → server/config/qualities.js
 
 // ============================================================
 // 英雄星级：基础 5 星，最高 16 星
 //   6★ 起每升 1 星解锁一个「星级天赋」，天赋会真实影响战斗
 //   （眩晕 / 增伤 / 复活 / 减伤 / 护盾 / 全队伤害 / 光环 ...）
 // ============================================================
-const STAR_BASE = 5;   // 初始星级
-const STAR_MAX = 16;   // 星级上限
-const STAR_PERKS = [
-    { star: 6,  key: 'stun',      name: '震击',   icon: '💫', val: 12, desc: '普攻有 12% 概率眩晕敌人 1 秒' },
-    { star: 7,  key: 'dmgUp',     name: '增伤',   icon: '⚔️', val: 10, desc: '自身造成伤害 +10%' },
-    { star: 8,  key: 'revive',    name: '复生',   icon: '🕊', val: 1,  desc: '战斗中首次阵亡时原地复活，恢复 50% 生命' },
-    { star: 9,  key: 'dmgDown',   name: '减伤',   icon: '🛡', val: 8,  desc: '自身受到伤害 -8%' },
-    { star: 10, key: 'shield',    name: '护盾',   icon: '💠', val: 15, desc: '战斗开始时获得 15% 最大生命的护盾' },
-    { star: 11, key: 'allDmg',    name: '战意',   icon: '🔥', val: 15, desc: '全体友方造成伤害 +15%' },
-    { star: 12, key: 'aura',      name: '光环',   icon: '🌟', val: 10, desc: '光环：全体友方攻击 +10%' },
-    { star: 13, key: 'stunUp',    name: '强震',   icon: '⚡', val: 22, desc: '眩晕概率提升至 22%，持续 1.5 秒' },
-    { star: 14, key: 'critUp',    name: '狂暴',   icon: '💥', val: 15, desc: '暴击率 +15%，暴击伤害 +30%' },
-    { star: 15, key: 'teamGuard', name: '守护',   icon: '⛨', val: 12, desc: '全体友方受到伤害 -12%' },
-    { star: 16, key: 'awaken',    name: '觉醒',   icon: '👑', val: 25, desc: '觉醒：全属性 +25%，技能伤害 +50%' },
-];
+// STAR_BASE → server/config/heroes.js   // 初始星级
+// STAR_MAX → server/config/heroes.js   // 星级上限
+// STAR_PERKS → server/config/heroes.js
 function starPerksOf(star) {
     const s = Math.max(STAR_BASE, Math.min(STAR_MAX, star || STAR_BASE));
     return STAR_PERKS.filter(p => p.star <= s);
@@ -134,74 +158,19 @@ function starUpMaterialCost(star) {
 // 英雄属性（已收敛为 5 系：草 / 水 / 火 / 光 / 暗）
 //   原「风」「雷」两系并入「光」；「木」写作「草」
 // ============================================================
-const ELEMENTS = ['草', '水', '火', '光', '暗'];
-const ELEMENT_LABEL = { 草: '草（木）', 水: '水', 火: '火', 光: '光（含风雷）', 暗: '暗' };
-const ELEMENT_COLOR = { 草: '#7ddf64', 水: '#5cc7ff', 火: '#ff7a5c', 光: '#ffd56b', 暗: '#b98cff' };
+// ELEMENTS → server/config/heroes.js
+// ELEMENT_LABEL → server/config/heroes.js
+// ELEMENT_COLOR → server/config/heroes.js
 // 老数据迁移映射
-const ELEMENT_ALIAS = { 木: '草', 风: '光', 雷: '光' };
+// ELEMENT_ALIAS → server/config/heroes.js
 
 // 城墙：每级有独立技能（战斗中可手动/自动释放）
 //   type: stun 眩晕 / petrify 石化 / knock 击退 / block 生成阻碍
 //         shield 护盾 / dmgup 增伤 / cdreduce 减CD / refresh 刷新必杀
-const WALL_SKILL_SEED = [
-    { lv: 1,  name: '青石墙', atkPct: 2,  hpPct: 2,  skill: { type: 'stun',    name: '落石冲击', desc: '眩晕全体怪物 1.5 秒', cd: 14, value: 1.5 } },
-    { lv: 5,  name: '铜铁墙', atkPct: 5,  hpPct: 5,  skill: { type: 'knock',   name: '铁壁冲撞', desc: '击退小怪半屏并短暂停顿', cd: 16, value: 110 } },
-    { lv: 10, name: '白银墙', atkPct: 8,  hpPct: 8,  skill: { type: 'shield',  name: '银辉护盾', desc: '为城墙附加护盾，6 秒免疫伤害', cd: 18, value: 6 } },
-    { lv: 15, name: '黄金墙', atkPct: 12, hpPct: 12, skill: { type: 'petrify', name: '石化凝视', desc: '石化全体怪物 2 秒', cd: 20, value: 2 } },
-    { lv: 20, name: '铂金墙', atkPct: 16, hpPct: 16, skill: { type: 'dmgup',   name: '铂金战意', desc: '全队增伤 35%，持续 8 秒', cd: 20, value: 35 } },
-    { lv: 30, name: '钻石墙', atkPct: 22, hpPct: 22, skill: { type: 'block',   name: '钻石屏障', desc: '生成阻碍物阻挡怪物前进', cd: 22, value: 4 } },
-    { lv: 40, name: '星耀墙', atkPct: 30, hpPct: 30, skill: { type: 'cdreduce',name: '星耀共鸣', desc: '8 秒内英雄技能冷却减半', cd: 24, value: 50 } },
-    { lv: 50, name: '王者墙', atkPct: 40, hpPct: 40, skill: { type: 'refresh', name: '王者号令', desc: '立即刷新全队必杀冷却', cd: 30, value: 0 } },
-];
+// WALL_SKILL_SEED → server/config/walls.js
 
-const HERO_TIER = { 3: '3★', 4: '4★', 5: '5★' };
-const MATERIAL_HEROES = [
-    // ---- 水系 ----
-    { id: 'm31', name: '水泡泡', rarity: '优秀', tier: 3, element: '水', baseAtk: 380, baseHp: 2800,
-      img: 'material/m31.svg',
-      desc: '漂浮在溪畔的小型水元素，一戳就破。除了充当升星材料别无他用。',
-      skill: { name: '水花溅射', desc: '对单体造成 80% 攻击力伤害', cd: 8, multiplier: 0.8 } },
-    { id: 'm41', name: '溪流精灵', rarity: '精英', tier: 4, element: '水', baseAtk: 640, baseHp: 4600,
-      img: 'material/m41.svg',
-      desc: '汇聚溪水之力的元素精灵，能掀起小小的浪花，常被当作升星材料。',
-      skill: { name: '溪水冲击', desc: '对单体造成 120% 攻击力伤害', cd: 7, multiplier: 1.2 } },
-    // ---- 火系 ----
-    { id: 'm32', name: '小火花', rarity: '优秀', tier: 3, element: '火', baseAtk: 400, baseHp: 2600,
-      img: 'material/m32.svg',
-      desc: '一簇摇曳的小火苗，风一吹就晃。是廉价的升星材料。',
-      skill: { name: '火星飞溅', desc: '对单体造成 80% 攻击力伤害', cd: 8, multiplier: 0.8 } },
-    { id: 'm42', name: '烈焰童子', rarity: '精英', tier: 4, element: '火', baseAtk: 660, baseHp: 4400,
-      img: 'material/m42.svg',
-      desc: '掌中跳跃着火焰的孩童，脾气不大本事也不大，适合当升星材料。',
-      skill: { name: '烈焰弹', desc: '对单体造成 120% 攻击力伤害', cd: 7, multiplier: 1.2 } },
-    // ---- 草系（木）----
-    { id: 'm37', name: '青苔童子', rarity: '优秀', tier: 3, element: '草', baseAtk: 375, baseHp: 2850,
-      img: 'material/m37.svg',
-      desc: '趴在老树根上的青苔小精，湿漉漉软绵绵，是常见的升星材料。',
-      skill: { name: '苔藓飞溅', desc: '对单体造成 80% 攻击力伤害', cd: 8, multiplier: 0.8 } },
-    { id: 'm47', name: '藤蔓精灵', rarity: '精英', tier: 4, element: '草', baseAtk: 645, baseHp: 4550,
-      img: 'material/m47.svg',
-      desc: '缠绕树干生长的藤之精灵，能抽出细细的藤鞭，多被用作升星材料。',
-      skill: { name: '藤鞭抽击', desc: '对单体造成 120% 攻击力伤害', cd: 7, multiplier: 1.2 } },
-    // ---- 光系 ----
-    { id: 'm35', name: '萤火虫', rarity: '优秀', tier: 3, element: '光', baseAtk: 360, baseHp: 3000,
-      img: 'material/m35.svg',
-      desc: '提着微弱光芒的小虫，除了发光一无是处，标准的升星材料。',
-      skill: { name: '微光', desc: '对单体造成 80% 攻击力伤害', cd: 8, multiplier: 0.8 } },
-    { id: 'm45', name: '晨曦使', rarity: '精英', tier: 4, element: '光', baseAtk: 630, baseHp: 4700,
-      img: 'material/m45.svg',
-      desc: '带来第一缕晨光的下级侍从，力量有限，多被用作升星材料。',
-      skill: { name: '晨曦射线', desc: '对单体造成 120% 攻击力伤害', cd: 7, multiplier: 1.2 } },
-    // ---- 暗系 ----
-    { id: 'm36', name: '影缚', rarity: '优秀', tier: 3, element: '暗', baseAtk: 385, baseHp: 2750,
-      img: 'material/m36.svg',
-      desc: '附着在地面上的稀薄影子，踩上去会粘脚。廉价升星材料。',
-      skill: { name: '暗影缠绕', desc: '对单体造成 80% 攻击力伤害', cd: 8, multiplier: 0.8 } },
-    { id: 'm46', name: '暗影仆从', rarity: '精英', tier: 4, element: '暗', baseAtk: 655, baseHp: 4450,
-      img: 'material/m46.svg',
-      desc: '听命于高阶暗影的下级仆从，战力平平，是可靠的升星材料。',
-      skill: { name: '暗影突刺', desc: '对单体造成 120% 攻击力伤害', cd: 7, multiplier: 1.2 } },
-];
+// HERO_TIER → server/config/heroes.js
+// MATERIAL_HEROES → server/config/heroes.js
 // 给材料英雄补齐标记与多技能结构
 function normalizeMaterialHero(h) {
     return Object.assign({}, h, {
@@ -210,18 +179,14 @@ function normalizeMaterialHero(h) {
     });
 }
 // 许愿保底：每累计 N 抽必出 5★（传说+ / 传说）
-const WISH_PITY = 20;
-const WISH_RATE = [
-    { tier: 5, p: 0.08 },   // 8%  5★ 主力英雄
-    { tier: 4, p: 0.40 },   // 32% 4★ 材料
-    { tier: 3, p: 1.00 },   // 60% 3★ 材料
-];
+// WISH_PITY → server/config/wish.js
+// WISH_RATE → server/config/wish.js
 
 // ============================================================
 // 装备锻造：升级（每级 +8% 属性）+ 升品（绿→蓝→紫→橙→红→金→彩）
 // ============================================================
-const FORGE_MAX_LV = 100;
-const FORGE_LV_GAIN = 0.08;   // 每级 +8%
+// FORGE_MAX_LV → server/config/wish.js
+// FORGE_LV_GAIN → server/config/wish.js   // 每级 +8%
 // 锻造升级消耗（当前等级 lv → lv+1）
 function forgeLevelCost(lv, quality) {
     const qi = Math.max(0, QUALITIES.indexOf(quality) );
@@ -827,15 +792,9 @@ process.on('unhandledRejection', (reason) => {
 
 // ---------------- 营地：建筑产出 ----------------
 // rate = 每级「每分钟」产出量；研究院不直接产出，而是给全部建筑提供加成
-const BUILD_DEFS = [
-    { key: 'camp',     icon: '🏕', name: '大本营',  res: '木材 / 金币', out: { wood: 8, gold: 3 } },
-    { key: 'forge',    icon: '🔨', name: '锻造坊',  res: '铁矿',        out: { iron: 5 } },
-    { key: 'research', icon: '📚', name: '研究院',  res: '全建筑产出',  out: {}, bonus: 6 },
-    { key: 'hunt',     icon: '🏹', name: '狩猎场',  res: '经验',        out: { exp: 12 } },
-    { key: 'mine',     icon: '⛏', name: '石矿井',  res: '石币',        out: { stone: 4 } },
-];
-const RES_LABEL = { gold: '金币', wood: '木材', iron: '铁矿', stone: '石币', exp: '经验', gems: '钻石', wishCards: '许愿卡' };
-const OFFLINE_CAP_SEC = 12 * 3600; // 挂机收益最多累计 12 小时
+// BUILD_DEFS → server/config/buildings.js
+// RES_LABEL → server/config/buildings.js
+// OFFLINE_CAP_SEC → server/config/buildings.js // 挂机收益最多累计 12 小时
 
 // 当前每分钟产出（含研究院加成）
 function productionRates(u) {
@@ -888,9 +847,9 @@ function newToken() { return crypto.randomBytes(16).toString('hex'); }
 // 展示 ID：14 位字母数字混合（去掉易混的 0/O/1/I），形如 LPFR3NMNS7372C
 //   32^14 ≈ 2×10^21 种组合，足够支撑上亿玩家无碰撞
 //   不加 # 之类的装饰符——这就是别人找你时用的「账号标识」，纯字符串更通用
-const DISPLAY_ID_CHARS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-const DISPLAY_ID_LEN = 14;
-const DISPLAY_NICK_MAX = 12;
+// DISPLAY_ID_CHARS → server/config/ids.js
+// DISPLAY_ID_LEN → server/config/ids.js
+// DISPLAY_NICK_MAX → server/config/ids.js
 function genDisplayId() {
     const out = new Uint32Array(DISPLAY_ID_LEN);
     crypto.randomFillSync(out);
@@ -954,41 +913,10 @@ function maskPhone(p) {
 // 短信通道总开关（2026-09-09 下线）：
 //   真实短信需购买厂商套餐（腾讯云/阿里云 SMS 按条计费，约 0.045 元/条），
 //   当前未接入付费服务商，整条手机验证码通道暂停 —— 保留代码，接通后置 true 即恢复。
-const SMS_ENABLED = false;
+// SMS_ENABLED → server/config/ids.js
 // 开发模式（默认）：验证码打印到服务端控制台，并提供后台接口查看，方便联调；
 // 接真实短信：设置 SMS_PROVIDER=tencent 后在此处接入厂商 SDK（见 deploy/README.md）。
-const SMS = {
-    codes: new Map(),     // phone -> { code, expires }（验证通过即作废）
-    nextSend: new Map(),  // phone -> 下次可发送时间戳（独立存放：验证码作废后限流依然生效）
-    recent: [],           // 最近发送记录（后台查看用）：{ phone, code, time }
-    codeTTL: 5 * 60 * 1000,                                  // 验证码 5 分钟有效
-    resendGap: (parseInt(process.env.SMS_RESEND_SEC) || 60) * 1000, // 同号重发间隔（测试可调小）
-    recentMax: 30,
-    send(phone) {
-        if (!SMS_ENABLED) return { ok: false, error: '短信通道暂未开放，请使用账号密码登录' };
-        const now = Date.now();
-        const ns = this.nextSend.get(phone) || 0;
-        if (now < ns) {
-            return { ok: false, error: `发送太频繁，请 ${Math.ceil((ns - now) / 1000)} 秒后再试` };
-        }
-        const code = String(crypto.randomInt(100000, 1000000));
-        this.codes.set(phone, { code, expires: now + this.codeTTL });
-        this.nextSend.set(phone, now + this.resendGap);
-        this.recent.unshift({ phone, code, time: now });
-        if (this.recent.length > this.recentMax) this.recent.length = this.recentMax;
-        // 开发模式：直接打日志（接真实短信时替换为厂商 API 调用）
-        console.log(`[sms] 验证码 → ${phone}：${code}（${this.codeTTL / 60000} 分钟内有效）`);
-        return { ok: true, dev: true };
-    },
-    verify(phone, code) {
-        const rec = this.codes.get(phone);
-        if (!rec) return { ok: false, error: '请先获取验证码' };
-        if (Date.now() > rec.expires) { this.codes.delete(phone); return { ok: false, error: '验证码已过期，请重新获取' }; }
-        if (String(code) !== rec.code) return { ok: false, error: '验证码错误' };
-        this.codes.delete(phone); // 验证通过即作废，一次性使用
-        return { ok: true };
-    },
-};
+// SMS → server/config/ids.js
 // 自然日 key（用于每日奖励 / 累计登录天数）
 function todayKey() {
     const d = new Date();
@@ -1522,8 +1450,8 @@ function materialHeroUids(u, excludeUid) {
         .sort((a, b) => a.tier - b.tier)
         .map(x => x.uid);
 }
-const RES_CN = { gold: '金币', gems: '钻石', iron: '铁矿', stone: '石币', wood: '木材', exp: '经验' };
-const U_NUM = n => Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+// RES_CN → server/config/buildings.js
+// U_NUM → server/config/buildings.js
 
 api['POST /api/hero/equip'] = (req, res, body) => {
     const user = getUserByToken(req);
@@ -1923,64 +1851,13 @@ api['POST /api/shop/buy-wish'] = (req, res, body) => {
 // ---- 冒险（推塔）：实时战斗关卡 ----
 
 // 普通小怪模板（20 种，shape 决定前端绘制的体型轮廓）
-const ENEMY_TYPES = [
-    { id: 'slime',    name: '史莱姆',   emoji: '🟢', shape: 'blob',    body: '#5cd65c', accent: '#2e8b2e', hpMul: 0.8, atkMul: 0.7, speed: 46 },
-    { id: 'goblin',   name: '哥布林',   emoji: '👺', shape: 'brute',   body: '#7fbf5c', accent: '#3f6b2a', hpMul: 1.0, atkMul: 1.0, speed: 58 },
-    { id: 'skeleton', name: '骷髅兵',   emoji: '💀', shape: 'undead',  body: '#e8e4d0', accent: '#8a8570', hpMul: 0.9, atkMul: 1.2, speed: 52 },
-    { id: 'wolf',     name: '丛林野狼', emoji: '🐺', shape: 'beast',   body: '#8b8f9a', accent: '#4a4e58', hpMul: 0.7, atkMul: 1.4, speed: 95 },
-    { id: 'bat',      name: '吸血蝙蝠', emoji: '🦇', shape: 'bat',     body: '#6b4a7a', accent: '#3a2547', hpMul: 0.6, atkMul: 0.9, speed: 105 },
-    { id: 'orc',      name: '兽人战士', emoji: '👹', shape: 'brute',   body: '#4f8a4a', accent: '#26401f', hpMul: 1.6, atkMul: 1.2, speed: 42 },
-    { id: 'golem',    name: '石魔像',   emoji: '🗿', shape: 'golem',   body: '#9a8f80', accent: '#5b5145', hpMul: 2.6, atkMul: 1.0, speed: 28 },
-    { id: 'wraith',   name: '幽灵',     emoji: '👻', shape: 'ghost',   body: '#a8d8e8', accent: '#5f8fa8', hpMul: 0.8, atkMul: 1.6, speed: 70 },
-    { id: 'spider',   name: '毒蜘蛛',   emoji: '🕷', shape: 'spider',  body: '#7a4a8f', accent: '#40254d', hpMul: 0.9, atkMul: 1.5, speed: 82 },
-    { id: 'scorpion', name: '沙蝎',     emoji: '🦂', shape: 'insect',  body: '#d9a441', accent: '#8a6420', hpMul: 1.1, atkMul: 1.3, speed: 66 },
-    { id: 'mushroom', name: '毒菌菇',   emoji: '🍄', shape: 'plant',   body: '#e05c5c', accent: '#f0e0d0', hpMul: 1.3, atkMul: 0.9, speed: 34 },
-    { id: 'imp',      name: '火焰小鬼', emoji: '🔥', shape: 'demon',   body: '#ff7a2f', accent: '#8a2f10', hpMul: 0.7, atkMul: 1.5, speed: 88 },
-    { id: 'harpy',    name: '鹰身女妖', emoji: '🦅', shape: 'bird',    body: '#6fa8c8', accent: '#315a72', hpMul: 0.8, atkMul: 1.3, speed: 100 },
-    { id: 'serpent',  name: '沼泽巨蟒', emoji: '🐍', shape: 'serpent', body: '#4f9a5c', accent: '#24512c', hpMul: 1.8, atkMul: 1.2, speed: 50 },
-    { id: 'mage',     name: '邪术师',   emoji: '🧙', shape: 'mage',    body: '#8a5fd0', accent: '#4a2f7a', hpMul: 1.0, atkMul: 1.7, speed: 44 },
-    { id: 'knight',   name: '黑铁骑士', emoji: '🛡', shape: 'knight',  body: '#6b7580', accent: '#2f363d', hpMul: 2.2, atkMul: 1.1, speed: 36 },
-    { id: 'boar',     name: '狂暴野猪', emoji: '🐗', shape: 'beast',   body: '#a06a3f', accent: '#5c3a1f', hpMul: 1.5, atkMul: 1.4, speed: 76 },
-    { id: 'zombie',   name: '腐尸',     emoji: '🧟', shape: 'undead',  body: '#7f9a5c', accent: '#3f5228', hpMul: 1.4, atkMul: 1.0, speed: 32 },
-    { id: 'wisp',     name: '幽蓝鬼火', emoji: '💠', shape: 'wisp',    body: '#5cc7ff', accent: '#1f6f9a', hpMul: 0.6, atkMul: 1.8, speed: 92 },
-    { id: 'lizard',   name: '熔岩蜥蜴', emoji: '🦎', shape: 'beast',   body: '#e0552f', accent: '#7a2410', hpMul: 1.2, atkMul: 1.4, speed: 70 },
-];
+// ENEMY_TYPES → server/config/tower.js
 
 // Boss 模板（每 5 层轮换）
-const BOSS_TYPES = [
-    { id: 'dragon',  name: '远古巨龙·焱',   emoji: '🐉', shape: 'dragon', body: '#e0552f', accent: '#7a1f10', hpMul: 12, atkMul: 2.2, speed: 38, skill: '烈焰吐息' },
-    { id: 'demon',   name: '深渊魔王·奈落', emoji: '😈', shape: 'demon',  body: '#8a2fd0', accent: '#3f1060', hpMul: 14, atkMul: 2.5, speed: 44, skill: '暗影冲击' },
-    { id: 'titan',   name: '泰坦巨人·磐',   emoji: '🦖', shape: 'golem',  body: '#9a8f80', accent: '#4a4038', hpMul: 17, atkMul: 2.0, speed: 30, skill: '大地震荡' },
-    { id: 'phoenix', name: '不死凤凰·曦',   emoji: '🦅', shape: 'bird',   body: '#ffb03b', accent: '#a83f10', hpMul: 13, atkMul: 2.8, speed: 52, skill: '焚天之羽' },
-    { id: 'kraken',  name: '深海巨妖·渊',   emoji: '🦑', shape: 'serpent',body: '#3f7fd0', accent: '#123a66', hpMul: 15, atkMul: 2.4, speed: 40, skill: '触手狂舞' },
-    { id: 'mammoth', name: '冰霜巨兽·霜',   emoji: '🦣', shape: 'beast',  body: '#a8d8e8', accent: '#3f6b80', hpMul: 16, atkMul: 2.1, speed: 34, skill: '极寒风暴' },
-    { id: 'lich',    name: '亡灵君主·骸',   emoji: '☠️', shape: 'undead', body: '#cfe6c0', accent: '#4a5c3f', hpMul: 15, atkMul: 2.6, speed: 42, skill: '亡者大军' },
-    { id: 'whale',   name: '天空鲸·霄',     emoji: '🐋', shape: 'dragon', body: '#5c9ad0', accent: '#1f4a72', hpMul: 18, atkMul: 2.3, speed: 36, skill: '坠星之息' },
-];
+// BOSS_TYPES → server/config/tower.js
 
 // ---- 章节主题（每 20 层一章，共 10 章 / 200 层）----
-const CHAPTERS = [
-    { from: 1,   to: 20,  name: '迷雾森林', emoji: '🌲', mobs: ['slime', 'goblin', 'wolf', 'boar'],
-      sky: ['#0e2418', '#1f4a2e', '#5d8a44'], mount: 'rgba(20,44,28,0.75)', path: ['rgba(96,140,84,0.42)', 'rgba(46,58,34,0.9)'], ground: '#2c3a24', tower: ['#2f3a22', '#5f7a3e', '#1e2616'] },
-    { from: 21,  to: 40,  name: '黄沙戈壁', emoji: '🏜', mobs: ['scorpion', 'orc', 'golem', 'harpy'],
-      sky: ['#3a2a12', '#7a5a22', '#c99a44'], mount: 'rgba(70,50,20,0.75)', path: ['rgba(200,160,80,0.35)', 'rgba(96,70,32,0.9)'], ground: '#5a4526', tower: ['#4a3a1c', '#a8813a', '#2a2010'] },
-    { from: 41,  to: 60,  name: '幽暗洞窟', emoji: '🕳', mobs: ['bat', 'spider', 'mushroom', 'zombie'],
-      sky: ['#0a0a14', '#20202e', '#3a3a52'], mount: 'rgba(14,14,24,0.8)', path: ['rgba(80,80,110,0.35)', 'rgba(30,30,42,0.92)'], ground: '#23232e', tower: ['#24242e', '#4a4a5e', '#14141a'] },
-    { from: 61,  to: 80,  name: '冰封雪原', emoji: '❄️', mobs: ['wraith', 'wisp', 'serpent', 'knight'],
-      sky: ['#0a1a2e', '#1f4a6b', '#8fc8e8'], mount: 'rgba(24,52,78,0.7)', path: ['rgba(150,200,235,0.35)', 'rgba(48,80,110,0.9)'], ground: '#33465c', tower: ['#2a4258', '#7fb0d0', '#16242f' ] },
-    { from: 81,  to: 100, name: '熔岩深渊', emoji: '🌋', mobs: ['imp', 'lizard', 'golem', 'orc'],
-      sky: ['#2a0806', '#7a1f0e', '#e05a1f'], mount: 'rgba(60,16,10,0.78)', path: ['rgba(255,130,60,0.32)', 'rgba(80,26,14,0.92)'], ground: '#4a2018', tower: ['#4a1c12', '#a8502a', '#24100a'] },
-    { from: 101, to: 120, name: '雷暴云海', emoji: '⛈', mobs: ['harpy', 'wisp', 'mage', 'bat'],
-      sky: ['#0a0e28', '#2a2a6b', '#6a5ac0'], mount: 'rgba(20,22,54,0.75)', path: ['rgba(140,150,255,0.3)', 'rgba(34,34,72,0.92)'], ground: '#2a2a44', tower: ['#26264a', '#6a6ab0', '#14142a'] },
-    { from: 121, to: 140, name: '亡灵墓地', emoji: '⚰️', mobs: ['skeleton', 'zombie', 'wraith', 'mage'],
-      sky: ['#0c1608', '#243a1c', '#6a8a44'], mount: 'rgba(22,36,18,0.78)', path: ['rgba(140,180,100,0.3)', 'rgba(34,48,26,0.92)'], ground: '#2e3a22', tower: ['#2c3a20', '#6a8a44', '#141a0e'] },
-    { from: 141, to: 160, name: '天空之城', emoji: '☁️', mobs: ['harpy', 'knight', 'wisp', 'golem'],
-      sky: ['#123a5a', '#3a8ac0', '#ffe6b0'], mount: 'rgba(30,80,120,0.6)', path: ['rgba(255,240,210,0.34)', 'rgba(70,110,140,0.85)'], ground: '#5a7a90', tower: ['#4a6a80', '#d8e8f0', '#263a48'] },
-    { from: 161, to: 180, name: '深海遗迹', emoji: '🌊', mobs: ['serpent', 'mage', 'slime', 'spider'],
-      sky: ['#03101e', '#0a3a4a', '#1f8a8a'], mount: 'rgba(6,26,38,0.8)', path: ['rgba(60,200,200,0.3)', 'rgba(12,48,60,0.92)'], ground: '#12414a', tower: ['#123a42', '#3aa0a0', '#082026'] },
-    { from: 181, to: 200, name: '混沌神殿', emoji: '🔮', mobs: ['mage', 'knight', 'wraith', 'golem'],
-      sky: ['#120424', '#3a0a5a', '#7a1f9a'], mount: 'rgba(28,8,48,0.8)', path: ['rgba(200,120,255,0.3)', 'rgba(40,14,60,0.94)'], ground: '#2a1040', tower: ['#2c1046', '#8a4ab0', '#160826'] },
-];
+// CHAPTERS → server/config/tower.js
 function chapterOf(floor) {
     return CHAPTERS.find(c => floor >= c.from && floor <= c.to) || CHAPTERS[CHAPTERS.length - 1];
 }
@@ -1996,7 +1873,7 @@ const BOSS_SEQ = (() => {
     }
     return seq;
 })();
-const TIER_CN = ['', '·二阶', '·三阶', '·四阶', '·五阶'];
+// TIER_CN → server/config/tower.js
 function bossForFloor(floor) {
     const id = BOSS_SEQ[(floor - 1) % BOSS_SEQ.length];
     // 阶数随大章节提升（每 40 层 +1 阶，上限五阶），数值主要还是由层数曲线决定
@@ -2039,16 +1916,7 @@ function enemyPoolFor(floor) {
 }
 
 // 肉鸽增益（每波结束三选一）
-const ROGUE_BUFFS = [
-    { id: 'atk',   name: '力量祝福', desc: '全体攻击力 +25%',       icon: '⚔️', stat: 'atkPct', val: 25 },
-    { id: 'hp',    name: '生命祝福', desc: '全体生命值 +30%',       icon: '❤️', stat: 'hpPct',  val: 30 },
-    { id: 'cd',    name: '疾风祝福', desc: '技能冷却 -1 秒',         icon: '⚡', stat: 'cd',     val: 1 },
-    { id: 'aspd',  name: '狂战祝福', desc: '攻击速度 +30%',         icon: '🔥', stat: 'aspd',   val: 30 },
-    { id: 'heal',  name: '治疗之泉', desc: '立即恢复全体 60% 生命', icon: '💚', stat: 'heal',   val: 60 },
-    { id: 'crit',  name: '精准祝福', desc: '暴击率 +20%（2 倍伤害）', icon: '🎯', stat: 'crit',   val: 20 },
-    { id: 'armor', name: '守护祝福', desc: '受到的伤害 -20%',       icon: '🛡', stat: 'armor',  val: 20 },
-    { id: 'lifesteal', name: '嗜血祝福', desc: '攻击吸血 +15%',     icon: '🩸', stat: 'lifesteal', val: 15 },
-];
+// ROGUE_BUFFS → server/config/tower.js
 
 // 塔的元信息（总层数 / 章节列表 / 每层主题），供冒险页做章节导航
 api['GET /api/tower/info'] = (req, res) => {
