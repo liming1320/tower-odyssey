@@ -149,6 +149,28 @@ NEW_SHA="$(git rev-parse HEAD)"
 log "新版本：$NEW_SHA  $(git log -1 --pretty=%s)"
 restore_db
 
+# ---------- 2.5) 依赖安装（仅当 package.json 变化时）----------
+# 自动部署默认只 git reset --hard，不跑 npm install；但本项目强制要求 ws 模块存在于
+# node_modules（ws-relay 依赖它，缺失时 server.js 静默降级、联机中继失效且健康检查查不出）。
+# 为避免「node_modules 被清后自动部署仍不装 ws」这类回归，这里检测 package.json 是否较
+# 上一版本有改动，有则重装依赖；并校验关键依赖 ws 存在，缺失直接判失败回滚，不让坏版本上线。
+if ! git diff --quiet "$OLD_SHA" "$NEW_SHA" -- package.json 2>/dev/null; then
+    log "📦 package.json 有变化，执行 npm install 以同步依赖"
+    if command -v npm >/dev/null 2>&1; then
+        npm install --no-audit --no-fund --prefer-offline 2>&1 | tail -8 | tee -a "$LOG" \
+            || log "⚠ npm install 失败（可能网络问题），依赖未更新"
+    else
+        log "⚠ 找不到 npm，跳过依赖安装"
+    fi
+    # 校验关键依赖：ws 缺失会导致联机中继静默失效（server.js 用 try/require 降级）
+    if [ ! -d "$APP_DIR/node_modules/ws" ]; then
+        log "✗ node_modules/ws 缺失：联机中继将不可用，终止本次部署并回滚"
+        git reset --hard "$OLD_SHA" --quiet 2>>"$LOG"; restore_db; exit 1
+    fi
+else
+    log "ℹ package.json 未变化，跳过 npm install（node_modules/ws 沿用既有）"
+fi
+
 # 结束占用 PORT 的游离进程（systemd 拉不起来的常见原因）
 kill_port_holders() {
     local pids="" pid

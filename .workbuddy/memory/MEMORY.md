@@ -24,6 +24,7 @@
 - `server/ws-relay.js` 依赖 `ws` 模块；`server.js` 用 `try{require('./server/ws-relay')}catch` 包住，`WsRelay` 为 null 时不挂中继（静默降级，主服务照常）。
 - **`package.json` 必须声明 `"ws":"^8.18.0"`**（dependencies 不能为空），否则线上 `npm install` 不装 ws → 中继永远不挂 → WS 升级握手 6 秒零响应、浏览器「待处理→超时」。
 - 线上部署三步缺一不可：`git pull` + **`npm install`**（让 ws 进 node_modules）+ 重启（宝塔 `systemctl restart tower-odyssey`）；随 push 自动部署时确认流水线含 npm install。重启后浏览器 Ctrl+F5 强刷（吃 mg-net.js 的 `?v`）。
+- **自动部署已自愈（2026-09-18 改 `deploy/hooks/deploy.sh`）**：`tools/webhook-deploy.js` 收 Gitee push → 跑 `deploy.sh`，但原脚本只 `git reset --hard`+重启、**从不 npm install**。已加「仅当 `package.json` 变动才 `npm install`」分支，且 **ws 缺失直接判失败回滚**（不让无 ws 的版本上线）。效果：纯代码 push 自动部署依旧即用；改依赖时自动同步，不再依赖「上次手动装过 ws 还在」的运气。所以**普通代码改动只需 push，无需手动 npm install**。
 - 客户端 mg-net.js：`connect()` 必须等 `onopen` 再发 join（`_pending` 队列排队冲刷），且加 8s 升级超时明确报错；否则 join 在 CONNECTING 被静默丢弃、三条入口全废。
 
 ## server.js 模块化约定（按模块拆）

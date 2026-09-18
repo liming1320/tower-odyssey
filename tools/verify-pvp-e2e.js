@@ -387,10 +387,75 @@ async function runGame(game, cap) {
     return fail === 0;
 }
 
+// 掉线监测回归：模拟一名玩家掉线（主动 close / 断网无 FIN 两种手机场景），
+// 验证服务端 ws-relay 能检测到并向其余玩家推送 peer_left（即「留在棋盘的人能察觉对手走了」）。
+// 对应真实问题：手机浏览器锁屏/杀进程/进电梯/切 WiFi↔4G 时，对手是否还能被感知。
+async function verifyDrop(game, cap) {
+    console.log(`\n=== [${game}] 掉线监测回归（${cap} 人局，逐一关掉 1 人验证其余收到 peer_left）===`);
+    const server = http.createServer((req, res) => { res.writeHead(404); res.end(); });
+    await new Promise(r => server.listen(0, '127.0.0.1', r));
+    const port = server.address().port;
+    attach(server);
+    const url = `ws://127.0.0.1:${port}/ws/minigame`;
+    await sleep(50);
+    const names = ['甲', '乙', '丙', '丁'];
+    const mk = async (room) => {
+        const cs = [];
+        for (let i = 0; i < cap; i++) {
+            const c = makeClient(game, i, names[i]);
+            c.MG.me = { nickname: names[i] };
+            c.MG.net.connect(url);
+            c.MG.net.send('lobby', { game, cap });
+            c.MG.net.send('join', { game, cap, room, me: names[i] });
+            cs.push(c);
+        }
+        for (let t = 0; t < 120; t++) { await sleep(25); if (cs.every(c => c.started)) break; }
+        return cs;
+    };
+    const reg = (cs) => { for (let i = 1; i < cap; i++) { cs[i]._peerLeft = 0; cs[i].MG.net.on('peer_left', () => { cs[i]._peerLeft = (cs[i]._peerLeft || 0) + 1; }); } };
+    const waitPeerLeft = async (cs, ms) => { for (let t = 0; t < ms / 25; t++) { await sleep(25); if (cs.slice(1).every(c => c._peerLeft >= 1)) return true; } return false; };
+    let pass = 0, fail = 0;
+    const ok = (c, m) => { if (c) { pass++; console.log('  ✓', m); } else { fail++; console.log('  ✗', m); } };
+
+    // 场景 A：甲主动关 Tab（ws.close → 服务端 close 即时）
+    const roomA = 'mg-dropA-' + game + '-' + process.pid + '-' + Date.now();
+    const a = await mk(roomA);
+    ok(a.every(c => c.started), `建房→进棋盘：✓ ${cap} 人`);
+    reg(a);
+    console.log('  [场景A] 甲主动 close（模拟关 Tab / 杀进程）');
+    try { a[0].MG.net._ws.close(); } catch (e) {}
+    const gotA = await waitPeerLeft(a, 5000);
+    ok(gotA, `其余 ${cap - 1} 人秒级收到 peer_left（对手掉线被实时监测到）`);
+    ok(a.slice(1).every(c => c._peerLeft === 1), '每位存活玩家恰好收到 1 次（无重复/漏发）');
+    a.forEach(c => { try { c.MG.net._ws && c.MG.net._ws.close(); } catch (e) {} });
+
+    // 场景 B：甲断网（_socket.destroy → 无 FIN 的异常断开，模拟切 WiFi/进电梯）
+    const roomB = 'mg-dropB-' + game + '-' + process.pid + '-' + Date.now();
+    const b = await mk(roomB);
+    ok(b.every(c => c.started), `建房→进棋盘：✓ ${cap} 人`);
+    reg(b);
+    console.log('  [场景B] 甲 _socket.destroy（模拟断网/切网络，无优雅 close）');
+    try { if (b[0].MG.net._ws && b[0].MG.net._ws._socket) b[0].MG.net._ws._socket.destroy(); } catch (e) {}
+    const gotB = await waitPeerLeft(b, 8000);
+    ok(gotB, `断网场景下其余 ${cap - 1} 人收到 peer_left（服务端 socket 异常→close→通知）`);
+    b.forEach(c => { try { c.MG.net._ws && c.MG.net._ws.close(); } catch (e) {} });
+
+    await sleep(30); server.close();
+    console.log(`  掉线监测：PASS ${pass} / FAIL ${fail}`);
+    return fail === 0;
+}
+
 (async () => {
     const args = process.argv.slice(2);
-    const games = args.length ? args : ['ludo', 'gomoku', 'monopoly', 'richman'];
     const caps = { ludo: 2, gomoku: 2, monopoly: 4, richman: 4 };
+    if (args[0] === 'drop') {
+        const g = args[1] || 'gomoku';
+        if (!caps[g]) { console.log('未知游戏：' + g); process.exit(1); }
+        const ok = await verifyDrop(g, caps[g]);
+        console.log(`\n==== 掉线监测：${ok ? '通过 ✅' : '失败 ❌'} ====`);
+        process.exit(ok ? 0 : 1);
+    }
+    const games = args.length ? args : ['ludo', 'gomoku', 'monopoly', 'richman'];
     let allOk = true;
     for (const g of games) {
         if (!caps[g]) { console.log('未知游戏：' + g); continue; }

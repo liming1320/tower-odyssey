@@ -268,14 +268,30 @@ MinigamesView._launchNet = function (g, m) {
     const mask = document.getElementById('mini-mask');
     const stage = document.getElementById('mini-stage');
     const scoreEl = document.getElementById('mini-score');
+    const cap = (NET_GAMES[g.id] && NET_GAMES[g.id].seats) || 2;
     if (stage) stage.innerHTML = '';
     let ctrl = null;
     const close = () => {
+        try { MG.net && MG.net.onDown && MG.net.onDown(null); } catch (e) {}   // 清掉本局注册的断线钩子
         try { ctrl && ctrl.stop && ctrl.stop(); } catch (e) {}
         try { MG.pvp.end(); } catch (e) {}
         try { MG.match && MG.match.end(); } catch (e) {}
         if (mask && mask.parentNode) mask.remove();
     };
+    // 对局进行中掉线收口：避免「对手走了我却还在棋盘干等/还能落子」的悬空态。
+    //   peer_left —— 服务端检测到对手 ws close/心跳超时后推送：判我方获胜并结算。
+    //   onDown    —— 我方自己 ws 断开（杀进程/断网）：结束本局并提示。
+    // 这两类事件此前只被大厅阶段 handler 接收（更新已不存在的座位 UI），等于空响。
+    MG.net.on('peer_left', () => {
+        try { MG.net.send('leave', {}); } catch (e) {}
+        try { MG.pvp.end(); } catch (e) {}
+        const who = cap === 2 ? '对手离开了' : '有玩家离开了';
+        MinigamesView._pvpResult(g, { win: true, title: '🚪 ' + who, lines: [who + '，本局判你获胜'], score: 0 }, close);
+    });
+    MG.net.onDown(() => {
+        try { MG.pvp.end(); } catch (e) {}
+        MinigamesView._pvpResult(g, { win: false, title: '📡 联机已断开', lines: ['网络中断，对局结束'], score: 0 }, close);
+    });
     const back = document.getElementById('mini-back');
     if (back) back.onclick = close;
     try {

@@ -191,13 +191,15 @@ function attach(server) {
         ws.on('error', () => cleanup(ws));
     });
 
-    // 心跳：30s 清理死连接（断网/切后台不关 Tab 的僵尸），释放 waiting 与 room
+    // 心跳：15s 清理死连接（断网/切后台/进电梯/切 WiFi 的僵尸连接）。
+    // 手机掉线多为「网络黑洞」（不 FIN 不 RST），只能靠心跳发现；30s→15s 把
+    // 检测窗口从 ~60s 缩到 ~30s，对手掉线后另一端能更快收到 peer_left。
     const hb = setInterval(() => {
         wss.clients.forEach(ws => {
             if (ws.isAlive === false) return ws.terminate();
             ws.isAlive = false; try { ws.ping(); } catch (e) {}
         });
-    }, 30000);
+    }, 15000);
     wss.on('close', () => clearInterval(hb));
 
     server.on('upgrade', (req, socket, head) => {
