@@ -15,6 +15,14 @@
 - 测试机无 Chrome，无法跑 124 游戏 CDP 全量冒烟；可用 `tools/verify-banqi-pvp.js`
   （双客户端 + DOM 桩 + 内存 relay，纯 Node 跑真实 banqi.js）做无浏览器回归。
 
+## server.js 模块化约定（按模块拆）
+- 路由拆分：用 `api['METHOD /path'] = handler` 注册表；新增路由模块 `server/routes/*.js`，
+  通过 `require('./server/routes/xxx')({ api, DB, sendJson, ...ctx })` 注入共享依赖（参考 `server/routes/rom.js`）。
+- 纯数据拆分：游戏内容常量（品质/装备/英雄星级天赋/元素/城墙/材料英雄/许愿/锻造/塔与肉鸽/Boss/建筑/资源/展示ID/短信）
+  抽到 `server/config/*`，由 `server/config/index.js`（Object.assign barrel）聚合，
+  server.js 顶部 `const { ... } = require('./server/config')` 一次性解构引用。
+- server.js 现状：~3348 行；ROM/BIOS/云存档路由 + normalizeSkills 已拆到 `server/routes/rom.js` + `server/core/skills.js`。
+
 ## 棋类联机覆盖现状
 - 已接入联机：五子棋(gomoku)、暗棋(banqi)、象棋(xiangqi)、国际象棋(mg-chess chess)、军棋翻翻棋(junqi/jungle)。
 - 不存在：围棋(weiqi/go) 在 124 款中无此游戏。

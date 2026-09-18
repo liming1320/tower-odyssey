@@ -5,21 +5,37 @@
 //   E3 排行榜：  POST/GET /api/minigame/leaderboard  body={game, score, name}
 window.MG = window.MG || {}; var MG = window.MG;
 MG.net = {
-    _ws: null, _room: null, _handlers: {},
+    _ws: null, _room: null, _handlers: {}, _pending: [],
     // 连接实时房间（需后端 WS 服务）。返回是否发起连接。
+    // 注意：new WebSocket 后 socket 处于 CONNECTING，必须把 join/send 排队，
+    // 等 onopen 后再冲刷——否则第一条 join 永远被静默丢弃（快速匹配/建房/输码加入全废）。
     connect(url) {
         if (typeof WebSocket === 'undefined' || !url) return false;
         try {
-            this._ws = new WebSocket(url);
-            this._ws.onmessage = (e) => { try { const m = JSON.parse(e.data); const h = this._handlers[m.type]; if (h) h(m.data); } catch (_) {} };
-            this._ws.onerror = () => {};
+            const ws = new WebSocket(url);
+            this._ws = ws;
+            this._pending = [];
+            ws.onopen = () => {
+                // 连接就绪：冲刷排队中的消息（join 等）
+                const q = this._pending; this._pending = [];
+                q.forEach(m => { try { ws.send(m); } catch (e) {} });
+            };
+            ws.onclose = () => { try { if (this._onDown) this._onDown(); } catch (e) {} };
+            ws.onerror = () => {};
+            ws.onmessage = (e) => { try { const m = JSON.parse(e.data); const h = this._handlers[m.type]; if (h) h(m.data); } catch (_) {} };
             return true;
         } catch (e) { return false; }
     },
     on(type, fn) { this._handlers[type] = fn; },
-    send(type, data) { try { if (this._ws && this._ws.readyState === 1) this._ws.send(JSON.stringify({ type, data })); } catch (e) {} },
+    onDown(fn) { this._onDown = fn; },
+    _raw(str) {
+        const ws = this._ws;
+        if (ws && ws.readyState === 1) { try { ws.send(str); } catch (e) {} }
+        else if (ws && ws.readyState === 0) { this._pending.push(str); }   // CONNECTING：排队等 onopen
+    },
+    send(type, data) { try { this._raw(JSON.stringify({ type, data })); } catch (e) {} },
     join(room, game) { this._room = room; this.send('join', { room: room || '', game: game || (MG._curGame) || 'unknown', me: (MG.me && MG.me.nickname) || '我' }); },
-    leave() { this.send('leave', { room: this._room }); this._room = null; },
+    leave() { this.send('leave', { room: this._room }); this._room = null; this._pending = []; },
 };
 MG.cloud = {
     // 本地兜底优先（离线也能存），再尝试同步到云端（端点缺失则静默）。
@@ -88,6 +104,7 @@ MG.net.versus = function (opts) {
     MG.net.on('waiting', () => { try { if (MG._onVersusWaiting) MG._onVersusWaiting(game); } catch (e) {} });
     MG.net.on('peer_left', () => { try { MG.match.end(); if (MG._onVersusPeerLeft) MG._onVersusPeerLeft(); } catch (e) {} });
     MG.net.on('error', m => { try { if (MG._onVersusError) MG._onVersusError((m && m.msg) || '联机出错'); } catch (e) {} });
+    MG.net.onDown(() => { try { if (MG._onVersusError) MG._onVersusError('联机连接已断开（服务未启动或网络中断）'); } catch (e) {} });
     const ok = MG.net.connect(url);
     if (ok) MG.net.join(room, game);
     return { ok: ok, room: room, url: url, game: game };
