@@ -201,6 +201,21 @@ window.MG = window.MG || {};
     MG.makeLoop = makeLoop;
     MG.makeRng = makeRng;
 
+    // 联机状态同步：把游戏状态 S 序列化为可传输的纯对象（剔除函数与 _ 前缀的瞬态字段，
+    // 例如 S.rnd 随机实例、S._geo/S._btn 绘制缓存）。声明了 cfg.net 的引擎游戏统一用此函数同步。
+    function serState(S) {
+        const out = {};
+        for (const k in S) {
+            if (k.charCodeAt(0) === 95) continue;            // '_' 开头：瞬态绘制缓存，不同步
+            const v = S[k];
+            const tv = typeof v;
+            if (tv === 'function') continue;                 // 跳过 rng 等函数实例
+            if (v && tv === 'object' && typeof v.getState === 'function') continue;
+            out[k] = v;
+        }
+        return out;
+    }
+
     E.game = function (container, opts, cfg) {
         const P = Object.assign({ endless: !!opts.endless }, opts.level || {});
         P.endless = !!opts.endless;
@@ -297,6 +312,34 @@ window.MG = window.MG || {};
             // ---- 回放钩子（Tier1-3）：api._rec 录制输入事件，api._replay 回放投递 ----
             _rec: null, _recT0: 0, _replay: null,
         };
+        // ---- 联机对战（状态同步）opt-in 钩子：仅声明 cfg.net 的游戏接入，单人/PvE 零影响 ----
+        // 模型与棋类游戏一致（见 mg-pvp.js）：本地行动后把可序列化状态 commit 给对手，
+        // 对手 setState 重绘；回合用 side(0/1) 交替。引擎每帧跑 cfg.check，终局天然幂等。
+        if (cfg.net && MG.pvp && MG.pvp.shouldBegin(cfg.id)) {
+            try { if (cfg.net.setup) cfg.net.setup(S, P, api); } catch (e) { onError(e, 'net-setup'); }
+            api.net = {
+                get on() { return MG.pvp.active; },
+                // 本地产生一次有效状态变更后调用：把 S 同步给对手
+                commit() {
+                    if (!MG.pvp.active) return;
+                    let payload;
+                    try { payload = cfg.net.ser ? cfg.net.ser(S, P, api) : serState(S); } catch (e) { return; }
+                    try { MG.pvp.commit({ S: payload }); } catch (e) {}
+                },
+            };
+            MG.pvp.begin({
+                setState(m) {
+                    const incoming = (m && m.S != null) ? m.S : m;
+                    if (!incoming) return;
+                    try {
+                        if (cfg.net.apply) cfg.net.apply(S, incoming, P, api);
+                        else Object.assign(S, incoming);
+                    } catch (e) { onError(e, 'net-set'); }
+                    paint();
+                },
+                onOver() { /* 引擎 cfg.check 会在下一帧判定终局并 finish，无需重复处理 */ },
+            });
+        }
         if (opts && opts.__replay) { api._replay = opts.__replay; api._replay.i = 0; }
         const paint = () => {
             // 离屏层跟随 deviceScale：旋转 / 缩放后 MG.canvas.fit() 会改倍率，这里同步重建（issue #4）
@@ -677,6 +720,7 @@ window.MG = window.MG || {};
     // 就把全部 100+ 款游戏各 50 关的 params 算出来堆在启动路径上）。首次读取 LEVELS
     // （用户点开某游戏的选关页）才真正构建并缓存，首屏加载零关卡成本、且行为完全一致。
     E.def = function (id, cfg) {
+        cfg.id = id;          // 供联机武装(MG.pvp.shouldBegin)与错误上报(gameId)使用
         let _lv = null;
         const g = (window.MiniGames[id] = {
             get LEVELS() { if (!_lv) _lv = buildLevels(cfg); return _lv; },
@@ -686,6 +730,7 @@ window.MG = window.MG || {};
         return g;
     };
     E.defd = function (id, cfg) {
+        cfg.id = id;
         let _lv = null;
         const g = (window.MiniGames[id] = {
             get LEVELS() { if (!_lv) _lv = buildLevels(cfg); return _lv; },

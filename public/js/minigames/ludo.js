@@ -230,6 +230,7 @@ window.MiniGames = window.MiniGames || {};
         tap(S, x, y, P, api) {
             const g = S._geo; if (!g) return;
             if (S.winner >= 0) return;
+            if (MG.pvp && MG.pvp.active && !MG.pvp.canMove()) return;   // 没轮到我方则锁输入
             // 人数切换
             if (S._pplBtn && E.hit(x, y, S._pplBtn.x, S._pplBtn.y, S._pplBtn.w, S._pplBtn.h)) {
                 S.humans = S.humans >= 4 ? 1 : S.humans + 1;
@@ -256,11 +257,34 @@ window.MiniGames = window.MiniGames || {};
                 }
             }
         },
-        score(S) { return homeCount(S.pl, 0) * 100; },
+        score(S) { return homeCount(S.pl, MG.pvp && MG.pvp.active ? MG.pvp.side : 0) * 100; },
         check(S) {
+            if (S.winner < 0) return null;
+            if (MG.pvp && MG.pvp.active) {
+                // 联机：从「我方」视角判定胜负（side 由房间决定）
+                if (S.winner === MG.pvp.side) return { win: true, stars: 3, score: 1000 + homeCount(S.pl, S.winner) * 100, lines: ['全部归航！'] };
+                return { win: false, stars: 0, score: homeCount(S.pl, MG.pvp.side) * 100, lines: [NAMES[S.winner] + '方先完成了'] };
+            }
             if (S.winner === 0) return { win: true, stars: 3, score: 1000 + homeCount(S.pl, 0) * 100, lines: ['全部归航！'] };
-            if (S.winner > 0) return { win: false, stars: 0, score: homeCount(S.pl, 0) * 100, lines: [NAMES[S.winner] + '方先完成了'] };
-            return null;
+            return { win: false, stars: 0, score: homeCount(S.pl, 0) * 100, lines: [NAMES[S.winner] + '方先完成了'] };
+        },
+        // ---- 联机（状态同步）接入：仅 mg-pvp 武装本游戏时生效，单人/PvE 零影响 ----
+        net: {
+            setup(S, P, api) {
+                S.humans = 2;          // 联机 = 2 名真实玩家（红 vs 黄），不启用 AI
+                S.net = true;
+                S.need = P.need || 1;
+                S.six = 0;
+                S.rnd = api.rng(P.netSeed != null ? P.netSeed : 20260918); // 双端同种子（即便不走 RNG 也一致）
+            },
+            ser(S) {
+                return {
+                    pl: S.pl, turn: S.turn, dice: S.dice, rolling: S.rolling, phase: S.phase,
+                    opts: S.opts, winner: S.winner, humans: S.humans, need: S.need,
+                    msg: S.msg, extra: S.extra, six: S.six, t: S.t,
+                };
+            },
+            apply(S, m) { Object.assign(S, m); },
         },
     });
 
@@ -276,6 +300,7 @@ window.MiniGames = window.MiniGames || {};
             if (!opts.length) {
                 S.msg = `${NAMES[S.turn]}方掷出 ${S.dice}，无棋可走`;
                 S.opts = [];
+                if (api.net && api.net.on) api.net.commit();
                 api.later(() => nextTurn(S, P, api), 700);
                 return;
             }
@@ -290,6 +315,7 @@ window.MiniGames = window.MiniGames || {};
                 // 只有一个选择时自动走，省一次点击
                 api.later(() => doMove(S, P, api, opts[0]), 380);
             }
+            if (api.net && api.net.on) api.net.commit();
         }, 420);
     }
     function doMove(S, P, api, k) {
@@ -301,7 +327,7 @@ window.MiniGames = window.MiniGames || {};
         try { MG.audio.sfx(hit.length ? 'target' : (a.rel >= FINISH ? 'coin' : 'click')); } catch (e) {}
         if (hit.length) S.msg = `${NAMES[p]}方撞掉了 ${hit.length} 架敌机！`;
         else if (a.rel >= FINISH) S.msg = `${NAMES[p]}方一架归航！`;
-        if (homeCount(S.pl, p) >= S.need) { S.winner = p; S.opts = []; S.phase = 'over'; return; }
+        if (homeCount(S.pl, p) >= S.need) { S.winner = p; S.opts = []; S.phase = 'over'; if (api.net && api.net.on) api.net.commit(); return; }
         S.opts = []; S.phase = 'roll';
         // 掷 6 再来一次，但连掷 3 次强制换人（防止无限回合卡住）
         if (d === 6) {
@@ -317,17 +343,19 @@ window.MiniGames = window.MiniGames || {};
             return;
         }
         S.six = 0;
+        if (api.net && api.net.on) api.net.commit();
         api.later(() => nextTurn(S, P, api), 520);
     }
     function nextTurn(S, P, api) {
         if (S.winner >= 0) return;
         S.extra = false;
-        S.turn = (S.turn + 1) % 4;
+        S.turn = (S.turn + 1) % (S.net ? 2 : 4);   // 联机 = 红(0)/黄(1) 双人对弈，回合计 2
         S.phase = 'roll'; S.dice = 0; S.opts = [];
         if (S.turn >= S.humans) {
             S.msg = `${NAMES[S.turn]}方（AI）回合…`;
             api.later(() => { if (S.winner < 0) doRoll(S, P, api); }, 500);
         } else S.msg = `轮到 ${NAMES[S.turn]}方，点击掷骰`;
+        if (api.net && api.net.on) api.net.commit();
     }
 
     // ---------------- 绘制小工具 ----------------
