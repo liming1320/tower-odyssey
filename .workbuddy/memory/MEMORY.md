@@ -15,6 +15,12 @@
 - 测试机无 Chrome，无法跑 124 游戏 CDP 全量冒烟；可用 `tools/verify-banqi-pvp.js`
   （双客户端 + DOM 桩 + 内存 relay，纯 Node 跑真实 banqi.js）做无浏览器回归。
 
+## 联机中继（ws-relay）部署铁律
+- `server/ws-relay.js` 依赖 `ws` 模块；`server.js` 用 `try{require('./server/ws-relay')}catch` 包住，`WsRelay` 为 null 时不挂中继（静默降级，主服务照常）。
+- **`package.json` 必须声明 `"ws":"^8.18.0"`**（dependencies 不能为空），否则线上 `npm install` 不装 ws → 中继永远不挂 → WS 升级握手 6 秒零响应、浏览器「待处理→超时」。
+- 线上部署三步缺一不可：`git pull` + **`npm install`**（让 ws 进 node_modules）+ 重启（宝塔 `systemctl restart tower-odyssey`）；随 push 自动部署时确认流水线含 npm install。重启后浏览器 Ctrl+F5 强刷（吃 mg-net.js 的 `?v`）。
+- 客户端 mg-net.js：`connect()` 必须等 `onopen` 再发 join（`_pending` 队列排队冲刷），且加 8s 升级超时明确报错；否则 join 在 CONNECTING 被静默丢弃、三条入口全废。
+
 ## server.js 模块化约定（按模块拆）
 - 路由拆分：用 `api['METHOD /path'] = handler` 注册表；新增路由模块 `server/routes/*.js`，
   通过 `require('./server/routes/xxx')({ api, DB, sendJson, ...ctx })` 注入共享依赖（参考 `server/routes/rom.js`）。

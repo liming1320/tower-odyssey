@@ -15,10 +15,12 @@ try { ({ WebSocketServer } = require('ws')); } catch (e) { WebSocketServer = nul
 
 const PATH = '/ws/minigame';
 
-// rooms: id -> { game, peers:[{ws,name,side}], createdAt }
+// rooms: id -> { game, cap, started, peers:[{ws,name,side}], createdAt }
 const rooms = new Map();
-// waiting: game -> [ws]（只存单人，配对后建 room 互推）
+// waiting: game -> [ws]（只存单人，快速匹配时凑对手；QQ 大厅模式下基本不再使用，保留兼容）
 const waiting = new Map();
+// lobbies: game -> Set(ws)（订阅该游戏桌子列表的浏览器；座位变化/开战时推 tables）
+const lobbies = new Map();
 
 function send(ws, type, data) {
     try { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type, data })); } catch (e) {}
@@ -32,41 +34,108 @@ function leaveWaiting(ws) {
 function genRoom(game) {
     return 'mg-' + (game || 'g') + '-' + crypto.randomBytes(4).toString('hex');
 }
-// 把同游戏的两个等待者配对成房间
+// 把同游戏的两个等待者配对成房间（快速匹配遗留路径）
 function pair(game, a, b) {
     const id = genRoom(game);
-    const room = { game, peers: [{ ws: a, name: a._name, side: 0 }, { ws: b, name: b._name, side: 1 }], createdAt: Date.now() };
+    const room = { game, cap: 2, started: false, peers: [{ ws: a, name: a._name, side: 0 }, { ws: b, name: b._name, side: 1 }], createdAt: Date.now() };
     rooms.set(id, room);
     a._room = id; b._room = id; a._side = 0; b._side = 1;
     send(a, 'room', { room: id, game, side: 0, opp: b._name });
     send(b, 'room', { room: id, game, side: 1, opp: a._name });
 }
-// 按房间码加入（好友邀请）：房间不存在则创建（房主），存在则加入
-function joinRoom(ws, roomId) {
+// 房间座位快照：长度 cap，已占座位为 {name,side}，空位为 null
+function seatView(room) {
+    const seats = [];
+    for (let i = 0; i < room.cap; i++) { const p = room.peers[i]; seats.push(p ? { name: p.name, side: p.side } : null); }
+    return seats;
+}
+// 向房间内所有人广播座位占用
+function broadcastSeat(room) {
+    const seats = seatView(room);
+    const full = room.peers.length >= room.cap;
+    room.peers.forEach(p => send(p.ws, 'seat', { seats, cap: room.cap, you: p.side, full, started: room.started }));
+}
+// 向订阅该游戏大厅的浏览器推送桌子列表（只列未开始且未满的桌）
+function broadcastTables(game) {
+    const set = lobbies.get(game);
+    if (!set || !set.size) return;
+    const tables = [];
+    for (const [id, room] of rooms) {
+        if (room.game !== game) continue;
+        if (room.started || room.peers.length >= room.cap) continue;
+        tables.push({ room: id, cap: room.cap, seats: seatView(room), full: false });
+    }
+    set.forEach(ws => send(ws, 'tables', { game, tables }));
+}
+// 满座 → 开战：给每人发 start（带自己 side 与对手昵称列表）
+function startRoom(room) {
+    room.started = true;
+    const names = room.peers.map(p => p.name);
+    room.peers.forEach(p => {
+        const opp = names.filter((_, i) => i !== p.side);
+        send(p.ws, 'start', { room: p.ws._room, game: room.game, side: p.side, opp, seats: seatView(room) });
+    });
+    broadcastTables(room.game); // 满桌从等候厅移除
+}
+// 按房间码加入（好友邀请）：房间不存在则创建（房主）
+function joinRoom(ws, roomId, cap) {
     let room = rooms.get(roomId);
     if (!room) { // 房主建房：用该房间码开启一个等待对手的房间
-        room = { game: ws._game, peers: [], createdAt: Date.now() };
+        room = { game: ws._game, cap: cap || 2, started: false, peers: [], createdAt: Date.now() };
         rooms.set(roomId, room);
     }
-    if (room.peers.length >= 2) { send(ws, 'error', { msg: '房间已满' }); return; }
-    const side = room.peers.length; // 0 或 1
+    if (room.started) { send(ws, 'error', { msg: '对局已开始，无法加入' }); return; }
+    if (room.peers.length >= room.cap) { send(ws, 'error', { msg: '房间已满' }); return; }
+    const side = room.peers.length; // 0..cap-1，按入座顺序分配座位
     room.peers.push({ ws, name: ws._name, side });
     ws._room = roomId; ws._side = side;
-    const other = room.peers.find(p => p.ws !== ws);
-    room.peers.forEach(p => send(p.ws, 'peer', { nickname: p.name, side: p.side }));
-    send(ws, 'room', { room: roomId, game: room.game, side, opp: other ? other.name : null });
+    broadcastSeat(room);
+    broadcastTables(room.game);
+    if (room.peers.length >= room.cap) startRoom(room);
 }
 function cleanup(ws) {
     try { leaveWaiting(ws); } catch (e) {}
+    // 退出大厅订阅
+    if (ws._lobby && ws._game && lobbies.has(ws._game)) {
+        const set = lobbies.get(ws._game);
+        set.delete(ws);
+        if (!set.size) lobbies.delete(ws._game);
+    }
     const id = ws._room;
     if (id && rooms.has(id)) {
         const room = rooms.get(id);
         const left = room.peers.find(p => p.ws === ws);
         room.peers = room.peers.filter(p => p.ws !== ws);
-        room.peers.forEach(p => send(p.ws, 'peer_left', { side: left ? left.side : null }));
-        if (!room.peers.length) rooms.delete(id);
+        if (room.started) {
+            // 对局进行中有人离开：通知剩余玩家，但桌子不再回到等候厅（避免第三者插入）
+            room.peers.forEach(p => send(p.ws, 'peer_left', { side: left ? left.side : null }));
+        } else {
+            broadcastSeat(room);
+            if (!room.peers.length) { rooms.delete(id); broadcastTables(room.game); }
+            else broadcastTables(room.game);
+        }
     }
     try { if (ws.terminate) ws.terminate(); } catch (e) {}
+}
+// 列出某游戏所有「未满且未开始」的桌子（供大厅展示；空桌不列）
+function listTables(game) {
+    const tables = [];
+    for (const [id, room] of rooms) {
+        if (room.game !== game) continue;
+        if (room.started || !room.peers.length || room.peers.length >= room.cap) continue;
+        tables.push({ room: id, cap: room.cap, seats: seatView(room), full: false });
+    }
+    return tables;
+}
+// 找一张同游戏、容量匹配、未满未开始的桌（空桌不自动并入，直接另开）
+function findOpenRoom(game, cap) {
+    for (const [id, room] of rooms) {
+        if (room.game !== game) continue;
+        if (room.started || !room.peers.length) continue;
+        if (room.cap !== cap) continue;
+        if (room.peers.length < room.cap) return id;
+    }
+    return null;
 }
 
 function attach(server) {
@@ -85,16 +154,30 @@ function attach(server) {
             if (!m || typeof m !== 'object') return;
             const d = m.data || {};
             try {
-                if (m.type === 'join') {
+                if (m.type === 'lobby') {
+                    // QQ 游戏大厅：订阅某游戏的桌子列表（座位/昵称实时更新）
+                    ws._game = d.game || 'unknown';
+                    const cap = d.cap || 2;
+                    if (!lobbies.has(ws._game)) lobbies.set(ws._game, new Set());
+                    lobbies.get(ws._game).add(ws);
+                    ws._lobby = true;
+                    send(ws, 'tables', { game: ws._game, tables: listTables(ws._game) });
+                } else if (m.type === 'join') {
                     ws._name = (d.me && String(d.me).slice(0, 24)) || '对手';
                     ws._game = d.game || 'unknown';
-                    if (d.room) { joinRoom(ws, String(d.room)); return; }
-                    // 快速匹配：同游戏等待队列里找一个活人配对
-                    const q = waiting.get(ws._game) || [];
-                    const other = q.shift();
-                    if (!q.length) waiting.delete(ws._game);
-                    if (other && other.readyState === 1) { pair(ws._game, other, ws); }
-                    else { q.push(ws); waiting.set(ws._game, q); send(ws, 'waiting', { game: ws._game }); }
+                    const cap = d.cap || 2;
+                    if (d.room) { joinRoom(ws, String(d.room), cap); return; }
+                    if (d.create) { // 创建新桌：总是开一张空桌（即使已有空桌也另开）
+                        const id = genRoom(ws._game);
+                        const room = { game: ws._game, cap, started: false, peers: [], createdAt: Date.now() };
+                        rooms.set(id, room);
+                        joinRoom(ws, id, cap);
+                        return;
+                    }
+                    // 快速加入：找一张同游戏未满未开始的桌并入座；没有则自动开一张新桌
+                    const open = findOpenRoom(ws._game, cap);
+                    if (open) joinRoom(ws, open, cap);
+                    else { const id = genRoom(ws._game); rooms.set(id, { game: ws._game, cap, started: false, peers: [], createdAt: Date.now() }); joinRoom(ws, id, cap); }
                 } else if (m.type === 'input' || m.type === 'state' || m.type === 'sync') {
                     const room = ws._room && rooms.get(ws._room);
                     if (room) room.peers.forEach(p => { if (p.ws !== ws) send(p.ws, m.type, d); });

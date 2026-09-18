@@ -303,9 +303,10 @@ MG.runGame = function (container, cfg) {
             endless,
             totalLevels: cfg.levels.length,
             onScore,
-            onComplete: result => {
-                clearCurrent();
-                const stars = result.stars || 0;
+        onComplete: result => {
+            if (cfg.net) { clearCurrent(); try { if (cfg.onComplete) cfg.onComplete(result); } catch (e) {} return; }
+            clearCurrent();
+            const stars = result.stars || 0;
                 if (!endless) this.recordStars(cfg.id, idx + 1, stars);
                 else this.setBest(cfg.id, result.score || 0);
                 // 玩法埋点（Tier3-8）：通关/失败/无尽分上报，用于关卡平衡
@@ -327,6 +328,7 @@ MG.runGame = function (container, cfg) {
             },
         }, lv);
     };
-    showLevels();
+    if (cfg.net) { runLevel(0, cfg.levels[0]); }
+    else { showLevels(); }
     return { stop() { clearCurrent(); } };
 };

@@ -26,9 +26,7 @@ const MinigamesView = {
         root.innerHTML = `
             <div class="section-title">🎮 小游戏
                 <span class="mini-vs-actions">
-                    <button class="mini-vs-btn" id="mini-vs-local">👥 双人：关</button>
-                    <button class="mini-vs-btn" id="mini-vs-net">🌐 联机</button>
-                    <span style="font-size:12px;color:#b9b3d8;font-weight:normal">共 ${all.length} 款</span>
+                    <span style="font-size:12px;color:#b9b3d8;font-weight:normal">共 ${all.length} 款${NET_GAMES_COUNT ? ' · 🌐 ' + NET_GAMES_COUNT + ' 款可联机' : ''}</span>
                 </span>
             </div>
             <div class="mini-filter">
@@ -50,71 +48,49 @@ const MinigamesView = {
             this._renderHub();
         });
         this._renderHub();
-        const vsLocal = document.getElementById('mini-vs-local');
-        if (vsLocal) vsLocal.onclick = () => { this._versus = !this._versus; vsLocal.textContent = '👥 双人：' + (this._versus ? '开' : '关'); vsLocal.classList.toggle('on', this._versus); };
-        const vsNet = document.getElementById('mini-vs-net');
-        if (vsNet) vsNet.onclick = () => {
-            this._cat = 'versus';
-            document.querySelectorAll('#mini-cats .mini-cat').forEach(x => x.classList.toggle('active', x.dataset.cat === 'versus'));
-            this._renderHub();
-        };
     },
     _renderHub() {
         const all = this._sorted || GAMES;
         const q = (this._q || '').toLowerCase();
-        // 联网对战 tab：列出全部游戏，点击直接按该游戏发起匹配（不加载 50 关）
-        if (this._cat === 'versus') {
-            const vlist = all.filter(g => !q || g.name.toLowerCase().includes(q) || (g.desc || '').toLowerCase().includes(q));
-            const hub = document.getElementById('mini-hub');
-            hub.innerHTML = '';
-            if (!vlist.length) {
-                hub.innerHTML = `<div style="color:#b9b3d8;padding:24px;text-align:center;font-size:13px">没有匹配的小游戏，换个关键词试试～</div>`;
-                return;
-            }
-            const tip = U.el(`<div style="color:#8fd0ff;padding:8px 4px;font-size:12px">🌐 点任意游戏 → 按该游戏快速匹配 / 创建房间（匹配严格按游戏隔离，绝不会串到其他游戏）</div>`);
-            hub.appendChild(tip);
-            vlist.forEach(g => {
-                const stars = MG.totalStars(g.id);
-                const card = U.el(`
-                    <div class="mini-card" data-id="${g.id}">
-                        <div class="mini-thumb">${g.thumb}</div>
-                        <div class="mini-meta">
-                            <div class="mini-name">${g.name}${stars > 0 ? `<span class="mini-stars">⭐ ${stars}</span>` : ''}</div>
-                            <div class="mini-desc">${g.desc || ''}</div>
-                        </div>
-                        <div class="mini-arrow">›</div>
-                    </div>
-                `);
-                card.onclick = () => this.startNetVersus(g);
-                hub.appendChild(card);
-            });
-            return;
-        }
-        const list = all.filter(g =>
-            (this._cat === 'all' || g.cat === this._cat) &&
-            (!q || g.name.toLowerCase().includes(q) || (g.desc || '').toLowerCase().includes(q))
-        );
+        const matchQ = g => !q || g.name.toLowerCase().includes(q) || (g.desc || '').toLowerCase().includes(q);
+        // 「🌐 联网对战」分类 = 可联机游戏筛选（只显示带「联网对战」按钮的游戏）
+        const list = (this._cat === 'versus' ? all.filter(g => NET_GAMES[g.id]) : all.filter(g => this._cat === 'all' || g.cat === this._cat))
+            .filter(matchQ);
         const hub = document.getElementById('mini-hub');
         hub.innerHTML = '';
         if (!list.length) {
-            hub.innerHTML = `<div style="color:#b9b3d8;padding:24px;text-align:center;font-size:13px">没有匹配的小游戏，换个关键词或分类试试～</div>`;
+            hub.innerHTML = `<div style="color:#b9b3d8;padding:24px;text-align:center;font-size:13px">${this._cat === 'versus' ? '暂无可联机的小游戏，换个关键词试试～' : '没有匹配的小游戏，换个关键词或分类试试～'}</div>`;
             return;
         }
-        list.forEach(g => {
-            const stars = MG.totalStars(g.id);
-            const card = U.el(`
-                <div class="mini-card" data-id="${g.id}">
-                    <div class="mini-thumb">${g.thumb}</div>
-                    <div class="mini-meta">
-                        <div class="mini-name">${g.name}${stars > 0 ? `<span class="mini-stars">⭐ ${stars}</span>` : ''}</div>
-                        <div class="mini-desc">${g.desc || ''}</div>
-                    </div>
-                    <div class="mini-arrow">›</div>
+        if (this._cat === 'versus') {
+            const tip = U.el(`<div style="color:#8fd0ff;padding:6px 4px 10px;font-size:12px">🌐 仅显示支持联网对战的游戏 · 点「联网对战」进入游戏大厅，坐下即匹配对手</div>`);
+            hub.appendChild(tip);
+        }
+        list.forEach(g => hub.appendChild(this._renderCard(g)));
+    },
+    // 一张游戏卡：默认「进入游戏」（50 关单人）；若游戏支持联机，多一个「联网对战」按钮（进入大厅）
+    _renderCard(g) {
+        const stars = MG.totalStars(g.id);
+        const net = NET_GAMES[g.id];
+        const card = U.el(`
+            <div class="mini-card" data-id="${g.id}">
+                <div class="mini-thumb">${g.thumb}</div>
+                <div class="mini-meta">
+                    <div class="mini-name">${g.name}${stars > 0 ? `<span class="mini-stars">⭐ ${stars}</span>` : ''}</div>
+                    <div class="mini-desc">${g.desc || ''}</div>
                 </div>
-            `);
-            card.onclick = () => this.launch(g);
-            hub.appendChild(card);
-        });
+                <div class="mini-acts">
+                    <button class="mini-btn mini-btn-play" data-act="play">▶ 进入游戏</button>
+                    ${net ? `<button class="mini-btn mini-btn-net" data-act="net">🌐 联网对战</button>` : ''}
+                </div>
+            </div>
+        `);
+        const playBtn = card.querySelector('[data-act="play"]');
+        if (playBtn) playBtn.onclick = (e) => { e.stopPropagation(); this.launch(g); };
+        const netBtn = card.querySelector('[data-act="net"]');
+        if (netBtn) netBtn.onclick = (e) => { e.stopPropagation(); this.openHall(g); };
+        card.onclick = () => this.launch(g);   // 点卡片其它区域 = 进入游戏
+        return card;
     },
 
     launch(g) {
@@ -174,13 +150,19 @@ const MinigamesView = {
 //   加入房间 —— 好友拿码输入进来
 // 匹配成功后由 _launchNet 真正启动该游戏（net 模式：不走 50 关、不走本地双人），
 // 游戏内检测 MG.pvp 自动禁用 AI、按回合锁输入、整盘状态同步给对手。
-MinigamesView.startNetVersus = function (g) {
-    if (!g || !g.id) { U.toast('请先选择一款游戏再联机'); return; }
+// 联机对战入口（QQ 游戏大厅风格）：进入该游戏的「大厅」，看到一张张桌子，
+// 每张桌有 N 个座位（棋类 2 座、强手棋/大富翁 4 座），座位上显示已入座玩家昵称。
+// 点「创建新桌」开一桌并自动坐下；或点某张桌「加入」坐下。满座后服务端发 start → 开战。
+// 大厅与座位依赖 server/ws-relay.js 的 lobby/tables/seat/start 消息；对战同步复用已有 MG.net 连接。
+MinigamesView.openHall = function (g) {
+    if (!g || !g.id || !NET_GAMES[g.id]) { U.toast('该游戏暂不支持联机'); return; }
+    const cap = NET_GAMES[g.id].seats || 2;
     MG._curGame = g.id;
+    const self = this;
     const mask = U.el(`<div class="mini-mask" id="mini-mask">
         <div class="mini-topbar">
             <button class="btn-back" id="mini-back">‹ 返回</button>
-            <div class="mini-title" id="mini-vs-title">${g.name}</div>
+            <div class="mini-title" id="mini-vs-title">🌐 ${g.name} · 联机大厅</div>
             <div class="mini-score" id="mini-score"></div>
         </div>
         <div class="mini-stage" id="mini-stage"></div>
@@ -188,69 +170,100 @@ MinigamesView.startNetVersus = function (g) {
     document.body.appendChild(mask);
     const titleEl = mask.querySelector('#mini-vs-title');
     const stage = document.getElementById('mini-stage');
-    const close = () => {
-        try { MG.net && MG.net.leave && MG.net.leave(); } catch (e) {}
-        try { MG.match && MG.match.end(); } catch (e) {}
-        MG._onVersusWaiting = MG._onVersusPeerLeft = MG._onVersusError = null;
-        mask.remove();
-    };
-    document.getElementById('mini-back').onclick = close;
     MG.match._parent = titleEl;   // 对战双方昵称 HUD 渲染进顶栏标题
 
-    const panel = U.el(`<div class="mini-versus-panel">
-        <div class="mvp-sub">联网对战 · 按《${g.name}》匹配（不会串到其他游戏）</div>
-        <button class="mvp-btn mvp-primary" id="mvp-auto">⚡ 快速匹配</button>
-        <button class="mvp-btn" id="mvp-create">🏠 创建房间</button>
-        <div class="mvp-join">
-            <input class="mvp-input" id="mvp-code" type="text" placeholder="输入房间码，和好友对战" maxlength="48" />
-            <button class="mvp-btn mvp-sm" id="mvp-join">加入</button>
-        </div>
-        <div class="mvp-status" id="mvp-status">选择一个方式开始…</div>
+    const clearHallHandlers = () => { MG.net.on('tables', () => {}); MG.net.on('seat', () => {}); MG.net.on('start', () => {}); MG.net.on('peer_left', () => {}); };
+    const close = () => {
+        try { MG.net && MG.net.leave && MG.net.leave(); } catch (e) {}
+        try { if (MG.net && MG.net._ws) MG.net._ws.close(); } catch (e) {}
+        clearHallHandlers();
+        try { MG.match && MG.match.end(); } catch (e) {}
+        if (mask.parentNode) mask.remove();
+    };
+    document.getElementById('mini-back').onclick = close;
+    const setStatus = t => { const el = document.getElementById('mh-status'); if (el) el.textContent = t; };
+
+    const hall = U.el(`<div class="mg-hall">
+        <div class="mh-head">🌐 《${g.name}》联机大厅 · <b>${cap}</b> 人桌</div>
+        <div class="mh-tip">点「创建新桌」开一桌并自动坐下，或加入下方任意桌子；座位满即开战。</div>
+        <button class="mvp-btn mvp-primary" id="mh-create">🪑 创建新桌</button>
+        <div class="mh-tables" id="mh-tables"><div class="mh-loading">连接中…</div></div>
+        <div class="mh-mine" id="mh-mine"></div>
+        <div class="mh-status" id="mh-status"></div>
     </div>`);
-    stage.appendChild(panel);
-    const statusEl = panel.querySelector('#mvp-status');
-    const setStatus = t => { statusEl.textContent = t; };
+    stage.appendChild(hall);
 
-    MG._onVersusWaiting = () => setStatus('🔍 正在匹配《' + g.name + '》的对手…（点返回取消）');
-    MG._onVersusPeerLeft = () => setStatus('对手已离开房间');
-    MG._onVersusError = msg => setStatus('⚠️ ' + msg);
+    MG.net.on('tables', m => { try { self._renderHallTables(g, m && m.tables); } catch (e) {} });
+    MG.net.on('seat', m => { try { self._renderHallMine(g, m); } catch (e) {} });
+    MG.net.on('peer_left', m => { try { self._renderHallMine(g, m); setStatus('有玩家离开了桌子'); } catch (e) {} });
+    MG.net.on('start', m => {
+        if (!m || typeof m.side !== 'number') return;
+        const opp = (m.opp && m.opp.join('、')) || '对手';
+        if (NET_WIRED[g.id]) self._launchNet(g, { side: m.side, room: m.room, opp: opp, seats: m.seats });
+        else self._showNetDev(g);
+    });
 
-    const collapse = () => {
-        ['#mvp-auto', '#mvp-create', '.mvp-join'].forEach(s => { const el = panel.querySelector(s); if (el) el.style.display = 'none'; });
-    };
-
-    // 发起连接并在匹配成功后真正启动该游戏
-    const connectAndLaunch = (opts, roomLabel) => {
-        const r = MG.net.versus(opts);
-        if (!r.ok) { setStatus('⚠️ 联机服务未连接（需部署 /ws/minigame 中继）'); return; }
-        MG.net.on('room', m => {
-            try {
-                MG.match.begin({ mode: 'net', me: (MG.me && MG.me.nickname) || '我', opp: (m && m.opp) || '对手', room: (m && m.room) || r.room, side: (m && m.side) || 0 });
-            } catch (e) {}
-            this._launchNet(g, m || { side: 0, room: r.room, opp: '对手' });
-        });
-        setStatus(roomLabel ? ('🎮 已进入房间：' + roomLabel + '，等待对手…') : ('🔍 正在匹配《' + g.name + '》的对手…'));
-    };
-
-    panel.querySelector('#mvp-auto').onclick = () => connectAndLaunch({ game: g.id });
-    panel.querySelector('#mvp-create').onclick = () => {
-        const room = 'mg-' + g.id + '-' + Math.random().toString(36).slice(2, 8);
-        collapse();
-        setStatus('🏠 房间已创建：' + room + '（已尝试复制到剪贴板，发给好友即可）');
-        try { if (navigator.clipboard) navigator.clipboard.writeText(room).catch(function () {}); } catch (e) {}
-        connectAndLaunch({ game: g.id, room }, room);
-    };
-    panel.querySelector('#mvp-join').onclick = () => {
-        const code = panel.querySelector('#mvp-code').value.trim();
-        if (!code) { setStatus('⚠️ 请输入房间码'); return; }
-        collapse();
-        connectAndLaunch({ game: g.id, room: code }, code);
+    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame';
+    const ok = MG.net.connect(url);
+    if (!ok) { setStatus('⚠️ 浏览器不支持 WebSocket'); return; }
+    MG.net.send('lobby', { game: g.id, cap });
+    hall.querySelector('#mh-create').onclick = () => {
+        MG.net.send('join', { game: g.id, cap, create: true, me: (MG.me && MG.me.nickname) || '我' });
+        setStatus('🪑 已创建新桌，等待其他人入座…');
     };
 };
 
-// 真正启动一局联机对战：武装 MG.pvp，再调用游戏 start（游戏内检测 pvp 模式自行禁用 AI / 锁输入 / 同步）
+// 大厅：渲染桌子列表（每张桌的座位与昵称）
+MinigamesView._renderHallTables = function (g, tables) {
+    const el = document.getElementById('mh-tables'); if (!el) return;
+    if (!tables || !tables.length) { el.innerHTML = `<div class="mh-empty">暂无开放桌子，点「创建新桌」开一桌～</div>`; return; }
+    el.innerHTML = '';
+    tables.forEach(t => {
+        const seats = [];
+        for (let i = 0; i < t.cap; i++) { const s = t.seats[i]; seats.push(s ? `<div class="mh-seat taken">${MG.escapeHtml(s.name)}</div>` : `<div class="mh-seat empty">空位</div>`); }
+        const card = U.el(`<div class="mh-table">
+            <div class="mh-table-cap">${t.cap} 人桌</div>
+            <div class="mh-seats">${seats.join('')}</div>
+            <button class="mvp-btn mvp-sm mh-join">加入</button>
+        </div>`);
+        card.querySelector('.mh-join').onclick = () => MG.net.send('join', { game: g.id, room: t.room, cap: t.cap, me: (MG.me && MG.me.nickname) || '我' });
+        el.appendChild(card);
+    });
+};
+
+// 大厅：渲染「我所在的桌子」——高亮我的座位，显示等待/已满状态
+MinigamesView._renderHallMine = function (g, m) {
+    const el = document.getElementById('mh-mine'); if (!el || !m) return;
+    const cap = m.cap || (NET_GAMES[g.id] && NET_GAMES[g.id].seats) || 2;
+    const seats = [];
+    let taken = 0;
+    for (let i = 0; i < cap; i++) {
+        const s = m.seats ? m.seats[i] : null;
+        if (s) taken++;
+        const mine = (m.you === i);
+        seats.push(s ? `<div class="mh-seat taken${mine ? ' me' : ''}">${MG.escapeHtml(s.name)}${mine ? '（你）' : ''}</div>` : `<div class="mh-seat empty">空位</div>`);
+    }
+    el.innerHTML = `<div class="mh-mine-head">我所在的桌子（座位 ${(m.you + 1)} / ${cap}）</div><div class="mh-seats">${seats.join('')}</div>` +
+        (m.full ? `<div class="mh-full">座位已满，即将开战…</div>` : `<div class="mh-wait">等待其他玩家入座（${taken}/${cap}）…</div>`);
+};
+
+// 4 人桌等尚未接入真实同步的游戏：大厅/座位可用，但满座后提示「开发中」而非假开战
+MinigamesView._showNetDev = function (g) {
+    const stage = document.getElementById('mini-stage'); if (!stage) return;
+    stage.innerHTML = `<div class="mini-result">
+        <div class="mr-title">🛠️ 联机对战开发中</div>
+        <div class="mr-sub">《${g.name}》的大厅与座位已就绪（${NET_GAMES[g.id].seats} 人桌、昵称同步可用），但该游戏的实时同步对战尚未接入游戏模块，敬请期待。</div>
+        <button class="mvp-btn" id="md-back">‹ 返回列表</button>
+    </div>`;
+    const b = stage.querySelector('#md-back');
+    if (b) b.onclick = () => { try { MG.net && MG.net.leave && MG.net.leave(); } catch (e) {} try { if (MG.net && MG.net._ws) MG.net._ws.close(); } catch (e) {} const mask = document.getElementById('mini-mask'); if (mask && mask.parentNode) mask.remove(); };
+};
+
+// 真正启动一局联机对战：hall 连接已在房间内，这里只需武装 MG.pvp 并启动游戏
+// （MG.pvp.commit → MG.net.send 复用同一连接转发 input/state，无需再连）
 MinigamesView._launchNet = function (g, m) {
     MG._curGame = g.id;
+    MG.net.on('tables', () => {}); MG.net.on('seat', () => {});   // 对战进行中不再处理大厅消息
     MG.pvp.arm(g.id, (m && m.side) || 0, (m && m.opp) || null);
     const mask = document.getElementById('mini-mask');
     const stage = document.getElementById('mini-stage');
@@ -271,7 +284,7 @@ MinigamesView._launchNet = function (g, m) {
         const opts = { onScore: s => { if (scoreEl) scoreEl.textContent = s != null ? s : ''; }, onComplete: res => this._pvpResult(g, res, close) };
         if (g.id === 'banqi') ctrl = game.start(stage, opts);
         else ctrl = MG.runGame(stage, {
-            id: g.id, title: g.name,
+            id: g.id, title: g.name, net: true,
             levels: (game.LEVELS && game.LEVELS.length) ? game.LEVELS : defaultLevels(g),
             endless: game.ENDLESS || null,
             start: (c, o, lv) => game.start(c, o, lv),
@@ -297,7 +310,7 @@ MinigamesView._pvpResult = function (g, res, close) {
         <button class="mvp-btn mvp-primary" id="mr-rematch">⚔️ 再来一局</button>
         <button class="mvp-btn" id="mr-back">‹ 返回列表</button>
     </div>`;
-    const rm = stage.querySelector('#mr-rematch'); if (rm) rm.onclick = () => { try { MG.pvp.end(); } catch (e) {} if (close) close(); this.startNetVersus(g); };
+    const rm = stage.querySelector('#mr-rematch'); if (rm) rm.onclick = () => { try { MG.pvp.end(); } catch (e) {} if (close) close(); this.openHall(g); };
     const bk = stage.querySelector('#mr-back'); if (bk) bk.onclick = () => { try { MG.pvp.end(); MG.net.leave(); } catch (e) {} if (close) close(); };
 };
 
@@ -483,6 +496,18 @@ const CAT_OF = Object.assign({}, ...[
 ].map(([c, ids]) => Object.fromEntries(ids.map(id => [id, c])))
 );
 GAMES.forEach(g => { g.cat = CAT_OF[g.id] || 'other'; });
+
+// ===== 联机对战注册表 =====
+// 仅这些游戏显示「联网对战」按钮（其余如三维弹球等无）。seats = 该游戏一张桌的座位数。
+// NET_WIRED：游戏模块已真正接入状态同步（落子/整盘广播），满座即真实开战；
+//   其余（强手棋/大富翁 4 人桌、冒险棋）大厅与座位已就绪，但 4 人真实同步待接入，满座提示「开发中」而非假开战。
+const NET_GAMES = {
+    gomoku: { seats: 2 }, banqi: { seats: 2 }, xiangqi: { seats: 2 }, chess: { seats: 2 },
+    junqi: { seats: 2 }, jungle: { seats: 2 }, ludo: { seats: 2 }, advchess: { seats: 2 },
+    monopoly: { seats: 4 }, richman: { seats: 4 },
+};
+const NET_WIRED = { gomoku: 1, banqi: 1, xiangqi: 1, chess: 1, junqi: 1, jungle: 1, ludo: 1 };
+const NET_GAMES_COUNT = Object.keys(NET_GAMES).length;
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合
 // items: [emoji, x, y, size]
