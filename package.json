@@ -35,6 +35,9 @@
     "seed:heroes": "node tools/gen-mysql-seed.js",
     "art": "node tools/gen-hero-art.js"
   },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
   "optionalDependencies": {
     "mysql2": "^3.11.0"
   }

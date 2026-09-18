@@ -15,12 +15,19 @@ MG.net = {
             const ws = new WebSocket(url);
             this._ws = ws;
             this._pending = [];
+            // 升级超时保护：若 N 秒内连不上（服务器没挂中继 / 网络不可达 / 反代没透传 Upgrade），
+            // 立刻给出明确报错，而不是干等到浏览器自身超时（表现为「待处理→超时」）。
+            const tOpen = setTimeout(() => {
+                try { if (this._onDown) this._onDown('联机服务无响应（服务器未开启 WebSocket 中继，或网络/反代未透传 Upgrade）'); } catch (e) {}
+                try { ws.terminate && ws.terminate(); } catch (_) {}
+            }, 8000);
             ws.onopen = () => {
+                clearTimeout(tOpen);
                 // 连接就绪：冲刷排队中的消息（join 等）
                 const q = this._pending; this._pending = [];
                 q.forEach(m => { try { ws.send(m); } catch (e) {} });
             };
-            ws.onclose = () => { try { if (this._onDown) this._onDown(); } catch (e) {} };
+            ws.onclose = () => { clearTimeout(tOpen); try { if (this._onDown) this._onDown(); } catch (e) {} };
             ws.onerror = () => {};
             ws.onmessage = (e) => { try { const m = JSON.parse(e.data); const h = this._handlers[m.type]; if (h) h(m.data); } catch (_) {} };
             return true;
