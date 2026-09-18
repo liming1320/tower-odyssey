@@ -1,6 +1,18 @@
 // 动作 10 款（均带无尽模式）：飞扬小鸟 · 躲避方块 · 接苹果 · 扎气球 · 射箭 · 投篮 · 飞镖 · 钓鱼 · 直升机 · 叠方块
 (function () {
-    const E = MG.eng, U = MG.ui;
+    const _eng = MG.eng, U = MG.ui;
+    const E = Object.assign({}, _eng);
+    (function () {
+        const w = (orig) => (id, cfg) => {
+            if (cfg && cfg.tap) {
+                const t = cfg.tap;
+                cfg.tap = (S, x, y, P, api) => { try { MG.audio.unlock(); MG.audio.sfx('click'); } catch (e) {} return t(S, x, y, P, api); };
+            }
+            return orig(id, cfg);
+        };
+        if (_eng.def) E.def = w(_eng.def);
+        if (_eng.defd) E.defd = w(_eng.defd);
+    })();
     const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 

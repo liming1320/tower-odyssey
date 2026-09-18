@@ -1,6 +1,18 @@
 // 记忆 / 观察 10 款：闪记数字 · 猩猩记忆 · 色彩记忆 · 记牌 · 记词 · 找隐藏 · 路径记忆 · 影子配对 · 缺什么 · 倒背数字
 (function () {
-    const E = MG.eng, U = MG.ui;
+    const _eng = MG.eng, U = MG.ui;
+    const E = Object.assign({}, _eng);
+    (function () {
+        const w = (orig) => (id, cfg) => {
+            if (cfg && cfg.tap) {
+                const t = cfg.tap;
+                cfg.tap = (S, x, y, P, api) => { try { MG.audio.unlock(); MG.audio.sfx('click'); } catch (e) {} return t(S, x, y, P, api); };
+            }
+            return orig(id, cfg);
+        };
+        if (_eng.def) E.def = w(_eng.def);
+        if (_eng.defd) E.defd = w(_eng.defd);
+    })();
     const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
     const pick = a => a[Math.floor(Math.random() * a.length)];
     function qEnd(S, P, api) {

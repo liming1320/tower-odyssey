@@ -388,6 +388,7 @@
 
   function playerHit(S, W, H) {
     S.lives--; S.inv = 2.2; S.shake = 0.4;
+    try { MG.audio.sfx('fail'); } catch (e) {}
     S.score = Math.max(0, S.score - 300);
     explode(S, S.px, S.py, 24, '#ff6f8f');
     // 清掉自机周围弹幕
@@ -397,6 +398,7 @@
   function doBomb(S, W, H) {
     if (S.bombs <= 0 || S.bombFx > 0 || S.phase === 'intro') return;
     S.bombs--; S.bombFx = 0.5; S.inv = Math.max(S.inv, 0.6);
+    try { MG.audio.sfx('launch'); } catch (e) {}
     for (const b of S.ebul) { b.dead = true; S.score += 5; }
     for (const e of S.enemies) { e.hp -= 4; explode(S, e.x, e.y, 6, '#9af0c4'); }
     if (S.boss) S.boss.hp -= Math.max(20, S.boss.maxHp * 0.12);

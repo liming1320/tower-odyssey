@@ -2,7 +2,19 @@
 // 玩法：底部 4 种食材一键制作 → 托盘(最多 3 件)凑齐某位客人的订单会「自动上菜」(也可点该客人上菜)
 //       客人有耐心条，等太久会走人并扣 1 颗❤；3 颗❤掉光或限时内没达到标服务数即失败
 (function () {
-    const E = MG.eng, U = MG.ui;
+    const _eng = MG.eng, U = MG.ui;
+    const E = Object.assign({}, _eng);
+    (function () {
+        const w = (orig) => (id, cfg) => {
+            if (cfg && cfg.tap) {
+                const t = cfg.tap;
+                cfg.tap = (S, x, y, P, api) => { try { MG.audio.unlock(); MG.audio.sfx('click'); } catch (e) {} return t(S, x, y, P, api); };
+            }
+            return orig(id, cfg);
+        };
+        if (_eng.def) E.def = w(_eng.def);
+        if (_eng.defd) E.defd = w(_eng.defd);
+    })();
     const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 
     // 食材定义（值越高越值钱）

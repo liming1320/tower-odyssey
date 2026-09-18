@@ -1,6 +1,18 @@
 // 答题 / 脑力 10 款：速算 · 色字干扰 · 比大小 · 找不同 · 成语填空 · 常识问答 · 数数 · 估算 · 读时钟 · 数列推理
 (function () {
-    const E = MG.eng, U = MG.ui;
+    const _eng = MG.eng, U = MG.ui;
+    const E = Object.assign({}, _eng);
+    (function () {
+        const w = (orig) => (id, cfg) => {
+            if (cfg && cfg.tap) {
+                const t = cfg.tap;
+                cfg.tap = (S, x, y, P, api) => { try { MG.audio.unlock(); MG.audio.sfx('click'); } catch (e) {} return t(S, x, y, P, api); };
+            }
+            return orig(id, cfg);
+        };
+        if (_eng.def) E.def = w(_eng.def);
+        if (_eng.defd) E.defd = w(_eng.defd);
+    })();
     const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
     const pick = a => a[Math.floor(Math.random() * a.length)];
 

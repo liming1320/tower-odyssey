@@ -1,6 +1,18 @@
 // 休闲 10 款（多为无尽）：抛硬币 · 骰子比大小 · 老虎机 · 宾果 · 转盘 · 猜拳连胜 · 弹珠 · 幸运七 · 连点挑战 · 扭蛋抽卡
 (function () {
-    const E = MG.eng, U = MG.ui;
+    const _eng = MG.eng, U = MG.ui;
+    const E = Object.assign({}, _eng);
+    (function () {
+        const w = (orig) => (id, cfg) => {
+            if (cfg && cfg.tap) {
+                const t = cfg.tap;
+                cfg.tap = (S, x, y, P, api) => { try { MG.audio.unlock(); MG.audio.sfx('click'); } catch (e) {} return t(S, x, y, P, api); };
+            }
+            return orig(id, cfg);
+        };
+        if (_eng.def) E.def = w(_eng.def);
+        if (_eng.defd) E.defd = w(_eng.defd);
+    })();
     const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
     const pick = a => a[Math.floor(Math.random() * a.length)];
 

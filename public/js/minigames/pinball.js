@@ -43,13 +43,18 @@ window.MiniGames = window.MiniGames || {};
         return image;
     };
     // Keep the ball, plunger sprite and launch rail on the original table's coordinates.
-    const CADET_LAUNCH = { ballX: 466, ballY: 379 };
+    const CADET_PLUNGER_ORIGIN = { x: 461, y: 383, w: 11 };
+    const CADET_LAUNCH = { ballX: CADET_PLUNGER_ORIGIN.x + CADET_PLUNGER_ORIGIN.w / 2, ballY: 378.5 };
     const LNCX = cadetX(CADET_LAUNCH.ballX);
     const BALL_REST_Y = cadetY(CADET_LAUNCH.ballY);
-    const PLG_TOP = BALL_REST_Y + BALL_R;
+    const PLG_TOP = cadetY(CADET_PLUNGER_ORIGIN.y);
     const PLG_PULL = 26;
     const CADET_BALL = cadetImage('cadet-ball.png');
     const CADET_PLUNGER = cadetImage('cadet-plunger.png');
+    const CADET_KICKERS = [
+        { rest: cadetImage('cadet-kick-left-rest.png'), hit: cadetImage('cadet-kick-left-hit.png'), restPos: [168, 379], hitPos: [170, 370], x: cadetX(173), y: cadetY(396), vx: 105 },
+        { rest: cadetImage('cadet-kick-right-rest.png'), hit: cadetImage('cadet-kick-right-hit.png'), restPos: [435, 379], hitPos: [434, 370], x: cadetX(439), y: cadetY(396), vx: -105 },
+    ];
     const CADET_FLIPPERS = [
         Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-flip-left-${frame}.png`)),
         Array.from({ length: 8 }, (_, frame) => cadetImage(`cadet-flip-right-${frame}.png`)),
@@ -566,6 +571,7 @@ window.MiniGames = window.MiniGames || {};
             const jets = [0, 0, 0];           // 左侧 3 只引擎命中光
             const bumperContact = [false, false, false];
             const jetContact = [false, false, false];
+            const slingHit = [0, 0];
             const turboLit = [false, false, false];
             const jetLit = [false, false, false];
             const cardFace = [0, 0, 0];       // 翻牌当前面：0 背面(未开) 1 正面(徽章)
@@ -616,6 +622,7 @@ window.MiniGames = window.MiniGames || {};
             let toast = '', toastT = 0;
             const lanesOn = [false, false, false, false];
             const kickback = { L: true, R: true };
+            const kickerHit = [0, 0];
             let spinnerAng = 0, spinnerVel = 0, spinnerAcc = 0;
             const cool = {};
 
@@ -1040,9 +1047,23 @@ window.MiniGames = window.MiniGames || {};
                     }
                     jetContact[i] = hit.touch;
                 });
-                SLINGS.forEach(sl => {
+                CADET_KICKERS.forEach((kb, i) => {
+                    const hit = touchCircle(ball, kb.x, kb.y, 7, 0.6, 0);
+                    const side = i ? 'R' : 'L';
+                    if (hit.touch && kickback[side] && canTrigger('kickback' + i, 0.18)) {
+                        kickback[side] = false;
+                        kickerHit[i] = 1;
+                        ball.vy = Math.min(ball.vy, -1050);
+                        ball.vx += kb.vx;
+                        addScore(500, 'kick'); combo++; comboT = 2.2;
+                        sfx('kick'); show('KICKBACK 救球 +500', 1.3);
+                        spawn(kb.x, kb.y, 14, 190, 1.1, -Math.PI / 2);
+                    }
+                });
+                SLINGS.forEach((sl, si) => {
                     const v = hitSeg(ball, { x1: sl.a[0], y1: sl.a[1], x2: sl.b[0], y2: sl.b[1], r: 3 }, 0.5, 430);
                     if (v > 0) {
+                        slingHit[si] = 1;
                         addScore(60); sfx('sling');
                         spawn((sl.a[0] + sl.b[0]) / 2, (sl.a[1] + sl.b[1]) / 2, 9, 30, 1);
                     } else {
@@ -1171,6 +1192,8 @@ window.MiniGames = window.MiniGames || {};
                 LAMPS.forEach(L => { L.on = false; });
                 turboLit.fill(false); jetLit.fill(false);
                 bumperContact.fill(false); jetContact.fill(false);
+                slingHit.fill(0);
+                kickerHit.fill(0);
                 if (balls === Infinity) { resetBall(); return; }
                 balls--;
                 if (balls <= 0) { finish(score >= P.goal); return; }
@@ -1280,7 +1303,8 @@ window.MiniGames = window.MiniGames || {};
                         sfx('launch'); shake = Math.max(shake, 0.12); shakeMag = Math.max(shakeMag, 3);
                         spawn(LNCX, BALL_REST_Y, 10, 190, 0.8, -Math.PI / 2);
                     } else { plunger = Math.max(0, plunger - dt * 2); chargeSfx = true; }
-                    ball.y = BALL_REST_Y + plunger * PLG_PULL;
+                    // 原版蓄力时只有活塞下压，球保持在发射巷球位，避免穿入弹簧贴图。
+                    ball.y = BALL_REST_Y;
                     ball.vx = ball.vy = 0;
                     return;
                 }
@@ -1414,22 +1438,6 @@ window.MiniGames = window.MiniGames || {};
                 if (spinnerAcc > Math.PI * 2) { spinnerAcc -= Math.PI * 2; addScore(250, 'spin'); }
 
                 if (comboT > 0) { comboT -= dt; if (comboT <= 0) combo = 0; }
-
-                // 外道救球（多球时逐个判定；在轨/冻结的主球跳过）
-                for (let bi = 0; bi < live.length; bi++) {
-                    const b = live[bi];
-                    if (bi === 0 && (onRailNow || mainFrozen)) continue;
-                    if (b.y <= 616) continue;
-                    if (b.x < 66 && kickback.L) {
-                        kickback.L = false; b.vy = -1000; b.vx = 40;
-                        addScore(500); sfx('kick'); show('KICKBACK 救球 +500', 1.3);
-                        spawn(b.x, b.y, 14, 190, 1.1, -Math.PI / 2);
-                    } else if (b.x > 286 && kickback.R) {
-                        kickback.R = false; b.vy = -1000; b.vx = -40;
-                        addScore(500); sfx('kick'); show('KICKBACK 救球 +500', 1.3);
-                        spawn(b.x, b.y, 14, 190, 1.1, -Math.PI / 2);
-                    }
-                }
 
                 // 卡球自救：主球长时间低速滞留在挡板死角 → 周期轻推，仍卡则自动重发（防软锁）
                 if (!over && launched && !onRailNow && !mainFrozen && live.length > 0) {
@@ -1735,7 +1743,7 @@ window.MiniGames = window.MiniGames || {};
                 const pull = !launched ? plunger * PLG_PULL : 0;
                 ctx.drawImage(
                     CADET_PLUNGER,
-                    LNCX - CADET_PLUNGER.naturalWidth * CADET_SCALE / 2, PLG_TOP + pull,
+                    cadetX(CADET_PLUNGER_ORIGIN.x), PLG_TOP + pull,
                     CADET_PLUNGER.naturalWidth * CADET_SCALE, CADET_PLUNGER.naturalHeight * CADET_SCALE,
                 );
             }
@@ -2330,7 +2338,7 @@ window.MiniGames = window.MiniGames || {};
             }
 
             function drawSlings() {
-                SLINGS.forEach(sl => {
+                SLINGS.forEach((sl, si) => {
                     ctx.save();
                     ctx.beginPath();
                     ctx.moveTo(sl.a[0], sl.a[1]); ctx.lineTo(sl.b[0], sl.b[1]);
@@ -2353,7 +2361,49 @@ window.MiniGames = window.MiniGames || {};
                         ctx.fillStyle = g2;
                         ctx.beginPath(); ctx.arc(p[0], p[1], 4.2, 0, Math.PI * 2); ctx.fill();
                     });
+                    if (slingHit[si] > 0.02) drawSlingHit(sl, slingHit[si]);
                 });
+            }
+
+            function drawSlingHit(sl, hit) {
+                const cx = (sl.a[0] + sl.b[0] + sl.c[0]) / 3;
+                const cy = (sl.a[1] + sl.b[1] + sl.c[1]) / 3;
+                ctx.save();
+                ctx.globalAlpha = hit;
+                ctx.fillStyle = 'rgba(255,190,72,0.28)';
+                ctx.beginPath();
+                ctx.moveTo(sl.a[0], sl.a[1]); ctx.lineTo(sl.b[0], sl.b[1]); ctx.lineTo(sl.c[0], sl.c[1]);
+                ctx.closePath(); ctx.fill();
+                const retract = 1 - hit * 0.28;
+                const bx = lerp(sl.a[0], sl.b[0], retract), by = lerp(sl.a[1], sl.b[1], retract);
+                ctx.strokeStyle = '#ffe2a0'; ctx.lineWidth = 2 + hit * 3;
+                ctx.beginPath(); ctx.moveTo(sl.a[0], sl.a[1]); ctx.lineTo(bx, by); ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,245,190,0.9)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(cx, cy, 7 + hit * 7, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+            }
+
+            function drawCadetDynamicEffects() {
+                CADET_KICKERS.forEach((kb, i) => {
+                    drawCadetSprite(kickerHit[i] > 0.02 ? kb.hit : kb.rest,
+                        kickerHit[i] > 0.02 ? kb.hitPos[0] : kb.restPos[0],
+                        kickerHit[i] > 0.02 ? kb.hitPos[1] : kb.restPos[1]);
+                });
+                if (lanesOn.some(Boolean)) drawLanes();
+                if (flash.spin > 0.02 || Math.abs(spinnerVel) > 0.8) drawSpinner();
+                if (flash.saucer > 0.02 || saucerHold > 0) drawSaucer();
+                if (warpHold > 0 || flash.warp > 0.02) drawWarpJet();
+                if (cardFace.some(Boolean) || cardAnim.some(v => v > 0)) drawCards();
+                if (flash.target > 0.02) {
+                    TARGETS.forEach(tg => {
+                        if (!tg.down) return;
+                        ctx.save();
+                        ctx.strokeStyle = `rgba(255,180,70,${flash.target * 0.8})`;
+                        ctx.lineWidth = 2 + flash.target * 2;
+                        ctx.beginPath(); ctx.arc(tg.x, tg.y, 12 + (1 - flash.target) * 8, 0, Math.PI * 2); ctx.stroke();
+                        ctx.restore();
+                    });
+                }
             }
 
             function drawFlipper(f) {
@@ -2800,6 +2850,8 @@ window.MiniGames = window.MiniGames || {};
 
                 for (let i = 0; i < 3; i++) bumps[i] = Math.max(0, bumps[i] - dt * 3.2);
                 for (let i = 0; i < 3; i++) jets[i] = Math.max(0, jets[i] - dt * 3.2);
+                for (let i = 0; i < 2; i++) slingHit[i] = Math.max(0, slingHit[i] - dt * 5.5);
+                for (let i = 0; i < 2; i++) kickerHit[i] = Math.max(0, kickerHit[i] - dt * 8);
                 for (const k in flash) flash[k] = Math.max(0, flash[k] - dt * 2.4);
                 missionFlash = Math.max(0, missionFlash - dt * 1.2);
                 shake = Math.max(0, shake - dt * 3.4);
@@ -2846,6 +2898,8 @@ window.MiniGames = window.MiniGames || {};
                     drawPlunger();
                 } else {
                     drawCadetBumpers();
+                    SLINGS.forEach((sl, i) => { if (slingHit[i] > 0.02) drawSlingHit(sl, slingHit[i]); });
+                    drawCadetDynamicEffects();
                     drawCadetFlipper(FL);
                     drawCadetFlipper(FR);
                     drawCadetPlunger();

@@ -19,6 +19,10 @@ const wanted = {
     532: 'cadet-bump-6.png',
     540: 'cadet-bump-7.png',
     592: 'cadet-plunger.png',
+    622: 'cadet-kick-left-rest.png',
+    623: 'cadet-kick-left-hit.png',
+    624: 'cadet-kick-right-rest.png',
+    625: 'cadet-kick-right-hit.png',
 };
 for (let frame = 0; frame < 8; frame++) {
     wanted[474 + frame] = `cadet-flip-left-${frame}.png`;

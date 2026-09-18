@@ -20,6 +20,8 @@
     "pk32:capture-plan": "node tools/build-pk32-capture-plan.js",
     "pk32:capture-jobs": "node tools/export-pk32-capture-jobs.js",
     "pk32:scan-launcher": "powershell -ExecutionPolicy Bypass -File tools/scan-pk32-launcher.ps1",
+    "pk32:mouse-batch": "powershell -ExecutionPolicy Bypass -File tools/capture-pk32-mouse-batch.ps1",
+    "pk32:mouse-calibrate": "powershell -ExecutionPolicy Bypass -File tools/capture-pk32-mouse-batch.ps1 -Run -AllowDesktopInput -From 1 -To 4",
     "pk32:capture-dry-run": "npm run pk32:capture-plan && powershell -ExecutionPolicy Bypass -File tools/capture-pk32-batch.ps1",
     "pk32:decoded-docs": "node tools/build-pk32-decoded-docs.js",
     "pk32:verify-inventory": "node tools/verify-pk32-inventory.js",

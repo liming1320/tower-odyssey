@@ -551,7 +551,7 @@ window.MG = window.MG || {};
         if (m) { startBattle(S, m, api); return; }
         const dr = doorAt(S, nx, ny);
         if (dr) {
-            if (S.keys[dr.color] > 0) { S.keys[dr.color]--; S.map[ny][nx] = '.'; S.doors = S.doors.filter(d => d !== dr); toast(S, '🔓 ' + KEYNAME[dr.color] + '门开启'); api.haptics && api.haptics.tap(); }
+            if (S.keys[dr.color] > 0) { S.keys[dr.color]--; S.map[ny][nx] = '.'; S.doors = S.doors.filter(d => d !== dr); toast(S, '🔓 ' + KEYNAME[dr.color] + '门开启'); try { MG.audio.sfx('click'); } catch (e) {} api.haptics && api.haptics.tap(); }
             else { S.bump = 1; toast(S, '需要' + KEYNAME[dr.color] + '钥匙'); api.shake && api.shake(4, 0.12); }
             return;
         }
@@ -626,7 +626,7 @@ window.MG = window.MG || {};
         else if (it.type === 'key') { S.keys[it.color]++; msg = '🔑 ' + KEYNAME[it.color] + '钥匙 +1'; }
         else if (it.type === 'wing') { S.gold += 30; S.exp += 20; levelUp(S); msg = '🕊 回城之翼！'; }
         api.pop && api.pop(px, py - 20, '+', '#ffe06b');
-        api.haptics && api.haptics.tap();
+        try { MG.audio.sfx('click'); } catch (e) {} api.haptics && api.haptics.tap();
         toast(S, msg);
     }
 
