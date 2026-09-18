@@ -328,6 +328,60 @@ window.MiniGames = window.MiniGames || {};
         };
     }
 
+    function startNativeSpaceCadet(container, opts, idx0, endless, P) {
+        const host = document.createElement('div');
+        const frame = document.createElement('iframe');
+        let stopped = false;
+        let completed = false;
+        host.style.cssText = 'width:min(100%,820px);aspect-ratio:4/3;margin:auto;background:#000;';
+        frame.src = '/vendor/spacecadet/index.html?v=1';
+        frame.title = 'Space Cadet Pinball';
+        frame.setAttribute('allow', 'autoplay');
+        frame.style.cssText = 'display:block;width:100%;height:100%;border:0;background:#000;';
+        host.appendChild(frame);
+        container.replaceChildren(host);
+
+        const focusGame = () => {
+            if (stopped) return;
+            try {
+                frame.focus();
+                const canvas = frame.contentDocument && frame.contentDocument.getElementById('canvas');
+                if (canvas) canvas.focus();
+            } catch (e) { }
+        };
+        frame.addEventListener('load', focusGame);
+        host.addEventListener('pointerdown', focusGame);
+        const onMessage = event => {
+            if (stopped || event.source !== frame.contentWindow) return;
+            const data = event.data;
+            if (!data || data.type !== 'spacecadet-score') return;
+            const score = Math.max(0, Number(data.score) || 0);
+            const balls = Math.max(0, Number(data.balls) || 0);
+            opts.onScore && opts.onScore(
+                `${endless ? '无尽' : `第 ${idx0 + 1} 关`} · ${score.toLocaleString()}${endless ? '' : ' / ' + P.goal.toLocaleString()} 分 · 球 ${balls}`
+            );
+            if (!endless && !completed && score >= P.goal) {
+                completed = true;
+                opts.onComplete && opts.onComplete({
+                    win: true,
+                    stars: score >= P.goal * 2 ? 3 : score >= P.goal * 1.35 ? 2 : 1,
+                    score,
+                    lines: [`原版分数 ${score.toLocaleString()}，达到关卡目标`],
+                });
+            }
+        };
+        window.addEventListener('message', onMessage);
+        opts.onScore && opts.onScore(`${endless ? '无尽' : `第 ${idx0 + 1} 关`} · 0${endless ? '' : ' / ' + P.goal.toLocaleString()} 分 · 原版 Space Cadet 台面`);
+        return {
+            stop() {
+                stopped = true;
+                window.removeEventListener('message', onMessage);
+                frame.src = 'about:blank';
+                host.remove();
+            },
+        };
+    }
+
     /* ══════════════════════ 4. 主模块 ══════════════════════ */
     MiniGames.pinball = {
         LEVELS: NAMES.map((name, i) => {
@@ -341,6 +395,7 @@ window.MiniGames = window.MiniGames || {};
             const idx0 = opts.levelIdx != null && opts.levelIdx >= 0 ? opts.levelIdx : 0;
             const endless = !!opts.endless;
             const P = lvP(Math.min(49, idx0 + (endless ? 20 : 0)));
+            return startNativeSpaceCadet(container, opts, idx0, endless, P);
             const GRAVX = P.grav;
 
             const { c, ctx, w, h, destroy } = MG.canvas(container, GW, GH);

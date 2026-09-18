@@ -172,7 +172,8 @@ const MinigamesView = {
 //   快速匹配 —— 服务端在同游戏等待队列凑对手
 //   创建房间 —— 生成房间码，复制分享给好友
 //   加入房间 —— 好友拿码输入进来
-// 双人同步玩法（真正对战内容）下一轮实装；本轮先把匹配/房间/双方昵称 HUD 跑通。
+// 匹配成功后由 _launchNet 真正启动该游戏（net 模式：不走 50 关、不走本地双人），
+// 游戏内检测 MG.pvp 自动禁用 AI、按回合锁输入、整盘状态同步给对手。
 MinigamesView.startNetVersus = function (g) {
     if (!g || !g.id) { U.toast('请先选择一款游戏再联机'); return; }
     MG._curGame = g.id;
@@ -218,27 +219,86 @@ MinigamesView.startNetVersus = function (g) {
         ['#mvp-auto', '#mvp-create', '.mvp-join'].forEach(s => { const el = panel.querySelector(s); if (el) el.style.display = 'none'; });
     };
 
-    panel.querySelector('#mvp-auto').onclick = () => {
-        const r = MG.net.versus({ game: g.id });
+    // 发起连接并在匹配成功后真正启动该游戏
+    const connectAndLaunch = (opts, roomLabel) => {
+        const r = MG.net.versus(opts);
         if (!r.ok) { setStatus('⚠️ 联机服务未连接（需部署 /ws/minigame 中继）'); return; }
-        setStatus('🔍 正在匹配《' + g.name + '》的对手…');
+        MG.net.on('room', m => {
+            try {
+                MG.match.begin({ mode: 'net', me: (MG.me && MG.me.nickname) || '我', opp: (m && m.opp) || '对手', room: (m && m.room) || r.room, side: (m && m.side) || 0 });
+            } catch (e) {}
+            this._launchNet(g, m || { side: 0, room: r.room, opp: '对手' });
+        });
+        setStatus(roomLabel ? ('🎮 已进入房间：' + roomLabel + '，等待对手…') : ('🔍 正在匹配《' + g.name + '》的对手…'));
     };
+
+    panel.querySelector('#mvp-auto').onclick = () => connectAndLaunch({ game: g.id });
     panel.querySelector('#mvp-create').onclick = () => {
         const room = 'mg-' + g.id + '-' + Math.random().toString(36).slice(2, 8);
-        const r = MG.net.versus({ game: g.id, room });
-        if (!r.ok) { setStatus('⚠️ 联机服务未连接（需部署 /ws/minigame 中继）'); return; }
         collapse();
         setStatus('🏠 房间已创建：' + room + '（已尝试复制到剪贴板，发给好友即可）');
         try { if (navigator.clipboard) navigator.clipboard.writeText(room).catch(function () {}); } catch (e) {}
+        connectAndLaunch({ game: g.id, room }, room);
     };
     panel.querySelector('#mvp-join').onclick = () => {
         const code = panel.querySelector('#mvp-code').value.trim();
         if (!code) { setStatus('⚠️ 请输入房间码'); return; }
-        const r = MG.net.versus({ game: g.id, room: code });
-        if (!r.ok) { setStatus('⚠️ 联机服务未连接（需部署 /ws/minigame 中继）'); return; }
         collapse();
-        setStatus('🎮 已进入房间：' + code + '，等待游戏开始…');
+        connectAndLaunch({ game: g.id, room: code }, code);
     };
+};
+
+// 真正启动一局联机对战：武装 MG.pvp，再调用游戏 start（游戏内检测 pvp 模式自行禁用 AI / 锁输入 / 同步）
+MinigamesView._launchNet = function (g, m) {
+    MG._curGame = g.id;
+    MG.pvp.arm(g.id, (m && m.side) || 0, (m && m.opp) || null);
+    const mask = document.getElementById('mini-mask');
+    const stage = document.getElementById('mini-stage');
+    const scoreEl = document.getElementById('mini-score');
+    if (stage) stage.innerHTML = '';
+    let ctrl = null;
+    const close = () => {
+        try { ctrl && ctrl.stop && ctrl.stop(); } catch (e) {}
+        try { MG.pvp.end(); } catch (e) {}
+        try { MG.match && MG.match.end(); } catch (e) {}
+        if (mask && mask.parentNode) mask.remove();
+    };
+    const back = document.getElementById('mini-back');
+    if (back) back.onclick = close;
+    try {
+        const game = window.MiniGames && window.MiniGames[g.id];
+        if (!game) throw new Error('未加载到该游戏模块');
+        const opts = { onScore: s => { if (scoreEl) scoreEl.textContent = s != null ? s : ''; }, onComplete: res => this._pvpResult(g, res, close) };
+        if (g.id === 'banqi') ctrl = game.start(stage, opts);
+        else ctrl = MG.runGame(stage, {
+            id: g.id, title: g.name,
+            levels: (game.LEVELS && game.LEVELS.length) ? game.LEVELS : defaultLevels(g),
+            endless: game.ENDLESS || null,
+            start: (c, o, lv) => game.start(c, o, lv),
+            scoreEl, onComplete: res => this._pvpResult(g, res, close),
+        });
+    } catch (e) {
+        if (stage) stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${MG.escapeHtml(e.message)}</div>`;
+    }
+    this._netCtrl = ctrl; this._netClose = close;
+};
+
+// 联机对战结算：展示胜负 + 再来一局（重新快速匹配）/ 返回列表。不记录关卡星级（避免污染 PvE 进度）
+MinigamesView._pvpResult = function (g, res, close) {
+    const stage = document.getElementById('mini-stage');
+    if (!stage) { if (close) close(); return; }
+    try { this._netCtrl && this._netCtrl.stop && this._netCtrl.stop(); } catch (e) {}
+    const win = !!(res && res.win);
+    const title = win ? '🏆 你赢了！' : (res && res.win === false ? '💥 你输了' : '🤝 平局');
+    const lines = (res && res.lines) ? (Array.isArray(res.lines) ? res.lines.join(' · ') : res.lines) : '';
+    stage.innerHTML = `<div class="mini-result">
+        <div class="mr-title">${title}</div>
+        <div class="mr-sub">${MG.escapeHtml(lines || '')}</div>
+        <button class="mvp-btn mvp-primary" id="mr-rematch">⚔️ 再来一局</button>
+        <button class="mvp-btn" id="mr-back">‹ 返回列表</button>
+    </div>`;
+    const rm = stage.querySelector('#mr-rematch'); if (rm) rm.onclick = () => { try { MG.pvp.end(); } catch (e) {} if (close) close(); this.startNetVersus(g); };
+    const bk = stage.querySelector('#mr-back'); if (bk) bk.onclick = () => { try { MG.pvp.end(); MG.net.leave(); } catch (e) {} if (close) close(); };
 };
 
 // 兜底：没有 LEVELS 配置的游戏也具备 50 关（难度参数自增 0..1）

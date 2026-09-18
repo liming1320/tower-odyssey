@@ -2,6 +2,8 @@
 (function () {
     const E = MG.eng, U = MG.ui;
     const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    // 联机对战：E.def 游戏在 draw 里把实例 api 暂存到这里，供 pvp 的 onOver 回调调用 api.finish。
+    let apiRef = null;
 
     // ==================== 国际象棋 ====================
     // 编码：0 空；白 1-6 = P N B R Q K；黑 9-14 = p n b r q k
@@ -89,8 +91,26 @@
         params: (i, t) => ({ mis: +(0.95 - 0.8 * t).toFixed(2) }),
         w: 384, h: 470,
         hint: '白方（你）先行，点击己方棋子再点目标格；将死对方即胜',
-        init: () => ({ b: cBoard(), turn: 1, sel: null, moves: [], msg: '你的回合（白）', cap: 0 }),
-        draw(ctx, S, P, W, H) {
+        init: () => {
+            const S = { b: cBoard(), turn: 1, sel: null, moves: [], msg: '你的回合（白）', cap: 0 };
+            if (MG.pvp && MG.pvp.shouldBegin('chess')) {
+                S._pvp = true;
+                S._my = MG.pvp.side === 0 ? 1 : 2;        // side 0 执白(1)先手，side 1 执黑(2)
+                MG.pvp.begin({
+                    setState(m) {
+                        S.b = m.b; S.turn = m.turn; S.sel = null; S.moves = [];
+                        if (m.over != null) S._over = m.over;
+                    },
+                    onOver(over) {
+                        const win = (over === S._my);
+                        if (apiRef) apiRef.finish({ win, stars: win ? 3 : 0, lines: [win ? '将死对方！' : '被将死'] });
+                    },
+                });
+            }
+            return S;
+        },
+        draw(ctx, S, P, W, H, api) {
+            apiRef = api;
             E.bg(ctx, W, H, '#3a3350', '#1a1730');
             const C = 44, ox = (W - C * 8) / 2, oy = 74;
             for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
@@ -114,7 +134,8 @@
             E.txt(ctx, `已吃 ${S.cap} 子`, W / 2, H - 20, 14, '#c8c0e0');
         },
         tap(S, x, y, P, api) {
-            if (S.turn !== 1) return;
+            if (S._pvp) { if (S.turn !== S._my || S._over != null) return; }
+            else if (S.turn !== 1) return;
             const C = 44, ox = (384 - C * 8) / 2, oy = 74;
             const j = Math.floor((x - ox) / C), i = Math.floor((y - oy) / C);
             if (!cIn(i, j)) return;
@@ -125,14 +146,29 @@
                     const wasCap = !!S.b[i][j];
                     cDo(S.b, m); S.sel = null; S.moves = [];
                     try { MG.audio.sfx(wasCap ? 'target' : 'click'); } catch (e) {}
-                    if (!cKing(S.b, false)) return api.finish({ win: true, stars: 3, lines: ['将死对方！'] });
-                    S.turn = 2; S.msg = '电脑思考…';
-                    setTimeout(() => {
-                        cAI(S, P.mis);
-                        if (!cKing(S.b, true)) { S.msg = '你被将死了'; return api.finish({ win: false, stars: 0, lines: ['白方王被吃'] }); }
-                        if (!cLegal(S.b, true).length) return api.finish({ win: false, stars: 0, lines: ['无子可动，困毙'] });
-                        S.turn = 1; S.msg = '你的回合（白）';
-                    }, 240);
+                    if (!cKing(S.b, true) || !cKing(S.b, false)) {
+                        const winner = cKing(S.b, true) ? 2 : 1;   // 白王在→黑胜；白王没→白胜
+                        if (S._pvp) {
+                            S._over = winner;
+                            MG.pvp.commit({ b: S.b.map(r => r.slice()), turn: 3 - winner, over: winner });
+                            api.finish({ win: winner === S._my, stars: winner === S._my ? 3 : 0, lines: [winner === S._my ? '将死对方！' : '被将死'] });
+                        } else {
+                            api.finish({ win: true, stars: 3, lines: ['将死对方！'] });
+                        }
+                        return;
+                    }
+                    if (S._pvp) {
+                        S.turn = 2; S.msg = '对手思考…';
+                        MG.pvp.commit({ b: S.b.map(r => r.slice()), turn: 2, over: null });
+                    } else {
+                        S.turn = 2; S.msg = '电脑思考…';
+                        setTimeout(() => {
+                            cAI(S, P.mis);
+                            if (!cKing(S.b, true)) { S.msg = '你被将死了'; return api.finish({ win: false, stars: 0, lines: ['白方王被吃'] }); }
+                            if (!cLegal(S.b, true).length) return api.finish({ win: false, stars: 0, lines: ['无子可动，困毙'] });
+                            S.turn = 1; S.msg = '你的回合（白）';
+                        }, 240);
+                    }
                     return;
                 }
             }
@@ -169,7 +205,7 @@
     const jSide = v => (v & 1) ? 1 : 2;           // 低位存阵营：1=我方(蓝) 2=敌方(红)
     const jRank = v => v >> 8;
     const jMake = (side, rank) => (rank << 8) | side;
-    function jSetup(n) {
+    function jSetup(n, shuf) {
         const rankList = [40, 39, 38, 37, 36, 35, 34, 33, 33, 33, 32, 32, 32, 31, 31, 30, 30, 29];
         const per = Math.max(1, Math.floor(n * n / 2 / rankList.length));
         const pool = [];
@@ -181,7 +217,7 @@
         pool.forEach(r => { all.push(jMake(1, r)); all.push(jMake(2, r)); });
         while (all.length < n * n) all.push(0);
         all.length = n * n;
-        MG.shuffle(all);
+        if (shuf) shuf(all); else MG.shuffle(all);
         const b = [];
         for (let i = 0; i < n; i++) b.push(all.slice(i * n, i * n + n));
         return b;
@@ -191,8 +227,30 @@
         params: (i, t) => ({ n: 5 + Math.min(1, Math.floor(i / 10)), mis: +(0.9 - 0.75 * t).toFixed(2) }),
         w: 380, h: 470,
         hint: '翻开棋子或调动己方棋子，吃光对方或夺取军旗即胜；炸弹同归于尽，地雷只能工兵挖',
-        init: P => ({ n: P.n, b: jSetup(P.n), open: Array.from({ length: P.n }, () => Array(P.n).fill(0)), sel: null, msg: '点击暗棋翻开，或点击己方明棋行动' }),
-        draw(ctx, S, P, W, H) {
+        init: P => {
+            const net = MG.pvp && MG.pvp.shouldBegin('junqi');
+            const S = {
+                n: P.n,
+                b: jSetup(P.n, net ? MG.makeRng(MG.makeSeed(MG.net._room || 'junqi')).shuffle : null),
+                open: Array.from({ length: P.n }, () => Array(P.n).fill(0)),
+                sel: null, msg: '点击暗棋翻开，或点击己方明棋行动',
+            };
+            if (net) {
+                S._pvp = true;
+                S._my = MG.pvp.side === 0 ? 1 : 2;        // side 0 执我方(1)先手
+                S.turn = S._my;
+                MG.pvp.begin({
+                    setState(m) { S.b = m.b; S.open = m.open; S.turn = m.turn; S.sel = null; if (m.over != null) S._over = m.over; },
+                    onOver(over) {
+                        const win = (over === S._my);
+                        if (apiRef) apiRef.finish({ win, stars: win ? 3 : 0, lines: [win ? '夺取敌军旗！' : '军旗被夺'] });
+                    },
+                });
+            }
+            return S;
+        },
+        draw(ctx, S, P, W, H, api) {
+            apiRef = api;
             E.bg(ctx, W, H, '#3d4a2e', '#1e2616');
             const n = S.n, C = Math.min(58, (W - 24) / n), ox = (W - C * n) / 2, oy = 76;
             for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
@@ -214,6 +272,7 @@
             E.txt(ctx, S.msg, W / 2, 42, 16, '#ffd56b', true);
         },
         tap(S, x, y, P, api) {
+            if (S._pvp) { if (S.turn !== S._my || S._over != null) return; }
             const n = S.n, C = Math.min(58, (380 - 24) / n), ox = (380 - C * n) / 2, oy = 76;
             const j = Math.floor((x - ox) / C), i = Math.floor((y - oy) / C);
             if (i < 0 || i >= n || j < 0 || j >= n) return;
@@ -231,7 +290,7 @@
                 jqAfter(S, api, P);
                 return;
             }
-            if (jSide(v) === 1 && jRank(v) !== 31 && jRank(v) !== 29) S.sel = [i, j];
+            if (jSide(v) === (S._pvp ? S._my : 1) && jRank(v) !== 31 && jRank(v) !== 29) S.sel = [i, j];
         },
     });
     function jqBattle(S, si, sj, ti, tj) {
@@ -256,12 +315,22 @@
             if (r === 29) { if (s === 1) f1 = true; else f2 = true; continue; }
             if (r !== 31) { if (s === 1) m1++; else m2++; }
         }
-        if (!f2) return api.finish({ win: true, stars: 3, lines: ['夺取敌军旗！'] });
-        if (!f1) return api.finish({ win: false, stars: 0, lines: ['我方军旗被夺'] });
-        if (!m2) return api.finish({ win: true, stars: 3, lines: ['敌方能动的棋子全灭'] });
-        if (!m1) return api.finish({ win: false, stars: 0, lines: ['我方棋子全灭'] });
-        // 电脑回合
-        setTimeout(() => { jqAI(S, P.mis); jqAfter2(S, api, P); }, 220);
+        const end = (winnerSide, lines) => {
+            const win = (winnerSide === (S._my || 1));
+            if (S._pvp) {
+                S._over = winnerSide;
+                MG.pvp.commit({ b: S.b, open: S.open, turn: 3 - winnerSide, over: winnerSide });
+                api.finish({ win, stars: win ? 3 : 0, lines });
+            } else {
+                api.finish({ win, stars: win ? 3 : 0, lines });
+            }
+        };
+        if (!f2) return end(1, ['夺取敌军旗！']);
+        if (!f1) return end(2, ['我方军旗被夺']);
+        if (!m2) return end(1, ['敌方能动的棋子全灭']);
+        if (!m1) return end(2, ['我方棋子全灭']);
+        if (S._pvp) { S.turn = 3 - S._my; MG.pvp.commit({ b: S.b, open: S.open, turn: S.turn, over: null }); }
+        else setTimeout(() => { jqAI(S, P.mis); jqAfter2(S, api, P); }, 220);
     }
     function jqAfter2(S, api, P) {
         let f1 = false, f2 = false, m1 = 0, m2 = 0;

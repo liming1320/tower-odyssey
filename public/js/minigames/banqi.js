@@ -211,6 +211,13 @@ MiniGames.banqi = {
     start(container, opts) {
         let alive = true;
         const api = { stop() { alive = false; } };
+        // 联机对战：不走关卡选择 / 猜拳，直接进入一局（固定第 15 关、按 side 决定先后手）
+        if (MG.pvp && MG.pvp.shouldBegin('banqi')) {
+            opts.net = true;
+            const first = MG.pvp.side === 0 ? 'player' : 'computer';
+            gameRound(container, opts, 15, first, api, () => {}, () => {}, false);
+            return api;
+        }
         const showSelect = () => {
             if (!alive) return;
             // 无尽模式入口（暗棋不走统一框架，自行提供 ∞ 按钮）
@@ -255,16 +262,40 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
     let idlePlies = 0;       // 连续无吃子的手数（持久战判定用）
     let totalPlies = 0;      // 总手数（防拉锯保险丝）
     let lastResultRef = null;
+    const net = !!opts.net;                       // 联机模式
+    const elMap = {};                            // 棋子 id → DOM 节点（联机 setState 重绘时重新挂钩）
+    const serialize = () => board.map(row => row.map(p => p ? { id: p.id, n: p.n, r: p.r, color: p.color, faceUp: p.faceUp } : null));
+    const deserialize = mboard => mboard.map(row => row.map(p => p ? { id: p.id, n: p.n, r: p.r, color: p.color, faceUp: p.faceUp, el: elMap[p.id] || null } : null));
+    // me / opp：联机时严格依赖 MG.pvp.side，而 side 只在 MG.pvp.begin() 之后才写入，
+    // 因此必须先 begin 再读取 side（否则 side 1 方会错误地按 side 0 计算 me/first）。
+    let me = 1, opp = 2;
+    if (net) {
+        MG.pvp.begin({
+            setState(m) {
+                board = deserialize(m.board);
+                turn = m.turn;
+                sel = null;
+                render();
+                renderItems();
+                // 收到对手终局：仅展示结果，绝不再次 commit（避免回环）
+                if (m.over != null) showResult(m.over === me, '对手终局');
+            },
+        });
+        me = MG.pvp.side === 0 ? 1 : 2;          // 我方颜色（红=1 / 黑=2）
+        opp = 3 - me;                            // 对手颜色
+    }
     const init = () => {
-        const reds = PIECES_RED.map(([n, r]) => ({ n, r, color: 1 }));
-        const blacks = PIECES_BLK.map(([n, r]) => ({ n, r, color: 2 }));
-        const all = MG.shuffle([...reds, ...blacks]);
+        const reds = PIECES_RED.map(([n, r], idx) => ({ id: 'r' + idx, n, r, color: 1 }));
+        const blacks = PIECES_BLK.map(([n, r], idx) => ({ id: 'b' + idx, n, r, color: 2 }));
+        const shuf = net ? MG.makeRng(MG.makeSeed(MG.net._room || 'banqi')).shuffle : null;
+        const all = shuf ? shuf([...reds, ...blacks]) : MG.shuffle([...reds, ...blacks]);
         board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
         let k = 0;
-        for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) board[i][j] = { ...all[k++], faceUp: false };
+        for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) board[i][j] = { id: all[k].id, n: all[k].n, r: all[k].r, color: all[k++].color, faceUp: false, el: null };
     };
     init();
-    turn = first === 'player' ? 1 : 2;
+    // 联机：先手由 side 决定（side 0 红先）；单人：沿用关卡传入的 first
+    turn = net ? (me === 1 ? 1 : 2) : (first === 'player' ? 1 : 2);
 
     // ---- 规则 ----
     const inB = (i, j) => i >= 0 && i < ROWS && j >= 0 && j < COLS;
@@ -423,8 +454,19 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
         if (over) return;
         over = true;
         lastResultRef = { win, reason };
-        const mine = pieceCount(1);
+        const mine = pieceCount(me);
         const stars = win ? (mine >= 5 ? 3 : mine >= 3 ? 2 : 1) : 0;
+        if (net) {
+            const winnerColor = win ? me : opp;
+            MG.pvp.commit({ board: serialize(), turn: opp, over: winnerColor });
+            opts.onComplete && opts.onComplete({
+                win, stars: win ? 3 : 0,
+                title: win ? '🏆 你赢了！' : '💥 对手赢了',
+                lines: [reason || '', `我方剩余棋子 ${mine} 枚`].filter(Boolean),
+            });
+            render();
+            return;
+        }
         if (win) MG.recordStars('banqi', level, stars);
         if (endless) {
             // 无尽模式：记录「是否击败最强 AI」战绩，重试继续打第15关
@@ -461,19 +503,33 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
         });
         render();
     };
+    // 收到对手终局时的展示入口（与 finish 的 net 分支展示一致，但不再 commit，杜绝回环）
+    const showResult = (win, reason) => {
+        if (over) return;
+        over = true;
+        lastResultRef = { win, reason };
+        const mine = pieceCount(me);
+        opts.onComplete && opts.onComplete({
+            win, stars: win ? 3 : 0,
+            title: win ? '🏆 你赢了！' : '💥 对手赢了',
+            lines: [reason || '', `我方剩余棋子 ${mine} 枚`].filter(Boolean),
+        });
+        render();
+    };
     const afterTurnChecks = () => {
         if (over) return;
         // 持久战判定：30 手无交战或总手数超 300 → 子力定胜负，杜绝避战死循环
         if (idlePlies >= 30 || totalPlies >= 300) {
-            const a = materialSum(1), b = materialSum(2);
+            const a = materialSum(me), b = materialSum(opp);
             const why = idlePlies >= 30 ? '长期无交战' : '鏖战超 150 回合';
-            return finish(a >= b, a >= b ? `${why} · 子力判定你获胜` : `${why} · 子力判定电脑获胜`);
+            return finish(a >= b, a >= b ? `${why} · 子力判定你获胜` : `${why} · 子力判定对手获胜`);
         }
-        if (turn === 1) {
-            if (!pieceCount(2)) return finish(true, '敌方全军覆没');
-            if (!legalMoves(1).length) return finish(false, '你无子可动');
+        if (turn === me) {
+            if (!pieceCount(opp)) return finish(true, '敌方全军覆没');
+            if (!legalMoves(me).length) return finish(false, '你无子可动');
         } else {
-            if (!pieceCount(1)) return finish(false, '我方全军覆没');
+            if (!pieceCount(me)) return finish(false, '我方全军覆没');
+            if (net) return;   // 联机：等待对手走子，不触发本地 AI
             setTimeout(() => { if (!over && apiAlive) aiTurn(); }, 700);
         }
     };
@@ -490,8 +546,12 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
         b.innerHTML = `<span class="bq-flag ${flagCls}">${flagChar}</span><span class="bq-side">${sideText}</span>`;
         return b;
     };
-    const bannerTop = mkBanner('f2', '金', `金国 · 第 ${level} 关`);
-    const bannerBottom = mkBanner('f1', '宋', '宋国 · 你');
+    const myName = me === 1 ? '宋国' : '金国';
+    const oppName = me === 1 ? '金国' : '宋国';
+    const myFlag = me === 1 ? ['f1', '宋'] : ['f2', '金'];
+    const oppFlag = me === 1 ? ['f2', '金'] : ['f1', '宋'];
+    const bannerTop = mkBanner(oppFlag[0], oppFlag[1], net ? `${oppName} · 对手` : `${oppName} · 第 ${level} 关`);
+    const bannerBottom = mkBanner(myFlag[0], myFlag[1], `${myName} · 你`);
     const trayTop = document.createElement('div'); trayTop.className = 'bq-tray';
     const trayBottom = document.createElement('div'); trayBottom.className = 'bq-tray';
     bannerTop.appendChild(trayTop);
@@ -545,7 +605,7 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
     };
     const posOf = (el, i, j) => { el.style.left = (j * 12.5) + '%'; el.style.top = (i * 25) + '%'; };
     const placePiece = (p, i, j) => {
-        const el = p.el || (p.el = makePieceEl(p));
+        const el = p.el || (p.el = elMap[p.id] || (elMap[p.id] = makePieceEl(p)));
         if (!el._placed) {
             el.style.transition = 'none';   // 初始摆位不做位移动画
             posOf(el, i, j);
@@ -725,7 +785,8 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
         }).join('');
         itembar.querySelectorAll('[data-item]').forEach(b => b.onclick = () => {
             const it = MiniGames.banqi.ITEMS.find(x => x.id === b.dataset.item);
-            if (coins < it.cost || over || turn !== 1 || busy) return;
+            if (net) return;   // 联机模式禁用道具（避免未同步的棋盘修改）
+            if (coins < it.cost || over || turn !== me || busy) return;
             if (it.id === 'soup') {   // 立即生效：复活最强被吃子
                 if (!capturedMine.length) return flashHint('没有可复活的棋子');
                 coins -= it.cost;
@@ -749,14 +810,15 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
     };
     const flashHint = t => { opts.onScore && opts.onScore(t); };
     container.appendChild(itembar);
+    if (net) itembar.style.display = 'none';
     renderItems();
 
     // ---- 玩家交互 ----
     const onTap = (i, j) => {
-        if (over || busy || turn !== 1) return;
+        if (over || busy || turn !== me) return;
         if (!inB(i, j)) return;
         const cur = board[i][j];
-        // 道具模式
+        // 道具模式（联机禁用，itembar 已隐藏）
         if (itemMode === 'peek') {
             if (cur && !cur.faceUp) {
                 coins -= 30; cur.faceUp = true; itemMode = null;
@@ -765,7 +827,7 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
             return;
         }
         if (itemMode === 'wing') {
-            if (cur && cur.faceUp && cur.color === 1) { sel = [i, j]; render(); return; }
+            if (cur && cur.faceUp && cur.color === me) { sel = [i, j]; render(); return; }
             if (!cur && sel) {
                 board[i][j] = board[sel[0]][sel[1]]; board[sel[0]][sel[1]] = null;
                 coins -= 80; itemMode = null; sel = null;
@@ -774,11 +836,13 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
             return;
         }
         if (!sel) {
-            if (cur && cur.faceUp && cur.color === 1) { sel = [i, j]; }
+            if (cur && cur.faceUp && cur.color === me) { sel = [i, j]; }
             else if (cur && !cur.faceUp) {
                 performMove({ t: 'flip', i, j }, () => {
                     idlePlies = 0; totalPlies++;
-                    turn = 2; render(); afterTurnChecks();
+                    turn = opp; render();
+                    afterTurnChecks();
+                    if (!over && net) MG.pvp.commit({ board: serialize(), turn: opp, over: null });
                 });
                 return;
             }
@@ -786,7 +850,7 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
         }
         const a = board[sel[0]][sel[1]];
         if (sel[0] === i && sel[1] === j) { sel = null; render(); return; }
-        if (cur && cur.faceUp && cur.color === 1) { sel = [i, j]; render(); return; }
+        if (cur && cur.faceUp && cur.color === me) { sel = [i, j]; render(); return; }
         // 移动 / 吃子
         const adj = DIRS.some(([di, dj]) => sel[0] + di === i && sel[1] + dj === j);
         let ok = false;
@@ -802,15 +866,17 @@ function gameRound(container, opts, level, first, api, onBack, onReplay, endless
                     capturedAI.push(victim);
                     if (K(victim.n) === 'K') { renderItems(); render(); return finish(true, '你吃掉了敌方主将！'); }
                 }
-                sel = null; turn = 2;
-                renderItems(); render(); afterTurnChecks();
+                sel = null; turn = opp;
+                renderItems(); render();
+                afterTurnChecks();
+                if (!over && net) MG.pvp.commit({ board: serialize(), turn: opp, over: null });
             });
         } else { sel = null; render(); }
     };
 
     render();
     const lvlName = MiniGames.banqi.LEVELS[level - 1].name;
-    opts.onScore && opts.onScore(`第 ${level} 关 · ${lvlName} · ${turn === 1 ? '🟢 你先行' : '🔴 电脑先行'}`);
+    opts.onScore && opts.onScore(`第 ${level} 关 · ${lvlName} · ${turn === me ? (net ? '🟢 你先手' : '🟢 你先行') : (net ? '🔴 对手先手' : '🔴 电脑先行')}`);
     if (turn === 2) afterTurnChecks();
     // 测试钩子（仅测试模式）
     if (typeof window !== 'undefined' && window.__MG_TEST) {

@@ -6,6 +6,8 @@
 window.MiniGames = window.MiniGames || {};
 (function () {
     const E = MG.eng;
+    // 联机对战：E.def 游戏在 draw 里把实例 api 暂存到这里，供 pvp 的 onOver 回调调用 api.finish。
+    let apiRef = null;
     const COLS = 7, ROWS = 9;
     const GLYPH = { 1: '鼠', 2: '猫', 3: '狗', 4: '狼', 5: '豹', 6: '虎', 7: '狮', 8: '象' };
     // 动物棋子：彩色 emoji 头像（canvas 原生渲染，无外部资源）
@@ -378,7 +380,8 @@ window.MiniGames = window.MiniGames || {};
         },
         desc(i, t, p) { return `AI 深度 ${p.depth} · 失误率 ${Math.round(p.err * 100)}%`; },
         init(P) {
-            return {
+            const net = MG.pvp && MG.pvp.shouldBegin('jungle');
+            const S = {
                 B: newBoard(),
                 turn: 1,            // 1=玩家（红，下） 0=AI（黑，上）
                 sel: null,
@@ -389,8 +392,25 @@ window.MiniGames = window.MiniGames || {};
                 rnd: null,
                 score: 0,
             };
+            if (net) {
+                S._pvp = true;
+                S._my = MG.pvp.side === 0 ? 1 : 0;        // side 0 执红(1)先手，side 1 执黑(0)
+                MG.pvp.begin({
+                    setState(m) {
+                        S.B = m.B; S.turn = m.turn;
+                        S.winner = m.over != null ? m.over : -1;
+                        S.sel = null;
+                    },
+                    onOver(over) {
+                        const win = (over === S._my);
+                        if (apiRef) apiRef.finish({ win, stars: win ? 3 : 0, lines: [win ? '攻入兽穴！' : '被攻入兽穴'] });
+                    },
+                });
+            }
+            return S;
         },
         draw(ctx, S, P, W, H, api) {
+            apiRef = api;
             if (!S.rnd) S.rnd = api.rng(20260911);
             const G = MG.gfx;
             G.scene(ctx, W, H, '#1c3a26', '#08150d');
@@ -444,7 +464,7 @@ window.MiniGames = window.MiniGames || {};
             G.text(ctx, '象＞狮＞虎＞豹＞狼＞狗＞猫＞鼠 · 鼠吃象 · 象怕鼠', W / 2, y0 + bh + 46, 10.5, '#7f9a76');
         },
         tap(S, x, y, P, api) {
-            if (S.winner >= 0 || S.turn !== 1 || S.busy) return;
+            if (S.winner >= 0 || (S._pvp ? S.turn !== S._my : S.turn !== 1) || S.busy) return;
             const g = S._geo; if (!g) return;
             const cx = Math.floor((x - g.x0) / g.cell), cy = Math.floor((y - g.y0) / g.cell);
             if (!inBoard(cx, cy)) return;
@@ -461,21 +481,33 @@ window.MiniGames = window.MiniGames || {};
                     S.msg = cap ? `吃掉 ${GLYPH[cap.r]}！` : '移动';
                     S.sel = null;
                     const w = winnerOf(S.B);
-                    if (w >= 0) { S.winner = w; return; }
-                    S.turn = 0; S.busy = true;
-                    api.later(() => {
-                        if (S.winner >= 0) { S.busy = false; return; }
-                        const mv2 = pickAI(S.B, P.depth || 2, P.err || 0.2, S.rnd || Math.random);
-                        if (mv2) {
-                            const cap2 = S.B[ix(mv2.tx, mv2.ty)];
-                            apply(S.B, mv2);
-                            S.last = { from: { x: mv2.fx, y: mv2.fy }, to: { x: mv2.tx, y: mv2.ty } };
-                            if (cap2) S.msg = `AI 吃掉了你的 ${GLYPH[cap2.r]}`;
+                    if (w >= 0) {
+                        S.winner = w;
+                        if (S._pvp) {
+                            MG.pvp.commit({ B: S.B, turn: 1 - S._my, over: w });
+                            if (apiRef) apiRef.finish({ win: w === S._my, stars: w === S._my ? 3 : 0, lines: [w === S._my ? '攻入兽穴！' : '被攻入兽穴'] });
                         }
-                        const w2 = winnerOf(S.B);
-                        if (w2 >= 0) S.winner = w2;
-                        S.turn = 1; S.busy = false;
-                    }, 320);
+                        return;
+                    }
+                    S.turn = 0; S.busy = true;
+                    if (S._pvp) {
+                        S.busy = false;
+                        MG.pvp.commit({ B: S.B, turn: 1 - S._my, over: null });
+                    } else {
+                        api.later(() => {
+                            if (S.winner >= 0) { S.busy = false; return; }
+                            const mv2 = pickAI(S.B, P.depth || 2, P.err || 0.2, S.rnd || Math.random);
+                            if (mv2) {
+                                const cap2 = S.B[ix(mv2.tx, mv2.ty)];
+                                apply(S.B, mv2);
+                                S.last = { from: { x: mv2.fx, y: mv2.fy }, to: { x: mv2.tx, y: mv2.ty } };
+                                if (cap2) S.msg = `AI 吃掉了你的 ${GLYPH[cap2.r]}`;
+                            }
+                            const w2 = winnerOf(S.B);
+                            if (w2 >= 0) S.winner = w2;
+                            S.turn = 1; S.busy = false;
+                        }, 320);
+                    }
                     return;
                 }
             }

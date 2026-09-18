@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Space Cadet Pinball</title>
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; }
+        body { display: grid; place-items: center; }
+        #stage { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
+        canvas { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; background: #000; outline: none; }
+        #status { position: absolute; color: #d9e7ff; font: 14px Arial, sans-serif; }
+        #progress { position: absolute; top: calc(50% + 24px); width: min(260px, 70%); }
+    </style>
+</head>
+<body>
+    <main id="stage">
+        <div id="status">Loading Space Cadet...</div>
+        <progress id="progress" value="0" max="100"></progress>
+        <canvas id="canvas" tabindex="0" aria-label="Space Cadet Pinball"></canvas>
+    </main>
+    <script>
+        const statusElement = document.getElementById('status');
+        const progressElement = document.getElementById('progress');
+        const canvas = document.getElementById('canvas');
+        const gameKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space']);
+
+        window.addEventListener('keydown', event => {
+            if (gameKeys.has(event.code)) event.preventDefault();
+        }, { capture: true });
+        window.addEventListener('keyup', event => {
+            if (gameKeys.has(event.code)) event.preventDefault();
+        }, { capture: true });
+        window.addEventListener('pointerdown', () => canvas.focus());
+
+        var Module = {
+            canvas,
+            locateFile: path => `${path}?v=2`,
+            print: text => console.log(text),
+            printErr: text => console.error(text),
+            onRuntimeInitialized() {
+                window.setInterval(() => {
+                    if (typeof Module._spacecadet_get_score !== 'function') return;
+                    window.parent.postMessage({
+                        type: 'spacecadet-score',
+                        score: Module._spacecadet_get_score(),
+                        balls: typeof Module._spacecadet_get_ball_count === 'function'
+                            ? Module._spacecadet_get_ball_count()
+                            : 0,
+                    }, window.location.origin);
+                }, 250);
+            },
+            setStatus(text) {
+                const match = text && text.match(/([^(]+)\((\d+(?:\.\d+)?)\/(\d+)\)/);
+                if (match) {
+                    statusElement.textContent = match[1].trim();
+                    progressElement.hidden = false;
+                    progressElement.value = Number(match[2]);
+                    progressElement.max = Number(match[3]);
+                } else {
+                    statusElement.textContent = text || '';
+                    statusElement.hidden = !text;
+                    progressElement.hidden = true;
+                }
+            },
+            monitorRunDependencies(left) {
+                Module.setStatus(left ? `Preparing... (${left})` : '');
+            },
+        };
+    </script>
+    <script async src="SpaceCadetPinball.js"></script>
+</body>
+</html>

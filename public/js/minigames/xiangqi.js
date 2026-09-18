@@ -182,6 +182,23 @@ MiniGames.xiangqi = {
             return null;
         };
         let board = initBoard(), turn = RED, sel = null, aiBusy = false, finished = false;
+        // 联机对战（状态同步，opt-in）：side 0 执红(RED)先手，side 1 执黑(BLACK)后手。
+        let pvp = null, myColor = RED;
+        if (MG.pvp && MG.pvp.shouldBegin('xiangqi')) {
+            myColor = MG.pvp.side === 0 ? RED : BLACK;
+            pvp = MG.pvp.begin({
+                setState(m) {
+                    board = m.board;
+                    turn = m.turn;
+                    sel = null;
+                    if (m.over != null) {
+                        finished = true;
+                        const win = (m.over === myColor);
+                        opts.onComplete && opts.onComplete({ win, stars: win ? 3 : 0, lines: [win ? '你赢了！' : '对手赢了', lv.desc] });
+                    }
+                },
+            });
+        }
         const { c, ctx, w, h, destroy } = MG.canvas(container, C * S + 20, R * S + 20);
         const finalize = (win) => {
             if (finished) return;
@@ -191,6 +208,14 @@ MiniGames.xiangqi = {
                 win, stars,
                 lines: [win ? NAMES[turn] + '方胜利！' : '电脑吃掉你的将帅', lv.desc],
             });
+        };
+        // 联机终局：winnerColor 为取胜方（RED/BLACK），整盘同步给对手并展示结果。
+        const pvpFinish = (winnerColor) => {
+            if (finished) return;
+            finished = true;
+            const win = (winnerColor === myColor);
+            if (pvp) MG.pvp.commit({ board: clone(board), turn: 3 - winnerColor, over: winnerColor });
+            opts.onComplete && opts.onComplete({ win, stars: win ? 3 : 0, lines: [win ? '你赢了！' : '对手赢了', lv.desc] });
         };
         const draw = () => {
             // 木纹棋盘：MG.gfx.wood 一次性画完底色+年轮纹+节疤+边框高光
@@ -277,7 +302,7 @@ MiniGames.xiangqi = {
             }, 350);
         };
         const onTap = p => {
-            if (finished || aiBusy || turn !== RED) return;
+            if (finished || aiBusy || turn !== (pvp ? myColor : RED)) return;
             const j = Math.round((p.x - 10) / S), i = Math.round((p.y - 10) / S);
             if (i < 0 || i >= R || j < 0 || j >= C) return;
             const cur = board[i][j];
@@ -292,6 +317,7 @@ MiniGames.xiangqi = {
                         board[i][j] = moved; board[sel[0]][sel[1]] = null;
                         try { MG.audio.sfx('target'); } catch (e) {}
                         draw();
+                        if (pvp) { pvpFinish(turn); return; }
                         finalize(true);
                         return;
                     }
@@ -299,14 +325,18 @@ MiniGames.xiangqi = {
                     try { MG.audio.sfx(target ? 'target' : 'click'); } catch (e) {}
                     sel = null; turn = 3 - turn;
                     draw();
-                    aiTurn();
+                    if (pvp) {
+                        MG.pvp.commit({ board: clone(board), turn, over: null });
+                    } else {
+                        aiTurn();
+                    }
                 } else if (cur && cur.color === turn) { sel = [i, j]; }
             }
             draw();
         };
         MG.bind(c, onTap);
         draw();
-        MG.hint(container, lv.desc + ' · 红方（你）vs 电脑（黑）· 点击己方棋子 → 点击目标位置');
+        MG.hint(container, (pvp ? (myColor === RED ? '你执红（先手）' : '你执黑（后手）') : '红方（你）') + ' vs ' + (pvp ? '对手' : '电脑（黑）') + ' · 点击己方棋子 → 点击目标位置');
         return { stop() { destroy(); } };
     }
 };

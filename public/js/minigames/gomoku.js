@@ -74,6 +74,31 @@ MiniGames.gomoku = {
         const ai = 2, human = 1;
         let over = false, winLine = null;
 
+        // 联机对战（状态同步，opt-in）：side 0 执黑(1)先手，side 1 执白(2)后手。
+        // 收到对手整盘状态后直接重绘；终局由双端各自判定，并冗余上报加速展示。
+        let pvp = null;
+        if (MG.pvp && MG.pvp.shouldBegin('gomoku')) {
+            pvp = MG.pvp.begin({
+                setState(m) {
+                    board = m.board;
+                    if (m.winLine) winLine = m.winLine;
+                    draw();
+                    if (m.over != null) {
+                        over = true;
+                        const myPiece = MG.pvp.side === 0 ? 1 : 2;
+                        const won = (m.over !== 0 && m.over === myPiece);
+                        opts.onComplete && opts.onComplete({
+                            win: won, stars: won ? 3 : 0,
+                            title: m.over === 0 ? '🤝 平局' : (won ? '🏆 你五连获胜！' : '💥 对手五连了…'),
+                            lines: [m.over === 0 ? '棋盘已满，势均力敌' : (won ? '干得漂亮！' : '再来一局试试'), lv.name + ' · ' + lv.desc],
+                            score: won ? 1 : 0,
+                        });
+                    }
+                },
+            });
+        }
+        const boardFull = () => board.every(r => r.every(v => v));
+
         const DIRS = [[1, 0], [0, 1], [1, 1], [1, -1]];
 
         // 某点在某一方向上的 9 格形态串（中心='1'；棋盘外与对手都算 '2'）
@@ -136,12 +161,14 @@ MiniGames.gomoku = {
             draw();
             if (wl) {
                 over = true; winLine = wl;
-                opts.onComplete && opts.onComplete({
-                    win: p === human, stars: p === human ? 3 : 0,
-                    title: p === human ? '🏆 你五连获胜！' : '💥 电脑五连了…',
-                    lines: [p === human ? '干得漂亮！' : '再来一局试试', lv.name + ' · ' + lv.desc],
-                    score: p === human ? 1 : 0,
-                });
+                if (!pvp) {
+                    opts.onComplete && opts.onComplete({
+                        win: p === human, stars: p === human ? 3 : 0,
+                        title: p === human ? '🏆 你五连获胜！' : '💥 电脑五连了…',
+                        lines: [p === human ? '干得漂亮！' : '再来一局试试', lv.name + ' · ' + lv.desc],
+                        score: p === human ? 1 : 0,
+                    });
+                }
             }
             return wl;
         };
@@ -244,9 +271,29 @@ MiniGames.gomoku = {
             if (over) return;
             const x = Math.round((p.y - OFF) / S), y = Math.round((p.x - OFF) / S);
             if (x < 0 || x >= N || y < 0 || y >= N || board[x][y]) return;
-            place(x, y, human);
-            try { MG.audio.sfx('click'); } catch (e) {}
-            if (!over) setTimeout(aiMove, 180);
+            if (pvp) {
+                if (!MG.pvp.canMove()) return;                 // 没轮到我方就锁输入
+                const myPiece = MG.pvp.side === 0 ? 1 : 2;
+                const wl = place(x, y, myPiece);
+                try { MG.audio.sfx('click'); } catch (e) {}
+                if (wl) {
+                    over = true; winLine = wl;
+                    MG.pvp.commit({ board: board.map(r => r.slice()), winLine, turn: 1 - MG.pvp.side, over: myPiece });
+                    opts.onComplete && opts.onComplete({ win: true, stars: 3, title: '🏆 你五连获胜！', lines: ['干得漂亮！', lv.name + ' · ' + lv.desc], score: 1 });
+                    return;
+                }
+                if (boardFull()) {
+                    over = true;
+                    MG.pvp.commit({ board: board.map(r => r.slice()), turn: 1 - MG.pvp.side, over: 0 });
+                    opts.onComplete && opts.onComplete({ win: false, stars: 0, title: '🤝 平局', lines: ['棋盘已满，势均力敌'], score: 0 });
+                    return;
+                }
+                MG.pvp.commit({ board: board.map(r => r.slice()), turn: 1 - MG.pvp.side, over: null });
+            } else {
+                place(x, y, human);
+                try { MG.audio.sfx('click'); } catch (e) {}
+                if (!over) setTimeout(aiMove, 180);
+            }
         });
 
         draw();
