@@ -45,9 +45,17 @@ sync, spectate, seq dedup, room snapshots, reconnect/resume) and need a green re
    `send` that triggers it — never before (see pitfalls).
 4. **Exit non-zero on any failure** so a CI/webhook step can block a bad deploy:
    `setTimeout(() => process.exit(fail ? 1 : 0), 200);` and print `PASS n / FAIL m`.
-5. **Run it**: `node tools/verify-xxx.js`. All five current gates are green:
+5. **Run it**: `node tools/verify-xxx.js`. All seven current gates are green:
    `verify-reconnect.js` (14/0), `verify-4p.js` (15/0), `verify-persist.js` (12/0),
-   `verify-seq.js` (5/0), `verify-spectate.js` (8/0).
+   `verify-seq.js` (5/0), `verify-spectate.js` (8/0), `verify-heartbeat.js` (2/0),
+   `verify-net-games.js` (7/0).
+- **Run them all at once**: `node tools/verify-net-gate.js` serially runs all seven suites via
+  `spawnSync` (stdio inherit so each suite's PASS/FAIL summary lands in the caller's log, 45s per-suite
+  timeout to kill a hung relay) and exits non-zero if any fail. It is wired into `deploy/hooks/deploy.sh`
+  **Phase 2.6** as a pre-restart gate (commit `255e850`): a failing suite makes the deploy `git reset
+  --hard OLD_SHA` + `restore_db` + `exit 1`, so the old process keeps serving and the bad build is never
+  restarted. `DEPLOY_SKIP_VERIFY=1` disables the gate (emergency only). Note: `deploy.sh` copies itself to
+  `/tmp` and re-execs at the start of each run, so a freshly pushed gate takes effect on the *next* deploy.
 
 ## Key pitfalls (already paid for — do not relearn)
 

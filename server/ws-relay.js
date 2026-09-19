@@ -216,6 +216,9 @@ function attach(server) {
                     lobbies.get(ws._game).add(ws);
                     ws._lobby = true;
                     send(ws, 'tables', { game: ws._game, tables: listTables(ws._game) });
+                } else if (m.type === 'ping') {
+                    // 应用层心跳回包：携带客户端发来的时间戳 t，客户端据此算 RTT；不转发、不进房间逻辑
+                    send(ws, 'pong', { t: d.t || 0 });
                 } else if (m.type === 'join') {
                     ws._name = (d.me && String(d.me).slice(0, 24)) || '对手';
                     ws._game = d.game || 'unknown';

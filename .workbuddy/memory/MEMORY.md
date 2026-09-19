@@ -14,6 +14,8 @@
   **正确做法**：要么 `board` 声明为 `let`（xiangqi/banqi 已如此），要么在 `setState` 原地拷贝
   （gomoku 修法：`for(... ) board[i][j] = m.board[i][j]`），要么 `Object.assign(S, m)`（monopoly/richman/ludo）。
 
+- **竞速模式（race）**：`MG.pvp.arm(g, side, opp, { race: true })` 后 `canMove()` 恒 true（不受 `_turn===side` 回合锁，双方独立棋盘均可落子），终局仍由本地/对端 `over` 决定。`_armed.race` 透传到 `canMove()`。普通棋类不传 `race`，走回合锁。`NET_GAMES[g.id].race = true` 即由 `_launchNet` 自动透传到 `arm`（如 g2048 竞速）。接入新竞速游戏只需在 `NET_GAMES` 加 `race:true`，游戏内 `commit({score,maxL,over,win})` 每步广播进度、终局带 `over/win` 即可，无需锁输入。
+
 ## 工程约束（来自用户/项目）
 - `pinball.js` 严禁修改；`pk32*` 系列排除；`arcade.js`/`emulator.js` 封装层与 `optimized/` 死代码跳过。
 - 新联机代码全部 opt-in，单人/PvE 行为不变。
@@ -46,6 +48,9 @@
   **⚠️ 铁律**：客户端字段名是 `_seq`（下划线），测试/排错写 `d.seq` 必 mismatch（已踩坑修过 verify-seq）。
 - **D4 观战模式**：`spectate` 消息 `side=-1` 只读观战者，收 `start(viewer:true,state:lastState,seats,opp)`+广播，自身 input 拦截、退出走 `leave` 不推 `peer_left`；大厅观战入口 + `_renderSpectator` 轻量 HUD；`onDown` 重连文案增强。`minigames.js` 各 peer_* 钩子 `if(!isViewer)` 守卫。
 - **回归闸（真 ws 事件驱动，全 5 项绿）**：`verify-reconnect.js`(14/0) + `verify-4p.js`(15/0) + `verify-persist.js`(12/0) + `verify-seq.js`(5/0) + `verify-spectate.js`(8/0)。用事件驱动断言（先 send 再 `waitFor`，`waitForNone` 用 `setTimeout(res(null),to)` 重写）避免 sleep 竞态。
+- **部署前回归闸（2026-09-19 接入 `deploy.sh`，commit 255e850）**：`tools/verify-net-gate.js` 串行跑上述 5 套、任一失败整体 exit 1；`deploy/hooks/deploy.sh` 在 Phase 2.6（拉代码+ws 校验之后、重启之前）调用，失败则 `git reset --hard OLD_SHA`+`restore_db`+`exit 1`（旧进程继续、磁盘复位、不重启坏代码）。`DEPLOY_SKIP_VERIFY=1` 可跳过。本地可 `node tools/verify-net-gate.js` 预检。
+  - **⚠️ 生效时机**：deploy.sh 每次运行开头把自己 `cp` 到 /tmp 再 `exec`（防 git reset 覆盖脚本本身），故门槛在 **push 后的下一次部署** 才生效。
+  - Phase 2.5 关键依赖校验已改为「无论 package.json 是否变动都强制校验 node_modules/ws 存在」，缺失即失败回滚。
 
 ## server.js 模块化约定（按模块拆）
 - 路由拆分：用 `api['METHOD /path'] = handler` 注册表；新增路由模块 `server/routes/*.js`，
@@ -94,5 +99,9 @@
   接入方式 = 引擎 `E.game()` 内 `cfg.net` opt-in 钩子 + `MG.pvp` 状态同步；新增引擎游戏只需声明 `cfg.net`
   （`setup/ser/apply` + 在本地行动后 `api.net.commit()`），单人/PvE 零影响。
 - **观战模式**：任意联机游戏进入房间后，另一玩家可凭房间码 `spectate` 只读观战（`side=-1`，收 `start(viewer:true)`+最近盘面+广播，自身 input 拦截、退出不推 peer_left）。
+- **本轮新增联网小游戏（非棋类、状态同步）**：
+  - 记忆翻牌 `memory`（回合制共享牌面：房主生成牌阵首包下发，按回合翻 2 张，配对成功 `scores[mySide]++` 且留回合 `turn=mySide`，否则让对手 `turn=1-mySide`；终局 `commit({...,over})`）。
+  - 2048 竞速 `g2048`（`race:true` 不锁回合：双方独立 5×5 棋盘、均可落子；每步 `commit({score,maxL,over,win})` 广播进度，任一方先达成目标/锁盘即终局，对手收 `over` 判负/胜）。
+  - `NET_WIRED` 已收录 `memory` + `g2048`；`NET_GAMES` 两游戏均 `seats:2`（g2048 额外 `race:true`）。
 - **注意**：`E.def`/`E.defd` 必须 `cfg.id = id`，否则 `MG.pvp.shouldBegin(cfg.id)` 恒收 undefined、联机永不触发
   （引擎自身 `gameId: cfg.id` 错误上报也因此一直是 undefined，一并修复）。

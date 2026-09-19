@@ -32,7 +32,12 @@ MiniGames.memory = {
         const { c, ctx, w, h, destroy } = MG.canvas(container, COLS * S + 4, ROWS * S + 4);
         const useIcons = ICONS.slice(0, realPairs);
         let board = [], flipped = [], matched = 0, moves = 0, busy = false, won = false;
+        // 联机：共享牌面、按回合锁输入（房主生成牌阵首包下发，对手等待 setState 还原；配对成功留回合、否则让对手）
+        const net = !!(MG.pvp && MG.pvp.shouldBegin && MG.pvp.shouldBegin('memory'));
+        const mySide = net ? (MG.pvp._armed ? MG.pvp._armed.side : (MG.pvp.side || 0)) : 0;
+        let scores = [0, 0], turn = 0;
         const init = () => {
+            if (net && mySide !== 0) return;   // 非房主不本地生成牌面，等房主首包下发
             const arr = [];
             for (let i = 0; i < realPairs; i++) arr.push(useIcons[i], useIcons[i]);
             MG.shuffle(arr);
@@ -55,43 +60,65 @@ MiniGames.memory = {
                     MG.ui.emoji(ctx, '❓', x + S / 2, y + S / 2 - 2, S * 0.42);
                 }
             }
-            opts.onScore && opts.onScore('已配对：' + matched + '/' + realPairs + ' · 次数：' + moves);
+            opts.onScore && opts.onScore((net ? ('你 ' + scores[mySide] + ' · 对手 ' + scores[1 - mySide] + ' · ') : '') + '已配对：' + matched + '/' + realPairs + ' · 次数：' + moves);
         };
+        // 联机：把当前盘面（牌面+翻牌+比分+回合）整盘广播给对手
+        const commitNet = () => { if (!net) return; try { MG.pvp.commit({ board: board.map(r => r.slice()), flipped: flipped.map(f => f.slice()), matched, scores: scores.slice(), moves, turn, over: null }); } catch (e) {} };
         const onTap = p => {
             if (busy || won) return;
+            if (net && !MG.pvp.canMove()) return;   // 没轮到我方就锁输入
             const j = Math.floor(p.x / S), i = Math.floor(p.y / S);
             if (i < 0 || i >= ROWS || j < 0 || j >= COLS || !board[i][j]) return;
             if (flipped.some(f => f[0] === i && f[1] === j)) return;
             if (flipped.length === 2) return;
             flipped.push([i, j]); draw();
             try { MG.audio && MG.audio.sfx('click'); } catch (e) { }
+            if (net) commitNet();   // 让对手实时看到翻开的牌
             if (flipped.length === 2) {
                 moves++;
+                if (net) commitNet();
                 const [a, b] = flipped;
                 if (board[a[0]][a[1]] === board[b[0]][b[1]]) {
                     busy = true; setTimeout(() => {
                         board[a[0]][a[1]] = null; board[b[0]][b[1]] = null;
-                        flipped = []; matched++; busy = false; draw();
+                        flipped = []; matched++; scores[mySide]++; busy = false; draw();
                         try { MG.audio && MG.audio.sfx('coin'); } catch (e) { }
                         if (matched === realPairs) {
                             won = true;
-                            // 评分：完成+步数（步数 ≤ 配对数×2.2 = 3★，×2.8 = 2★，否则 1★）
-                            const perfect = moves <= realPairs * 2.2;
-                            const good = moves <= realPairs * 2.8;
-                            const stars = perfect ? 3 : good ? 2 : 1;
-                            opts.onComplete && opts.onComplete({
-                                win: true, stars,
-                                lines: ['用 ' + moves + ' 步', realPairs + ' 对全部配对', lv.desc],
-                            });
-                        }
+                            if (net) MG.pvp.commit({ board: board.map(r => r.slice()), flipped: [], matched, scores: scores.slice(), moves, turn: mySide, over: mySide });
+                            opts.onComplete && opts.onComplete({ win: true, stars: 3, lines: ['用 ' + moves + ' 步', realPairs + ' 对全部配对', lv.desc] });
+                        } else if (net) { turn = mySide; commitNet(); }   // 配对成功，留回合继续
                     }, 320);
                 } else {
-                    busy = true; setTimeout(() => { flipped = []; busy = false; draw(); }, 620);
+                    busy = true; setTimeout(() => { flipped = []; busy = false; draw(); if (net) { turn = 1 - mySide; commitNet(); } }, 620);
                 }
             }
         };
-        init(); MG.bind(c, onTap); draw();
-        MG.hint(container, lv.desc + ' · 翻两张相同图案配对消除');
+        // 联机：注册状态同步适配器（对手的落子/翻牌经 relay 转发到此还原；over 触发本端结算）
+        if (net) {
+            MG.pvp.begin({
+                setState(m) {
+                    if (!m) return;
+                    if (m.board) board = m.board;
+                    if (m.flipped) flipped = m.flipped;
+                    if (typeof m.matched === 'number') matched = m.matched;
+                    if (Array.isArray(m.scores)) scores = m.scores;
+                    if (typeof m.moves === 'number') moves = m.moves;
+                    if (typeof m.turn === 'number') turn = m.turn;
+                    draw();
+                    if (m.over != null) {
+                        won = true;
+                        const iWin = m.over === mySide;
+                        opts.onComplete && opts.onComplete({ win: iWin, stars: iWin ? 3 : 0, lines: [iWin ? '你配对了所有卡牌！' : '对手先完成了配对', realPairs + ' 对全部配对'] });
+                    }
+                },
+                onOver() {}
+            });
+        }
+        init();
+        if (net && mySide === 0) commitNet();   // 房主首发牌面，对手据此还原（含空翻牌/初始回合）
+        MG.bind(c, onTap); draw();
+        MG.hint(container, net ? '🌐 联机记忆翻牌 · 轮到你时翻两张相同图案配对（配对成功可连翻）' : (lv.desc + ' · 翻两张相同图案配对消除'));
         return { stop() { destroy(); } };
     }
 };

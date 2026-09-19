@@ -12,6 +12,12 @@ MG.net = {
     _spectating: false,             // 当前为只读观战（不拥有座位，掉线不续局）
     _reconnectTimer: null, _reconnectAttempts: 0, _reconnectMaxDelay: 8000, _reconnectMax: 8,
     _url: null, _onDown: null, _onReconnectFail: null,
+    // 应用层心跳 + RTT 测速（响应速度可见化 + 快速发现「网络黑洞」死连）
+    //   - 每 _hbMs 发一次 ping，服务端回 pong；RTT = 收到 pong 时 - 发 ping 时
+    //   - _lastMsg 记录最近一次「收到任何服务端消息」的时刻；若超过 _watchdogMs 仍无消息
+    //     （服务端假死 / 运营商网络黑洞：不 FIN 不 RST，底层 onclose 永不触发），主动 ws.close()
+    //     强制走指数退避重连，避免「我以为还连着、其实对面早收不到我落子」的悬空态。
+    _hbMs: 10000, _watchdogMs: 25000, _hbTimer: null, _lastMsg: 0, _pingSent: 0, _rtt: -1, _onPing: null,
     // 连接实时房间（需后端 WS 服务）。返回是否发起连接。
     // 注意：new WebSocket 后 socket 处于 CONNECTING，必须把 join/send 排队，
     // 等 onopen 后再冲刷——否则第一条 join 永远被静默丢弃（快速匹配/建房/输码加入全废）。
@@ -20,10 +26,12 @@ MG.net = {
         if (url) this._url = url;
         if (!this._url) return false;
         this._intentional = false;   // 任何一次（重）连接都代表「我有意在线」
+        this._stopTimers();          // 重连前清掉旧心跳，避免叠加多个定时器
         try {
             const ws = new WebSocket(this._url);
             this._ws = ws;
             this._pending = [];
+            this._lastMsg = Date.now();
             // 升级超时保护：若 N 秒内连不上（服务器没挂中继 / 网络不可达 / 反代没透传 Upgrade），
             // 立刻给出明确报错，而不是干等到浏览器自身超时（表现为「待处理→超时」）。
             const tOpen = setTimeout(() => {
@@ -39,11 +47,24 @@ MG.net = {
             };
             ws.onclose = () => { clearTimeout(tOpen); this._onSocketClose(); };
             ws.onerror = () => {};
-            ws.onmessage = (e) => { try { const m = JSON.parse(e.data); const h = this._handlers[m.type]; if (h) h(m.data); } catch (_) {} };
+            ws.onmessage = (e) => {
+                try {
+                    const m = JSON.parse(e.data);
+                    this._lastMsg = Date.now();   // 收到任何服务端消息都刷新「最近活跃」时间戳
+                    if (m && m.type === 'pong') {  // 心跳回包：计算 RTT 并通知 HUD
+                        if (this._pingSent) this._rtt = Date.now() - this._pingSent;
+                        try { if (this._onPing) this._onPing(this._rtt); } catch (_) {}
+                        return;
+                    }
+                    const h = this._handlers[m.type]; if (h) h(m.data);
+                } catch (_) {}
+            };
+            this._startHeartbeat();   // 连接就绪后启动应用层心跳 + 死连看门狗
             return true;
         } catch (e) { return false; }
     },
     _onSocketClose() {
+        this._stopTimers();   // 断开后停心跳，避免对已死的 socket 继续发 ping
         // 观战者掉线：仅提示断开，不续局、不重连对局（重新点「观战」即可）
         if (this._spectating) { this._spectating = false; try { if (this._onDown) this._onDown('👁 观战连接已断开'); } catch (e) {} return; }
         // 主动离开（返回/再来一局）或仅浏览大厅：不触发 onDown / 不重连
@@ -70,6 +91,25 @@ MG.net = {
     on(type, fn) { this._handlers[type] = fn; },
     onDown(fn) { this._onDown = fn; },
     onReconnectFail(fn) { this._onReconnectFail = fn; },
+    onPing(fn) { this._onPing = fn; },   // 心跳回包回调（参数为当前 RTT 毫秒，<0 表示尚未测到）
+    rtt() { return this._rtt; },          // 最近一次测到的往返延迟（毫秒）；-1 表示未测到
+    // 启动应用层心跳：定时发 ping + 死连看门狗（合并在一个定时器里，省一个 timer）
+    _startHeartbeat() {
+        this._stopTimers();
+        this._hbTimer = setInterval(() => {
+            const ws = this._ws;
+            if (!ws || ws.readyState !== 1) return;   // 非 OPEN 状态不测（重连/关闭中由各自逻辑处理）
+            // 看门狗：超过 _watchdogMs 没收到任何服务端消息 → 网络黑洞/服务端假死，主动断开触发重连
+            if (this._lastMsg && Date.now() - this._lastMsg > this._watchdogMs) {
+                try { ws.close(); } catch (e) {}
+                return;
+            }
+            // 发 ping 测 RTT（服务端回 pong 时算出往返）
+            this._pingSent = Date.now();
+            try { ws.send(JSON.stringify({ type: 'ping', data: { t: this._pingSent } })); } catch (e) {}
+        }, this._hbMs);
+    },
+    _stopTimers() { if (this._hbTimer) { clearInterval(this._hbTimer); this._hbTimer = null; } },
     _raw(str) {
         const ws = this._ws;
         if (ws && ws.readyState === 1) { try { ws.send(str); } catch (e) {} }
@@ -91,6 +131,7 @@ MG.net = {
     },
     leave() {
         this._intentional = true;   // 主动离开：socket 关闭后不再自动重连
+        this._stopTimers();
         if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
         this._reconnectAttempts = 0;
         this.send('leave', { room: this._room });

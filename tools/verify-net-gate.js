@@ -6,6 +6,8 @@
 //   persist    房间快照持久化 / 重启续局
 //   seq        落子 _seq 去重（防重连重放重复落子 / 乱序防护）
 //   spectate   观战模式（side=-1 只读、自身 input 拦截、退出不推 peer_left）
+//   heartbeat  应用层心跳 ping/pong 往返 + 客户端死连看门狗（网络黑洞检测）
+//   net-games  memory/g2048 新增联机游戏的状态同步契约（整盘转发给对手）
 //
 // 设计要点：
 //   - 每个 verify 脚本自带 ws 中继、自带退出码（PASS→0，FAIL→1，harness 异常→2）。
@@ -16,7 +18,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const APP_DIR = process.env.APP_DIR || path.join(__dirname, '..');
-const SUITES = ['reconnect', '4p', 'persist', 'seq', 'spectate'];
+const SUITES = ['reconnect', '4p', 'persist', 'seq', 'spectate', 'heartbeat', 'net-games'];
 const PER_SUITE_TIMEOUT = 45000;
 
 let failCount = 0;
@@ -51,5 +53,5 @@ if (failCount) {
     console.log('[net-gate] 结果：✗ ' + failCount + ' 套失败 —— 阻止坏版本上线');
     process.exit(1);
 }
-console.log('[net-gate] 结果：✓ 全部 ' + SUITES.length + ' 套通过');
+console.log('[net-gate] 结果：✓ 全部 ' + SUITES.length + ' 套通过（含 heartbeat / net-games）');
 process.exit(0);

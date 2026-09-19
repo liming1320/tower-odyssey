@@ -179,6 +179,7 @@ MinigamesView.openHall = function (g) {
         try { if (MG.net && MG.net._ws) MG.net._ws.close(); } catch (e) {}
         clearHallHandlers();
         try { MG.match && MG.match.end(); } catch (e) {}
+        MinigamesView._removeLatencyPill();
         if (mask.parentNode) mask.remove();
     };
     document.getElementById('mini-back').onclick = close;
@@ -210,6 +211,7 @@ MinigamesView.openHall = function (g) {
     const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame';
     const ok = MG.net.connect(url);
     if (!ok) { setStatus('⚠️ 浏览器不支持 WebSocket'); return; }
+    MinigamesView._ensureLatencyPill(); MG.net.onPing(rtt => MinigamesView._updateLatency(rtt));   // 大厅内也显示 RTT
     MG.net.send('lobby', { game: g.id, cap });
     hall.querySelector('#mh-create').onclick = () => {
         MG.net.send('join', { game: g.id, cap, create: true, me: (MG.me && MG.me.nickname) || '我' });
@@ -335,6 +337,27 @@ MinigamesView._hideNetOverlay = function () {
     const el = document.getElementById('mh-reconnect'); if (el) el.style.display = 'none';
 };
 
+// 联机延迟小药丸：对局/大厅内常驻显示 RTT（MG.net 心跳测速），让「响应速度」可见
+MinigamesView._netLatencyEl = null;
+MinigamesView._ensureLatencyPill = function () {
+    if (MinigamesView._netLatencyEl && document.body.contains(MinigamesView._netLatencyEl)) return MinigamesView._netLatencyEl;
+    const el = document.createElement('div');
+    el.id = 'mg-net-latency'; el.className = 'mg-net-latency'; el.textContent = '📶 测速中…';
+    document.body.appendChild(el);
+    MinigamesView._netLatencyEl = el;
+    return el;
+};
+MinigamesView._updateLatency = function (rtt) {
+    const el = MinigamesView._netLatencyEl; if (!el) return;
+    if (rtt < 0) { el.textContent = '📶 测速中…'; el.className = 'mg-net-latency'; return; }
+    el.textContent = '📶 ' + rtt + 'ms';
+    el.className = 'mg-net-latency' + (rtt > 200 ? ' bad' : rtt > 100 ? ' warn' : '');
+};
+MinigamesView._removeLatencyPill = function () {
+    if (MinigamesView._netLatencyEl && MinigamesView._netLatencyEl.parentNode) MinigamesView._netLatencyEl.parentNode.removeChild(MinigamesView._netLatencyEl);
+    MinigamesView._netLatencyEl = null;
+};
+
 // 真正启动一局联机对战：hall 连接已在房间内，这里只需武装 MG.pvp 并启动游戏
 // （MG.pvp.commit → MG.net.send 复用同一连接转发 input/state，无需再连）
 MinigamesView._launchNet = function (g, m) {
@@ -342,11 +365,14 @@ MinigamesView._launchNet = function (g, m) {
     MG.net.on('tables', () => {}); MG.net.on('seat', () => {});   // 对战进行中不再处理大厅消息
     const isViewer = !!(m && m.viewer);
     const cap = (NET_GAMES[g.id] && NET_GAMES[g.id].seats) || 2;
+    const race = !!(NET_GAMES[g.id] && NET_GAMES[g.id].race);
     // 武装 MG.pvp：把服务端下发的座位快照（含昵称，按 side 索引）一并传入，供引擎按 side 正确映射对手昵称。
     // 观战者 side=-1：canMove 恒 false（永不轮到），只接收 setState 重绘，不能落子。
-    MG.pvp.arm(g.id, (m && m.side) || 0, (m && m.opp) || null, { cap: cap, seats: (m && m.seats) || null, viewer: isViewer });
+    // race：竞速模式（如 2048 竞速），双方独立棋盘均可落子，不按回合锁输入。
+    MG.pvp.arm(g.id, (m && m.side) || 0, (m && m.opp) || null, { cap: cap, seats: (m && m.seats) || null, viewer: isViewer, race: race });
     // 记住本局房间/座位 token，供掉线后自动重连续局（mg-net 据此带 slot 重 join）
     MG.net._room = (m && m.room) || null; MG.net._slot = (m && m.slot) || null; MG.net._game = g.id; MG.net._spectating = isViewer;
+    MinigamesView._ensureLatencyPill(); MG.net.onPing(rtt => MinigamesView._updateLatency(rtt));   // 对局内常驻显示 RTT
     const mask = document.getElementById('mini-mask');
     const stage = document.getElementById('mini-stage');
     const scoreEl = document.getElementById('mini-score');
@@ -361,6 +387,7 @@ MinigamesView._launchNet = function (g, m) {
         try { ctrl && ctrl.stop && ctrl.stop(); } catch (e) {}
         try { MG.pvp.end(); } catch (e) {}
         try { MG.match && MG.match.end(); } catch (e) {}
+        MinigamesView._removeLatencyPill();
         if (mask && mask.parentNode) mask.remove();
     };
     // 对局进行中掉线收口：避免「对手走了我却还在棋盘干等/还能落子」的悬空态。
@@ -631,8 +658,9 @@ const NET_GAMES = {
     gomoku: { seats: 2 }, banqi: { seats: 2 }, xiangqi: { seats: 2 }, chess: { seats: 2 },
     junqi: { seats: 2 }, jungle: { seats: 2 }, ludo: { seats: 2 }, advchess: { seats: 2 },
     monopoly: { seats: 4 }, richman: { seats: 4 },
+    memory: { seats: 2 }, g2048: { seats: 2, race: true },
 };
-const NET_WIRED = { gomoku: 1, banqi: 1, xiangqi: 1, chess: 1, junqi: 1, jungle: 1, ludo: 1, monopoly: 1, richman: 1 };
+const NET_WIRED = { gomoku: 1, banqi: 1, xiangqi: 1, chess: 1, junqi: 1, jungle: 1, ludo: 1, monopoly: 1, richman: 1, memory: 1, g2048: 1 };
 const NET_GAMES_COUNT = Object.keys(NET_GAMES).length;
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合

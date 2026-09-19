@@ -24,9 +24,11 @@ MG.pvp = (function () {
         // 由 _launchNet 在收到 start 事件时调用：武装本局对战信息。
         //   opt.cap   房间容量（默认 2）；opt.seats 服务端下发的座位快照（含昵称，按 side 索引）；opt.viewer 是否为观战者
         //   观战者 side=-1：canMove 恒 false（永不轮到），只接收 setState 重绘，不能落子。
+        //   opt.race：竞速模式（如 2048 竞速）——双方独立棋盘、均可落子，不按回合锁输入；
+        //     canMove 恒 true（仍受 active 限制）。普通棋类不传即走回合锁。
         arm(game, side, opp, opt) {
             opt = opt || {};
-            this._armed = { game: game, side: (side == null ? 0 : side), opp: opp || null, cap: opt.cap || 2, seats: opt.seats || null, viewer: !!opt.viewer };
+            this._armed = { game: game, side: (side == null ? 0 : side), opp: opp || null, cap: opt.cap || 2, seats: opt.seats || null, viewer: !!opt.viewer, race: !!opt.race };
         },
 
         // 游戏 start 开头调用：若是本游戏的联机对局则进入 pvp 模式，返回 true
@@ -47,8 +49,9 @@ MG.pvp = (function () {
             return true;
         },
 
-        // 我方现在能否落子（非联机时恒 true；联机时仅轮到我方；观战者 side=-1 永不轮到）
-        canMove() { return !this.active || this._turn === this.side; },
+        // 我方现在能否落子（非联机时恒 true；联机时仅轮到我方；观战者 side=-1 永不轮到）。
+        // 竞速模式（_armed.race）：双方均可落子，canMove 恒 true（仍受 active 限制）。
+        canMove() { return !this.active || (this._armed && this._armed.race) || this._turn === this.side; },
 
         // 我方刚落子：state = { board, turn, over? }；切到下一回合并广播。
         // turn 由游戏显式给出（棋类 1-side、强手棋 (turn+1)%cap）；未给则按 cap 兜底轮转。

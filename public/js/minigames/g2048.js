@@ -172,7 +172,9 @@ function drawMonsterCell(ctx, level, x, y, s, anim) {
     // opts.levelIdx: 关卡索引（0-based）；opts.levelIdx === -1 表示无尽模式
     start(container, opts) {
         const endless = opts.endless === true || opts.levelIdx === -1;
-        const level = endless ? 0 : ((opts.levelIdx != null ? opts.levelIdx + 1 : (opts.level | 0)) || 1);
+        // 联机竞速：双方强制同一关卡（target 8 / 5×5，无岩石），保证公平，不走各自 PvE 进度
+        const net = !!(MG.pvp && MG.pvp.shouldBegin && MG.pvp.shouldBegin('g2048'));
+        const level = net ? 8 : (endless ? 0 : ((opts.levelIdx != null ? opts.levelIdx + 1 : (opts.level | 0)) || 1));
         const api = { stop() {} };
         g2048Round(container, opts, level, api);
         return api;
@@ -198,6 +200,13 @@ function g2048Round(container, opts, level, api) {
 
     let board = Array.from({ length: N }, () => Array(N).fill(0));
     let score = 0, moves = 0, over = false, stopped = false;
+
+    // 联机竞速：双方独立棋盘、均可落子（不锁回合）；每步广播自己的分数/最高等级给对手；
+    // 任一方先达成目标（或对手先锁盘）即终局，另一方收到 over 判负。
+    const net = !!(MG.pvp && MG.pvp.shouldBegin && MG.pvp.shouldBegin('g2048'));
+    const mySide = net ? (MG.pvp._armed ? MG.pvp._armed.side : (MG.pvp.side || 0)) : 0;
+    const opp = { score: 0, maxL: 0, over: false, win: false };
+    const commitNet = () => { if (!net || over) return; try { MG.pvp.commit({ score, maxL: Math.max(...board.flat(), 0), over: 0, win: 0 }); } catch (e) {} };
 
     // 岩石障碍（避开初始 2×2）
     const rocks = new Set();
@@ -279,9 +288,11 @@ function g2048Round(container, opts, level, api) {
         if (level > 0) {
             const left = maxMoves - moves;
             const urgent = left <= Math.max(15, maxMoves * 0.12);
-            opts.onScore && opts.onScore(`目标：${MON_NAME(target)} (Lv${target}) · 最高 Lv${maxL} · ${moves}/${maxMoves} 步${urgent ? ' ⚠步数告急' : ''} · 击退 ${score} · ${N}×${N}`);
+            const oppTxt = net ? (' · 对手 Lv' + opp.maxL + '·' + opp.score) : '';
+            opts.onScore && opts.onScore(`目标：${MON_NAME(target)} (Lv${target}) · 最高 Lv${maxL} · ${moves}/${maxMoves} 步${urgent ? ' ⚠步数告急' : ''} · 击退 ${score} · ${N}×${N}${oppTxt}`);
         } else {
-            opts.onScore && opts.onScore(`分数 ${score} · 最高 Lv${maxL}（${MON_NAME(maxL) || '-'}） · ${moves} 步 · ${N}×${N}`);
+            const oppTxt = net ? (' · 对手 Lv' + opp.maxL + '·' + opp.score) : '';
+            opts.onScore && opts.onScore(`分数 ${score} · 最高 Lv${maxL}（${MON_NAME(maxL) || '-'}） · ${moves} 步 · ${N}×${N}${oppTxt}`);
         }
     };
 
@@ -325,6 +336,9 @@ function g2048Round(container, opts, level, api) {
     const finish = (win, reason) => {
         if (over) return;
         over = true;
+        let netWin = win;
+        // 竞速终局：本地达到目标=胜；本地锁盘/步数耗尽=负（除非对手已先锁盘→本地胜）
+        if (net && !win) netWin = (opp.over && !opp.win) ? true : false;
         let stars = 0;
         if (level > 0) {
             const ratio = (maxMoves - moves) / maxMoves;
@@ -343,7 +357,7 @@ function g2048Round(container, opts, level, api) {
         }
         if (opts.onComplete) {
             opts.onComplete({
-                win: level > 0 ? win : false,
+                win: net ? netWin : (level > 0 ? win : false),
                 stars,
                 title: level === 0 ? '🏁 棋盘满了！' : (win ? `🏆 击败 ${MON_NAME(target)}！` : '💥 妖怪太强了…'),
                 lines: (level === 0
@@ -362,6 +376,7 @@ function g2048Round(container, opts, level, api) {
                 onBack: () => { destroy(); opts.onBack && opts.onBack(); },
             });
         }
+        if (net) { try { MG.pvp.commit({ score, maxL: Math.max(...board.flat(), 0), over: 1, win: netWin ? 1 : 0 }); } catch (e) {} }
         draw();
     };
 
@@ -400,6 +415,7 @@ function g2048Round(container, opts, level, api) {
             return changed;
         });
         if (!can) finish(false, level === 0 ? '棋盘满了，无处可动' : '棋盘锁死，无路可走');
+        if (net) commitNet();   // 每步广播进度给对手（终局已在 finish 内上报 over）
     };
 
     // ============ 输入：键盘（方向键 + WASD）============
@@ -445,6 +461,22 @@ function g2048Round(container, opts, level, api) {
         c.removeEventListener('touchend', te);
         origStop();
     };
+
+    // 联机：注册状态同步适配器（对手进度经 relay 转发到此；对手终局触发本端判负）
+    if (net) {
+        MG.pvp.begin({
+            setState(m) {
+                if (!m) return;
+                if (typeof m.score === 'number') opp.score = m.score;
+                if (typeof m.maxL === 'number') opp.maxL = m.maxL;
+                if (m.over) {
+                    opp.over = true; opp.win = !!m.win;
+                    if (!over) finish(false, m.win ? '对手先合成了目标妖怪！' : '对手先完成！');
+                }
+            },
+            onOver() {}
+        });
+    }
 
     add(); add(); draw();
     MG.hint(container, level > 0
