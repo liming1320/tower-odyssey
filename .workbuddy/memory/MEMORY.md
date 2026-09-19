@@ -102,6 +102,10 @@
 - **本轮新增联网小游戏（非棋类、状态同步）**：
   - 记忆翻牌 `memory`（回合制共享牌面：房主生成牌阵首包下发，按回合翻 2 张，配对成功 `scores[mySide]++` 且留回合 `turn=mySide`，否则让对手 `turn=1-mySide`；终局 `commit({...,over})`）。
   - 2048 竞速 `g2048`（`race:true` 不锁回合：双方独立 5×5 棋盘、均可落子；每步 `commit({score,maxL,over,win})` 广播进度，任一方先达成目标/锁盘即终局，对手收 `over` 判负/胜）。
-  - `NET_WIRED` 已收录 `memory` + `g2048`；`NET_GAMES` 两游戏均 `seats:2`（g2048 额外 `race:true`）。
+  - 坦克大决战 `tankpvp`（实时回声同步，无 AI：每帧广播己方坦克+子弹 `{tk:{x,y,dir,lives,shield},b:[子弹],hit:0}`，命中由**子弹拥有者**发 `hit:1` 对手本地扣血；每端 3 条命；over 语义 0=发送方负/1=发送方胜/2=平局，接收方取反映射）。
+  - 贪吃蛇对战 `snakepvp`（同盘双蛇：17×17/S=30/140ms 步；房主首 `commit` 下发食物+蛇身，撞墙/自身/对手身体即亡，头对头同归 draw=2；over 取反映射）。
+  - 双人迷宫闯关 `maze-coop`（co-op 协作：11×11 DFS 完美迷宫，房主 `seed` 建图并 `commit` 下发、双端一致重建；各广播 `pos` 与 `key`(捡钥匙)，集齐钥匙开出口、两人同达终点通关，任一踩陷阱🔥双双失败）。
+  - `NET_WIRED` 已收录 `memory` + `g2048` + `tankpvp` + `snakepvp` + `maze-coop`；`NET_GAMES` 均 `seats:2`（g2048/tankpvp/snakepvp/maze-coop 均 `race:true`）。
+  - 非联网进入提示范式：3 款新游戏 `start()` 内 `net=MG.pvp.shouldBegin(id)` 为 falsy 时，渲染「🎯/🐍/🤝 XX 为联机对战/协作专属…请从小游戏列表🌐联网对战分类进入」，不静默进单人。
 - **注意**：`E.def`/`E.defd` 必须 `cfg.id = id`，否则 `MG.pvp.shouldBegin(cfg.id)` 恒收 undefined、联机永不触发
   （引擎自身 `gameId: cfg.id` 错误上报也因此一直是 undefined，一并修复）。
