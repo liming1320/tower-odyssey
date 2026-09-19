@@ -8,15 +8,15 @@
         html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; touch-action: none; }
         body { display: grid; place-items: center; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #stage { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
-        canvas { display: block; width: 100%; height: 100%; max-width: none; max-height: none; background: #000; outline: none; }
+        canvas { display: block; width: 100%; height: 100%; max-width: none; max-height: none; background: #000; outline: none; image-rendering: auto; }
         #status { position: absolute; color: #d9e7ff; font: 14px Arial, sans-serif; }
         #progress { position: absolute; top: calc(50% + 24px); width: min(260px, 70%); }
         #touch-controls { display: none; position: absolute; inset: 0; pointer-events: none; }
-        .touch-key { position: absolute; border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; color: transparent; opacity: 0; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-        #touch-left { left: 0; bottom: 0; width: 32%; height: 31%; }
-        #touch-right { right: 0; bottom: 0; width: 32%; height: 31%; }
-        #touch-launch { right: 0; top: 28%; width: 13%; height: 47%; }
-        #touch-hint { position: absolute; right: 1.5%; top: 47%; width: 10%; color: rgba(255,235,170,.86); font: 700 11px/1.35 Arial, sans-serif; letter-spacing: .3px; text-align: center; pointer-events: none; text-shadow: 0 1px 3px #000; }
+        .touch-key { position: absolute; border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; color: transparent; opacity: 0; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-appearance: none; }
+        #touch-left { left: 0; bottom: 0; width: 50%; height: 36%; }
+        #touch-right { left: 50%; bottom: 0; width: 30%; height: 36%; }
+        #touch-launch { right: 0; top: 14%; width: 20%; height: 72%; z-index: 3; }
+        #touch-hint { position: absolute; right: 1%; top: 43%; width: 18%; padding: 4px 0; border: 1px solid rgba(255,235,170,.42); border-radius: 5px; background: rgba(10,15,28,.48); color: rgba(255,235,170,.92); font: 700 11px/1.35 Arial, sans-serif; letter-spacing: .3px; text-align: center; pointer-events: none; text-shadow: 0 1px 3px #000; z-index: 4; }
         @media (pointer: coarse), (max-width: 600px) {
             #touch-controls { display: block; }
         }
@@ -28,10 +28,10 @@
         <progress id="progress" value="0" max="100"></progress>
         <canvas id="canvas" tabindex="0" aria-label="Space Cadet Pinball"></canvas>
         <div id="touch-controls" aria-label="Pinball touch controls">
-            <button id="touch-left" class="touch-key" type="button" aria-label="Left flipper"></button>
-            <button id="touch-right" class="touch-key" type="button" aria-label="Right flipper"></button>
-            <button id="touch-launch" class="touch-key" type="button" aria-label="Launch ball"></button>
-            <div id="touch-hint">HOLD<br>RELEASE</div>
+            <div id="touch-left" class="touch-key" role="button" aria-label="Left flipper"></div>
+            <div id="touch-right" class="touch-key" role="button" aria-label="Right flipper"></div>
+            <div id="touch-launch" class="touch-key" role="button" aria-label="Launch ball"></div>
+            <div id="touch-hint">长按蓄力<br>松开发射</div>
         </div>
     </main>
     <script>
@@ -59,8 +59,12 @@
         Object.keys(touchKeys).forEach(id => {
             const button = document.getElementById(id);
             const functions = touchKeys[id];
+            let pressed = false;
             const send = (type, event) => {
                 event.preventDefault();
+                if (type === 'keydown' && pressed) return;
+                if (type === 'keyup' && !pressed) return;
+                pressed = type === 'keydown';
                 canvas.focus();
                 button.classList.toggle('pressed', type === 'keydown');
                 const fn = Module[functions[type === 'keydown' ? 0 : 1]];
@@ -73,14 +77,38 @@
             ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => {
                 button.addEventListener(type, event => send('keyup', event));
             });
+            button.addEventListener('touchstart', event => {
+                event.preventDefault();
+                send('keydown', event);
+            }, { passive: false });
+            button.addEventListener('touchend', event => {
+                event.preventDefault();
+                send('keyup', event);
+            }, { passive: false });
+            button.addEventListener('touchcancel', event => {
+                event.preventDefault();
+                send('keyup', event);
+            }, { passive: false });
         });
 
         var Module = {
             canvas,
-            locateFile: path => `${path}?v=6`,
+            locateFile: path => `${path}?v=7`,
             print: text => console.log(text),
             printErr: text => console.error(text),
             onRuntimeInitialized() {
+                const resizeCanvas = () => {
+                    const rect = canvas.getBoundingClientRect();
+                    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+                    const width = Math.max(1200, Math.round(rect.width * dpr));
+                    const height = Math.max(880, Math.round(rect.height * dpr));
+                    if (canvas.width !== width || canvas.height !== height) {
+                        canvas.width = width;
+                        canvas.height = height;
+                    }
+                };
+                window.requestAnimationFrame(resizeCanvas);
+                window.addEventListener('resize', resizeCanvas, { passive: true });
                 window.setInterval(() => {
                     if (typeof Module._spacecadet_get_score !== 'function') return;
                     window.parent.postMessage({
@@ -110,6 +138,6 @@
             },
         };
     </script>
-    <script async src="SpaceCadetPinball.js?v=6"></script>
+    <script async src="SpaceCadetPinball.js?v=7"></script>
 </body>
 </html>
