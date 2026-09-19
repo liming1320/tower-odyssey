@@ -1,6 +1,6 @@
 // verify-net-gate.js —— 部署前联机回归闸（被 deploy/hooks/deploy.sh Phase 2.6 调用）
 //
-// 依次运行 5 个「真 ws 中继」回归测试（无需浏览器、不依赖线上服务进程）：
+// 依次运行「真 ws 中继」回归测试（无需浏览器、不依赖线上服务进程）：
 //   reconnect  断线重连 / 续局
 //   4p         4 人桌真实同步
 //   persist    房间快照持久化 / 重启续局
@@ -8,6 +8,7 @@
 //   spectate   观战模式（side=-1 只读、自身 input 拦截、退出不推 peer_left）
 //   heartbeat  应用层心跳 ping/pong 往返 + 客户端死连看门狗（网络黑洞检测）
 //   net-games  memory/g2048 新增联机游戏的状态同步契约（整盘转发给对手）
+//   net-new    tankpvp/snakepvp/maze-coop 本轮新增 3 款联机游戏的状态同步契约
 //
 // 设计要点：
 //   - 每个 verify 脚本自带 ws 中继、自带退出码（PASS→0，FAIL→1，harness 异常→2）。
@@ -18,7 +19,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const APP_DIR = process.env.APP_DIR || path.join(__dirname, '..');
-const SUITES = ['reconnect', '4p', 'persist', 'seq', 'spectate', 'heartbeat', 'net-games'];
+const SUITES = ['reconnect', '4p', 'persist', 'seq', 'spectate', 'heartbeat', 'net-games', 'net-new'];
 const PER_SUITE_TIMEOUT = 45000;
 
 let failCount = 0;
@@ -53,5 +54,5 @@ if (failCount) {
     console.log('[net-gate] 结果：✗ ' + failCount + ' 套失败 —— 阻止坏版本上线');
     process.exit(1);
 }
-console.log('[net-gate] 结果：✓ 全部 ' + SUITES.length + ' 套通过（含 heartbeat / net-games）');
+console.log('[net-gate] 结果：✓ 全部 ' + SUITES.length + ' 套通过（含 heartbeat / net-games / net-new）');
 process.exit(0);

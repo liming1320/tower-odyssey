@@ -637,7 +637,7 @@ const CATEGORIES = [
 ];
 const CAT_OF = Object.assign({}, ...[
     ['board', ['gomoku', 'g2048', 'banqi', 'xiangqi', 'tictactoe', 'connect4', 'reversi', 'nim', 'battleship', 'dots', 'mancala', 'queens', 'peg', 'breakthru', 'chess', 'junqi', 'jungle', 'ludo', 'advchess', 'solitaire', 'spider', 'freecell', 'pyramid', 'blackjack', 'poker', 'war', 'monopoly', 'richman']],
-    ['puzzle', ['link', 'match3', 'snake', 'tetris', 'mine', 'slide15', 'bulls', 'sudoku6', 'hanoi', 'mummymaze', 'jigsaw', 'maze', 'lightsout', 'floodit', 'pipes', 'nonogram', 'sudoku9', 'numberpath', 'sokoban', 'blockpuzzle', 'mastermind']],
+    ['puzzle', ['link', 'match3', 'snake', 'tetris', 'mine', 'slide15', 'bulls', 'sudoku6', 'hanoi', 'mummymaze', 'jigsaw', 'maze', 'lightsout', 'floodit', 'pipes', 'nonogram', 'sudoku9', 'numberpath', 'sokoban', 'blockpuzzle', 'mastermind', 'snakepvp', 'maze-coop']],
     ['memory', ['memory', 'flashnum', 'chimp', 'simon', 'cardmem', 'wordmem', 'spot', 'pathmem', 'shadowmatch', 'whatmiss', 'reversenum']],
     ['quiz', ['mathquiz', 'stroop', 'higherlower', 'oddone', 'idiom', 'trivia', 'counting', 'estimate', 'clockread', 'sequence']],
     ['luck', ['coinflip', 'dicehi', 'slots', 'bingo', 'spinner', 'rpsgame', 'plinko', 'lucky7', 'tapburst', 'gacha']],
@@ -660,7 +660,7 @@ const NET_GAMES = {
     monopoly: { seats: 4 }, richman: { seats: 4 },
     memory: { seats: 2 }, g2048: { seats: 2, race: true },
 };
-const NET_WIRED = { gomoku: 1, banqi: 1, xiangqi: 1, chess: 1, junqi: 1, jungle: 1, ludo: 1, monopoly: 1, richman: 1, memory: 1, g2048: 1 };
+const NET_WIRED = { gomoku: 1, banqi: 1, xiangqi: 1, chess: 1, junqi: 1, jungle: 1, ludo: 1, monopoly: 1, richman: 1, memory: 1, g2048: 1, tankpvp: 1, snakepvp: 1, 'maze-coop': 1 };
 const NET_GAMES_COUNT = Object.keys(NET_GAMES).length;
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合
