@@ -29,11 +29,42 @@
 
 ## server.js 模块化约定（按模块拆）
 - 路由拆分：用 `api['METHOD /path'] = handler` 注册表；新增路由模块 `server/routes/*.js`，
-  通过 `require('./server/routes/xxx')({ api, DB, sendJson, ...ctx })` 注入共享依赖（参考 `server/routes/rom.js`）。
+  通过 `require('./server/routes/xxx')(routeCtx)` 注入共享依赖（参考 `server/routes/rom.js`）。
+- **routeCtx 单一上下文对象**（在首个路由模块位置定义，随抽取逐步 `Object.assign` 追加 helper/config）：
+  `{ api, DB, sendJson, getUserByToken, isAdminToken, save, newId, newToken, <config常量>, <共享helper> }`；
+  各模块 `const { ... } = ctx` 解构自己需要的，handler 连同其私有 helper 一起搬进模块。
+- **回归闸门 `tools/verify-routes.js`**：`MG_NO_LISTEN=1`（不绑端口）+ `MG_DATA_DIR`（临时数据目录，不污染真实 db）
+  加载 server.js，断言 `api` 路由表齐全、实跑几个 GET handler 不抛错。**每抽完一个域必须跑一次**。
+  实现：server.js 末尾 `if (process.env.MG_NO_LISTEN) module.exports = { api, DB };`；`startListen()` 首行 `if (process.env.MG_NO_LISTEN) return;`。
 - 纯数据拆分：游戏内容常量（品质/装备/英雄星级天赋/元素/城墙/材料英雄/许愿/锻造/塔与肉鸽/Boss/建筑/资源/展示ID/短信）
   抽到 `server/config/*`，由 `server/config/index.js`（Object.assign barrel）聚合，
   server.js 顶部 `const { ... } = require('./server/config')` 一次性解构引用。
-- server.js 现状：~3348 行；ROM/BIOS/云存档路由 + normalizeSkills 已拆到 `server/routes/rom.js` + `server/core/skills.js`。
+- 进度（2026-09-18 起，增量拆）：已抽 `camp.js`(6) + `heroes.js`(GET+15 POST，含 4 私有 helper) +
+  `tower.js`(tower/info/level/clear/start/choice/finish + world/world/gather，buildBattleHeroes/getWallInfo 搬入，
+  heroCombatStats/chapterOf/bossForFloor/floorHpScale/floorAtkScale/mulberry32/enemyPoolFor 留 server.js 经 ctx 注入) +
+  `events.js`(events+event/claim+wish+wish/reward+shop/buy-wish，eventState/drawOneHero 搬入) +
+  `clan.js`(clans/clan.create/join/mine + user/set-nickname + chat + mail) +
+  `minigame.js`(minigame 注册表+report/progress/score/rank/order + pk32 注册表+order + admin/minigame/order + admin/pk32/order) +
+  `gift.js`(gift/redeem) + `admin.js`(admin/login/mail + account/delete + admin/gift/* + admin/tavern/{config,test,handles,scan}
+  + admin/user/{delete,grant} + admin/hero/{add,update,delete,reload} + admin/wall/{update,delete} + admin/event/{save,delete}
+  + admin/overview + admin/sms-codes + free + tavern/{ticket,status})。
+  每次 verify-routes 均 **6/0 通过**；2026-09-19 加固后 **19/0 通过，路由表 111 个零缺失**（额外实跑 admin/overview/sms-codes/
+  gift/list/tavern/config/minigame/order/pk32/order + tower/level + register→login→me 链路，并加「admin 无 token→403」「login 错密码→401」负向断言）。
+  server.js 由 ~3348 行降到 **1471 行**（9 个 require('./server/routes/*')：auth/camp/heroes/events/tower/clan/minigame/gift/admin）。
+- **抽 admin 时修复的既有 bug**：server.js 原 `GET /api/admin/tavern/*` 直接调用 `romAdminOk(req)`，但该函数只在
+  `server/routes/rom.js` 模块内定义 → 运行时 ReferenceError（后台 AI 酒馆配置页必 500）。修复：在 server.js 顶层补一份
+  `romAdminOk`（双通道：独立管理员令牌 `__admin__` 或玩家 isAdmin），经 routeCtx 注入 admin.js；rom.js 保留自己的副本。
+- **TDZ 坑（已修）**：`normalizeSkills` 用 `const { normalizeSkills } = require('./server/core/skills')` 声明在 routeCtx
+  **之后**，被 routeCtx 引用时触发 `Cannot access 'normalizeSkills' before initialization`。已把该 require 上移到 routeCtx 之前。
+- **抽 auth 域（2026-09-19 收尾）**：`server/routes/auth.js` 迁出 register/login/sms/send/phone/login、user/bind-phone/set-password/logout/me
+  （8 个）+ 私有 helper `publicUser`；依赖经 ctx 注入（hashPassword/verifyPassword/validPhone/maskPhone/genDefaultNickname/
+  defaultUserState/touchLogin/SMS/validNickname/newId/newToken/newDisplayId）。`displayName` 因被 clan.js 经 ctx 引用而**留在 server.js**；
+  auth.js 自行 `require('crypto')`。唯一残留内联路由仅 `GET /api/health`（引导/分发核心）。
+- **`server/config` 扩装备/戒指/宝石/技能纯数据：经核查已非必要**——用户列举的 铁剑/银刃/蓝晶戒/玄铁法杖/黄玉/翠玉/藤蔓缠绕/潮汐涌动/烈焰爆裂
+  等实际都存于 `data/db.json` / `data/heroes.json` 等运行时数据文件；server.js 内只剩生成逻辑用的小名字池（7 项/组，属生成逻辑本身），无需搬。
+- **verify-routes 闸门已加固**（2026-09-19）：临时 db 里造 `ADMIN_TOKEN`（写 `__admin__`）+ 测试玩家（带 state + 上阵英雄 h_verify）
+  与 `USER_TOKEN`，实跑上述 admin GET 与 `tower/level`，捕捉「ctx 漏注入 → ReferenceError/TypeError」类回归；
+  前置 `if (process.env.MG_NO_LISTEN) return;` 在 `startListen()` 首行保证不绑端口。
 
 ## 棋类联机覆盖现状
 - 已接入联机：五子棋(gomoku)、暗棋(banqi)、象棋(xiangqi)、国际象棋(mg-chess chess)、军棋翻翻棋(junqi/jungle)。
