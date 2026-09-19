@@ -168,7 +168,33 @@ if ! git diff --quiet "$OLD_SHA" "$NEW_SHA" -- package.json 2>/dev/null; then
         git reset --hard "$OLD_SHA" --quiet 2>>"$LOG"; restore_db; exit 1
     fi
 else
-    log "ℹ package.json 未变化，跳过 npm install（node_modules/ws 沿用既有）"
+    log "ℹ package.json 未变化，跳过 npm install"
+fi
+
+# 关键依赖校验：ws 缺失会导致联机中继静默失效（server.js 用 try/require 降级，
+# 且健康检查只查 /api/health 查不出）。无论 package.json 是否变化都强制校验，
+# 缺失直接判失败回滚，不让坏版本上线（也兜底「node_modules 被清但未改 package.json」的回归）。
+if [ ! -d "$APP_DIR/node_modules/ws" ]; then
+    log "✗ node_modules/ws 缺失：联机中继将不可用，终止本次部署并回滚"
+    git reset --hard "$OLD_SHA" --quiet 2>>"$LOG"; restore_db; exit 1
+fi
+
+# ---------- 2.6) 部署前联机回归闸（测试不过不让上线）----------
+# 真 ws 回归测试覆盖：断线重连/续局、4 人桌同步、房间快照续局、seq 去重防重放、观战模式。
+# 任一失败 → 终止部署并回滚到旧版本（线上仍是旧进程，磁盘复位，保持一致，不重启坏代码）。
+# 可用 DEPLOY_SKIP_VERIFY=1 跳过（仅限验证闸自身故障时应急）。
+if [ "${DEPLOY_SKIP_VERIFY:-0}" = "1" ]; then
+    log "ℹ DEPLOY_SKIP_VERIFY=1，跳过联机回归闸"
+else
+    log "🧪 运行部署前联机回归闸（tools/verify-net-gate.js）"
+    if node "$APP_DIR/tools/verify-net-gate.js" >>"$LOG" 2>&1; then
+        log "✅ 联机回归闸全部通过"
+    else
+        log "✗ 联机回归闸未通过：阻止坏版本上线，回滚到 $OLD_SHA"
+        git reset --hard "$OLD_SHA" --quiet 2>>"$LOG"
+        restore_db
+        exit 1
+    fi
 fi
 
 # 结束占用 PORT 的游离进程（systemd 拉不起来的常见原因）
