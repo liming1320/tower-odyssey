@@ -58,3 +58,6 @@ data/tavern-env.json
 deploy/logs/
 # Windows reserved-device-name junk file that blocks 'git add -A'
 nul
+
+# Python 缓存（测试/诊断脚本生成的字节码）
+tools/__pycache__/

@@ -7,7 +7,9 @@ window.MG = window.MG || {}; var MG = window.MG;
 MG.net = {
     _ws: null, _room: null, _slot: null, _game: null, _me: null,
     _handlers: {}, _pending: [],
+    _seq: 0,                       // 落子/状态消息单调递增序号：服务端据此丢弃重连 outbox 重放的重复包
     _intentional: false,            // 主动离开（返回/再来一局）时不重连
+    _spectating: false,             // 当前为只读观战（不拥有座位，掉线不续局）
     _reconnectTimer: null, _reconnectAttempts: 0, _reconnectMaxDelay: 8000, _reconnectMax: 8,
     _url: null, _onDown: null, _onReconnectFail: null,
     // 连接实时房间（需后端 WS 服务）。返回是否发起连接。
@@ -42,6 +44,8 @@ MG.net = {
         } catch (e) { return false; }
     },
     _onSocketClose() {
+        // 观战者掉线：仅提示断开，不续局、不重连对局（重新点「观战」即可）
+        if (this._spectating) { this._spectating = false; try { if (this._onDown) this._onDown('👁 观战连接已断开'); } catch (e) {} return; }
         // 主动离开（返回/再来一局）或仅浏览大厅：不触发 onDown / 不重连
         if (this._intentional || !this._room) return;
         try { if (this._onDown) this._onDown(); } catch (e) {}   // 意外掉线：上层显示「重连中」覆盖层
@@ -71,7 +75,16 @@ MG.net = {
         if (ws && ws.readyState === 1) { try { ws.send(str); } catch (e) {} }
         else if (!this._intentional) { this._pending.push(str); }   // 关闭/连接中：进发件箱，重连后冲刷（避免静默丢落子）
     },
-    send(type, data) { try { this._raw(JSON.stringify({ type, data })); } catch (e) {} },
+    send(type, data) {
+        try {
+            // 落子/整盘状态类消息打单调递增序号，供服务端去重（重连时发件箱重放同一包不应重复落子）
+            if (type === 'input' || type === 'state' || type === 'sync') {
+                data = data || {};
+                if (data._seq == null) data._seq = ++this._seq;
+            }
+            this._raw(JSON.stringify({ type, data }));
+        } catch (e) {}
+    },
     join(room, game, slot) {
         this._room = room || this._room; this._game = game || this._game; if (slot) this._slot = slot;
         this.send('join', { room: this._room || '', game: this._game || (MG._curGame) || 'unknown', me: (MG.me && MG.me.nickname) || '我', slot: this._slot || undefined });
@@ -82,6 +95,12 @@ MG.net = {
         this._reconnectAttempts = 0;
         this.send('leave', { room: this._room });
         this._room = null; this._slot = null; this._pending = [];
+    },
+    // 只读观战：旁观一张进行中的桌子（需房间码），接收 state 广播但不落子
+    spectate(room, me) {
+        this._spectating = true; this._intentional = false;
+        this._room = room; this._game = (MG._curGame) || this._game;
+        this.send('spectate', { room: room, me: me || (MG.me && MG.me.nickname) || '观战者' });
     },
 };
 MG.cloud = {

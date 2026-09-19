@@ -190,6 +190,7 @@ MinigamesView.openHall = function (g) {
         <button class="mvp-btn mvp-primary" id="mh-create">🪑 创建新桌</button>
         <div class="mh-tables" id="mh-tables"><div class="mh-loading">连接中…</div></div>
         <div class="mh-mine" id="mh-mine"></div>
+        <div class="mh-spectate">👁 观战：<input id="mh-spec-code" placeholder="输入房间码" maxlength="40"/><button class="mvp-btn mvp-sm" id="mh-spec-btn">观战</button></div>
         <div class="mh-status" id="mh-status"></div>
     </div>`);
     stage.appendChild(hall);
@@ -200,6 +201,7 @@ MinigamesView.openHall = function (g) {
     MG.net.on('start', m => {
         if (!m || typeof m.side !== 'number') return;
         if (m.room) MinigamesView._roomCode = m.room;
+        if (m.viewer) { self._launchNet(g, { side: m.side, room: m.room, opp: (m.opp && m.opp.join('、')) || '', seats: m.seats, slot: m.slot, viewer: true, state: m.state }); return; }
         const opp = (m.opp && m.opp.join('、')) || '对手';
         if (NET_WIRED[g.id]) self._launchNet(g, { side: m.side, room: m.room, opp: opp, seats: m.seats, slot: m.slot });
         else self._showNetDev(g);
@@ -212,6 +214,14 @@ MinigamesView.openHall = function (g) {
     hall.querySelector('#mh-create').onclick = () => {
         MG.net.send('join', { game: g.id, cap, create: true, me: (MG.me && MG.me.nickname) || '我' });
         setStatus('🪑 已创建新桌，等待其他人入座…');
+    };
+    const specBtn = hall.querySelector('#mh-spec-btn');
+    if (specBtn) specBtn.onclick = () => {
+        const code = (hall.querySelector('#mh-spec-code') || {}).value || '';
+        if (!code.trim()) { setStatus('⚠️ 请输入要观战的房间码'); return; }
+        MG.net.connect(url);   // 确保已连接（大厅已连，这里幂等）
+        MG.net.spectate(code.trim(), (MG.me && MG.me.nickname) || '观战者');
+        setStatus('👁 正在进入观战…');
     };
 };
 
@@ -267,6 +277,49 @@ MinigamesView._showNetDev = function (g) {
     if (b) b.onclick = () => { try { MG.net && MG.net.leave && MG.net.leave(); } catch (e) {} try { if (MG.net && MG.net._ws) MG.net._ws.close(); } catch (e) {} const mask = document.getElementById('mini-mask'); if (mask && mask.parentNode) mask.remove(); };
 };
 
+// 观战模式：只读旁观一张进行中的桌子。不驱动完整游戏引擎（避免 side=-1 索引崩溃），
+// 改用轻量 HUD 实时呈现座位与资产（对局每次落子都会广播整盘 state，这里直接解析 players 展示）。
+MinigamesView._renderSpectator = function (g, m, stage, close) {
+    stage.innerHTML = `<div class="mg-spec">
+        <div class="mg-spec-head">👁 观战中 · 《${g.name}》</div>
+        <div class="mg-spec-seats" id="mg-spec-seats"></div>
+        <div class="mg-spec-state" id="mg-spec-state">连接中，等待对局状态…</div>
+        <button class="mvp-btn" id="mg-spec-exit">退出观战</button>
+    </div>`;
+    const seatsEl = stage.querySelector('#mg-spec-seats');
+    const stateEl = stage.querySelector('#mg-spec-state');
+    const renderSeats = (seats) => {
+        try {
+            if (!seats || !seats.length) { seatsEl.innerHTML = ''; return; }
+            seatsEl.innerHTML = seats.map(s => s ? `<div class="mg-spec-p">🎮 ${MG.escapeHtml(s.name || '玩家')}</div>` : '').join('');
+        } catch (e) {}
+    };
+    const renderState = (st) => {
+        try {
+            if (!st) { stateEl.textContent = '（暂无状态）'; return; }
+            const players = st.players;
+            if (players && players.length) {
+                stateEl.innerHTML = '<div class="mg-spec-list">' + players.map((p, i) => {
+                    const cash = (p.cash != null) ? ('¥' + p.cash) : '';
+                    return `<div class="mg-spec-p">${i + 1}. ${MG.escapeHtml(p.name || ('P' + (i + 1)))} · ${cash} ${p.out ? '<span style="color:#ff7a8b">💀出局</span>' : ''}</div>`;
+                }).join('') + '</div>';
+            } else {
+                stateEl.textContent = '对局进行中' + (st.turn != null ? (' · 轮到 ' + (st.turn + 1) + ' 号') : '');
+            }
+        } catch (e) { stateEl.textContent = '观战数据接收中…'; }
+    };
+    renderSeats(m.seats);
+    renderState(m.state);
+    const onState = (mm) => { try { renderState(mm); } catch (e) {} };
+    MG.net.on('input', onState); MG.net.on('state', onState); MG.net.on('sync', onState);
+    const exit = stage.querySelector('#mg-spec-exit');
+    if (exit) exit.onclick = () => {
+        try { MG.net.send('leave', { room: MG.net._room }); } catch (e) {}
+        MG.net._spectating = false;
+        if (close) close();
+    };
+};
+
 // 联机对局中的轻量覆盖层（等待重连 / 重连中）：不遮挡棋盘、不结束对局，仅提示网络状态
 MinigamesView._showNetOverlay = function (text) {
     const stage = document.getElementById('mini-stage'); if (!stage) return;
@@ -287,19 +340,23 @@ MinigamesView._hideNetOverlay = function () {
 MinigamesView._launchNet = function (g, m) {
     MG._curGame = g.id;
     MG.net.on('tables', () => {}); MG.net.on('seat', () => {});   // 对战进行中不再处理大厅消息
-    MG.pvp.arm(g.id, (m && m.side) || 0, (m && m.opp) || null);
+    const isViewer = !!(m && m.viewer);
+    const cap = (NET_GAMES[g.id] && NET_GAMES[g.id].seats) || 2;
+    // 武装 MG.pvp：把服务端下发的座位快照（含昵称，按 side 索引）一并传入，供引擎按 side 正确映射对手昵称。
+    // 观战者 side=-1：canMove 恒 false（永不轮到），只接收 setState 重绘，不能落子。
+    MG.pvp.arm(g.id, (m && m.side) || 0, (m && m.opp) || null, { cap: cap, seats: (m && m.seats) || null, viewer: isViewer });
     // 记住本局房间/座位 token，供掉线后自动重连续局（mg-net 据此带 slot 重 join）
-    MG.net._room = (m && m.room) || null; MG.net._slot = (m && m.slot) || null; MG.net._game = g.id;
+    MG.net._room = (m && m.room) || null; MG.net._slot = (m && m.slot) || null; MG.net._game = g.id; MG.net._spectating = isViewer;
     const mask = document.getElementById('mini-mask');
     const stage = document.getElementById('mini-stage');
     const scoreEl = document.getElementById('mini-score');
-    const cap = (NET_GAMES[g.id] && NET_GAMES[g.id].seats) || 2;
     if (stage) stage.innerHTML = '';
     let ctrl = null;
     const close = () => {
         try { MG.net.onDown && MG.net.onDown(null); } catch (e) {}        // 清掉本局注册的断线钩子
         try { MG.net.onReconnectFail && MG.net.onReconnectFail(null); } catch (e) {}
-        try { MG.net.leave(); } catch (e) {}                              // 主动离开：服务端立即判负对手
+        if (!isViewer) { try { MG.net.leave(); } catch (e) {} }           // 主动离开：服务端立即判负对手（观战者不影响对局）
+        else { try { MG.net.send('leave', { room: MG.net._room }); MG.net._spectating = false; } catch (e) {} }
         MinigamesView._hideNetOverlay();
         try { ctrl && ctrl.stop && ctrl.stop(); } catch (e) {}
         try { MG.pvp.end(); } catch (e) {}
@@ -311,6 +368,7 @@ MinigamesView._launchNet = function (g, m) {
     //   onDown    —— 我方自己 ws 断开（杀进程/断网）：结束本局并提示。
     // 这两类事件此前只被大厅阶段 handler 接收（更新已不存在的座位 UI），等于空响。
     MG.net.on('peer_left', () => {
+        if (isViewer) return;   // 观战者不在乎谁离开
         MinigamesView._hideNetOverlay();
         try { MG.pvp.end(); } catch (e) {}
         const who = cap === 2 ? '对手离开了' : '有玩家离开了';
@@ -318,16 +376,22 @@ MinigamesView._launchNet = function (g, m) {
     });
     // 对手断线（服务端保留其座位 RESUME_MS）：显示等待重连覆盖层，不判负、不结束对局
     MG.net.on('peer_gone', () => {
+        if (isViewer) return;
         const who = cap === 2 ? '对手网络波动' : '有玩家网络波动';
         MinigamesView._showNetOverlay('🚪 ' + who + '，正在等待重连…（约30秒）');
     });
     // 对手重连归来：清除覆盖层，对局继续
-    MG.net.on('peer_back', () => { MinigamesView._hideNetOverlay(); });
+    MG.net.on('peer_back', () => { if (!isViewer) MinigamesView._hideNetOverlay(); });
     // 我方重连成功，服务端下发最近盘面：重建棋盘继续对局
-    MG.net.on('resume', mm => { try { MG.pvp.resume(mm && mm.lastState); } catch (e) {} MinigamesView._hideNetOverlay(); });
-    // 我方意外掉线：先显示「重连中」，由 mg-net 指数退避自动重连；重连成功会以 resume/peer_back 清层
-    MG.net.onDown(() => { MinigamesView._showNetOverlay('📡 网络中断，正在重连…'); });
+    MG.net.on('resume', mm => { try { MG.pvp.resume(mm && mm.lastState); } catch (e) {} if (!isViewer) MinigamesView._hideNetOverlay(); });
+    // 我方意外掉线：先显示「重连中（第 N 次）」，由 mg-net 指数退避自动重连；重连成功会以 resume/peer_back 清层
+    MG.net.onDown(() => {
+        if (isViewer) { MinigamesView._showNetOverlay('👁 观战连接已断开'); return; }
+        const n = Math.min(MG.net._reconnectAttempts + 1, MG.net._reconnectMax);
+        MinigamesView._showNetOverlay('📡 网络中断，正在重连…（第 ' + n + '/' + MG.net._reconnectMax + ' 次）');
+    });
     MG.net.onReconnectFail(() => {
+        if (isViewer) return;
         MinigamesView._hideNetOverlay();
         try { MG.pvp.end(); } catch (e) {}
         MinigamesView._pvpResult(g, { win: false, title: '📡 联机已断开', lines: ['网络中断，对局结束'], score: 0 }, close);
@@ -337,15 +401,21 @@ MinigamesView._launchNet = function (g, m) {
     try {
         const game = window.MiniGames && window.MiniGames[g.id];
         if (!game) throw new Error('未加载到该游戏模块');
-        const opts = { onScore: s => { if (scoreEl) scoreEl.textContent = s != null ? s : ''; }, onComplete: res => this._pvpResult(g, res, close) };
-        if (g.id === 'banqi') ctrl = game.start(stage, opts);
-        else ctrl = MG.runGame(stage, {
-            id: g.id, title: g.name, net: true,
-            levels: (game.LEVELS && game.LEVELS.length) ? game.LEVELS : defaultLevels(g),
-            endless: game.ENDLESS || null,
-            start: (c, o, lv) => game.start(c, o, lv),
-            scoreEl, onComplete: res => this._pvpResult(g, res, close),
-        });
+        const opts = { onScore: s => { if (scoreEl) scoreEl.textContent = s != null ? s : ''; }, onComplete: res => this._pvpResult(g, res, close), seats: (m && m.seats) || null };
+        if (isViewer) {
+            // 观战模式：不驱动完整游戏引擎（避免 side=-1 索引崩溃），改用轻量观战 HUD 实时呈现席位/资产
+            this._renderSpectator(g, m, stage, close);
+        } else if (g.id === 'banqi') {
+            ctrl = game.start(stage, opts);
+        } else {
+            ctrl = MG.runGame(stage, {
+                id: g.id, title: g.name, net: true,
+                levels: (game.LEVELS && game.LEVELS.length) ? game.LEVELS : defaultLevels(g),
+                endless: game.ENDLESS || null,
+                start: (c, o, lv) => game.start(c, o, lv),
+                scoreEl, onComplete: res => this._pvpResult(g, res, close),
+            });
+        }
     } catch (e) {
         if (stage) stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${MG.escapeHtml(e.message)}</div>`;
     }
@@ -555,14 +625,14 @@ GAMES.forEach(g => { g.cat = CAT_OF[g.id] || 'other'; });
 
 // ===== 联机对战注册表 =====
 // 仅这些游戏显示「联网对战」按钮（其余如三维弹球等无）。seats = 该游戏一张桌的座位数。
-// NET_WIRED：游戏模块已真正接入状态同步（落子/整盘广播），满座即真实开战；
-//   其余（强手棋/大富翁 4 人桌、冒险棋）大厅与座位已就绪，但 4 人真实同步待接入，满座提示「开发中」而非假开战。
+// NET_WIRED：游戏模块已真正接入状态同步（整盘广播 + 按回合锁输入），满座即真实开战。
+//   棋类 2 人桌、强手棋/大富翁 4 人桌均已落地（mg-pvp 已支持 N 人回合轮转）。
 const NET_GAMES = {
     gomoku: { seats: 2 }, banqi: { seats: 2 }, xiangqi: { seats: 2 }, chess: { seats: 2 },
     junqi: { seats: 2 }, jungle: { seats: 2 }, ludo: { seats: 2 }, advchess: { seats: 2 },
     monopoly: { seats: 4 }, richman: { seats: 4 },
 };
-const NET_WIRED = { gomoku: 1, banqi: 1, xiangqi: 1, chess: 1, junqi: 1, jungle: 1, ludo: 1 };
+const NET_WIRED = { gomoku: 1, banqi: 1, xiangqi: 1, chess: 1, junqi: 1, jungle: 1, ludo: 1, monopoly: 1, richman: 1 };
 const NET_GAMES_COUNT = Object.keys(NET_GAMES).length;
 
 // 场景缩略图生成器：渐变底 + 圆角边框 + 装饰光斑 + emoji 组合

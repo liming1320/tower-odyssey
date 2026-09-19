@@ -620,13 +620,14 @@ window.MiniGames = window.MiniGames || {};
                 clearSave();
             }
 
-            // 联机：4 名玩家全部为真人，我方置于 mySide（昵称取对手列表），并武装 MG.pvp 状态同步
+            // 联机：4 名玩家全部为真人，我方置于 mySide（昵称取服务端座位快照按 side 索引，避免 4 人局列表下标错位），并武装 MG.pvp 状态同步
             if (net) {
+                const seats = (MG.pvp._armed && MG.pvp._armed.seats) || null;
                 const oppNames = (MG.pvp._armed && MG.pvp._armed.opp) || [];
                 S.players.forEach((p, i) => {
                     p.me = (i === mySide);
                     if (i === mySide) { p.name = '你'; p.e = '🧑'; p.c = '#ffd56b'; }
-                    else { p.name = oppNames[i] || p.name; }
+                    else { p.name = (seats && seats[i] && seats[i].name) ? seats[i].name : (oppNames[i] || p.name); }
                 });
                 S._done = false;
                 MG.pvp.begin({

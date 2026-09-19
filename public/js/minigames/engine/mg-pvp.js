@@ -15,13 +15,19 @@ MG.pvp = (function () {
     const api = {
         active: false,        // 是否处在联机对局中
         game: null,           // 当前游戏 id
-        side: 0,              // 我方 side（0/1），由服务端 room.side 决定
-        _turn: 0,             // 当前应走方 side（0/1）
+        side: 0,              // 我方 side（0..cap-1；观战者=-1），由服务端 room.side 决定
+        cap: 2,               // 房间容量（棋类 2、强手棋/大富翁 4），回合按 modulo 轮转
+        _turn: 0,             // 当前应走方 side（0..cap-1）
         _adapter: null,       // { setState(msg), onOver(over) }
-        _armed: null,         // { game, side, opp } —— startNetVersus 在 room 事件时写入
+        _armed: null,         // { game, side, opp, cap, seats, viewer } —— 在 room/start 事件时写入
 
-        // 由 startNetVersus 在收到 room 事件时调用：武装本局对战信息
-        arm(game, side, opp) { this._armed = { game: game, side: side || 0, opp: opp || null }; },
+        // 由 _launchNet 在收到 start 事件时调用：武装本局对战信息。
+        //   opt.cap   房间容量（默认 2）；opt.seats 服务端下发的座位快照（含昵称，按 side 索引）；opt.viewer 是否为观战者
+        //   观战者 side=-1：canMove 恒 false（永不轮到），只接收 setState 重绘，不能落子。
+        arm(game, side, opp, opt) {
+            opt = opt || {};
+            this._armed = { game: game, side: (side == null ? 0 : side), opp: opp || null, cap: opt.cap || 2, seats: opt.seats || null, viewer: !!opt.viewer };
+        },
 
         // 游戏 start 开头调用：若是本游戏的联机对局则进入 pvp 模式，返回 true
         shouldBegin(gameId) { return !!(this._armed && this._armed.game === gameId); },
@@ -31,22 +37,24 @@ MG.pvp = (function () {
             this.active = true;
             this.game = this._armed.game;
             this.side = this._armed.side;
+            this.cap = this._armed.cap || 2;
             this._turn = 0;                       // 0 号永远先手
             this._adapter = adapter || null;
             if (this._armed.opp && MG.match) MG.match.setOpp(this._armed.opp);
             const self = this;
-            // 只关心 input（服务器在房间内把一方的 input 原样转发给另一方）
+            // 只关心 input（服务器在房间内把一方的 input 原样转发给另一端/其余玩家）
             MG.net.on('input', function (m) { self._recv(m || {}); });
             return true;
         },
 
-        // 我方现在能否落子（非联机时恒 true；联机时仅轮到我方）
+        // 我方现在能否落子（非联机时恒 true；联机时仅轮到我方；观战者 side=-1 永不轮到）
         canMove() { return !this.active || this._turn === this.side; },
 
-        // 我方刚落子：state = { board, turn, over? }；切到对方回合并广播
+        // 我方刚落子：state = { board, turn, over? }；切到下一回合并广播。
+        // turn 由游戏显式给出（棋类 1-side、强手棋 (turn+1)%cap）；未给则按 cap 兜底轮转。
         commit(state) {
             if (!this.active) return;
-            this._turn = (state && state.turn != null) ? state.turn : (1 - this.side);
+            this._turn = (state && state.turn != null) ? state.turn : (this._turn + 1) % this.cap;
             try { MG.net.send('input', state); } catch (e) {}
         },
 
@@ -69,7 +77,7 @@ MG.pvp = (function () {
         resume(state) {
             if (!this.active) {
                 if (!this._armed) return;
-                this.active = true; this.game = this._armed.game; this.side = this._armed.side; this._turn = 0;
+                this.active = true; this.game = this._armed.game; this.side = this._armed.side; this.cap = this._armed.cap || 2; this._turn = 0;
                 this._adapter = this._adapter || null;
                 const self = this;
                 MG.net.on('input', function (m) { self._recv(m || {}); });
