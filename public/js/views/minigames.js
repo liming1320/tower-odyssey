@@ -642,7 +642,7 @@ const CAT_OF = Object.assign({}, ...[
     ['quiz', ['mathquiz', 'stroop', 'higherlower', 'oddone', 'idiom', 'trivia', 'counting', 'estimate', 'clockread', 'sequence']],
     ['luck', ['coinflip', 'dicehi', 'slots', 'bingo', 'spinner', 'rpsgame', 'plinko', 'lucky7', 'tapburst', 'gacha']],
     ['casual', ['mole', 'piano', 'reaction', 'zuma', 'bejeweled', 'bubble', 'rocketmania', 'sheep', 'cookingfever']],
-    ['action', ['breakout', 'jump', 'shooter', 'alienshoot', 'alienshoot3d', 'flappy', 'dodge', 'catcher', 'balloonpop', 'archery', 'basketball', 'darts', 'fishing', 'helicopter', 'stacker', 'knife', 'pocketarmy', 'danmaku']],
+    ['action', ['breakout', 'jump', 'shooter', 'alienshoot', 'alienshoot3d', 'flappy', 'dodge', 'catcher', 'balloonpop', 'archery', 'basketball', 'darts', 'fishing', 'helicopter', 'stacker', 'knife', 'pocketarmy', 'danmaku', 'triple-shoot']],
     ['sim', ['towerdef', 'idleclick', 'life', 'virus', 'sandfall', 'ballance', 'rocketland', 'orbit', 'traffic', 'growfarm']],
     ['tower', ['tower50', 'tower24', 'newtower56']],
     ['fc', ['tank', 'contra1', 'contra2', 'pinball']],
