@@ -38,6 +38,15 @@
 - `WebSocketServer` 已加 `maxPayload:1024*1024` 防异常大 state 撑爆内存。
 - 回归闸：`tools/verify-reconnect.js`（真 ws 起临时端口，两客户端走 建房→落子→掉线→peer_gone→带 slot 重连→resume/peer_back + 超时→peer_left），PASS 14/0。
 
+## 联机优化 D1-D4（2026-09-18 落地，commit 97ad3db）
+承接「断线重连+续局(resume)」的 4 个增强方向，全部 opt-in、单人/PvE 零回归：
+- **D1 4人桌真实同步**：`mg-pvp.arm(g,side,opp,{cap,seats,viewer})` 写 `_armed`，`begin` 设 `this.cap`；`commit` 回合用 `(turn+1)%cap` 轮转；richman/monopoly 对手昵称按 **side 索引座位快照** `seats[i].name`（原 `oppNames[i]` 在 4 人局有下标错位风险）；`NET_WIRED` 收录 `monopoly`+`richman`。`side=-1`=观战者（canMove 恒 false）。
+- **D2 房间快照持久化（防服务端重启丢进度）**：进行中房间 debounced(1500ms) 写 JSON（`MG_ROOMS_FILE`，默认 `os.tmpdir`；`MG_ROOMS_OFF=1` 关）；`SIGINT`/`SIGTERM`/`server.close` flush；启动 `restoreRooms` 读回归为 ghost(`ws:null,gone:true`)；等待桌不写快照。
+- **D3 落子丢包/乱序防护（seq 去重）**：`MG.net.send` 给 `input/state/sync` 打单调递增 `_seq`；中继按 `room._seqBySide[side]` 记录，收 `seq<=last` 丢弃（防重连 outbox 重放重复落子）；观战者 side=-1 的 input 被拦。
+  **⚠️ 铁律**：客户端字段名是 `_seq`（下划线），测试/排错写 `d.seq` 必 mismatch（已踩坑修过 verify-seq）。
+- **D4 观战模式**：`spectate` 消息 `side=-1` 只读观战者，收 `start(viewer:true,state:lastState,seats,opp)`+广播，自身 input 拦截、退出走 `leave` 不推 `peer_left`；大厅观战入口 + `_renderSpectator` 轻量 HUD；`onDown` 重连文案增强。`minigames.js` 各 peer_* 钩子 `if(!isViewer)` 守卫。
+- **回归闸（真 ws 事件驱动，全 5 项绿）**：`verify-reconnect.js`(14/0) + `verify-4p.js`(15/0) + `verify-persist.js`(12/0) + `verify-seq.js`(5/0) + `verify-spectate.js`(8/0)。用事件驱动断言（先 send 再 `waitFor`，`waitForNone` 用 `setTimeout(res(null),to)` 重写）避免 sleep 竞态。
+
 ## server.js 模块化约定（按模块拆）
 - 路由拆分：用 `api['METHOD /path'] = handler` 注册表；新增路由模块 `server/routes/*.js`，
   通过 `require('./server/routes/xxx')(routeCtx)` 注入共享依赖（参考 `server/routes/rom.js`）。
@@ -79,9 +88,11 @@
 
 ## 棋类联机覆盖现状
 - 已接入联机：五子棋(gomoku)、暗棋(banqi)、象棋(xiangqi)、国际象棋(mg-chess chess)、军棋翻翻棋(junqi/jungle)。
+- 2v2/多人桌：大富翁(richman)、强手棋(monopoly) 已支持 **最多 4 人** 真实同步（`cap=4`，`NET_WIRED` 收录，对手昵称按 side 索引座位快照）。
 - 不存在：围棋(weiqi/go) 在 124 款中无此游戏。
 - 引擎游戏（MG.eng）联机：飞行棋(ludo) 已接入（红 vs 黄 双人对弈，无 AI）。
   接入方式 = 引擎 `E.game()` 内 `cfg.net` opt-in 钩子 + `MG.pvp` 状态同步；新增引擎游戏只需声明 `cfg.net`
   （`setup/ser/apply` + 在本地行动后 `api.net.commit()`），单人/PvE 零影响。
+- **观战模式**：任意联机游戏进入房间后，另一玩家可凭房间码 `spectate` 只读观战（`side=-1`，收 `start(viewer:true)`+最近盘面+广播，自身 input 拦截、退出不推 peer_left）。
 - **注意**：`E.def`/`E.defd` 必须 `cfg.id = id`，否则 `MG.pvp.shouldBegin(cfg.id)` 恒收 undefined、联机永不触发
   （引擎自身 `gameId: cfg.id` 错误上报也因此一直是 undefined，一并修复）。
