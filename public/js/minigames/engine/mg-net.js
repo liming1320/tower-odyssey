@@ -5,14 +5,21 @@
 //   E3 排行榜：  POST/GET /api/minigame/leaderboard  body={game, score, name}
 window.MG = window.MG || {}; var MG = window.MG;
 MG.net = {
-    _ws: null, _room: null, _handlers: {}, _pending: [],
+    _ws: null, _room: null, _slot: null, _game: null, _me: null,
+    _handlers: {}, _pending: [],
+    _intentional: false,            // 主动离开（返回/再来一局）时不重连
+    _reconnectTimer: null, _reconnectAttempts: 0, _reconnectMaxDelay: 8000, _reconnectMax: 8,
+    _url: null, _onDown: null, _onReconnectFail: null,
     // 连接实时房间（需后端 WS 服务）。返回是否发起连接。
     // 注意：new WebSocket 后 socket 处于 CONNECTING，必须把 join/send 排队，
     // 等 onopen 后再冲刷——否则第一条 join 永远被静默丢弃（快速匹配/建房/输码加入全废）。
     connect(url) {
-        if (typeof WebSocket === 'undefined' || !url) return false;
+        if (typeof WebSocket === 'undefined') return false;
+        if (url) this._url = url;
+        if (!this._url) return false;
+        this._intentional = false;   // 任何一次（重）连接都代表「我有意在线」
         try {
-            const ws = new WebSocket(url);
+            const ws = new WebSocket(this._url);
             this._ws = ws;
             this._pending = [];
             // 升级超时保护：若 N 秒内连不上（服务器没挂中继 / 网络不可达 / 反代没透传 Upgrade），
@@ -23,26 +30,59 @@ MG.net = {
             }, 8000);
             ws.onopen = () => {
                 clearTimeout(tOpen);
-                // 连接就绪：冲刷排队中的消息（join 等）
+                this._reconnectAttempts = 0;   // 连上了，重置退避计数
+                // 连接就绪：冲刷排队中的消息（join / 掉线期间缓存的落子等）
                 const q = this._pending; this._pending = [];
                 q.forEach(m => { try { ws.send(m); } catch (e) {} });
             };
-            ws.onclose = () => { clearTimeout(tOpen); try { if (this._onDown) this._onDown(); } catch (e) {} };
+            ws.onclose = () => { clearTimeout(tOpen); this._onSocketClose(); };
             ws.onerror = () => {};
             ws.onmessage = (e) => { try { const m = JSON.parse(e.data); const h = this._handlers[m.type]; if (h) h(m.data); } catch (_) {} };
             return true;
         } catch (e) { return false; }
     },
+    _onSocketClose() {
+        // 主动离开（返回/再来一局）或仅浏览大厅：不触发 onDown / 不重连
+        if (this._intentional || !this._room) return;
+        try { if (this._onDown) this._onDown(); } catch (e) {}   // 意外掉线：上层显示「重连中」覆盖层
+        this._scheduleReconnect();
+    },
+    _scheduleReconnect() {
+        if (this._reconnectTimer) return;
+        if (this._reconnectAttempts >= this._reconnectMax) {
+            // 重试耗尽（通常已超过服务端 RESUME_MS 判负窗口）：通知上层判负结束
+            if (this._onReconnectFail) { try { this._onReconnectFail(); } catch (e) {} }
+            return;
+        }
+        const delay = Math.min(this._reconnectMaxDelay, 1000 * Math.pow(2, this._reconnectAttempts));
+        this._reconnectAttempts++;
+        this._reconnectTimer = setTimeout(() => {
+            this._reconnectTimer = null;
+            const ok = this.connect(this._url);     // connect 会重置 _intentional=false
+            if (ok && this._room) this.join(this._room, this._game, this._slot); // onopen 冲刷该 join
+            if (!ok) this._scheduleReconnect();     // 连不上则按更大退避再试
+        }, delay);
+    },
     on(type, fn) { this._handlers[type] = fn; },
     onDown(fn) { this._onDown = fn; },
+    onReconnectFail(fn) { this._onReconnectFail = fn; },
     _raw(str) {
         const ws = this._ws;
         if (ws && ws.readyState === 1) { try { ws.send(str); } catch (e) {} }
-        else if (ws && ws.readyState === 0) { this._pending.push(str); }   // CONNECTING：排队等 onopen
+        else if (!this._intentional) { this._pending.push(str); }   // 关闭/连接中：进发件箱，重连后冲刷（避免静默丢落子）
     },
     send(type, data) { try { this._raw(JSON.stringify({ type, data })); } catch (e) {} },
-    join(room, game) { this._room = room; this.send('join', { room: room || '', game: game || (MG._curGame) || 'unknown', me: (MG.me && MG.me.nickname) || '我' }); },
-    leave() { this.send('leave', { room: this._room }); this._room = null; this._pending = []; },
+    join(room, game, slot) {
+        this._room = room || this._room; this._game = game || this._game; if (slot) this._slot = slot;
+        this.send('join', { room: this._room || '', game: this._game || (MG._curGame) || 'unknown', me: (MG.me && MG.me.nickname) || '我', slot: this._slot || undefined });
+    },
+    leave() {
+        this._intentional = true;   // 主动离开：socket 关闭后不再自动重连
+        if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
+        this._reconnectAttempts = 0;
+        this.send('leave', { room: this._room });
+        this._room = null; this._slot = null; this._pending = [];
+    },
 };
 MG.cloud = {
     // 本地兜底优先（离线也能存），再尝试同步到云端（端点缺失则静默）。

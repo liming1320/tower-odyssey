@@ -64,6 +64,22 @@ MG.pvp = (function () {
             if (this.active) { try { MG.net.send('input', { turn: this._turn, over: over }); } catch (e) {} }
         },
 
+        // 断线重连续局：由大厅在收到服务端 resume 消息时调用。重设回合并重建棋盘（不重复 begin，
+        // 保留既有 input 监听与 active 态），从而掉线期间对手的走法也能被还原到本地盘面。
+        resume(state) {
+            if (!this.active) {
+                if (!this._armed) return;
+                this.active = true; this.game = this._armed.game; this.side = this._armed.side; this._turn = 0;
+                this._adapter = this._adapter || null;
+                const self = this;
+                MG.net.on('input', function (m) { self._recv(m || {}); });
+            }
+            if (state) {
+                if (state.turn != null) this._turn = state.turn;
+                try { if (this._adapter && this._adapter.setState) this._adapter.setState(state); } catch (e) {}
+            }
+        },
+
         end() {
             this.active = false; this.game = null; this._adapter = null; this._armed = null; this._turn = 0;
         },

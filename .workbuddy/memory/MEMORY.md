@@ -27,6 +27,17 @@
 - **自动部署已自愈（2026-09-18 改 `deploy/hooks/deploy.sh`）**：`tools/webhook-deploy.js` 收 Gitee push → 跑 `deploy.sh`，但原脚本只 `git reset --hard`+重启、**从不 npm install**。已加「仅当 `package.json` 变动才 `npm install`」分支，且 **ws 缺失直接判失败回滚**（不让无 ws 的版本上线）。效果：纯代码 push 自动部署依旧即用；改依赖时自动同步，不再依赖「上次手动装过 ws 还在」的运气。所以**普通代码改动只需 push，无需手动 npm install**。
 - 客户端 mg-net.js：`connect()` 必须等 `onopen` 再发 join（`_pending` 队列排队冲刷），且加 8s 升级超时明确报错；否则 join 在 CONNECTING 被静默丢弃、三条入口全废。
 
+## 联机断线重连 / 续局协议（ws-relay + mg-net + mg-pvp，2026-09-19 落地）
+- **座位 token（slot）**：入座时服务端 `genToken()` 生成，`seat`/`start` 消息带 `slot`；客户端存 `MG.net._slot`。重连续局靠它识别「同一座位」。
+- **掉线≠判负**：对局中某方 ws close/error → 服务端把该 peer 标 `gone`（保留在 `room.peers` 作 ghost，`ws=null`），向活人推 `peer_gone`（客户端显示「等待重连」覆盖层、不结束）。
+  - **⚠️ 铁律**：started 房间的 `cleanup` 绝不能在标 ghost 前 `room.peers.filter` 掉该 peer，否则 ghost 被孤立、重连 `find(p=>p.gone&&p.slot)` 匹配不到 → 续局失败（已踩坑修过）。
+  - 显式 `leave`/`quit`（点返回/认输）在对局中→**立即**判负（`peer_left`），不保留座位。
+- **重连**：客户端 `mg-net` 在 socket 关闭且处于对局（`_room` 且非 intentional）时指数退避自动重连，重发 `join(room, game, slot)`；服务端 `join` 分支见 `room.started && d.slot` 匹配 ghost → 替回原座位、发 `resume(lastState)` 给重连方 + `peer_back` 给对端。
+- **lastState**：服务端每次收到 `input/state/sync` 存 `room.lastState`；重连时原样下发，客户端 `MG.pvp.resume(state)` 重建棋盘（不重复 begin，保留 input 监听）。
+- **超时判负**：独立 GC（`setInterval(min(2000,RESUME_MS))`）把 gone 超 `RESUME_MS`（默认 30000ms，可 `MG_RESUME_MS` 环境变量覆盖，主要给自动化测试）的 peer 判负（`peer_left`）；与 15s 心跳 ping 解耦。
+- `WebSocketServer` 已加 `maxPayload:1024*1024` 防异常大 state 撑爆内存。
+- 回归闸：`tools/verify-reconnect.js`（真 ws 起临时端口，两客户端走 建房→落子→掉线→peer_gone→带 slot 重连→resume/peer_back + 超时→peer_left），PASS 14/0。
+
 ## server.js 模块化约定（按模块拆）
 - 路由拆分：用 `api['METHOD /path'] = handler` 注册表；新增路由模块 `server/routes/*.js`，
   通过 `require('./server/routes/xxx')(routeCtx)` 注入共享依赖（参考 `server/routes/rom.js`）。

@@ -15,6 +15,12 @@ try { ({ WebSocketServer } = require('ws')); } catch (e) { WebSocketServer = nul
 
 const PATH = '/ws/minigame';
 
+// 断线重连窗口：对局进行中某方掉线后，其座位保留该时长（默认 30s），期间对方收到 peer_gone（等待重连）而非直接判负；
+// 掉线方在此窗口内用 slot token 重连即可续局（服务端下发最近一次状态 lastState）。超时未归由心跳 GC 判负（peer_left）。
+// MG_RESUME_MS 环境变量可覆盖（主要供自动化测试用更短窗口）。
+const RESUME_MS = Number(process.env.MG_RESUME_MS) || 30000;
+function genToken() { return crypto.randomBytes(6).toString('hex'); }
+
 // rooms: id -> { game, cap, started, peers:[{ws,name,side}], createdAt }
 const rooms = new Map();
 // waiting: game -> [ws]（只存单人，快速匹配时凑对手；QQ 大厅模式下基本不再使用，保留兼容）
@@ -37,23 +43,24 @@ function genRoom(game) {
 // 把同游戏的两个等待者配对成房间（快速匹配遗留路径）
 function pair(game, a, b) {
     const id = genRoom(game);
-    const room = { game, cap: 2, started: false, peers: [{ ws: a, name: a._name, side: 0 }, { ws: b, name: b._name, side: 1 }], createdAt: Date.now() };
-    rooms.set(id, room);
-    a._room = id; b._room = id; a._side = 0; b._side = 1;
+    const ta = genToken(), tb = genToken();
+    const room = { game, cap: 2, started: false, lastState: null, peers: [{ ws: a, name: a._name, side: 0, slot: ta }, { ws: b, name: b._name, side: 1, slot: tb }], createdAt: Date.now() };
+    room._id = id; rooms.set(id, room);
+    a._room = id; b._room = id; a._side = 0; b._side = 1; a._slot = ta; b._slot = tb;
     send(a, 'room', { room: id, game, side: 0, opp: b._name });
     send(b, 'room', { room: id, game, side: 1, opp: a._name });
 }
 // 房间座位快照：长度 cap，已占座位为 {name,side}，空位为 null
 function seatView(room) {
     const seats = [];
-    for (let i = 0; i < room.cap; i++) { const p = room.peers[i]; seats.push(p ? { name: p.name, side: p.side } : null); }
+    for (let i = 0; i < room.cap; i++) { const p = room.peers[i]; seats.push(p ? { name: p.name, side: p.side, slot: p.slot, gone: !!p.gone } : null); }
     return seats;
 }
-// 向房间内所有人广播座位占用
+// 向房间内所有人广播座位占用（含 room 码，供创建者分享给好友 / 客户端记录以便重连）
 function broadcastSeat(room) {
     const seats = seatView(room);
     const full = room.peers.length >= room.cap;
-    room.peers.forEach(p => send(p.ws, 'seat', { seats, cap: room.cap, you: p.side, full, started: room.started }));
+    room.peers.forEach(p => send(p.ws, 'seat', { room: room._id, seats, cap: room.cap, you: p.side, full, started: room.started }));
 }
 // 向订阅该游戏大厅的浏览器推送桌子列表（只列未开始且未满的桌）
 function broadcastTables(game) {
@@ -73,7 +80,7 @@ function startRoom(room) {
     const names = room.peers.map(p => p.name);
     room.peers.forEach(p => {
         const opp = names.filter((_, i) => i !== p.side);
-        send(p.ws, 'start', { room: p.ws._room, game: room.game, side: p.side, opp, seats: seatView(room) });
+        send(p.ws, 'start', { room: p.ws._room, game: room.game, side: p.side, slot: p.slot, opp, seats: seatView(room) });
     });
     broadcastTables(room.game); // 满桌从等候厅移除
 }
@@ -81,14 +88,15 @@ function startRoom(room) {
 function joinRoom(ws, roomId, cap) {
     let room = rooms.get(roomId);
     if (!room) { // 房主建房：用该房间码开启一个等待对手的房间
-        room = { game: ws._game, cap: cap || 2, started: false, peers: [], createdAt: Date.now() };
-        rooms.set(roomId, room);
+        room = { game: ws._game, cap: cap || 2, started: false, lastState: null, peers: [], createdAt: Date.now() };
+        room._id = roomId; rooms.set(roomId, room);
     }
     if (room.started) { send(ws, 'error', { msg: '对局已开始，无法加入' }); return; }
     if (room.peers.length >= room.cap) { send(ws, 'error', { msg: '房间已满' }); return; }
     const side = room.peers.length; // 0..cap-1，按入座顺序分配座位
-    room.peers.push({ ws, name: ws._name, side });
-    ws._room = roomId; ws._side = side;
+    const token = genToken();
+    room.peers.push({ ws, name: ws._name, side, slot: token });
+    ws._room = roomId; ws._side = side; ws._slot = token;
     broadcastSeat(room);
     broadcastTables(room.game);
     if (room.peers.length >= room.cap) startRoom(room);
@@ -105,11 +113,14 @@ function cleanup(ws) {
     if (id && rooms.has(id)) {
         const room = rooms.get(id);
         const left = room.peers.find(p => p.ws === ws);
-        room.peers = room.peers.filter(p => p.ws !== ws);
         if (room.started) {
-            // 对局进行中有人离开：通知剩余玩家，但桌子不再回到等候厅（避免第三者插入）
-            room.peers.forEach(p => send(p.ws, 'peer_left', { side: left ? left.side : null }));
+            // 对局进行中掉线：保留该座位为 ghost（RESUME_MS 内可重连续局），不将掉线方移出 room.peers
+            if (left) { left.gone = true; left.goneAt = Date.now(); left.ws = null; }
+            const liveLeft = room.peers.filter(p => p && !p.gone);
+            liveLeft.forEach(p => send(p.ws, 'peer_gone', { side: left ? left.side : null }));
+            // 若已无活人（双方都掉了），交给心跳 GC 清理房间；仍有活人则保留房间等待重连
         } else {
+            room.peers = room.peers.filter(p => p.ws !== ws);
             broadcastSeat(room);
             if (!room.peers.length) { rooms.delete(id); broadcastTables(room.game); }
             else broadcastTables(room.game);
@@ -143,7 +154,7 @@ function attach(server) {
         console.warn('[ws-relay] 未安装 ws 模块（npm i ws），联机对战不可用；其余服务正常');
         return;
     }
-    const wss = new WebSocketServer({ noServer: true });
+    const wss = new WebSocketServer({ noServer: true, maxPayload: 1024 * 1024 }); // 单条消息上限 1MB，防异常/恶意大 state 撑爆内存
 
     wss.on('connection', (ws) => {
         ws._name = '对手'; ws._room = null; ws._game = null; ws._side = null; ws.isAlive = true;
@@ -166,23 +177,50 @@ function attach(server) {
                     ws._name = (d.me && String(d.me).slice(0, 24)) || '对手';
                     ws._game = d.game || 'unknown';
                     const cap = d.cap || 2;
-                    if (d.room) { joinRoom(ws, String(d.room), cap); return; }
+                    if (d.room) {
+                        // 断连续局：携带 slot token 且房间内有对应掉线座位 → 替回原座位并下发最近状态续局
+                        const room = rooms.get(String(d.room));
+                        if (room && room.started && d.slot) {
+                            const slot = String(d.slot);
+                            const ghost = room.peers.find(p => p && p.gone && p.slot === slot);
+                            if (ghost) {
+                                ghost.ws = ws; ghost.name = ws._name; ghost.gone = false; ghost.forfeited = false; ghost.goneAt = 0;
+                                ws._room = String(d.room); ws._side = ghost.side; ws._slot = slot;
+                                send(ws, 'resume', { room: String(d.room), game: room.game, side: ghost.side, slot, lastState: room.lastState || null });
+                                room.peers.forEach(p => { if (p && p.ws && p !== ghost) send(p.ws, 'peer_back', { side: ghost.side }); });
+                                return;
+                            }
+                        }
+                        joinRoom(ws, String(d.room), cap); return;
+                    }
                     if (d.create) { // 创建新桌：总是开一张空桌（即使已有空桌也另开）
                         const id = genRoom(ws._game);
-                        const room = { game: ws._game, cap, started: false, peers: [], createdAt: Date.now() };
-                        rooms.set(id, room);
+                        const room = { game: ws._game, cap, started: false, lastState: null, peers: [], createdAt: Date.now() };
+                        room._id = id; rooms.set(id, room);
                         joinRoom(ws, id, cap);
                         return;
                     }
                     // 快速加入：找一张同游戏未满未开始的桌并入座；没有则自动开一张新桌
                     const open = findOpenRoom(ws._game, cap);
                     if (open) joinRoom(ws, open, cap);
-                    else { const id = genRoom(ws._game); rooms.set(id, { game: ws._game, cap, started: false, peers: [], createdAt: Date.now() }); joinRoom(ws, id, cap); }
+                    else { const id = genRoom(ws._game); const room = { game: ws._game, cap, started: false, lastState: null, peers: [], createdAt: Date.now() }; room._id = id; rooms.set(id, room); joinRoom(ws, id, cap); }
                 } else if (m.type === 'input' || m.type === 'state' || m.type === 'sync') {
                     const room = ws._room && rooms.get(ws._room);
-                    if (room) room.peers.forEach(p => { if (p.ws !== ws) send(p.ws, m.type, d); });
+                    if (room) {
+                        room.lastState = d; // 记录房间最近一次整盘状态，供断线方重连续局时下发
+                        room.peers.forEach(p => { if (p.ws && p.ws !== ws && !p.gone) send(p.ws, m.type, d); });
+                    }
                 } else if (m.type === 'leave' || m.type === 'quit') {
-                    cleanup(ws);
+                    // 显式离开（点返回/认输）：对局进行中立即判负，不保留座位等重连
+                    const room = ws._room && rooms.get(ws._room);
+                    if (room && room.started) {
+                        const left = room.peers.find(p => p.ws === ws);
+                        if (left) room.peers.forEach(q => { if (q !== left && q.ws) send(q.ws, 'peer_left', { side: left.side }); });
+                        room.peers = room.peers.filter(p => p.ws !== ws);
+                        if (!room.peers.length) rooms.delete(ws._room);
+                    } else {
+                        cleanup(ws);
+                    }
                 }
             } catch (e) { /* 单连接异常不影响进程 */ }
         });
@@ -200,6 +238,26 @@ function attach(server) {
             ws.isAlive = false; try { ws.ping(); } catch (e) {}
         });
     }, 15000);
+    // 断线重连窗口 GC：独立于 15s 心跳，以更短周期及时把超时未归的掉线方判负（peer_left）并清理空桌；
+    // 周期取 min(2s, RESUME_MS)，保证重连窗口一过期就在 ~2s 内判负，而非拖到 15s 心跳。
+    const gc = setInterval(() => {
+        const now = Date.now();
+        for (const [id, room] of rooms) {
+            if (!room.started) continue;
+            let forfeited = false;
+            room.peers.forEach(p => {
+                if (p && p.gone && !p.forfeited && now - (p.goneAt || 0) > RESUME_MS) {
+                    p.forfeited = true; forfeited = true;
+                    room.peers.forEach(q => { if (q && q.ws && !q.gone) send(q.ws, 'peer_left', { side: p.side }); });
+                }
+            });
+            // 房间内无活人（全部掉线/判负）→ 删除，避免内存泄漏
+            if (forfeited && room.peers.every(p => !p || p.gone || p.forfeited)) {
+                rooms.delete(id); broadcastTables(room.game);
+            }
+        }
+    }, Math.min(2000, RESUME_MS));
+    wss.on('close', () => { clearInterval(hb); clearInterval(gc); });
     wss.on('close', () => clearInterval(hb));
 
     server.on('upgrade', (req, socket, head) => {

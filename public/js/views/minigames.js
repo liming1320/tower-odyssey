@@ -158,6 +158,7 @@ MinigamesView.openHall = function (g) {
     if (!g || !g.id || !NET_GAMES[g.id]) { U.toast('该游戏暂不支持联机'); return; }
     const cap = NET_GAMES[g.id].seats || 2;
     MG._curGame = g.id;
+    MinigamesView._roomCode = null;
     const self = this;
     const mask = U.el(`<div class="mini-mask" id="mini-mask">
         <div class="mini-topbar">
@@ -194,12 +195,13 @@ MinigamesView.openHall = function (g) {
     stage.appendChild(hall);
 
     MG.net.on('tables', m => { try { self._renderHallTables(g, m && m.tables); } catch (e) {} });
-    MG.net.on('seat', m => { try { self._renderHallMine(g, m); } catch (e) {} });
+    MG.net.on('seat', m => { try { if (m && m.room) MinigamesView._roomCode = m.room; self._renderHallMine(g, m); } catch (e) {} });
     MG.net.on('peer_left', m => { try { self._renderHallMine(g, m); setStatus('有玩家离开了桌子'); } catch (e) {} });
     MG.net.on('start', m => {
         if (!m || typeof m.side !== 'number') return;
+        if (m.room) MinigamesView._roomCode = m.room;
         const opp = (m.opp && m.opp.join('、')) || '对手';
-        if (NET_WIRED[g.id]) self._launchNet(g, { side: m.side, room: m.room, opp: opp, seats: m.seats });
+        if (NET_WIRED[g.id]) self._launchNet(g, { side: m.side, room: m.room, opp: opp, seats: m.seats, slot: m.slot });
         else self._showNetDev(g);
     });
 
@@ -243,8 +245,14 @@ MinigamesView._renderHallMine = function (g, m) {
         const mine = (m.you === i);
         seats.push(s ? `<div class="mh-seat taken${mine ? ' me' : ''}">${MG.escapeHtml(s.name)}${mine ? '（你）' : ''}</div>` : `<div class="mh-seat empty">空位</div>`);
     }
+    const code = MinigamesView._roomCode;
+    const codeHtml = code ? `<div class="mh-code">房间码：<b id="mh-code-val">${code}</b> <span class="mh-copy" id="mh-copy">复制</span><div class="mh-code-tip">把房间码发给好友，好友点「加入」输入即可同桌</div></div>` : '';
     el.innerHTML = `<div class="mh-mine-head">我所在的桌子（座位 ${(m.you + 1)} / ${cap}）</div><div class="mh-seats">${seats.join('')}</div>` +
-        (m.full ? `<div class="mh-full">座位已满，即将开战…</div>` : `<div class="mh-wait">等待其他玩家入座（${taken}/${cap}）…</div>`);
+        (m.full ? `<div class="mh-full">座位已满，即将开战…</div>` : `<div class="mh-wait">等待其他玩家入座（${taken}/${cap}）…</div>`) + codeHtml;
+    if (code) {
+        const copy = el.querySelector('#mh-copy');
+        if (copy) copy.onclick = () => { try { navigator.clipboard.writeText(code); if (U.toast) U.toast('房间码已复制：' + code); } catch (e) { if (U.toast) U.toast('房间码：' + code); } };
+    }
 };
 
 // 4 人桌等尚未接入真实同步的游戏：大厅/座位可用，但满座后提示「开发中」而非假开战
@@ -259,12 +267,29 @@ MinigamesView._showNetDev = function (g) {
     if (b) b.onclick = () => { try { MG.net && MG.net.leave && MG.net.leave(); } catch (e) {} try { if (MG.net && MG.net._ws) MG.net._ws.close(); } catch (e) {} const mask = document.getElementById('mini-mask'); if (mask && mask.parentNode) mask.remove(); };
 };
 
+// 联机对局中的轻量覆盖层（等待重连 / 重连中）：不遮挡棋盘、不结束对局，仅提示网络状态
+MinigamesView._showNetOverlay = function (text) {
+    const stage = document.getElementById('mini-stage'); if (!stage) return;
+    let el = document.getElementById('mh-reconnect');
+    if (!el) {
+        el = U.el('<div id="mh-reconnect"></div>');
+        el.style.cssText = 'position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(18,14,38,.92);color:#ffd86b;padding:8px 14px;border-radius:10px;font-size:13px;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.45);display:none;max-width:92%;text-align:center;pointer-events:none';
+        stage.appendChild(el);
+    }
+    el.textContent = text; el.style.display = 'block';
+};
+MinigamesView._hideNetOverlay = function () {
+    const el = document.getElementById('mh-reconnect'); if (el) el.style.display = 'none';
+};
+
 // 真正启动一局联机对战：hall 连接已在房间内，这里只需武装 MG.pvp 并启动游戏
 // （MG.pvp.commit → MG.net.send 复用同一连接转发 input/state，无需再连）
 MinigamesView._launchNet = function (g, m) {
     MG._curGame = g.id;
     MG.net.on('tables', () => {}); MG.net.on('seat', () => {});   // 对战进行中不再处理大厅消息
     MG.pvp.arm(g.id, (m && m.side) || 0, (m && m.opp) || null);
+    // 记住本局房间/座位 token，供掉线后自动重连续局（mg-net 据此带 slot 重 join）
+    MG.net._room = (m && m.room) || null; MG.net._slot = (m && m.slot) || null; MG.net._game = g.id;
     const mask = document.getElementById('mini-mask');
     const stage = document.getElementById('mini-stage');
     const scoreEl = document.getElementById('mini-score');
@@ -272,7 +297,10 @@ MinigamesView._launchNet = function (g, m) {
     if (stage) stage.innerHTML = '';
     let ctrl = null;
     const close = () => {
-        try { MG.net && MG.net.onDown && MG.net.onDown(null); } catch (e) {}   // 清掉本局注册的断线钩子
+        try { MG.net.onDown && MG.net.onDown(null); } catch (e) {}        // 清掉本局注册的断线钩子
+        try { MG.net.onReconnectFail && MG.net.onReconnectFail(null); } catch (e) {}
+        try { MG.net.leave(); } catch (e) {}                              // 主动离开：服务端立即判负对手
+        MinigamesView._hideNetOverlay();
         try { ctrl && ctrl.stop && ctrl.stop(); } catch (e) {}
         try { MG.pvp.end(); } catch (e) {}
         try { MG.match && MG.match.end(); } catch (e) {}
@@ -283,12 +311,24 @@ MinigamesView._launchNet = function (g, m) {
     //   onDown    —— 我方自己 ws 断开（杀进程/断网）：结束本局并提示。
     // 这两类事件此前只被大厅阶段 handler 接收（更新已不存在的座位 UI），等于空响。
     MG.net.on('peer_left', () => {
-        try { MG.net.send('leave', {}); } catch (e) {}
+        MinigamesView._hideNetOverlay();
         try { MG.pvp.end(); } catch (e) {}
         const who = cap === 2 ? '对手离开了' : '有玩家离开了';
         MinigamesView._pvpResult(g, { win: true, title: '🚪 ' + who, lines: [who + '，本局判你获胜'], score: 0 }, close);
     });
-    MG.net.onDown(() => {
+    // 对手断线（服务端保留其座位 RESUME_MS）：显示等待重连覆盖层，不判负、不结束对局
+    MG.net.on('peer_gone', () => {
+        const who = cap === 2 ? '对手网络波动' : '有玩家网络波动';
+        MinigamesView._showNetOverlay('🚪 ' + who + '，正在等待重连…（约30秒）');
+    });
+    // 对手重连归来：清除覆盖层，对局继续
+    MG.net.on('peer_back', () => { MinigamesView._hideNetOverlay(); });
+    // 我方重连成功，服务端下发最近盘面：重建棋盘继续对局
+    MG.net.on('resume', mm => { try { MG.pvp.resume(mm && mm.lastState); } catch (e) {} MinigamesView._hideNetOverlay(); });
+    // 我方意外掉线：先显示「重连中」，由 mg-net 指数退避自动重连；重连成功会以 resume/peer_back 清层
+    MG.net.onDown(() => { MinigamesView._showNetOverlay('📡 网络中断，正在重连…'); });
+    MG.net.onReconnectFail(() => {
+        MinigamesView._hideNetOverlay();
         try { MG.pvp.end(); } catch (e) {}
         MinigamesView._pvpResult(g, { win: false, title: '📡 联机已断开', lines: ['网络中断，对局结束'], score: 0 }, close);
     });
