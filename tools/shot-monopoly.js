@@ -13,6 +13,7 @@ class CDP {
     send(m, p = {}) { const id = ++this.id; this.ws.send(JSON.stringify({ id, method: m, params: p })); return new Promise(r => this.waiters.set(id, r)); }
     async eval(e) { const r = await this.send('Runtime.evaluate', { expression: e, awaitPromise: true, returnByValue: true }); return r.result && r.result.result ? r.result.result.value : undefined; }
     async shot(f) { const r = await this.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true }); fs.writeFileSync(f, Buffer.from(r.result.data, 'base64')); console.log('   📷', path.basename(f)); }
+    async shotClip(f, clip) { const r = await this.send('Page.captureScreenshot', { format: 'png', clip, captureBeyondViewport: true }); fs.writeFileSync(f, Buffer.from(r.result.data, 'base64')); console.log('   📷', path.basename(f)); }
 }
 (async () => {
     fs.mkdirSync(OUT, { recursive: true });
@@ -64,12 +65,18 @@ class CDP {
         const props=[]; for(let i=0;i<CE.length;i++) if(CE[i].t==='prop') props.push(i);
         props.slice(0,7).forEach((i,k)=>{ S.own[i]=k%2; S.lv[i]=(k===1?5:(k%4)+1); S.mort[i]=false; });
         try{ dbg.render(); }catch(e){ return {err:String(e&&e.stack||e)}; }
-        return { cubes:document.querySelectorAll('.mono-cube').length,
-                 hotel:document.querySelectorAll('.mono-cube.hotel').length,
+        return { cubes:document.querySelectorAll('.mono-bldbox').length,
+                 hotel:document.querySelectorAll('.mono-bldbox.hotel').length,
                  deco:document.querySelectorAll('.mgy-center .mono-deco').length };
     })()`);
     console.log('   楼宇:', JSON.stringify(cubeInfo));
     await cdp.shot(path.join(OUT, 'mgy-desktop-4-buildings.png'));
+    const br = await cdp.eval("(()=>{const r=document.querySelector('.mgy-board').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}})()");
+    await cdp.shotClip(path.join(OUT, 'mgy-desktop-5-board-zoom.png'), { x: Math.max(0, br.x - 4), y: Math.max(0, br.y - 14), width: br.w + 8, height: br.h + 26, scale: 1.6 });
+    const centerDbg = await cdp.eval("(()=>{const c=document.querySelector('.mgy-center'),e=document.querySelector('.mono-emblem'),g=document.querySelector('.mgy-goal'),d=document.querySelector('.mgy-dice');const R=x=>{const r=x.getBoundingClientRect();return{t:Math.round(r.top),b:Math.round(r.bottom),h:Math.round(r.height)}};const cs=getComputedStyle(c);const before={center:R(c),emblem:R(e),goal:R(g),dice:R(d),overflow:cs.overflow,ts:cs.transformStyle,transform:cs.transform.slice(0,40)};const after={center:R(c),emblem:R(e),goal:R(g),dice:R(d)};return{before,after};})()");
+    console.log('   中央探针:', JSON.stringify(centerDbg));
+    const cr = await cdp.eval("(()=>{const r=document.querySelector('.mgy-center').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}})()");
+    await cdp.shotClip(path.join(OUT, 'mgy-desktop-6-center-zoom.png'), { x: cr.x, y: cr.y, width: cr.w, height: cr.h, scale: 1.4 });
 
     console.log('— 模拟玩家操作 14 步 —');
     for (let i = 0; i < 14; i++) {

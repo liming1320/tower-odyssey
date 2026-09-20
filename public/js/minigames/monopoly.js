@@ -283,8 +283,8 @@ window.MiniGames = window.MiniGames || {};
             let bld = '';
             if (c.t === 'prop' && S.lv[i] > 0) {
                 const bcol = c.g ? GROUPS[c.g].color : '#caa';
-                if (S.lv[i] >= 5) bld = `<div class="mono-bld"><span class="mono-cube hotel" style="--c:${bcol}"><i class="fc"></i><i class="bk"></i><i class="rt"></i><i class="lf"></i><i class="tp"></i></span></div>`;
-                else { let q = ''; for (let k = 0; k < S.lv[i]; k++) q += `<span class="mono-cube" style="--c:${bcol}"><i class="fc"></i><i class="bk"></i><i class="rt"></i><i class="lf"></i><i class="tp"></i></span>`; bld = `<div class="mono-bld">${q}</div>`; }
+                if (S.lv[i] >= 5) bld = `<div class="mono-bld"><span class="mono-bldbox hotel" style="--c:${bcol}"></span></div>`;
+                else { let q = ''; for (let k = 0; k < S.lv[i]; k++) q += `<span class="mono-bldbox house" style="--c:${bcol}"></span>`; bld = `<div class="mono-bld">${q}</div>`; }
             }
             html += `<div class="mgy-cell ${c.t}${corner}${S.mort[i] ? ' mort' : ''}" style="grid-area:${pos.r}/${pos.c}">
                 ${g ? `<div class="mgy-gbar" style="background:${g.color}"></div>` : ''}
