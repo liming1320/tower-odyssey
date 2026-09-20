@@ -26,6 +26,17 @@ const EL = {
 const HAIRS = ['#ffd9a0', '#f4a6c0', '#8fd3ff', '#c9a7f5', '#b8f2c9', '#ffb3a0', '#e6e8f2', '#8b5e3c', '#4b3f5c', '#fff2e0', '#ff9ab5', '#7ee0d0', '#ffc7d8', '#a0e7ff'];
 const IRIS = ['#5cc7ff', '#ff8fb1', '#ffd166', '#a78bfa', '#4ade80', '#ff7043', '#7dd3fc', '#f472b6', '#67e8f9', '#fb923c'];
 const SKINS = ['#ffe4d6', '#ffd9c4', '#f8dcc0'];
+// 品质配色（与 battle.js 的 RARITY_COLOR 保持一致，用于头像/立绘边框）
+const RARITY = {
+    '传说+': '#ff7a8b', '传说': '#ff9d5c', '史诗': '#b78bff', '稀有': '#5cc7ff',
+    '优秀': '#7cfc7c', '普通': '#cfd6e6',
+};
+// 柔和发光滤镜（defs 片段，按 id 去重）
+function glowFilter(id, color) {
+    return `<filter id="${id}" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>`;
+}
 
 /* ---------------- 稳定哈希（同 id 每次生成一致） ---------------- */
 function hash(s) {
@@ -35,21 +46,35 @@ function hash(s) {
 }
 const pick = (arr, h, shift) => arr[(h >>> shift) % arr.length];
 
-/* ---------------- 眼睛（大眼日漫） ---------------- */
-function eye(cx, cy, rx, ry, c1, c2, gid) {
+/* ---------------- 眼睛（大眼日漫，expr: 0 平和 / 1 微笑 / 2 酷） ---------------- */
+function eye(cx, cy, rx, ry, c1, c2, gid, expr) {
+    const lid = expr === 2
+        ? `<path d="M${cx - rx * 1.02} ${cy - ry * 0.5} q${rx} ${-ry * 0.2} ${rx * 2.04} 0" stroke="#2b2140" stroke-width="${ry * 0.30}" fill="none" stroke-linecap="round"/>`
+        : `<path d="M${cx - rx * 1.02} ${cy - ry * 0.72} q${rx} ${-ry * 0.86} ${rx * 2.04} 0" stroke="#2b2140" stroke-width="${ry * 0.24}" fill="none" stroke-linecap="round"/>`;
+    const pupil = expr === 1
+        ? `<ellipse cx="${cx}" cy="${cy + ry * 0.10}" rx="${rx * 0.30}" ry="${ry * 0.46}" fill="#241634" opacity=".92"/>`
+        : `<ellipse cx="${cx}" cy="${cy + ry * 0.14}" rx="${rx * 0.34}" ry="${ry * 0.52}" fill="#241634" opacity=".9"/>`;
     return `
     <g>
       <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#fffdf8"/>
       <ellipse cx="${cx}" cy="${cy + ry * 0.06}" rx="${rx * 0.82}" ry="${ry * 0.92}" fill="url(#iris${gid})"/>
-      <ellipse cx="${cx}" cy="${cy + ry * 0.14}" rx="${rx * 0.34}" ry="${ry * 0.52}" fill="#241634" opacity=".9"/>
+      ${pupil}
       <circle cx="${cx - rx * 0.32}" cy="${cy - ry * 0.36}" r="${rx * 0.30}" fill="#fff" opacity=".96"/>
       <circle cx="${cx + rx * 0.30}" cy="${cy + ry * 0.34}" r="${rx * 0.13}" fill="#fff" opacity=".72"/>
-      <path d="M${cx - rx * 1.02} ${cy - ry * 0.72} q${rx} ${-ry * 0.86} ${rx * 2.04} 0"
-            stroke="#2b2140" stroke-width="${ry * 0.24}" fill="none" stroke-linecap="round"/>
+      ${lid}
       <path d="M${cx - rx * 0.9} ${cy + ry * 0.86} q${rx * 0.9} ${ry * 0.30} ${rx * 1.8} 0"
             stroke="#2b2140" stroke-width="${ry * 0.10}" fill="none" stroke-linecap="round" opacity=".55"/>
       <circle cx="${c2 ? cx - rx * 1.05 : cx - rx * 1.05}" cy="${cy - ry * 0.9}" r="${rx * 0.13}" fill="#2b2140" opacity=".5"/>
     </g>`;
+}
+
+/* ---------------- 嘴（expr: 0 平和 / 1 微笑 / 2 酷） ---------------- */
+function mouth(cx, cy, rx, ry, expr) {
+    if (expr === 1) // 微笑
+        return `<path d="M${cx - rx * 0.5} ${cy + ry * 0.42} q${rx * 0.5} ${ry * 0.55} ${rx} 0" fill="none" stroke="#c4626f" stroke-width="2.6" stroke-linecap="round"/>`;
+    if (expr === 2) // 微撇（酷）
+        return `<path d="M${cx - rx * 0.5} ${cy + ry * 0.55} q${rx * 0.55} ${-ry * 0.2} ${rx} ${-ry * 0.05}" fill="none" stroke="#c4626f" stroke-width="2.4" stroke-linecap="round"/>`;
+    return `<path d="M${cx - 4} ${cy + ry * 0.5} q4 5 8 0" fill="none" stroke="#c4626f" stroke-width="2.4" stroke-linecap="round"/>`;
 }
 
 /* ---------------- 发型（8 种） ---------------- */
@@ -84,11 +109,42 @@ function hairBack(style, cx, cy, rx, ry, col, deep) {
                         const a = (i / 6) * Math.PI * 2 + 0.4;
                         return `<circle cx="${cx + Math.cos(a) * w * 0.92}" cy="${cy + Math.sin(a) * h * 0.86}" r="${rx * 0.3}" fill="${col}"/>`;
                     }).join('')}`;
+        case 8: // 侧分短发
+            return `<ellipse cx="${cx}" cy="${cy}" rx="${w * 0.98}" ry="${h * 0.92}" fill="${deep}"/>
+                    <path d="M${cx - w} ${cy - ry * 0.2} q${rx * 0.4} ${-ry * 1.0} ${rx * 1.1} ${-ry * 0.5} q${-rx * 0.2} ${ry * 0.6} ${-rx * 0.5} ${ry * 0.7} q${-rx * 0.6} ${-ry * 0.4} ${-rx * 0.6} ${-ry * 0.2} z" fill="${col}"/>`;
+        case 9: // 麻花辫
+            return `<ellipse cx="${cx}" cy="${cy}" rx="${w}" ry="${h}" fill="${deep}"/>
+                    ${[1, -1].map(s => `<g transform="translate(${cx + s * w * 0.8},${cy + ry * 0.4})">
+                      <path d="M0 0 q${s * rx * 0.5} ${ry * 0.8} ${-s * rx * 0.1} ${ry * 1.6} q${-s * rx * 0.5} ${-ry * 0.7} ${s * rx * 0.1} ${-ry * 1.5} z" fill="${col}"/>
+                      ${[0,1,2].map(i => `<circle cx="${s * rx * 0.1}" cy="${ry * 0.5 + i * ry * 0.5}" r="${rx * 0.16}" fill="${deep}" opacity=".5"/>`).join('')}</g>`).join('')}`;
+        case 10: // 大波浪长发
+            return `<ellipse cx="${cx}" cy="${cy}" rx="${w}" ry="${h}" fill="${deep}"/>
+                    <path d="M${cx - w * 0.95} ${cy + ry * 0.1} q${-rx * 0.5} ${ry * 1.1} ${rx * 0.2} ${ry * 1.5} q${-rx * 0.5} ${ry * 0.5} ${rx * 0.1} ${ry * 1.4} q${-rx * 0.3} ${-ry * 1.6} ${rx * 0.3} ${-ry * 1.7} z" fill="${col}"/>
+                    <path d="M${cx + w * 0.95} ${cy + ry * 0.1} q${rx * 0.5} ${ry * 1.1} ${-rx * 0.2} ${ry * 1.5} q${rx * 0.5} ${ry * 0.5} ${-rx * 0.1} ${ry * 1.4} q${rx * 0.3} ${-ry * 1.6} ${-rx * 0.3} ${-ry * 1.7} z" fill="${col}"/>`;
+        case 11: // 妹妹头（锅盖）
+            return `<path d="M${cx - w} ${cy + ry * 0.2} q0 ${-h * 1.2} ${w * 2} 0 q0 ${-ry * 0.1} ${-w * 0.5} ${-ry * 0.3} q${-w} ${ry * 0.1} ${-w * 1.5} ${ry * 0.3} z" fill="${deep}"/>
+                    <ellipse cx="${cx}" cy="${cy}" rx="${w * 0.9}" ry="${h * 0.86}" fill="${col}"/>`;
+        case 12: // 高双马尾
+            return `<ellipse cx="${cx}" cy="${cy}" rx="${w}" ry="${h}" fill="${deep}"/>
+                    ${[-1, 1].map(s => `<path d="M${cx + s * w * 0.7} ${cy - ry * 0.2} q${s * rx * 0.7} ${-ry * 0.6} ${s * rx * 0.5} ${ry * 1.7} q${-s * rx * 0.4} ${-ry * 0.6} ${-s * rx * 0.5} ${-ry * 1.5} z" fill="${col}"/>
+                      <circle cx="${cx + s * w * 0.7}" cy="${cy - ry * 0.2}" r="${rx * 0.18}" fill="${deep}"/>`).join('')}`;
+        case 13: // 飘逸长发（挑染）
+            return `<ellipse cx="${cx}" cy="${cy}" rx="${w}" ry="${h}" fill="${deep}"/>
+                    <path d="M${cx - w * 0.9} ${cy + ry * 0.2} q${-rx * 0.4} ${ry * 1.7} ${rx * 0.35} ${ry * 2.1} q${-rx * 0.25} ${-ry * 1.3} ${rx * 0.55} ${-ry * 2.1} z" fill="${col}"/>
+                    <path d="M${cx + w * 0.9} ${cy + ry * 0.2} q${rx * 0.4} ${ry * 1.7} ${-rx * 0.35} ${ry * 2.1} q${rx * 0.25} ${-ry * 1.3} ${-rx * 0.55} ${-ry * 2.1} z" fill="${col}"/>
+                    <path d="M${cx - w * 0.5} ${cy + ry * 0.6} q${-rx * 0.2} ${ry * 1.6} ${rx * 0.1} ${ry * 2.0} z" fill="${elLight(col)}" opacity=".7"/>`;
         default: // 长发 + 发梢
             return `<ellipse cx="${cx}" cy="${cy}" rx="${w}" ry="${h}" fill="${deep}"/>
                     <path d="M${cx - w * 0.9} ${cy + ry * 0.2} q${-rx * 0.4} ${ry * 1.6} ${rx * 0.3} ${ry * 2.0} q${-rx * 0.2} ${-ry * 1.2} ${rx * 0.5} ${-ry * 2.0} z" fill="${col}"/>
                     <path d="M${cx + w * 0.9} ${cy + ry * 0.2} q${rx * 0.4} ${ry * 1.6} ${-rx * 0.3} ${ry * 2.0} q${rx * 0.2} ${-ry * 1.2} ${-rx * 0.5} ${-ry * 2.0} z" fill="${col}"/>`;
     }
+}
+// 发色提亮（用于挑染高光）
+function elLight(hex) {
+    const m = hex.replace('#', '');
+    let r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16);
+    r = Math.min(255, r + 60); g = Math.min(255, g + 60); b = Math.min(255, b + 60);
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
 }
 
 function hairFront(style, cx, cy, rx, ry, col, deep) {
@@ -101,6 +157,21 @@ function hairFront(style, cx, cy, rx, ry, col, deep) {
             return `<path d="M${cx - rx * 1.06} ${cy - ry * 0.5} q${rx * 0.1} ${-ry * 0.86} ${rx * 1.06} ${-ry * 0.82}
                      q${rx * 0.96} ${-ry * 0.04} ${rx * 1.06} ${ry * 0.82} q${-rx * 0.7} ${ry * 0.42} ${-rx * 1.3} ${ry * 0.16}
                      q${-rx * 0.3} ${-ry * 0.3} ${-rx * 0.82} ${ry * 0.02} z" fill="${col}"/>`;
+        case 8: // 侧分短刘海
+            return `<path d="M${cx - rx * 1.04} ${cy - ry * 0.3} q${rx * 0.2} ${-ry * 0.9} ${rx * 1.0} ${-ry * 0.55}
+                     q${rx * 0.5} ${ry * 0.1} ${rx * 0.04} ${ry * 0.4} q${-rx * 0.7} ${ry * 0.2} ${-rx * 1.04} ${-ry * 0.25} z" fill="${col}"/>`;
+        case 9: // 麻花辫前额碎发
+        case 11: // 锅盖齐厚
+            return `<path d="M${cx - rx * 1.06} ${cy - ry * 0.5} q${rx * 0.1} ${-ry * 0.86} ${rx * 1.06} ${-ry * 0.82}
+                     q${rx * 0.96} ${-ry * 0.04} ${rx * 1.06} ${ry * 0.82} q${-rx * 0.7} ${ry * 0.5} ${-rx * 1.3} ${ry * 0.2}
+                     q${-rx * 0.3} ${-ry * 0.3} ${-rx * 0.82} ${ry * 0.02} z" fill="${col}"/>`;
+        case 10: // 中分大波
+        case 12: // 高双马尾前额
+        case 13: // 飘逸中分
+            return `<path d="M${cx - rx * 1.04} ${cy - ry * 0.34} q${rx * 0.16} ${-ry * 0.9} ${rx * 0.86} ${-ry * 0.62}
+                     q${rx * 0.42} ${ry * 0.16} ${rx * 0.36} ${ry * 0.36} q${-rx * 0.34} ${ry * 0.18} ${-rx * 0.5} ${-ry * 0.1}
+                     q${rx * 0.1} ${ry * 0.44} ${rx * 0.9} ${ry * 0.32} q${rx * 0.24} ${ry * 0.5} ${-rx * 0.7} ${ry * 0.7}
+                     q${-rx * 1.2} ${-ry * 0.3} ${-rx * 0.92} ${-ry * 1.0} z" fill="${col}"/>`;
         default: // 中分 / 斜刘海
             return `<path d="M${cx - rx * 1.04} ${cy - ry * 0.34} q${rx * 0.16} ${-ry * 0.9} ${rx * 0.86} ${-ry * 0.62}
                      q${rx * 0.42} ${ry * 0.16} ${rx * 0.36} ${ry * 0.36} q${-rx * 0.34} ${ry * 0.18} ${-rx * 0.5} ${-ry * 0.1}
@@ -210,54 +281,14 @@ function avatarSVG(hero, p) {
     const el = EL[p.element] || EL.光;
     const cx = 64, cy = 74, rx = 33, ry = 31;
     const gid = '';
+    const rcol = RARITY[p.rarity] || RARITY['普通'];
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
 <defs>
   <clipPath id="clip"><circle cx="64" cy="64" r="62"/></clipPath>
   <radialGradient id="bg" cx="50%" cy="30%" r="80%">
     <stop offset="0%" stop-color="${el.glow}"/><stop offset="100%" stop-color="${el.deep}"/>
   </radialGradient>
-  <linearGradient id="iris${gid}" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="${p.iris}"/><stop offset="100%" stop-color="${el.deep}"/>
-  </linearGradient>
-  <linearGradient id="cloth" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="${el.main}"/><stop offset="100%" stop-color="${el.deep}"/>
-  </linearGradient>
-</defs>
-<circle cx="64" cy="64" r="64" fill="url(#bg)"/>
-<g clip-path="url(#clip)">
-  <circle cx="64" cy="30" r="46" fill="${el.light}" opacity=".35"/>
-  ${[0, 1, 2, 3, 4].map(i => `<circle cx="${18 + i * 23}" cy="${20 + (i % 2) * 14}" r="2.2" fill="#fff" opacity=".55"/>`).join('')}
-  ${symbol(el.sym || 'star', 100, 26, 9, '#fff')}
-  <path d="M10 128 q8 -34 54 -34 t54 34 z" fill="url(#cloth)"/>
-  <path d="M46 96 q18 14 36 0 l4 8 q-22 16 -44 0 z" fill="#fff" opacity=".55"/>
-  ${hairBack(p.style, cx, cy, rx, ry, p.hair, p.hairDeep)}
-  <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.skin}"/>
-  <ellipse cx="${cx - rx * 0.92}" cy="${cy + ry * 0.24}" rx="${rx * 0.12}" ry="${rx * 0.17}" fill="${p.skin}" opacity=".9"/>
-  <ellipse cx="${cx + rx * 0.92}" cy="${cy + ry * 0.24}" rx="${rx * 0.12}" ry="${rx * 0.17}" fill="${p.skin}" opacity=".9"/>
-  ${eye(cx - rx * 0.42, cy + ry * 0.16, rx * 0.28, ry * 0.30, p.iris, true, gid)}
-  ${eye(cx + rx * 0.42, cy + ry * 0.16, rx * 0.28, ry * 0.30, p.iris, false, gid)}
-  <ellipse cx="${cx - rx * 0.66}" cy="${cy + ry * 0.52}" rx="${rx * 0.16}" ry="${ry * 0.09}" fill="#ff8fa8" opacity=".38"/>
-  <ellipse cx="${cx + rx * 0.66}" cy="${cy + ry * 0.52}" rx="${rx * 0.16}" ry="${ry * 0.09}" fill="#ff8fa8" opacity=".38"/>
-  <path d="M${cx - 4} ${cy + ry * 0.5} q4 5 8 0" fill="none" stroke="#c4626f" stroke-width="2" stroke-linecap="round"/>
-  ${hairFront(p.style, cx, cy, rx, ry, p.hair, p.hairDeep)}
-  ${extra(p.extra, cx, cy, rx, ry, el, p.hair)}
-</g>
-<circle cx="64" cy="64" r="61" fill="none" stroke="${el.main}" stroke-width="4" opacity=".9"/>
-<circle cx="64" cy="64" r="63" fill="none" stroke="#ffffff" stroke-width="1.5" opacity=".35"/>
-</svg>`;
-}
-
-/* ---------------- 立绘（2 头身全身） ---------------- */
-function heroSVG(hero, p) {
-    const el = EL[p.element] || EL.光;
-    const gid = '';
-    const cx = 160, cy = 132, rx = 54, ry = 50;
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420" width="320" height="420">
-<defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="${el.glow}"/><stop offset="55%" stop-color="#ffffff"/><stop offset="100%" stop-color="${el.light}"/>
-  </linearGradient>
-  <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+  <radialGradient id="bglow" cx="50%" cy="50%" r="50%">
     <stop offset="0%" stop-color="${el.main}" stop-opacity=".55"/><stop offset="100%" stop-color="${el.main}" stop-opacity="0"/>
   </radialGradient>
   <linearGradient id="iris${gid}" x1="0" y1="0" x2="0" y2="1">
@@ -266,13 +297,70 @@ function heroSVG(hero, p) {
   <linearGradient id="cloth" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%" stop-color="${el.main}"/><stop offset="100%" stop-color="${el.deep}"/>
   </linearGradient>
+  <radialGradient id="face" cx="50%" cy="38%" r="70%">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity=".25"/><stop offset="100%" stop-color="#000000" stop-opacity=".06"/>
+  </radialGradient>
+  ${glowFilter('aglow', el.main)}
+</defs>
+<circle cx="64" cy="64" r="64" fill="url(#bg)"/>
+<circle cx="64" cy="64" r="60" fill="url(#bglow)"/>
+<g clip-path="url(#clip)">
+  <circle cx="64" cy="30" r="46" fill="${el.light}" opacity=".35"/>
+  ${[0, 1, 2, 3, 4].map(i => `<circle cx="${18 + i * 23}" cy="${20 + (i % 2) * 14}" r="2.2" fill="#fff" opacity=".55"/>`).join('')}
+  ${symbol(el.sym || 'star', 100, 26, 9, '#fff')}
+  <path d="M10 128 q8 -34 54 -34 t54 34 z" fill="url(#cloth)"/>
+  <path d="M46 96 q18 14 36 0 l4 8 q-22 16 -44 0 z" fill="#fff" opacity=".55"/>
+  ${hairBack(p.style, cx, cy, rx, ry, p.hair, p.hairDeep)}
+  <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.skin}"/>
+  <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#face)"/>
+  <ellipse cx="${cx - rx * 0.92}" cy="${cy + ry * 0.24}" rx="${rx * 0.12}" ry="${rx * 0.17}" fill="${p.skin}" opacity=".9"/>
+  <ellipse cx="${cx + rx * 0.92}" cy="${cy + ry * 0.24}" rx="${rx * 0.12}" ry="${rx * 0.17}" fill="${p.skin}" opacity=".9"/>
+  ${eye(cx - rx * 0.42, cy + ry * 0.16, rx * 0.28, ry * 0.30, p.iris, true, gid, p.expr)}
+  ${eye(cx + rx * 0.42, cy + ry * 0.16, rx * 0.28, ry * 0.30, p.iris, false, gid, p.expr)}
+  <ellipse cx="${cx - rx * 0.66}" cy="${cy + ry * 0.52}" rx="${rx * 0.16}" ry="${ry * 0.09}" fill="#ff8fa8" opacity=".38"/>
+  <ellipse cx="${cx + rx * 0.66}" cy="${cy + ry * 0.52}" rx="${rx * 0.16}" ry="${ry * 0.09}" fill="#ff8fa8" opacity=".38"/>
+  ${mouth(cx, cy, rx, ry, p.expr)}
+  ${hairFront(p.style, cx, cy, rx, ry, p.hair, p.hairDeep)}
+  ${extra(p.extra, cx, cy, rx, ry, el, p.hair)}
+</g>
+<circle cx="64" cy="64" r="60" fill="none" stroke="${el.main}" stroke-width="5" opacity=".85" filter="url(#aglow)"/>
+<circle cx="64" cy="64" r="61" fill="none" stroke="${rcol}" stroke-width="3" opacity=".95"/>
+<circle cx="64" cy="64" r="63" fill="none" stroke="#ffffff" stroke-width="1.5" opacity=".35"/>
+${p.rarity && p.rarity !== '普通' ? `<text x="64" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="${rcol}" opacity=".95">${p.rarity}</text>` : ''}
+</svg>`;
+}
+
+/* ---------------- 立绘（2 头身全身） ---------------- */
+function heroSVG(hero, p) {
+    const el = EL[p.element] || EL.光;
+    const gid = '';
+    const cx = 160, cy = 132, rx = 54, ry = 50;
+    const rcol = RARITY[p.rarity] || RARITY['普通'];
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420" width="320" height="420">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="${el.glow}"/><stop offset="55%" stop-color="#ffffff"/><stop offset="100%" stop-color="${el.light}"/>
+  </linearGradient>
+  <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="${el.main}" stop-opacity=".6"/><stop offset="100%" stop-color="${el.main}" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="face" cx="50%" cy="36%" r="72%">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity=".28"/><stop offset="100%" stop-color="#000000" stop-opacity=".08"/>
+  </radialGradient>
+  <linearGradient id="iris${gid}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="${p.iris}"/><stop offset="100%" stop-color="${el.deep}"/>
+  </linearGradient>
+  <linearGradient id="cloth" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="${el.main}"/><stop offset="100%" stop-color="${el.deep}"/>
+  </linearGradient>
+  ${glowFilter('hglow', el.main)}
 </defs>
 <rect width="320" height="420" fill="url(#bg)"/>
-<circle cx="160" cy="150" r="120" fill="url(#halo)"/>
-<circle cx="160" cy="150" r="96" fill="none" stroke="${el.main}" stroke-width="2" opacity=".35"/>
+<circle cx="160" cy="150" r="128" fill="url(#halo)" filter="url(#hglow)"/>
+<circle cx="160" cy="150" r="100" fill="none" stroke="${el.main}" stroke-width="2.5" opacity=".4"/>
 ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => {
         const a = (i / 8) * Math.PI * 2;
-        return `<circle cx="${160 + Math.cos(a) * 108}" cy="${150 + Math.sin(a) * 108}" r="${2 + (i % 3)}" fill="${el.deep}" opacity=".35"/>`;
+        return `<circle cx="${160 + Math.cos(a) * 112}" cy="${150 + Math.sin(a) * 112}" r="${2 + (i % 3)}" fill="${el.deep}" opacity=".35"/>`;
     }).join('')}
 ${symbol(el.sym || 'star', 44, 44, 15, el.main)}
 ${symbol(el.sym || 'star', 276, 60, 10, el.main)}
@@ -299,15 +387,19 @@ ${weapon(p.weapon, 250, 250, 1, el)}
 <!-- 头 -->
 ${hairBack(p.style, cx, cy, rx, ry, p.hair, p.hairDeep)}
 <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.skin}"/>
+<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#face)"/>
 <ellipse cx="${cx - rx * 0.98}" cy="${cy + ry * 0.22}" rx="${rx * 0.11}" ry="${rx * 0.16}" fill="${p.skin}"/>
 <ellipse cx="${cx + rx * 0.98}" cy="${cy + ry * 0.22}" rx="${rx * 0.11}" ry="${rx * 0.16}" fill="${p.skin}"/>
-${eye(cx - rx * 0.40, cy + ry * 0.14, rx * 0.27, ry * 0.30, p.iris, true, gid)}
-${eye(cx + rx * 0.40, cy + ry * 0.14, rx * 0.27, ry * 0.30, p.iris, false, gid)}
+${eye(cx - rx * 0.40, cy + ry * 0.14, rx * 0.27, ry * 0.30, p.iris, true, gid, p.expr)}
+${eye(cx + rx * 0.40, cy + ry * 0.14, rx * 0.27, ry * 0.30, p.iris, false, gid, p.expr)}
 <ellipse cx="${cx - rx * 0.62}" cy="${cy + ry * 0.5}" rx="${rx * 0.15}" ry="${ry * 0.08}" fill="#ff8fa8" opacity=".38"/>
 <ellipse cx="${cx + rx * 0.62}" cy="${cy + ry * 0.5}" rx="${rx * 0.15}" ry="${ry * 0.08}" fill="#ff8fa8" opacity=".38"/>
-<path d="M${cx - 6} ${cy + ry * 0.46} q6 8 12 0" fill="none" stroke="#c4626f" stroke-width="3" stroke-linecap="round"/>
+${mouth(cx, cy, rx, ry, p.expr)}
 ${hairFront(p.style, cx, cy, rx, ry, p.hair, p.hairDeep)}
 ${extra(p.extra, cx, cy, rx, ry, el, p.hair)}
+${p.rarity && p.rarity !== '普通' ? `<g transform="translate(160,52)">
+  <path d="M0 -10 l3 7 l8 0 l-6 6 l2 8 l-7 -4 l-7 4 l2 -8 l-6 -6 l8 0 z" fill="${rcol}" stroke="#fff" stroke-width="1" opacity=".95"/>
+</g>` : ''}
 </svg>`;
 }
 
@@ -327,9 +419,11 @@ for (const h of list) {
     const el = EL[element] || EL.光;
     const p = {
         element,
-        style: seed % 8,
+        rarity: h.rarity,
+        style: seed % 14,
         extra: (seed >>> 4) % 8,
         weapon: (seed >>> 8) % 10,
+        expr: (seed >>> 20) % 3,
         hair: pick(HAIRS, seed, 12),
         hairDeep: '',
         iris: pick(IRIS, seed, 16),

@@ -36,6 +36,7 @@ const Battle = {
         this.floats = []; this.projs = []; this.parts = []; this.fx = [];
         this.enemies = []; this.spawnQueue = [];
         this.banner = null; this.shake = 0; this.stunUntil = 0;
+        this.hitStop = 0;           // 顿帧（命中定格，纯表现，不影响数值/时序逻辑）
         this.shieldUntil = 0; this.teamBuffUntil = 0;
         // 城墙技能 / 必杀 / 障碍
         this.wall = opts.wall || null;
@@ -77,7 +78,7 @@ const Battle = {
             const imgEl = new Image();
             let loaded = false;
             imgEl.onload = () => { loaded = true; };
-            imgEl.src = '/img/' + h.img;
+            imgEl.src = '/img/' + h.img + '?v=' + (typeof IMG_V !== 'undefined' ? IMG_V : '1');
             // 多技能：主 / 副 / 觉醒技，各自独立冷却
             const raw = (Array.isArray(h.skills) && h.skills.length)
                 ? h.skills
@@ -245,7 +246,7 @@ const Battle = {
             idx: data._i || 0,
             x: 0, y: 0, slotX: this.CX, slotY: this.topY + 60,
             atkTimer: 1.0 + Math.random() * 0.5,
-            dead: false, hitFlash: 0, animT: Math.random() * 6, walking: true,
+            dead: false, hitFlash: 0, animT: Math.random() * 6, walking: true, spawnA: 0,
             size, dot: null, frozen: 0,
         };
         this.slotOf(en);
@@ -267,6 +268,8 @@ const Battle = {
     },
 
     update(dt, now) {
+        // 顿帧：命中瞬间把本帧 dt 压到极低，制造「定格」打击感（仅缩放动画时间，不改真实时序）
+        if (this.hitStop > 0) { this.hitStop = Math.max(0, this.hitStop - dt); dt *= 0.12; }
         this.time += dt;
         if (this.shake > 0) this.shake = Math.max(0, this.shake - dt * 30);
         const stunned = now < this.stunUntil;
@@ -323,6 +326,7 @@ const Battle = {
         // 敌方行动
         for (const e of this.enemies) {
             if (e.dead) continue;
+            e.spawnA = Math.min(1, (e.spawnA === undefined ? 0 : e.spawnA) + dt * 3.5); // 出场淡入
             e.animT += dt;
             e.hitFlash = Math.max(0, e.hitFlash - dt * 5);
             e.frozen = Math.max(0, e.frozen - dt);
@@ -483,6 +487,7 @@ const Battle = {
                 return;
             }
             t.dead = true;
+            this.hitStop = Math.max(this.hitStop, 0.05); // 我方阵亡定格
             this.addFloat(t.x, t.y - 60, '阵亡', '#ff5252');
         }
         if (e.boss) { this.shake = Math.max(this.shake, 5); }
@@ -492,9 +497,11 @@ const Battle = {
         dmg = Math.max(1, Math.floor(dmg));
         t.hp -= dmg;
         t.hitFlash = 1;
+        if (crit) { this.shake = Math.max(this.shake, 4.5); this.hitStop = Math.max(this.hitStop, 0.045); } // 暴击：轻震屏 + 顿帧
         this.addFloat(t.x, t.y - (t.boss ? 52 : 32), (crit ? '暴击 ' : '-') + dmg, crit ? '#ff5252' : (color || '#fff'), crit || big);
         if (t.hp <= 0 && !t.dead) {
             t.dead = true;
+            this.hitStop = Math.max(this.hitStop, 0.06); // 击杀定格
             this.addFloat(t.x, t.y - 62, '阵亡', '#ff5252');
             // 死亡爆碎
             this.spawnParts(t.boss ? 30 : 14, t.x, t.y - 10, {
@@ -752,7 +759,7 @@ const Battle = {
             const p = JSON.parse(localStorage.getItem('tower-odyssey.prefs') || '{}');
             if (p.floatText === false && !big) return;
         } catch (e) {}
-        this.floats.push({ x, y, text, color: color || '#fff', life: 0.9, big: !!big });
+        this.floats.push({ x, y, text, color: color || '#fff', life: big ? 1.1 : 0.9, big: !!big });
     },
 
     spawnParts(n, x, y, o) {
@@ -1020,16 +1027,17 @@ const Battle = {
         const s = e.size;
         const bob = e.walking ? Math.sin(e.animT * 9) * 2.5 : Math.sin(e.animT * 2.5) * 1.2;
         const x = e.x, y = e.y + bob;
+        const fa = (e.spawnA === undefined ? 1 : e.spawnA); // 出场淡入透明度
 
         // 影子
         ctx.save();
-        ctx.globalAlpha = 0.3; ctx.fillStyle = '#000';
+        ctx.globalAlpha = 0.3 * fa; ctx.fillStyle = '#000';
         ctx.beginPath(); ctx.ellipse(e.x, e.y + s * 0.75, s * 0.7, s * 0.26, 0, 0, 6.283); ctx.fill();
         ctx.restore();
 
         if (e.frozen > 0) {
             ctx.save();
-            ctx.globalAlpha = 0.5; ctx.fillStyle = '#8ad4ff';
+            ctx.globalAlpha = 0.5 * fa; ctx.fillStyle = '#8ad4ff';
             ctx.beginPath();
             ctx.moveTo(x - s * 0.8, y + s * 0.7); ctx.lineTo(x, y - s * 1.2); ctx.lineTo(x + s * 0.8, y + s * 0.7);
             ctx.closePath(); ctx.fill();
@@ -1039,9 +1047,14 @@ const Battle = {
         ctx.save();
         // 小怪不显示血条，血量低于 30% 时用呼吸闪烁提示濒死
         if (!e.boss && e.maxHp > 0 && e.hp / e.maxHp <= 0.3) {
-            ctx.globalAlpha = 0.45 + 0.55 * Math.abs(Math.sin(this.time * 5));
+            ctx.globalAlpha = (0.45 + 0.55 * Math.abs(Math.sin(this.time * 5))) * fa;
+        } else {
+            ctx.globalAlpha = fa;
         }
-        if (e.hitFlash > 0) { ctx.globalAlpha = 0.85; ctx.filter = 'brightness(2.2)'; }
+        if (e.hitFlash > 0) {
+            ctx.globalAlpha = Math.max(ctx.globalAlpha, 0.85 * fa);
+            ctx.filter = 'brightness(2.2)';
+        }
         if (e.boss) {
             ctx.shadowColor = 'rgba(255,60,60,0.7)'; ctx.shadowBlur = 16 + Math.sin(this.time * 4) * 8;
         } else if (e.elite) {
@@ -1050,7 +1063,19 @@ const Battle = {
         this.drawShape(ctx, e.shape, x, y, s, e.body, e.accent, e.animT, e.walking);
         ctx.restore();
 
-        // 血条：只有 BOSS 显示（小怪靠上面的濒死闪烁提示，画面更干净）
+        // 受击白环（强化打击反馈；敌人外形仍按各自 shape 差异化）
+        if (e.hitFlash > 0) {
+            ctx.save();
+            ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 12 * e.hitFlash * fa;
+            ctx.strokeStyle = `rgba(255,255,255,${0.9 * e.hitFlash * fa})`;
+            ctx.lineWidth = 2.2;
+            ctx.beginPath(); ctx.arc(x, y, s * 1.06, 0, 6.283); ctx.stroke();
+            ctx.restore();
+        }
+
+        // 血条/名牌：含淡入
+        ctx.save();
+        ctx.globalAlpha = fa;
         if (e.boss) {
             const bw = 76, bh = 7;
             const by = y - s * 1.5;
@@ -1067,6 +1092,7 @@ const Battle = {
             ctx.fillStyle = '#ffb03b';
             ctx.fillText('精英', x, y - s * 1.35 - 3);
         }
+        ctx.restore();
     },
 
     drawShape(ctx, shape, x, y, s, body, accent, t, walking) {
@@ -1452,7 +1478,7 @@ const Battle = {
             ctx.fillStyle = ec; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText((h.name || '?')[0], h.x, y);
         }
-        if (h.hitFlash > 0) { ctx.fillStyle = `rgba(255,255,255,${h.hitFlash * 0.7})`; ctx.fillRect(h.x - r, y - r, r * 2, r * 2); }
+        if (h.hitFlash > 0) { ctx.fillStyle = `rgba(255,255,255,${h.hitFlash * 0.85})`; ctx.fillRect(h.x - r, y - r, r * 2, r * 2); }
         ctx.restore();
 
         // 稀有度边框
@@ -1461,6 +1487,15 @@ const Battle = {
         ctx.lineWidth = 2.4;
         ctx.beginPath(); ctx.arc(h.x, y, r, 0, 6.283); ctx.stroke();
         ctx.restore();
+
+        // 受击白环（强化打击反馈）
+        if (h.hitFlash > 0) {
+            ctx.save();
+            ctx.strokeStyle = `rgba(255,255,255,${0.9 * h.hitFlash})`;
+            ctx.lineWidth = 3.2; ctx.shadowColor = '#fff'; ctx.shadowBlur = 10 * h.hitFlash;
+            ctx.beginPath(); ctx.arc(h.x, y, r + 1.5, 0, 6.283); ctx.stroke();
+            ctx.restore();
+        }
 
         if (h.dead) {
             ctx.save();
@@ -2094,16 +2129,19 @@ const Battle = {
     drawFloats() {
         const ctx = this.ctx;
         ctx.save();
-        ctx.textAlign = 'center';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         for (const f of this.floats) {
             const a = Math.min(1, f.life / 0.5);
             ctx.globalAlpha = a;
-            ctx.font = (f.big ? 'bold 17px' : 'bold 13px') + ' sans-serif';
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+            const big = !!f.big;
+            ctx.font = (big ? 'bold 19px' : 'bold 14px') + ' "PingFang SC","Microsoft YaHei",system-ui,sans-serif';
+            ctx.lineWidth = big ? 4 : 3;
+            ctx.strokeStyle = 'rgba(0,0,0,0.72)';
             ctx.strokeText(f.text, f.x, f.y);
+            ctx.shadowColor = f.color; ctx.shadowBlur = big ? 10 : 4; // 同色辉光，更清晰
             ctx.fillStyle = f.color;
             ctx.fillText(f.text, f.x, f.y);
+            ctx.shadowBlur = 0;
         }
         ctx.restore();
     },

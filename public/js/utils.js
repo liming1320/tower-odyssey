@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 工具函数
+const IMG_V = '20260918b'; // 立绘/头像资源版本号：重生成后 +1 让浏览器强制刷新缓存
 const U = {
     el(html) {
         const t = document.createElement('template');
@@ -92,7 +93,7 @@ const U = {
         document.getElementById('modal-root').innerHTML = '';
     },
     rarityClass(r) { return 'rarity-' + r.replace('+', '\\+'); },
-    imgSrc(file) { return '/img/' + file; },
+    imgSrc(file) { return '/img/' + file + '?v=' + IMG_V; },
 
     /* ---------- 星级标识（1-16 星，头像下方显示，最多 5 颗） ----------
        1-5   黄色 n 颗      6-10  红色 (n-5) 颗
