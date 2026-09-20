@@ -165,6 +165,17 @@ class CDP {
     console.log('   竖屏:', JSON.stringify(port));
     await cdp.shot(path.join(OUT, 'mgy-3d-6-portrait.png'));
 
+    console.log('— 验证 3D 画质与玩法反馈新特性（回合环/格位标记/3D 骰子/查看格）—');
+    const feat = await cdp.eval(`(()=>{
+        const dbg=MiniGames.monopoly._debug;
+        const CE=dbg.CELLS; let propIdx=-1; for(let i=0;i<CE.length;i++){ if(CE[i].t==='prop'){propIdx=i;break;} }
+        const insp = dbg.inspect(propIdx);
+        return { turnRing: dbg.turnRing(), cellMark: dbg.cellMark(), diceCount: dbg.diceCount(),
+                 inspLen: insp ? insp.length : -1, propIdx };
+    })()`);
+    console.log('   新特性:', JSON.stringify(feat));
+    await cdp.shot(path.join(OUT, 'mgy-3d-7-features.png'));
+
     console.log('\n=== 断言 ===');
     const okThree = !!(info1.three && info1.threeRev);
     const okLoop = info1.raf !== 0 && info1.draws > 0 && !info1.emblem;   // 渲染循环在跑 + 真有绘制调用 + 无错误文案
@@ -185,6 +196,7 @@ class CDP {
     const okFlashClr = fxEnd === 0;                                     // 特效播放完毕自动清除
     const okPortrait = !!(port && port.pol > 1.05);                    // 竖屏分支：抬高机位（更俯视）
     const okPortraitView = !!(port && port.pawns > 0 && port.pawnsInView === port.pawns); // 竖屏下小人仍在视口内
+    const okFeat = !!(feat && feat.turnRing && feat.cellMark && feat.diceCount === 2 && feat.inspLen > 0); // 画质/玩法反馈新特性
     console.log('Three.js 已加载:', okThree ? '✓' : '✗ (' + info1.threeRev + ')');
     console.log('渲染循环运行 + 有绘制调用:', okLoop ? '✓' : '✗ → raf=' + info1.raf + ' draws=' + info1.draws + ' emblem="' + info1.emblem + '"');
     console.log('WebGL canvas 存在且尺寸足够:', okCanvas ? '✓' : '✗ (' + info1.canvasW + 'x' + info1.canvasH + ')');
@@ -203,9 +215,10 @@ class CDP {
     console.log('闪光特效自动清除:', okFlashClr ? '✓' : '✗ → 残留 ' + fxEnd);
     console.log('竖屏取景分支(抬高+拉远):', okPortrait ? '✓' : '✗ → ' + JSON.stringify(port));
     console.log('竖屏下小人在视口内:', okPortraitView ? '✓' : '✗ → ' + JSON.stringify(port));
+    console.log('3D 画质/玩法反馈新特性(回合环/格位标/3D骰子/查格):', okFeat ? '✓' : '✗ → ' + JSON.stringify(feat));
     console.log('无 JS 报错:', okNoErr ? '✓' : '✗ → ' + errors.slice(0, 5).join(' | '));
     if (errors.length) console.log('   报错明细:\n   ' + errors.join('\n   '));
-    const pass = okThree && okLoop && okCanvas && okTiles && okPawns && okDeco && okBld && okPawn && okPawnVis && okCam && okCamBtn && okWalk && okNoQ && okPlay && okFlash && okFlashClr && okPortrait && okPortraitView && okNoErr;
+    const pass = okThree && okLoop && okCanvas && okTiles && okPawns && okDeco && okBld && okPawn && okPawnVis && okCam && okCamBtn && okWalk && okNoQ && okPlay && okFlash && okFlashClr && okPortrait && okPortraitView && okFeat && okNoErr;
     console.log(pass ? '\n✅ 大富翁真 3D 渲染通过' : '\n❌ 存在问题需修复');
 
     proc.kill(); process.exit(0);
