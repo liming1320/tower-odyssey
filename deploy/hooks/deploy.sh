@@ -133,9 +133,16 @@ git config --global --add safe.directory "$APP_DIR" >/dev/null 2>&1
 OLD_SHA="$(git rev-parse HEAD 2>/dev/null)"
 log "当前版本：$OLD_SHA"
 
+# ⚠️ 只 fetch origin：我们只部署 origin/<BRANCH>。曾经用 `git fetch --all` 会把仓库里
+# 配置的「所有 remote」一并拉取，只要其中任意一个（如早年加的 GitHub 镜像 / 重复的
+# gitee remote）凭据失效，整条 fetch 就返回非 0 → 部署误判失败。实测因此卡死多次
+# （git pull 成功但 deploy.sh 失败，差异就在于 pull 只碰 origin）。
 # timeout：网络/凭据异常时 git 可能无限期挂住，把部署进程永远留在进程表里
-if ! timeout 120 git fetch --all --quiet 2>>"$LOG"; then
-    log "✗ git fetch 失败（SSH 公钥或令牌权限失效？）"; restore_db; exit 1
+if ! timeout 120 git fetch origin --quiet 2>>"$LOG"; then
+    # 兜底：origin 真挂了，再试一次 --all 把报错 remote 的名字打出来，方便定位
+    log "✗ git fetch origin 失败（SSH 公钥或令牌权限失效？），尝试 --all 定位问题 remote…"
+    git fetch --all 2>&1 | head -20 | tee -a "$LOG" | sed 's/^/[fetch] /' >&2
+    restore_db; exit 1
 fi
 # 注意 -f：db.json 曾被 git 跟踪，服务器上它必然被玩家数据改过，
 # 不带 -f 的 checkout 会因为「本地修改会被覆盖」直接报失败，导致部署卡住。
