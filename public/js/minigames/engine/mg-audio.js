@@ -142,6 +142,7 @@ MG.audio = {
             fail: () => { [392, 330, 262, 196].forEach((f, i) => A.tone({ freq: f, dur: 0.2, type: 'sawtooth', gain: 0.14, lp: 1200, delay: i * 0.12 })); },
             click: () => { A.tone({ freq: 760, dur: 0.045, type: 'square', gain: 0.11 }); },
             coin: () => { A.tone({ freq: 988, dur: 0.07, type: 'square', gain: 0.15 }); A.tone({ freq: 1319, dur: 0.16, type: 'square', gain: 0.14, delay: 0.07 }); },
+            step: () => { A.noise({ dur: 0.045, freq: 420, to: 160, type: 'lowpass', q: 0.6, gain: 0.10 }); A.tone({ freq: 150, to: 90, dur: 0.05, type: 'sine', gain: 0.06 }); },
         };
         const f = P[name];
         if (f) { try { f(); } catch (e) { } }

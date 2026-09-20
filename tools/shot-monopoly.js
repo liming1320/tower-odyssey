@@ -75,6 +75,15 @@ class CDP {
     console.log('   楼宇:', JSON.stringify(cubeInfo));
     await cdp.shot(path.join(OUT, 'mgy-3d-2-buildings.png'));
 
+    console.log('— 建楼闪光特效：触发 + 自动清除 —');
+    let fwait = 0; while (fwait++ < 50) { const n = await cdp.eval('MiniGames.monopoly._debug.fxCount()'); if (n === 0) break; await sleep(100); }
+    const fxBefore = await cdp.eval('MiniGames.monopoly._debug.fxCount()');
+    const fxAfter = await cdp.eval(`(()=>{const CE=MiniGames.monopoly._debug.CELLS; let idx=-1; for(let i=0;i<CE.length;i++) if(CE[i].t==='prop'){idx=i;break;} return MiniGames.monopoly._debug.flashBuild(idx);})()`);
+    await cdp.shot(path.join(OUT, 'mgy-3d-2b-flash.png'));
+    await sleep(1300);   // 特效最长约 0.85s，等待其自然淡出
+    const fxEnd = await cdp.eval('MiniGames.monopoly._debug.fxCount()');
+    console.log('   特效数(触发前→触发后→淡出后):', fxBefore, '→', fxAfter, '→', fxEnd);
+
     console.log('— 验证棋子随移动更新目标 —');
     const pawnInfo = await cdp.eval(`(()=>{
         const dbg=MiniGames.monopoly._debug, S=dbg.S;
@@ -146,6 +155,16 @@ class CDP {
     console.log('   重进后:', JSON.stringify(info3));
     await cdp.shot(path.join(OUT, 'mgy-3d-5-resume.png'));
 
+    console.log('— 竖屏取景分支（模拟手机 390×844）—');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await cdp.send('Runtime.evaluate', { expression: 'window.dispatchEvent(new Event("resize"))' });
+    await sleep(900);
+    const port = await cdp.eval(`(()=>{ const dbg=MiniGames.monopoly._debug; const c=dbg.camPos(); const ps=dbg.pawnScreen(); const cv=document.querySelector('.mono-canvas'); const r=cv?cv.getBoundingClientRect():null;
+        return { pol:+c.pol.toFixed(2), rad:+c.rad.toFixed(1), w:r?Math.round(r.width):0, h:r?Math.round(r.height):0,
+            pawnsInView: ps? ps.filter(p=>p.vis && p.x>=2 && p.x<=(r?r.width:0)-2 && p.y>=2 && p.y<=(r?r.height:0)-2).length : 0, pawns: ps?ps.length:0 }; })()`);
+    console.log('   竖屏:', JSON.stringify(port));
+    await cdp.shot(path.join(OUT, 'mgy-3d-6-portrait.png'));
+
     console.log('\n=== 断言 ===');
     const okThree = !!(info1.three && info1.threeRev);
     const okLoop = info1.raf !== 0 && info1.draws > 0 && !info1.emblem;   // 渲染循环在跑 + 真有绘制调用 + 无错误文案
@@ -162,6 +181,10 @@ class CDP {
     const okNoQ = Array.isArray(qTail) && qTail.every(n => n === 0);
     const okPlay = !!info2 && info2.round >= 1 && !info2.over;
     const okNoErr = errors.length === 0;
+    const okFlash = fxAfter > fxBefore;                                  // 建楼闪光被触发（特效计入 GL_fx）
+    const okFlashClr = fxEnd === 0;                                     // 特效播放完毕自动清除
+    const okPortrait = !!(port && port.pol > 1.05);                    // 竖屏分支：抬高机位（更俯视）
+    const okPortraitView = !!(port && port.pawns > 0 && port.pawnsInView === port.pawns); // 竖屏下小人仍在视口内
     console.log('Three.js 已加载:', okThree ? '✓' : '✗ (' + info1.threeRev + ')');
     console.log('渲染循环运行 + 有绘制调用:', okLoop ? '✓' : '✗ → raf=' + info1.raf + ' draws=' + info1.draws + ' emblem="' + info1.emblem + '"');
     console.log('WebGL canvas 存在且尺寸足够:', okCanvas ? '✓' : '✗ (' + info1.canvasW + 'x' + info1.canvasH + ')');
@@ -176,9 +199,13 @@ class CDP {
     console.log('小人逐格行走(落点变化):', okWalk ? '✓' : '✗ → ' + cellBefore + '→' + cellAfter);
     console.log('行走动画队列已排空:', okNoQ ? '✓' : '✗ → ' + JSON.stringify(qTail));
     console.log('模拟操作推进有效:', okPlay ? '✓' : '✗ → ' + JSON.stringify(info2));
+    console.log('建楼闪光特效触发:', okFlash ? '✓' : '✗ → ' + fxBefore + '→' + fxAfter);
+    console.log('闪光特效自动清除:', okFlashClr ? '✓' : '✗ → 残留 ' + fxEnd);
+    console.log('竖屏取景分支(抬高+拉远):', okPortrait ? '✓' : '✗ → ' + JSON.stringify(port));
+    console.log('竖屏下小人在视口内:', okPortraitView ? '✓' : '✗ → ' + JSON.stringify(port));
     console.log('无 JS 报错:', okNoErr ? '✓' : '✗ → ' + errors.slice(0, 5).join(' | '));
     if (errors.length) console.log('   报错明细:\n   ' + errors.join('\n   '));
-    const pass = okThree && okLoop && okCanvas && okTiles && okPawns && okDeco && okBld && okPawn && okPawnVis && okCam && okCamBtn && okWalk && okNoQ && okPlay && okNoErr;
+    const pass = okThree && okLoop && okCanvas && okTiles && okPawns && okDeco && okBld && okPawn && okPawnVis && okCam && okCamBtn && okWalk && okNoQ && okPlay && okFlash && okFlashClr && okPortrait && okPortraitView && okNoErr;
     console.log(pass ? '\n✅ 大富翁真 3D 渲染通过' : '\n❌ 存在问题需修复');
 
     proc.kill(); process.exit(0);

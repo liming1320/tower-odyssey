@@ -715,6 +715,8 @@ window.MiniGames = window.MiniGames || {};
     const pawnQueue = [[], [], [], []];   // 待走格序列（整数，已取模），由 animate 逐格消耗
     const HOP_TIME = 0.20, HOP_H = 0.24; // 每格跳跃耗时(秒) / 跳跃高度
     let GL_deco = [];                     // 中央装饰（logo / 机会命运牌堆 / 起点监狱标记）
+    let GL_fx = [];                      // 临时特效（建楼闪光环 / 飘字 / 高亮渐隐）
+    let GL_blvLevel = [];                // 每格上次同步到的建筑等级（检测升级→触发闪光）
     const CW = [];
     for (let i = 0; i < N; i++) { const p = cellPos(i); CW[i] = { x: (p.c - 6) * TILE, z: (p.r - 6) * TILE }; }
     const cam = { az: -Math.PI / 4, pol: 0.95, rad: 13, tx: 0, ty: 0.5, tz: 0 };
@@ -766,6 +768,7 @@ window.MiniGames = window.MiniGames || {};
 
     function buildBuildings() {
         for (let i = 0; i < N; i++) {
+            GL_blvLevel[i] = S.lv[i];
             const c = CELLS[i]; if (c.t !== 'prop') { GL_blv.push(null); continue; }
             const w = CW[i], g = GROUPS[c.g], col = new THREE.Color(g.color);
             const grp = new THREE.Group(); grp.position.set(w.x, 0.16, w.z);
@@ -842,6 +845,33 @@ window.MiniGames = window.MiniGames || {};
         });
     }
 
+    // 建楼/升级闪光特效：扩散金环 + 新建楼/酒店 emissive 金光渐隐 + 飘字「⬆」
+    // 由 syncScene 检测等级上升触发，覆盖人类建楼 / 建房卡 / 联机对手建楼等所有路径
+    function flashBuild(i) {
+        if (!THREE || !GL_board) return;
+        const w = CW[i];
+        // 亮金爆闪圆盘（叠加混合，最抓眼）
+        const burst = new THREE.Mesh(new THREE.CircleGeometry(0.62, 32),
+            new THREE.MeshBasicMaterial({ color: 0xffd86b, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+        burst.rotation.x = -Math.PI / 2; burst.position.set(w.x, 0.30, w.z);
+        GL_board.add(burst); GL_fx.push({ mesh: burst, t: 0, dur: 0.5, type: 'burst' });
+        // 扩散金环
+        const ring = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.5, 40),
+            new THREE.MeshBasicMaterial({ color: 0xfff0a8, transparent: true, opacity: 1, side: THREE.DoubleSide, depthWrite: false }));
+        ring.rotation.x = -Math.PI / 2; ring.position.set(w.x, 0.31, w.z);
+        GL_board.add(ring); GL_fx.push({ mesh: ring, t: 0, dur: 0.68, type: 'ring' });
+        // 新建楼/酒店高亮（emissive 金光渐隐）
+        const b = GL_blv[i], glow = [];
+        if (b) {
+            const pcs = (S.lv[i] >= 5) ? b.hotel.children : (b.slots[S.lv[i] - 1] ? b.slots[S.lv[i] - 1].children : []);
+            pcs.forEach(m => { if (m.material && m.material.emissive) { m.material.emissive.setHex(0xffd86b); glow.push(m.material); } });
+        }
+        if (glow.length) GL_fx.push({ mats: glow, t: 0, dur: 0.7, type: 'glow' });
+        // 飘字「⬆」
+        const sp = emojiSprite('⬆️'); sp.position.set(w.x, 0.95, w.z); sp.scale.set(0.9, 0.9, 0.9);
+        GL_board.add(sp); GL_fx.push({ mesh: sp, t: 0, dur: 0.9, type: 'float' });
+    }
+
     function syncScene() {
         if (!GL_board) return;
         for (let i = 0; i < N; i++) {
@@ -859,6 +889,11 @@ window.MiniGames = window.MiniGames || {};
         for (let i = 0; i < 4; i++) {
             const pos = S.players[i].pos; if (pos == null) continue;
             if (!pawnQueue[i].length && pos !== pawnCell[i]) { pawnCell[i] = pos; pawnStep[i] = 0; }
+        }
+        // 建楼升级检测：等级比上次同步高 → 触发闪光特效
+        for (let i = 0; i < N; i++) {
+            if (!GL_blv[i]) { GL_blvLevel[i] = S.lv[i]; continue; }
+            if (S.lv[i] > (GL_blvLevel[i] || 0)) { GL_blvLevel[i] = S.lv[i]; flashBuild(i); }
         }
     }
 
@@ -882,6 +917,7 @@ window.MiniGames = window.MiniGames || {};
                     pawnStep[i] = 0;
                     pawnCell[i] = q.shift();
                     from = pawnCell[i];
+                    try { MG.audio.sfx('step'); } catch (e) {}   // 落格脚步声
                     if (q.length) { to = q[0]; f = 0; }
                     else { to = from; f = 1; }
                 } else f = pawnStep[i];
@@ -892,19 +928,41 @@ window.MiniGames = window.MiniGames || {};
             const hop = (f > 0.001 && f < 0.999) ? Math.sin(f * Math.PI) * HOP_H : 0;
             GL_pawns[i].position.set(x + ox, hop, z + oz);
         }
+        // 临时特效推进（建楼闪环 / 飘字 / 高亮渐隐）
+        for (let k = GL_fx.length - 1; k >= 0; k--) {
+            const fx = GL_fx[k]; fx.t += dt;
+            const f = fx.t / fx.dur;
+            if (f >= 1) {
+                if (fx.mesh) { GL_board.remove(fx.mesh); try { fx.mesh.geometry.dispose(); fx.mesh.material.dispose(); } catch (e) {} }
+                if (fx.mats) fx.mats.forEach(m => { try { m.emissive.setRGB(0, 0, 0); } catch (e) {} });
+                GL_fx.splice(k, 1); continue;
+            }
+            if (fx.type === 'burst') { const s = 1 + f * 2.2; fx.mesh.scale.set(s, s, s); fx.mesh.material.opacity = 0.95 * (1 - f) * (1 - f); }
+            else if (fx.type === 'ring') { const s = 1 + f * 2.6; fx.mesh.scale.set(s, s, s); fx.mesh.material.opacity = 1 - f; }
+            else if (fx.type === 'float') { fx.mesh.position.y = 0.95 + f * 0.75; fx.mesh.material.opacity = 1 - f; }
+            else if (fx.type === 'glow') { const g = 1 - f; fx.mats.forEach(m => m.emissive.setRGB(1 * g, 0.84 * g, 0.42 * g)); }
+        }
         GL_renderer.render(GL_scene, GL_camera);
     }
 
     // 自动取景：让 11×11 方盘完整落在视口内（按垂直/水平半视角取较小者）
+    // 自动取景：让 11×11 方盘完整落在视口内
+    // 横屏：低机位(0.95) + 50° FOV（戏剧性斜俯视）；竖屏/窄屏：抬高机位(1.18) + 60° 广角，整盘入镜且顶部高楼不被裁切
     function fitCam() {
         if (!GL_renderer || !GL_camera) return;
         const W = GL_renderer.domElement.clientWidth || 612, H = GL_renderer.domElement.clientHeight || 612;
+        const winPortrait = (typeof window !== 'undefined' && window.innerWidth && window.innerHeight) ? (window.innerHeight > window.innerWidth) : false;
         const aspect = W / H;
+        const portrait = winPortrait || (W < H);
+        const pol = portrait ? 1.18 : 0.95;
+        cam.pol = Math.max(0.25, Math.min(1.35, pol));
+        GL_camera.fov = portrait ? 60 : 50;
+        GL_camera.updateProjectionMatrix();
         const halfV = (GL_camera.fov * Math.PI / 180) / 2;
         const halfH = Math.atan(Math.tan(halfV) * aspect);
         const R = 8.0;                                   // 方盘对角半径（含小人高度冗余）
         const need = R / Math.tan(Math.min(halfV, halfH));
-        cam.rad = Math.max(7, Math.min(30, need * 1.02));
+        cam.rad = Math.max(7, Math.min(30, need * (portrait ? 1.05 : 1.02)));
     }
 
     function buildCenter() {
@@ -973,7 +1031,7 @@ window.MiniGames = window.MiniGames || {};
             const sc = sun.shadow.camera; sc.left = -8; sc.right = 8; sc.top = 8; sc.bottom = -8; sc.near = 1; sc.far = 50; sun.shadow.bias = -0.0006;
             GL_scene.add(sun);
             fitCam();                                    // 初始取景：整盘入镜
-            GL_board = new THREE.Group(); GL_scene.add(GL_board);
+            GL_board = new THREE.Group(); GL_scene.add(GL_board); GL_fx.length = 0;
             const base = new THREE.Mesh(new THREE.BoxGeometry(11.6, 0.3, 11.6), new THREE.MeshStandardMaterial({ color: 0x16331f, roughness: 0.95 }));
             base.position.y = -0.15; base.receiveShadow = true; GL_board.add(base);
             buildTiles(); buildBuildings(); buildPawns(); buildCenter();
@@ -1091,6 +1149,8 @@ window.MiniGames = window.MiniGames || {};
             threeRev: THREE ? (THREE.REVISION || '?') : null, deco: GL_deco.length }),
         blv: (i) => { const b = GL_blv[i]; return b ? { hotel: b.hotel.visible, slots: b.slots.map(s => s.visible) } : null; },
         visBld: () => GL_blv.reduce((a, b) => a + (b ? (b.hotel.visible ? 1 : 0) + b.slots.filter(s => s.visible).length : 0), 0),
+        flashBuild: (i) => { try { flashBuild(i || 0); return GL_fx.length; } catch (e) { return -1; } },
+        fxCount: () => GL_fx.length,
         pawnCell: () => pawnCell.slice(),
         pawnQueueLen: () => pawnQueue.map(q => q.length),
         pawnTarget: () => pawnCell.slice(),
