@@ -4,12 +4,7 @@
 const RARITY_COLOR = { '传说+': '#ff7a8b', '传说': '#ff9d5c', '史诗': '#b78bff', '稀有': '#5cc7ff' };
 const ELEMENT_COLOR = { 水: '#5cc7ff', 火: '#ff7a2f', 风: '#7cfc7c', 雷: '#ffd56b', 光: '#ffe28a', 暗: '#b78bff' };
 
-// ---------- 小工具 ----------
-function rgba(hex, a) {
-    const h = hex.replace('#', '');
-    const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
-    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-}
+// 颜色 / 数学工具统一走 U.math（含 rgba / clamp / lerp / pick 等，抽自 MG.hit）
 
 const Battle = {
     cvs: null, ctx: null, W: 360, H: 640, dpr: 1,
@@ -27,6 +22,10 @@ const Battle = {
         document.body.classList.add('in-battle');
         this.cvs = canvas;
         this.ctx = canvas.getContext('2d');
+        // 画布缩放/居中交给 U.canvas（抽 MG.canvas：aspect-contain 不变形，修异形屏拉伸）
+        this._cv = (U.canvas && U.canvas.setup)
+            ? U.canvas.setup(this.cvs, this.W, this.H, this.cvs.parentElement, { mode: 'contain', renderScaleCap: 3 })
+            : null;
         this.opts = opts || {};
         this.waves = opts.waves || [];
         this.waveIdx = 0;
@@ -70,7 +69,18 @@ const Battle = {
         this._onResize = () => this.resize();
         window.addEventListener('resize', this._onResize); // U.canvas 已自带 resize/RO，这里仅作兜底
         if (this._loop) this._loop.start();
-        else { this.lastT = performance.now(); this.raf = requestAnimationFrame(t => this.loop(t)); }
+        else { // U.loop 缺失时的兜底（正常 U.loop 必存在，此分支仅防 utils.js 未加载）
+            this.lastT = performance.now();
+            const step = (t) => {
+                if (!this.running) return;
+                let dt = (t - this.lastT) / 1000; this.lastT = t;
+                if (dt > 0.05) dt = 0.05;
+                if (!this.paused) this.update(dt, t);
+                this.draw();
+                this.raf = requestAnimationFrame(step);
+            };
+            this.raf = requestAnimationFrame(step);
+        }
     },
 
     stop() {
@@ -270,15 +280,8 @@ const Battle = {
         this.spawnParts(6, en.x, en.y, { color: en.body, spread: 40, up: -30, life: 0.5, size: 3 });
     },
 
-    loop(ts) {
-        if (!this.running) return;
-        let dt = (ts - this.lastT) / 1000;
-        this.lastT = ts;
-        if (dt > 0.05) dt = 0.05;
-        if (!this.paused) this.update(dt, ts);
-        this.draw();
-        this.raf = requestAnimationFrame(t => this.loop(t));
-    },
+    // 主循环已下沉到 U.loop（抽 MG _engine.makeLoop：dt 限幅 + 错误隔离 + 暂停重绘 + alive 钩子）。
+    // U.loop 缺失时由 start() 内兜底 step() 直接驱动（dt 限幅 0.05，无错误隔离）。
 
     update(dt, now) {
         // 顿帧：命中瞬间把本帧 dt 压到极低，制造「定格」打击感（仅缩放动画时间，不改真实时序）
