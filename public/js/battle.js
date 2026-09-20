@@ -60,16 +60,24 @@ const Battle = {
         this.buildStars();
         this.beginWave();
 
-        this.lastT = performance.now();
+        // 主循环下沉到 U.loop（抽 MG _engine.makeLoop：dt 限幅 + 错误隔离 + 暂停重绘 + alive 钩子）
+        this._loop = (U.loop) ? U.loop({
+            alive: () => this.running,
+            paused: () => this.paused,
+            variable: (dt) => { this.update(dt, performance.now()); },
+            render: () => { this.draw(); },
+        }) : null;
         this._onResize = () => this.resize();
-        window.addEventListener('resize', this._onResize);
-        this.raf = requestAnimationFrame(t => this.loop(t));
+        window.addEventListener('resize', this._onResize); // U.canvas 已自带 resize/RO，这里仅作兜底
+        if (this._loop) this._loop.start();
+        else { this.lastT = performance.now(); this.raf = requestAnimationFrame(t => this.loop(t)); }
     },
 
     stop() {
         this.running = false;
-        if (this.raf) cancelAnimationFrame(this.raf);
-        this.raf = 0;
+        if (this._loop) { this._loop.stop(); this._loop = null; }
+        else if (this.raf) { cancelAnimationFrame(this.raf); this.raf = 0; }
+        if (this._cv) { try { this._cv.destroy(); } catch (e) {} this._cv = null; }
         if (this._onResize) { window.removeEventListener('resize', this._onResize); this._onResize = null; }
     },
 
@@ -177,19 +185,24 @@ const Battle = {
 
     resize() {
         if (!this.cvs) return;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const w = this.cvs.clientWidth || window.innerWidth || 360;
-        const h = this.cvs.clientHeight || window.innerHeight || 640;
-        this.W = w; this.H = h; this.dpr = dpr;
-        this.cvs.width = Math.round(w * dpr);
-        this.cvs.height = Math.round(h * dpr);
-        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // 几何基于设计分辨率（恒定 360x640），不随屏幕变化；画布缩放/居中交给 U.canvas
+        const w = this.W, h = this.H;
+        if (this._cv) this._cv.fit();
         this.groundY = Math.round(h * 0.80);
         this.topY = Math.round(h * 0.20);
-        // 背景铺满整个画布；战斗单位限制在居中的区域内，宽屏时不会显得空旷
         this.contentW = Math.min(w, 560);
         this.contentX = Math.round((w - this.contentW) / 2);
         this.layout();
+        // 兜底（无 U.canvas 时）：旧 fill 模式，DPR 设 backing
+        if (!this._cv) {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const cw = this.cvs.clientWidth || window.innerWidth || w;
+            const ch = this.cvs.clientHeight || window.innerHeight || h;
+            this.cvs.width = Math.round(cw * dpr);
+            this.cvs.height = Math.round(ch * dpr);
+            this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            this.dpr = dpr;
+        }
     },
 
     // 战斗区中心（宽屏时画布比内容区更宽，特效与 HUD 都以内容区为基准）
@@ -461,7 +474,7 @@ const Battle = {
     enemyAttack(e) {
         const alive = this.heroes.filter(h => !h.dead);
         if (!alive.length) return;
-        const t = alive[Math.floor(Math.random() * alive.length)];
+        const t = U.math.pick(alive);
         let dmg = e.atk * (e.boss ? 1.2 : 1);
         if (performance.now() < this.shieldUntil) dmg *= 0.65;
         dmg = Math.max(1, Math.floor(dmg * (1 - this.stats.armor / 100) * this.takenMulOf(t)));
@@ -833,8 +846,14 @@ const Battle = {
     // ================= 绘制 =================
     draw() {
         const ctx = this.ctx, W = this.W, H = this.H;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);                  // 回到 backing 坐标
+        // letterbox 条（aspect-contain 时画面两侧/上下留白）铺同色底，避免透出 canvas 默认背景
+        ctx.fillStyle = this.ancient ? '#0b0d18' : '#0d1330';
+        ctx.fillRect(0, 0, this.cvs.width, this.cvs.height);
+        // —— 战斗世界（逻辑 360x640，经 U.canvas 的 contain 变换居中）——
         ctx.save();
-        U.fx.applyCam(ctx, W, H); // 震屏 / 缩放冲击（MG 相机，缺失时退化为随机抖动）
+        if (this._cv && this._cv.base) this._cv.base(ctx);   // contain 变换 → 逻辑坐标
+        U.fx.applyCam(ctx, W, H);                            // 震屏 / 缩放冲击（MG 相机）
         this.drawSky();
         this.drawPath();
         this.drawParticles(false);
@@ -849,8 +868,12 @@ const Battle = {
         this.drawParticles(true);
         U.fx.draw(ctx, W, H); // 飘字 / 命中粒子 / 冲击波（MG 粒子池，与 MG 小游戏同一套）
         ctx.restore();
+        // —— HUD / 横幅（同样逻辑坐标，但不受震屏影响）——
+        ctx.save();
+        if (this._cv && this._cv.base) this._cv.base(ctx);
         this.drawHUD();
         this.drawBanner();
+        ctx.restore();
     },
 
     drawSky() {
@@ -1676,9 +1699,9 @@ const Battle = {
         const ctx = this.ctx;
         const y = this.groundY + 30 - k * (this.groundY - this.topY);
         const g = ctx.createLinearGradient(0, y - 30, 0, y + 60);
-        g.addColorStop(0, rgba(f.tint, 0.1));
-        g.addColorStop(0.5, rgba(f.tint, 0.75));
-        g.addColorStop(1, rgba(f.tint, 0.15));
+        g.addColorStop(0, U.math.rgba(f.tint, 0.1));
+        g.addColorStop(0.5, U.math.rgba(f.tint, 0.75));
+        g.addColorStop(1, U.math.rgba(f.tint, 0.15));
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.moveTo(0, y + 60);
@@ -1693,7 +1716,7 @@ const Battle = {
     // 冰封：全屏蓝色 + 冰晶
     fxFreeze(f, k) {
         const ctx = this.ctx;
-        ctx.fillStyle = rgba(f.tint, 0.28 * (1 - k));
+        ctx.fillStyle = U.math.rgba(f.tint, 0.28 * (1 - k));
         ctx.fillRect(0, 0, this.W, this.H);
         for (const e of this.fxTargets(f)) {
             const s = e.size * (1 + k * 0.5);
@@ -1801,7 +1824,7 @@ const Battle = {
         const cy = this.groundY - 120;
         ctx.save();
         const g = ctx.createRadialGradient(src.x, cy, 4, src.x, cy, this.W * 0.6);
-        g.addColorStop(0, rgba(f.tint, 0.85 * (1 - k)));
+        g.addColorStop(0, U.math.rgba(f.tint, 0.85 * (1 - k)));
         g.addColorStop(1, 'rgba(255,60,0,0)');
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(src.x, cy, this.W * 0.6, 0, 6.283); ctx.fill();
@@ -1821,7 +1844,7 @@ const Battle = {
         for (const e of this.fxTargets(f)) {
             ctx.save();
             const g = ctx.createRadialGradient(e.x, e.y - 8, 2, e.x, e.y - 8, e.size * 2);
-            g.addColorStop(0, rgba(f.tint, 0.8 * (1 - k)));
+            g.addColorStop(0, U.math.rgba(f.tint, 0.8 * (1 - k)));
             g.addColorStop(1, 'rgba(255,80,0,0)');
             ctx.fillStyle = g;
             ctx.beginPath(); ctx.arc(e.x, e.y - 8, e.size * 2, 0, 6.283); ctx.fill();
@@ -1853,7 +1876,7 @@ const Battle = {
         }
         ctx.globalAlpha = (1 - k) * 0.8;
         const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, 90);
-        g.addColorStop(0, rgba(f.tint, 0.7));
+        g.addColorStop(0, U.math.rgba(f.tint, 0.7));
         g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(cx, cy, 90, 0, 6.283); ctx.fill();
@@ -1866,8 +1889,8 @@ const Battle = {
             const hgt = e.size * 3 * Math.min(1, k / 0.6);
             ctx.globalAlpha = 1 - k * 0.7;
             const g = ctx.createLinearGradient(e.x, e.y - hgt, e.x, e.y);
-            g.addColorStop(0, rgba(f.tint, 0.1));
-            g.addColorStop(1, rgba(f.tint, 0.9));
+            g.addColorStop(0, U.math.rgba(f.tint, 0.1));
+            g.addColorStop(1, U.math.rgba(f.tint, 0.9));
             ctx.fillStyle = g;
             ctx.beginPath();
             ctx.moveTo(e.x - e.size * 0.7, e.y);
@@ -1925,7 +1948,7 @@ const Battle = {
             if (k < 0.3) {
                 const g = ctx.createRadialGradient(e.x, e.y, 2, e.x, e.y, 55);
                 g.addColorStop(0, 'rgba(255,255,255,0.9)');
-                g.addColorStop(0.4, rgba(f.tint, 0.7));
+                g.addColorStop(0.4, U.math.rgba(f.tint, 0.7));
                 g.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = g;
                 ctx.beginPath(); ctx.arc(e.x, e.y, 55, 0, 6.283); ctx.fill();
@@ -1957,9 +1980,9 @@ const Battle = {
         for (const e of this.fxTargets(f)) {
             const w = e.size * 2.4;
             const g = ctx.createLinearGradient(e.x, 0, e.x, e.y);
-            g.addColorStop(0, rgba(f.tint, 0.05));
-            g.addColorStop(0.7, rgba(f.tint, 0.6 * (1 - k)));
-            g.addColorStop(1, rgba(f.tint, 0.95 * (1 - k)));
+            g.addColorStop(0, U.math.rgba(f.tint, 0.05));
+            g.addColorStop(0.7, U.math.rgba(f.tint, 0.6 * (1 - k)));
+            g.addColorStop(1, U.math.rgba(f.tint, 0.95 * (1 - k)));
             ctx.fillStyle = g;
             ctx.beginPath();
             ctx.moveTo(e.x - w * 0.4, 0); ctx.lineTo(e.x + w * 0.4, 0);

@@ -38,6 +38,28 @@ let _fxCalls = 0;
 global.U = {
     starColor: s => (s >= 15 ? '#ff7a8b' : s >= 11 ? '#b78bff' : '#ffd56b'),
     imgSrc: f => '/img/' + f,
+    // 共享数学/碰撞/RNG（与 utils.js 的 U.math 对齐）
+    math: {
+        clamp: (v, a, b) => v < a ? a : (v > b ? b : v),
+        lerp: (a, b, t) => a + (b - a) * t,
+        dist: (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1),
+        inRect: (px, py, x, y, w, h) => px >= x && px <= x + w && py >= y && py <= y + h,
+        inCircle: (px, py, cx, cy, r) => { const dx = px - cx, dy = py - cy; return dx * dx + dy * dy <= r * r; },
+        ri: (a, b) => a + Math.floor(Math.random() * (b - a + 1)),
+        pick: arr => arr[Math.floor(Math.random() * arr.length)],
+        shuffle: a => a,
+        rgba: (hex, a) => { const h = ('' + hex).replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; },
+    },
+    // 共享画布初始化（与 utils.js 的 U.canvas 对齐：contain 模式，base 为 noop 变换）
+    canvas: {
+        setup(c, w, h, parent, opts) {
+            return { fit() {}, base() {}, destroy() {}, scale: 1, ox: 0, oy: 0 };
+        },
+    },
+    // 共享主循环（与 utils.js 的 U.loop 对齐：start/stop 为 noop，测试手动驱动 update/draw）
+    loop(o) {
+        return { start() {}, stop() {}, advance() {}, get running() { return false; } };
+    },
     fx: {
         _hs: 0,
         hitStop(sec) { this._hs = Math.max(this._hs, sec || 0); return this._hs > 0; },

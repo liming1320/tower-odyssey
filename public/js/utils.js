@@ -185,4 +185,113 @@ U.fx = {
     draw(ctx, W, H) { const p = this.pool(); if (p) p.draw(ctx, W, H); },
 };
 
+/* ---------- 共享数学 / 碰撞 / RNG（抽 MG.hit / MG.ri / MG.pick / MG.shuffle，比 battle.js 内联更全）----------
+ * 主玩法战斗与未来主玩法场景共用，避免各写一套 Math.random / clamp / 碰撞。
+ */
+U.math = {
+    clamp(v, a, b) { return v < a ? a : (v > b ? b : v); },
+    lerp(a, b, t) { return a + (b - a) * t; },
+    dist(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); },
+    inRect(px, py, x, y, w, h) { return px >= x && px <= x + w && py >= y && py <= y + h; },
+    inCircle(px, py, cx, cy, r) { const dx = px - cx, dy = py - cy; return dx * dx + dy * dy <= r * r; },
+    ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); },
+    pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; },
+    shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; },
+    rgba(hex, a) {
+        const h = ('' + hex).replace('#', '');
+        const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+        return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+    },
+};
+
+/* ---------- 共享画布初始化（抽 MG.canvas 的健壮实现）----------
+ * 比 battle.js 原 resize() 强：aspect-contain 不变形、renderScale、backing 封顶3、
+ *   rAF 节流 resize、ResizeObserver 监听容器变化。MG 缺失 / 测试桩下仍可降级运行。
+ *   mode: 'contain'（默认，设计分辨率居中不变形）| 'fill'（铺满，旧 battle 行为）。
+ */
+U.canvas = {
+    setup(canvas, w, h, parent, opts) {
+        opts = opts || {};
+        const mode = opts.mode || 'contain';
+        const cap = opts.renderScaleCap || 3;
+        const ctx = canvas.getContext('2d');
+        const getParent = () => parent || canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
+        const _rs = () => { try { const s = (window.MG && window.MG.settings && window.MG.settings.renderScale); return (s > 0 ? s : 1); } catch (e) { return 1; } };
+        let scale = 1, ox = 0, oy = 0, dev = 0;
+        const applyTransform = () => { ctx.setTransform(scale, 0, 0, scale, ox, oy); };
+        const fit = () => {
+            const p = getParent();
+            const cw = (p && p.clientWidth) || canvas.clientWidth || w;
+            const ch = (p && p.clientHeight) || canvas.clientHeight || h;
+            const dpr = Math.max(1, window.devicePixelRatio || 1);
+            const rs = _rs();
+            const dprs = Math.min(cap, dpr * rs);
+            const cw2 = Math.max(1, Math.round(cw * dprs)), ch2 = Math.max(1, Math.round(ch * dprs));
+            if (canvas.width !== cw2 || canvas.height !== ch2) { canvas.width = cw2; canvas.height = ch2; }
+            if (mode === 'contain') {
+                const dispScale = Math.min(cw / w, ch / h) || 1;     // css 显示倍率
+                scale = dispScale * dprs;                            // backing px / 逻辑单位
+                ox = (canvas.width - w * scale) / 2;                 // 居中偏移
+                oy = (canvas.height - h * scale) / 2;
+            } else {
+                scale = dprs; ox = 0; oy = 0;
+            }
+            applyTransform();
+            try { ctx.__mgScale = scale; canvas.__mgW = w; canvas.__mgH = h; } catch (e) {}
+        };
+        fit();
+        let raf = 0;
+        const onResize = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; try { fit(); } catch (e) { } }); };
+        window.addEventListener('resize', onResize);
+        let ro = null;
+        if (typeof ResizeObserver !== 'undefined') { try { ro = new ResizeObserver(() => { try { fit(); } catch (e) { } }); const p = getParent(); if (p) ro.observe(p); } catch (e) { ro = null; } }
+        return {
+            fit,
+            base(c) { if (c && c.setTransform) c.setTransform(scale, 0, 0, scale, ox, oy); },
+            get scale() { return scale; }, get ox() { return ox; }, get oy() { return oy; },
+            destroy() { window.removeEventListener('resize', onResize); if (ro) { try { ro.disconnect(); } catch (e) { } } },
+        };
+    },
+};
+
+/* ---------- 共享主循环 / 帧调度（抽 MG _engine.makeLoop 的健壮实现）----------
+ * 比 battle.js 原 loop() 强：dt 限幅[0,50ms]、长时间挂起不追帧（死亡螺旋保护）、
+ *   try/catch 错误隔离（连错 5 次才停机并提示）、paused 时仍重绘不推进、alive 钩子。
+ * 无 requestAnimationFrame（测试 / WebView）时退化为 setTimeout。
+ */
+U.loop = function (o) {
+    o = o || {};
+    const SCH = (typeof requestAnimationFrame === 'function')
+        ? { schedule: cb => requestAnimationFrame(cb), cancel: id => cancelAnimationFrame(id) }
+        : { schedule: cb => setTimeout(() => cb((typeof performance !== 'undefined' ? performance.now() : Date.now())), 16), cancel: id => clearTimeout(id) };
+    const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    let rafId = null, running = false, last = 0, errs = 0;
+    const advance = (rawSec) => {
+        let raw = rawSec; if (!(raw >= 0)) raw = 0; if (raw > 0.25) raw = 0.25; // 挂起>0.25s 不追帧
+        const sc = (typeof o.timeScale === 'function' ? o.timeScale() : 1);
+        const dt = Math.max(0, Math.min(0.05, raw * (sc > 0 ? sc : 0)));        // dt 限幅[0,50ms]
+        try { if (o.variable) o.variable(dt); errs = 0; }
+        catch (e) {
+            errs++;
+            if (errs > 5) { running = false; rafId = null; try { (U.onFatal || (window.MG && window.MG.showGameError) || function () { })(e); } catch (_) {} return; }
+        }
+        if (o.render) { try { o.render(); } catch (e) {} }
+    };
+    const tick = () => {
+        if (!running) return;
+        if (o.alive && !o.alive()) { running = false; rafId = null; return; }
+        rafId = SCH.schedule(tick);
+        const t = now();
+        const raw = last ? (t - last) / 1000 : 0; last = t;
+        if (o.paused && o.paused()) { if (o.render) { try { o.render(); } catch (e) {} } return; }
+        advance(raw);
+    };
+    return {
+        start() { if (running) return; running = true; last = now(); rafId = SCH.schedule(tick); },
+        stop() { running = false; if (rafId) { SCH.cancel(rafId); rafId = null; } },
+        advance(ms) { if (o.alive && !o.alive()) return; return advance((ms == null ? 16.7 : ms) / 1000); },
+        get running() { return running; },
+    };
+};
+
 window.U = U;
