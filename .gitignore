@@ -77,3 +77,9 @@ left.txt
 
 # Codex / WorkBuddy 本地工作记忆
 .workbuddy/memory/
+
+# Android local SDK configuration and generated build artifacts
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/

@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "pwa:build": "node tools/build-offline-pwa.js",
+    "apk:build": "node tools/build-android-apk.js",
     "pk32:rebuild": "node tools/build-pk32-reference.js",
     "pk32:inventory": "node tools/scan-pk32-inventory.js",
     "pk32:queue": "node tools/build-pk32-migration-queue.js",
@@ -42,9 +43,14 @@
     "art": "node tools/gen-hero-art.js"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "ws": "^8.18.0"
   },
   "optionalDependencies": {
     "mysql2": "^3.11.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
   }
 }

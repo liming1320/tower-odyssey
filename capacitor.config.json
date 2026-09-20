@@ -1,0 +1,5 @@
+{
+  "appId": "com.liming1320.pinball",
+  "appName": "三维弹球",
+  "webDir": "dist/offline-pwa"
+}
