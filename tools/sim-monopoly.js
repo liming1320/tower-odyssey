@@ -39,7 +39,7 @@ win.global = win;
 const ctx = vm.createContext(win);
 
 const dir = path.join(__dirname, '..', 'public', 'js', 'minigames');
-for (const f of ['_shared.js', 'monopoly.js']) {
+for (const f of ['monopoly.js']) {
     vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), ctx, { filename: f });
 }
 const G = win.MiniGames.monopoly;

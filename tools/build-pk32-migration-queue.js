@@ -71,7 +71,7 @@ const runtimePcodeSlices = fs.existsSync(runtimePcodeSlicesFile) ? JSON.parse(fs
 const sharedRuntimePcodeSlicesBound = !!(runtimePcodeSlices && runtimePcodeSlices.summary && runtimePcodeSlices.summary.trustedPcodeSlices > 0);
 const structuredRulesMigrated = new Set(['扩展线路', '马跳棋盘', '数独', '平面魔方', '吃豆子', '彩球连线', '移彩球', '跳跃棋', '跳棋二', '拼疑犯', '反应测试', '24点二', '21点二', '考眼力', '记忆考验', '汉诺塔', '老虎机', '三张牌', '梭哈六', '接龙二', '激光坦克', '海豚骰', '彩球迷宫', '多彩泡泡', '变色彩球']);
 const structuredAdapterPlayableMigrated = new Set(['找不同', '找彩球', '变化彩球', '推箱子二']);
-const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '四子棋', '正方形棋']);
+const boardRulesMigrated = new Set(['井字牌', '黑白棋', '跳棋', '五子棋', '斗兽棋', '四子棋', '正方形棋']);
 const structuredFullFlowMigrated = new Set(structuredRulesMigrated);
 const boardFullFlowMigrated = new Set(boardRulesMigrated);
 const nativeAdapterRulesMigrated = new Set([
@@ -88,6 +88,11 @@ const nativeAdapterPlayableMigrated = new Set([
     '独粒钻石', '建筑制造', '上一百层', '飞一百米', '魔法城堡二', '摘花朵', '木乃伊', '同步移动', '宇宙黑洞', '爆破彩球二'
 ]);
 const embeddedLevelAdapterMigrated = new Set(['魔塔', '魔塔二', '魔塔三', '魔塔四']);
+const rulesImplementationMigrated = new Set([
+    ...structuredRulesMigrated,
+    ...boardRulesMigrated,
+    ...nativeAdapterRulesMigrated
+]);
 if (structuredPayloads) {
     for (const game of structuredPayloads.games || []) {
         if (dataByName.has(game.name) || candidateDataByName.has(game.name)) continue;
@@ -154,7 +159,7 @@ const rows = ledger.records.map(record => {
         adapterPlayableMigrated: genericAdapterNames.has(name) || nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name),
         // Existing renderers are implementation candidates, not proof that the
         // corresponding PK32 rules or all original flow states were migrated.
-        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true,
+        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || rulesImplementationMigrated.has(name),
         fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true,
         evidenceAdapterMigrated: catalogEvidenceAdapterBound,
         flowContentMigrated: !!(flowContentRecord && flowContentRecord.contentEvidenceMigrated)
