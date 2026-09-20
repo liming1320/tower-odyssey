@@ -9,6 +9,7 @@
         body { display: grid; place-items: center; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #stage { position: absolute; inset: 0; overflow: hidden; }
         canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; max-height: none; background: #000; outline: none; image-rendering: auto; }
+        #display-canvas { display: none; pointer-events: none; }
         #status { position: absolute; z-index: 20; top: calc(50% - 34px); left: 50%; transform: translateX(-50%); color: #d9e7ff; font: 14px Arial, sans-serif; white-space: nowrap; }
         #progress { position: absolute; z-index: 20; top: calc(50% + 24px); left: 50%; transform: translateX(-50%); width: min(260px, 70%); }
         #touch-controls { display: none; position: absolute; inset: 0; z-index: 10; pointer-events: none; }
@@ -18,8 +19,8 @@
         #touch-launch { right: 0; top: 14%; width: 16%; height: 42%; z-index: 3; }
         #touch-hint { position: absolute; right: 1%; top: 43%; width: 18%; padding: 4px 0; border: 1px solid rgba(255,235,170,.42); border-radius: 5px; background: rgba(10,15,28,.48); color: rgba(255,235,170,.92); font: 700 11px/1.35 Arial, sans-serif; letter-spacing: .3px; text-align: center; pointer-events: none; text-shadow: 0 1px 3px #000; z-index: 4; }
         @media (pointer: coarse), (max-width: 600px) {
-            /* 原版帧缓冲为 640x480；手机全屏缩放时不能再做双线性插值。 */
-            canvas { image-rendering: pixelated; transform: translateZ(0); }
+            #canvas { visibility: hidden; }
+            #display-canvas { display: block; image-rendering: pixelated; transform: translateZ(0); }
             #touch-controls { display: block; }
         }
     </style>
@@ -29,6 +30,7 @@
         <div id="status">Loading Space Cadet...</div>
         <progress id="progress" value="5" max="100"></progress>
         <canvas id="canvas" tabindex="0" aria-label="Space Cadet Pinball"></canvas>
+        <canvas id="display-canvas" aria-hidden="true"></canvas>
         <div id="touch-controls" aria-label="Pinball touch controls">
             <div id="touch-left" class="touch-key" role="button" aria-label="Left flipper"></div>
             <div id="touch-right" class="touch-key" role="button" aria-label="Right flipper"></div>
@@ -40,7 +42,33 @@
         const statusElement = document.getElementById('status');
         const progressElement = document.getElementById('progress');
         const canvas = document.getElementById('canvas');
+        const displayCanvas = document.getElementById('display-canvas');
+        const isTouchDisplay = window.matchMedia('(pointer: coarse), (max-width: 600px)').matches;
         const gameKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space']);
+
+        if (isTouchDisplay) {
+            const displayContext = displayCanvas.getContext('2d');
+            const resizeDisplay = () => {
+                const dpr = Math.min(window.devicePixelRatio || 1, 3);
+                const width = Math.round(window.innerWidth * dpr);
+                const height = Math.round(window.innerHeight * dpr);
+                if (displayCanvas.width !== width || displayCanvas.height !== height) {
+                    displayCanvas.width = width;
+                    displayCanvas.height = height;
+                }
+            };
+            const renderDisplay = () => {
+                if (canvas.width && canvas.height) {
+                    displayContext.imageSmoothingEnabled = false;
+                    displayContext.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+                    displayContext.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, displayCanvas.width, displayCanvas.height);
+                }
+                window.requestAnimationFrame(renderDisplay);
+            };
+            window.addEventListener('resize', resizeDisplay, { passive: true });
+            resizeDisplay();
+            window.requestAnimationFrame(renderDisplay);
+        }
 
         window.addEventListener('keydown', event => {
             if (gameKeys.has(event.code)) event.preventDefault();
@@ -97,7 +125,7 @@
         let runtimeReady = false;
         var Module = {
             canvas,
-            locateFile: path => `${path}?v=10`,
+            locateFile: path => `${path}?v=11`,
             print: text => console.log(text),
             printErr: text => console.error(text),
             onRuntimeInitialized() {
@@ -141,6 +169,6 @@
             },
         };
     </script>
-    <script async src="SpaceCadetPinball.js?v=10"></script>
+    <script async src="SpaceCadetPinball.js?v=11"></script>
 </body>
 </html>
