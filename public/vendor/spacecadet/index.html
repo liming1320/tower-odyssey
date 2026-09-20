@@ -12,7 +12,7 @@
         #status { position: absolute; z-index: 20; top: calc(50% - 34px); left: 50%; transform: translateX(-50%); color: #d9e7ff; font: 14px Arial, sans-serif; white-space: nowrap; }
         #progress { position: absolute; z-index: 20; top: calc(50% + 24px); left: 50%; transform: translateX(-50%); width: min(260px, 70%); }
         #touch-controls { display: none; position: absolute; inset: 0; z-index: 10; pointer-events: none; }
-        .touch-key { position: absolute; border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; color: transparent; opacity: 0; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-appearance: none; }
+        .touch-key { position: absolute; border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; color: transparent; opacity: 0; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-appearance: none; }
         #touch-left { left: 0; top: 0; width: 50%; height: 100%; }
         #touch-right { left: 50%; top: 0; width: 50%; height: 100%; }
         #touch-launch { right: 0; top: 14%; width: 16%; height: 42%; z-index: 3; }
@@ -46,6 +46,9 @@
         }, { capture: true });
         window.addEventListener('keyup', event => {
             if (gameKeys.has(event.code)) event.preventDefault();
+        }, { capture: true });
+        window.addEventListener('keydown', event => {
+            if (event.code === 'F8') event.preventDefault();
         }, { capture: true });
         ['contextmenu', 'selectstart', 'dragstart', 'gesturestart'].forEach(type => {
             document.addEventListener(type, event => event.preventDefault(), { capture: true });
@@ -92,6 +95,61 @@
             }, { passive: false });
         });
 
+        const activeTouchPointers = new Map();
+        function dispatchTouchKey(id, type) {
+            const functions = touchKeys[id];
+            const fn = Module[functions[type === 'keydown' ? 0 : 1]];
+            if (typeof fn === 'function') fn();
+        }
+        function getTouchKey(event) {
+            const rect = document.getElementById('stage').getBoundingClientRect();
+            const x = (event.clientX - rect.left) / rect.width;
+            const y = (event.clientY - rect.top) / rect.height;
+            if (x >= 0.84 && y >= 0.14 && y <= 0.56) return 'touch-launch';
+            if (y < 0.7) return null;
+            if (x < 0.34) return 'touch-left';
+            if (x >= 0.66) return 'touch-right';
+            return null;
+        }
+        document.getElementById('stage').addEventListener('pointerdown', event => {
+            if (event.pointerType === 'mouse') return;
+            const id = getTouchKey(event);
+            if (!id || activeTouchPointers.has(event.pointerId)) return;
+            activeTouchPointers.set(event.pointerId, id);
+            canvas.focus();
+            dispatchTouchKey(id, 'keydown');
+        }, true);
+        ['pointerup', 'pointercancel'].forEach(type => {
+            window.addEventListener(type, event => {
+                const id = activeTouchPointers.get(event.pointerId);
+                if (!id) return;
+                activeTouchPointers.delete(event.pointerId);
+                dispatchTouchKey(id, 'keyup');
+            }, true);
+        });
+
+        function prepareOfflineHighScores() {
+            try {
+                const path = '/home/web_user/.local/share/SpaceCadetPinball/imgui_pb.ini';
+                const directory = '/home/web_user/.local/share/SpaceCadetPinball';
+                Module.FS_createPath('/home', 'web_user', true, true);
+                Module.FS_createPath('/home/web_user', '.local', true, true);
+                Module.FS_createPath('/home/web_user/.local', 'share', true, true);
+                Module.FS_createPath('/home/web_user/.local/share', 'SpaceCadetPinball', true, true);
+                try {
+                    Module.FS_unlink(path);
+                } catch (error) {
+                    if (error && error.errno !== 44) throw error;
+                }
+                const scores = Array.from({ length: 5 }, (_, index) => `${index}.Score=2147483647`);
+                Module.FS_createDataFile(directory, 'imgui_pb.ini', new TextEncoder().encode([
+                    '[Pinball][Settings]', ...scores, '',
+                ].join('\n')), true, true);
+            } catch (error) {
+                console.warn('Offline high-score storage is unavailable', error && error.errno, error && error.message);
+            }
+        }
+
         let nativeSurfaceLocked = false;
         function lockNativeSurface() {
             if (nativeSurfaceLocked) return;
@@ -115,7 +173,8 @@
         let runtimeReady = false;
         var Module = {
             canvas,
-            locateFile: path => `${path}?v=13`,
+            preRun: [prepareOfflineHighScores],
+            locateFile: path => `${path}?v=14`,
             print: text => console.log(text),
             printErr: text => console.error(text),
             onRuntimeInitialized() {
@@ -160,6 +219,6 @@
             },
         };
     </script>
-    <script async src="SpaceCadetPinball.js?v=13"></script>
+    <script async src="SpaceCadetPinball.js?v=14"></script>
 </body>
 </html>
