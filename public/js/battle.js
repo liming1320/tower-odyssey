@@ -553,11 +553,14 @@ const Battle = {
         this.addFx({
             type: 'bloom', tint: ult.tint, dur: 1.1, impactAt: 0.28,
             onImpact: () => {
+                // 优化：全体伤害用 noStop 一次结算，顿帧/震屏在循环外统一触发一次，
+                // 避免逐个敌人触发 hitStop/shake（虽被 max 限幅，但集中结算会造成一帧重算 + 读感像「硬停」）
                 for (const e of targets) {
                     if (e.dead) continue;
-                    this.dealDamage(e, dmg, true, ult.tint, true);
+                    this.dealDamage(e, dmg, true, ult.tint, true, true);
                     this.spawnParts(10, e.x, e.y - 16, { color: ult.tint, spread: 40, up: -90, life: 0.8, size: 3.4, glow: true });
                 }
+                U.fx.hitStop(0.03); // 单次短促定格：保留打击感但不拖成卡顿
                 U.fx.shake(14);
             },
         });
@@ -771,10 +774,13 @@ const Battle = {
 
     addFloat(x, y, text, color, big) {
         // 飘字开关：设置面板关闭后不再生成（但保留大招/护盾等关键提示）
-        try {
-            const p = JSON.parse(localStorage.getItem('tower-odyssey.prefs') || '{}');
-            if (p.floatText === false && !big) return;
-        } catch (e) {}
+        // 优化：偏好每场战斗只从 localStorage 同步读一次并缓存（原实现每次飘字都 JSON.parse，
+        // 大招命中全体敌人时一帧内 N 次同步存储读，移动端 WebView 下是典型卡顿源）
+        if (!this._prefs) {
+            try { this._prefs = JSON.parse(localStorage.getItem('tower-odyssey.prefs') || '{}'); }
+            catch (e) { this._prefs = {}; }
+        }
+        if (this._prefs.floatText === false && !big) return;
         // 走 U.fx 粒子池的 text（与 MG 小游戏同款飘字：带辉光/描边/重力），缺失时降级空操作
         U.fx.text(x, y, text, { color: color || '#fff', size: big ? 19 : 14, bold: !!big, vy: -34, life: big ? 1.1 : 0.9, glow: true });
     },
