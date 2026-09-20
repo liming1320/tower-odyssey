@@ -15,6 +15,7 @@ const pinballVersion = pinballVersionMatch ? pinballVersionMatch[1] : 'latest';
 
 fs.rmSync(output, { recursive: true, force: true });
 fs.cpSync(source, output, { recursive: true });
+fs.copyFileSync(path.join(source, 'offline-home.html'), path.join(output, 'index.html'));
 
 for (const name of ['index.html', 'sw.js', 'offline-pinball.html']) {
     const file = path.join(output, name);
