@@ -1548,6 +1548,10 @@ body.in-battle .avatar-btn { display: none; }
     position: absolute; inset: 0; z-index: 6; pointer-events: none;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
     color: #cfe0f5; font-size: 14px; }
+.mgy-wrap.mono .mono-camctl { position: absolute; right: 9px; bottom: 9px; z-index: 7; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.mgy-wrap.mono .mono-camctl button { pointer-events: auto; width: 34px; height: 34px; border-radius: 9px; border: 1px solid rgba(255,255,255,.22);
+    background: rgba(20,30,46,.78); color: #ffe1a6; font-size: 17px; font-weight: 800; cursor: pointer; line-height: 1; box-shadow: 0 3px 10px rgba(0,0,0,.4); }
+.mgy-wrap.mono .mono-camctl button:active { background: rgba(255,213,107,.32); }
 .mgy-wrap.mono .mgy-pav { width: 30px; height: 30px; font-size: 17px; }
 .mgy-wrap.mono .mgy-pname { font-size: 11px; }
 .mgy-wrap.mono .mgy-pcash { font-size: 12px; }

@@ -454,17 +454,19 @@ window.MiniGames = window.MiniGames || {};
     }
 
     async function walk(p, steps) {
-        const pace = p.me ? 300 : 170;
+        const i = p.id - 1;
         for (let k = 0; k < steps; k++) {
             p.pos = (p.pos + 1) % N;
             if (p.pos === 0) { p.cash += SALARY; log(`🚩 ${p.name} 经过起点 +${SALARY}`, p.c); }
+            pawnQueue[i].push(p.pos);          // 入队：animate 逐格播放跳步动画
             S.hop = p.id;
             render();
-            markHop();
-            if (dead) { S.hop = -1; return; }
-            await sleep(pace);
+            if (dead) { S.hop = -1; pawnQueue[i].length = 0; return; }
+            await sleep(p.me ? 55 : 38);        // 逻辑节奏；视觉由 animate 按 HOP_TIME 播放
         }
         S.hop = -1;
+        let guard = 0;
+        while (!dead && pawnQueue[i].length && guard++ < 2000) await sleep(20);  // 等动画播完再结算落点
         render();
     }
     function markHop() {
@@ -708,7 +710,11 @@ window.MiniGames = window.MiniGames || {};
     const TILE = 1.0, ROOF = 0x7a5a2a;
     let GL_scene, GL_camera, GL_renderer, GL_raf = 0, GL_board;
     let GL_tiles = [], GL_pawns = [], GL_blv = [], GL_owner = [];
-    let pawnVis = [0, 0, 0, 0], pawnTgt = [0, 0, 0, 0];
+    let pawnCell = [0, 0, 0, 0];          // 小人当前所在格（整数）
+    let pawnStep = [0, 0, 0, 0];          // 0..1：当前这一跳的进度
+    const pawnQueue = [[], [], [], []];   // 待走格序列（整数，已取模），由 animate 逐格消耗
+    const HOP_TIME = 0.20, HOP_H = 0.24; // 每格跳跃耗时(秒) / 跳跃高度
+    let GL_deco = [];                     // 中央装饰（logo / 机会命运牌堆 / 起点监狱标记）
     const CW = [];
     for (let i = 0; i < N; i++) { const p = cellPos(i); CW[i] = { x: (p.c - 6) * TILE, z: (p.r - 6) * TILE }; }
     const cam = { az: -Math.PI / 4, pol: 0.95, rad: 13, tx: 0, ty: 0.5, tz: 0 };
@@ -799,7 +805,7 @@ window.MiniGames = window.MiniGames || {};
             head.position.y = 0.52; head.castShadow = true;
             grp.add(body); grp.add(head); grp.add(emojiSprite(ch.e));
             GL_board.add(grp); GL_pawns.push(grp);
-            pawnVis[i] = S.players[i].pos; pawnTgt[i] = S.players[i].pos;
+            pawnCell[i] = S.players[i].pos; pawnStep[i] = 0; pawnQueue[i].length = 0;
         }
     }
 
@@ -818,6 +824,24 @@ window.MiniGames = window.MiniGames || {};
         cv.addEventListener('wheel', e => { e.preventDefault(); cam.rad = Math.max(7, Math.min(22, cam.rad * (1 + e.deltaY * 0.001))); }, { passive: false });
     }
 
+    function camZoom(f) { cam.rad = Math.max(7, Math.min(30, cam.rad * f)); }
+    function camSpin(d) { cam.az += d; }
+    function camReset() { cam.az = -Math.PI / 4; cam.pol = 0.95; fitCam(); }
+    function wireCamButtons(board) {
+        if (!board) return;
+        board.querySelectorAll('.mono-camctl button').forEach(b => {
+            b.addEventListener('click', e => {
+                e.preventDefault(); e.stopPropagation();
+                const a = b.dataset.a;
+                if (a === 'zin') camZoom(0.82);
+                else if (a === 'zout') camZoom(1.22);
+                else if (a === 'rl') camSpin(-0.35);
+                else if (a === 'rr') camSpin(0.35);
+                else if (a === 'reset') camReset();
+            });
+        });
+    }
+
     function syncScene() {
         if (!GL_board) return;
         for (let i = 0; i < N; i++) {
@@ -831,12 +855,10 @@ window.MiniGames = window.MiniGames || {};
             if (own) { const pl = S.players.find(p => p.id === own); o.visible = true; o.material.color.set(pl ? pl.c : '#ffffff'); }
             else o.visible = false;
         }
+        // 小人：仅当队列为空且逻辑位置已漂移（卡牌传送 / 监狱等）时吸附对齐；行走由 animate 逐格播放
         for (let i = 0; i < 4; i++) {
             const pos = S.players[i].pos; if (pos == null) continue;
-            const cur = pawnTgt[i], delta = (pos - ((Math.round(cur) % N) + N) % N + N) % N;
-            if (delta === 0) continue;
-            if (delta <= 6) pawnTgt[i] = cur + delta;
-            else { pawnTgt[i] = pos; pawnVis[i] = pos; }
+            if (!pawnQueue[i].length && pos !== pawnCell[i]) { pawnCell[i] = pos; pawnStep[i] = 0; }
         }
     }
 
@@ -851,12 +873,23 @@ window.MiniGames = window.MiniGames || {};
             const p = S.players[i];
             if (!p || p.out) { GL_pawns[i].visible = false; continue; }
             GL_pawns[i].visible = true;
-            let d = pawnTgt[i] - pawnVis[i]; const step = 4 * dt;
-            if (Math.abs(d) <= step) pawnVis[i] = pawnTgt[i]; else pawnVis[i] += Math.sign(d) * step;
-            const v = pawnVis[i], i0 = ((Math.floor(v) % N) + N) % N, i1 = (i0 + 1) % N, f = v - Math.floor(v);
-            const a = CW[i0], b = CW[i1]; const x = a.x + (b.x - a.x) * f, z = a.z + (b.z - a.z) * f;
+            let from = pawnCell[i], to = from, f = 1;
+            const q = pawnQueue[i];
+            if (q.length) {
+                to = q[0];
+                pawnStep[i] += dt / HOP_TIME;
+                if (pawnStep[i] >= 1) {
+                    pawnStep[i] = 0;
+                    pawnCell[i] = q.shift();
+                    from = pawnCell[i];
+                    if (q.length) { to = q[0]; f = 0; }
+                    else { to = from; f = 1; }
+                } else f = pawnStep[i];
+            }
+            const a = CW[from], b = CW[to];
+            const x = a.x + (b.x - a.x) * f, z = a.z + (b.z - a.z) * f;
             const ang = i * Math.PI / 2, ox = Math.cos(ang) * 0.16, oz = Math.sin(ang) * 0.16;
-            const hop = Math.abs(d) > 0.02 ? Math.abs(Math.sin(f * Math.PI)) * 0.18 : 0;
+            const hop = (f > 0.001 && f < 0.999) ? Math.sin(f * Math.PI) * HOP_H : 0;
             GL_pawns[i].position.set(x + ox, hop, z + oz);
         }
         GL_renderer.render(GL_scene, GL_camera);
@@ -872,6 +905,51 @@ window.MiniGames = window.MiniGames || {};
         const R = 8.0;                                   // 方盘对角半径（含小人高度冗余）
         const need = R / Math.tan(Math.min(halfV, halfH));
         cam.rad = Math.max(7, Math.min(30, need * 1.02));
+    }
+
+    function buildCenter() {
+        // 中央广场圆盘 + 金边
+        const plaza = new THREE.Mesh(new THREE.CylinderGeometry(4.7, 4.7, 0.12, 56),
+            new THREE.MeshStandardMaterial({ color: 0x123021, roughness: 0.95 }));
+        plaza.position.y = 0.02; plaza.receiveShadow = true; GL_board.add(plaza); GL_deco.push(plaza);
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(4.55, 0.06, 8, 64),
+            new THREE.MeshStandardMaterial({ color: 0xd9a52a, roughness: 0.5, metalness: 0.3 }));
+        ring.rotation.x = Math.PI / 2; ring.position.y = 0.09; GL_board.add(ring); GL_deco.push(ring);
+        // 中央 logo 贴地
+        const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+        const x = cv.getContext('2d');
+        const g = x.createRadialGradient(128, 110, 10, 128, 128, 130);
+        g.addColorStop(0, '#ffe9a8'); g.addColorStop(1, '#caa12e');
+        x.fillStyle = g; x.beginPath(); x.arc(128, 128, 96, 0, 7); x.fill();
+        x.fillStyle = '#5a3d10'; x.textAlign = 'center'; x.font = 'bold 60px serif'; x.fillText('🎲', 128, 116);
+        x.font = 'bold 38px sans-serif'; x.fillText('大富翁', 128, 192);
+        const tex = new THREE.CanvasTexture(cv); if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+        const logo = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 3.0), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+        logo.rotation.x = -Math.PI / 2; logo.position.set(0, 0.10, 0); GL_board.add(logo); GL_deco.push(logo);
+        // 机会 / 命运 牌堆（中央两侧）
+        [['❓', '机会', -3.3, 0x4a8fd8], ['🎴', '命运', 3.3, 0xd86a8f]].forEach(([e, nm, px, col]) => {
+            const grp = new THREE.Group(); grp.position.set(px, 0.16, 0);
+            for (let k = 0; k < 4; k++) {
+                const card = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.07, 1.0),
+                    new THREE.MeshStandardMaterial({ color: 0xf3ecd6, roughness: 0.7 }));
+                card.position.y = 0.04 + k * 0.075; card.castShadow = true; grp.add(card);
+            }
+            const top = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.08, 1.02),
+                new THREE.MeshStandardMaterial({ color: col, roughness: 0.6 }));
+            top.position.y = 0.04 + 4 * 0.075; grp.add(top);
+            const sp = emojiSprite(e); sp.position.y = 0.55; grp.add(sp);
+            GL_board.add(grp); GL_deco.push(grp);
+        });
+        // 起点金环 + 监狱栅栏 标记
+        const start = CW[0], jc = CW[JAIL];
+        const sRing = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.05, 8, 32),
+            new THREE.MeshStandardMaterial({ color: 0xffd86b, emissive: 0x6a4e00, roughness: 0.4 }));
+        sRing.rotation.x = Math.PI / 2; sRing.position.set(start.x, 0.20, start.z); GL_board.add(sRing); GL_deco.push(sRing);
+        for (let s = 0; s < 4; s++) {
+            const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 8),
+                new THREE.MeshStandardMaterial({ color: 0xcfd6dd, roughness: 0.4, metalness: 0.6 }));
+            bar.position.set(jc.x + (s % 2 ? 0.18 : -0.18), 0.3, jc.z + (s < 2 ? 0.18 : -0.18)); GL_board.add(bar); GL_deco.push(bar);
+        }
     }
 
     function start3D(container) {
@@ -898,8 +976,9 @@ window.MiniGames = window.MiniGames || {};
             GL_board = new THREE.Group(); GL_scene.add(GL_board);
             const base = new THREE.Mesh(new THREE.BoxGeometry(11.6, 0.3, 11.6), new THREE.MeshStandardMaterial({ color: 0x16331f, roughness: 0.95 }));
             base.position.y = -0.15; base.receiveShadow = true; GL_board.add(base);
-            buildTiles(); buildBuildings(); buildPawns();
+            buildTiles(); buildBuildings(); buildPawns(); buildCenter();
             setupControls(GL_renderer.domElement);
+            wireCamButtons(container);
             const onResize = () => { if (!GL_renderer) return; const w = container.clientWidth, h = container.clientHeight; if (!w || !h) return; GL_renderer.setSize(w, h, false); GL_camera.aspect = w / h; GL_camera.updateProjectionMatrix(); fitCam(); };
             window.addEventListener('resize', onResize); GL_resize = onResize;
             syncScene(); animate();
@@ -960,11 +1039,18 @@ window.MiniGames = window.MiniGames || {};
                         <div class="mgy-cmsg" id="mgy-cmsg"></div>
                     </div>
                     <div class="mono-emblem" id="mono-emblem">🎲 正在加载 3D 棋盘…</div>
+                    <div class="mono-camctl">
+                        <button data-a="zin" title="放大">＋</button>
+                        <button data-a="zout" title="缩小">－</button>
+                        <button data-a="rl" title="左转视角">↺</button>
+                        <button data-a="rr" title="右转视角">↻</button>
+                        <button data-a="reset" title="复位视角">⟲</button>
+                    </div>
                 </div>
                 <div class="mgy-panel" id="mgy-panel"></div>
                 <div class="mgy-acts" id="mgy-acts"></div>
                 <div class="mgy-log" id="mgy-log"></div>
-                <div class="mgy-tip">💡 拖动旋转视角 · 滚轮缩放 · 集齐同色街区即可建楼收高租 · 踩到庙宇遇神明 · 退出自动存档</div>`;
+                <div class="mgy-tip">💡 拖动旋转视角 · 滚轮缩放 · 右下角按钮也可控制 · 集齐同色街区即可建楼收高租 · 踩到庙宇遇神明 · 退出自动存档</div>`;
             c.innerHTML = '';
             c.appendChild(wrap);
             try { MG.audio.unlock(); } catch (e) {}
@@ -1002,10 +1088,12 @@ window.MiniGames = window.MiniGames || {};
         get S() { return S; }, CELLS, GROUPS, CARDS, GODS, LEVELS, ENDLESS, netWorth, rentOf,
         cur, act: onAct, nextTurn, buildList, newState, render,
         gl: () => ({ tiles: GL_tiles.length, pawns: GL_pawns.length, hasBoard: !!GL_board, three: !!THREE,
-            threeRev: THREE ? (THREE.REVISION || '?') : null }),
+            threeRev: THREE ? (THREE.REVISION || '?') : null, deco: GL_deco.length }),
         blv: (i) => { const b = GL_blv[i]; return b ? { hotel: b.hotel.visible, slots: b.slots.map(s => s.visible) } : null; },
         visBld: () => GL_blv.reduce((a, b) => a + (b ? (b.hotel.visible ? 1 : 0) + b.slots.filter(s => s.visible).length : 0), 0),
-        pawnTarget: () => pawnTgt.slice(),
+        pawnCell: () => pawnCell.slice(),
+        pawnQueueLen: () => pawnQueue.map(q => q.length),
+        pawnTarget: () => pawnCell.slice(),
         camPos: () => ({ az: cam.az, pol: cam.pol, rad: cam.rad }),
         raf: () => GL_raf,
         drawCalls: () => (GL_renderer && GL_renderer.info) ? GL_renderer.info.render.calls : -1,
