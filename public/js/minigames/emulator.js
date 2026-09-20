@@ -7,6 +7,31 @@
 
     const CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
+    // ---------- 联机对战（EmulatorJS nightly netplay）----------
+    // 启用条件：① 必须用 nightly CDN（stable 无 netplay 模块）；② 配 EJS_netplayServer + EJS_gameID + ICE。
+    // 由于 nightly 单机会略不稳定，采用「按需切换」：只有点「👥 联机」才切 nightly，普通单机仍走稳定 stable。
+    // 信令服务器：默认用官方公开服务器，零基建即可联机；生产建议自建（见 deploy/netplay/），
+    //   把下面 server 改成你的反代地址（如 'https://你的域名/netplay/'）即可，前端无需其他改动。
+    // 提醒：公开服务器会按 EJS_gameID 把陌生人分到同一大厅；自建可彻底隔离，且只需同 ROM 的两人相遇。
+    const NETPLAY = {
+        cdn: 'https://cdn.emulatorjs.org/nightly/data/',
+        server: 'https://netplay.emulatorjs.org/',
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            // 免费 TURN（对称 NAT / 跨公网穿透兜底，否则异地只能同局域网）
+            { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+        ],
+    };
+    // 稳定数字游戏 ID：相同 ROM（含站点盐）→ 相同 ID → 进同一联机大厅；不同 ROM 基本不撞。
+    function emuGameId(romId) {
+        let h = 0x811c9dc5;
+        const s = 'tower-odyssey:' + (romId || '');
+        for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+        return (h >>> 0) % 100000000;
+    }
+
     function coreLabel(id) {
         const map = {
             nes: 'FC / NES 红白机', snes: '超级任天堂 SFC', gb: 'Game Boy / GBC', gba: 'GBA 掌机',
@@ -139,9 +164,17 @@
     ].join('\n');
 
     // ---------- EmulatorJS 播放页（iframe 隔离：每次播放都是全新模拟器实例） ----------
-    // opts: { core, url, title, biosUrl, parentUrl, romId, token, autoSync }
+    // opts: { core, url, title, biosUrl, parentUrl, romId, token, autoSync, netplay }
+    function netplayCfg(o) {
+        // 注入四项 netplay 配置；均为受控常量，无注入风险
+        return 'EJS_netplayServer=' + jstr(NETPLAY.server) + ';' +
+               'EJS_gameID=' + emuGameId(o.romId) + ';' +
+               'EJS_netplayICEServers=' + JSON.stringify(NETPLAY.iceServers) + ';';
+    }
     function buildPlayerHtml(opts) {
         const o = opts || {};
+        const netplay = !!o.netplay;
+        const cdn = netplay ? NETPLAY.cdn : CDN;   // 联机走 nightly（含 netplay 模块），单机仍走稳定 stable
         const core = o.core, url = o.url, title = o.title;
         const esc = s => String(s || '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
         const bridge = CLOUD_BRIDGE
@@ -158,7 +191,7 @@
             'EJS_core=' + jstr(core) + ';' +
             'EJS_gameUrl=' + jstr(url) + ';' +
             'EJS_gameName=' + jstr(title) + ';' +
-            'EJS_pathtodata="' + CDN + '";' +
+            'EJS_pathtodata="' + cdn + '";' +
             'EJS_startOnLoaded=true;' +
             // 多线程只支持 psx/mgba/mupen 等少数核心，**arcade 系列开了会直接网络报错**，务必保持 false
             'EJS_threads=false;' +
@@ -166,11 +199,12 @@
             'EJS_backgroundColor="#0a0a14";' +
             // 保留默认浏览器存档兜底，同时由下面的桥接脚本镜像到云端
             'EJS_defaultOptions={"save-state-location":"browser"};' +
+            (netplay ? netplayCfg(o) : '') +
             (o.biosUrl ? 'EJS_biosUrl=' + jstr(o.biosUrl) + ';' : '') +
             (o.parentUrl ? 'EJS_gameParentUrl=' + jstr(o.parentUrl) + ';' : '') +
             '</' + 'script>' +
             '<script>' + bridge + '</' + 'script>' +
-            '<script src="' + CDN + 'loader.js"></' + 'script>' +
+            '<script src="' + cdn + 'loader.js"></' + 'script>' +
             '</body></html>';
     }
 
@@ -321,15 +355,22 @@
                     const play = document.createElement('button');
                     play.className = 'emu-btn emu-btn-play';
                     play.textContent = '▶ 播放';
-                    play.onclick = ev => { ev.stopPropagation(); playRom(rom); };
+                    play.onclick = ev => { ev.stopPropagation(); playRom(rom, false); };
                     item.appendChild(play);
+                    const net = document.createElement('button');
+                    net.className = 'emu-btn emu-btn-play';
+                    net.style.marginLeft = '6px';
+                    net.textContent = '👥 联机';
+                    net.title = '联机对战（实验性 · 建议 FC/街机；双方都点此进入同一 ROM 即可相遇）';
+                    net.onclick = ev => { ev.stopPropagation(); playRom(rom, true); };
+                    item.appendChild(net);
                     frag.appendChild(item);
                 });
                 listBox.appendChild(frag);
             }
 
             // ---------- 播放（鉴权下载 ROM/BIOS/父ROM → blob → EmulatorJS iframe） ----------
-            function playRom(rom) {
+            function playRom(rom, netplay) {
                 if (!alive) return;
                 if (typeof Blob === 'undefined' || typeof URL === 'undefined' || !URL.createObjectURL) {
                     container.innerHTML = '<div class="emu-empty">当前环境不支持模拟器播放</div>';
@@ -364,7 +405,10 @@
                         frame.setAttribute('srcdoc', buildPlayerHtml({
                             core: rom.core, url: objectUrl, title: rom.name,
                             biosUrl, parentUrl,
-                            romId: rom.id, token: tok(), autoSync: cloudSyncOn(),
+                            romId: rom.id, token: tok(),
+                            // 联机模式下关闭云存档自动恢复/上传：避免本地档覆盖 netplay 实时状态
+                            autoSync: netplay ? false : cloudSyncOn(),
+                            netplay: !!netplay,
                         }));
                         const bar = el('emu-playbar');
                         const back = document.createElement('button');
@@ -373,7 +417,9 @@
                         back.onclick = refresh;
                         bar.appendChild(back);
                         bar.appendChild(el('emu-playtip',
-                            '加载中…首次启动需下载模拟核心（需联网）· 点击画面呼出菜单，⚙ Control Settings 可改 P1/P2 键位、存档、全屏'));
+                            netplay
+                                ? '联机模式加载中…核心就绪后请在 ≡ 菜单 → Netplay 开/进房；同一 ROM 的两人会进入同一大厅'
+                                : '加载中…首次启动需下载模拟核心（需联网）· 点击画面呼出菜单，⚙ Control Settings 可改 P1/P2 键位、存档、全屏'));
                         bar.appendChild(buildCloudBar(frame));
                         play.appendChild(frame);
                         play.appendChild(bar);
