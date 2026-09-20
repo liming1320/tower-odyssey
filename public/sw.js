@@ -1,12 +1,13 @@
 // 离线缓存：首次访问后缓存静态资源，之后可离线游玩（stale-while-revalidate）
 const BUILD = '__PWA_BUILD__';
+const PINBALL_VERSION = '__PINBALL_VERSION__';
 const CACHE = 'tower-odyssey-' + BUILD;
 const CORE = [
-    '/', '/index.html', '/manifest.webmanifest', '/pwa/icon.svg',
-    '/vendor/spacecadet/index.html?v=9',
-    '/vendor/spacecadet/SpaceCadetPinball.js?v=9',
-    '/vendor/spacecadet/SpaceCadetPinball.wasm?v=9',
-    '/vendor/spacecadet/SpaceCadetPinball.data?v=9',
+    '/', '/index.html', '/manifest.webmanifest', '/pinball.webmanifest', '/offline-pinball.html', '/pwa/icon.svg',
+    '/vendor/spacecadet/index.html?v=' + PINBALL_VERSION,
+    '/vendor/spacecadet/SpaceCadetPinball.js?v=' + PINBALL_VERSION,
+    '/vendor/spacecadet/SpaceCadetPinball.wasm?v=' + PINBALL_VERSION,
+    '/vendor/spacecadet/SpaceCadetPinball.data?v=' + PINBALL_VERSION,
 ];
 self.addEventListener('install', function (e) {
     e.waitUntil(caches.open(CACHE).then(function (cache) {
