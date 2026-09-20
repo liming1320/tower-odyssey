@@ -10,13 +10,13 @@
     "sharedHandlerGroups": 33,
     "catalogAssignmentConflictGames": 69,
     "ownershipVerified": 0,
-    "assetsMigrated": 6,
+    "assetsMigrated": 7,
     "levelsMigrated": 78,
-    "adapterPlayableMigrated": 213,
-    "rulesMigrated": 65,
+    "adapterPlayableMigrated": 69,
+    "rulesMigrated": 69,
     "fullFlowMigrated": 0,
     "sharedResourcePackagesBound": 213,
-    "gameSpecificAssetMappings": 5,
+    "gameSpecificAssetMappings": 6,
     "evidenceAdapterMigrated": 213,
     "flowContentMigrated": 213,
     "catalogEvidenceAdapter": 213,
@@ -51,7 +51,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -110,7 +110,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -121,7 +122,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -180,7 +181,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -191,7 +193,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -250,7 +252,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -261,7 +264,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -320,7 +323,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -331,7 +335,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -390,7 +394,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -401,7 +406,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -460,7 +465,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -471,7 +477,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -530,7 +536,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -541,7 +548,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -600,7 +607,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -611,7 +619,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -670,7 +678,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -681,7 +690,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -740,7 +749,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -751,7 +761,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -810,7 +820,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -821,7 +832,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -880,7 +891,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -891,7 +903,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -950,7 +962,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -961,7 +974,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1020,7 +1033,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1031,7 +1045,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1090,7 +1104,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1101,7 +1116,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1160,7 +1175,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1171,7 +1187,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1230,7 +1246,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1241,7 +1258,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1300,7 +1317,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1311,7 +1329,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1370,7 +1388,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1381,7 +1400,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1440,7 +1459,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1451,7 +1471,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1510,7 +1530,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1521,7 +1542,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1580,7 +1601,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1591,7 +1613,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1650,7 +1672,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1661,7 +1684,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1720,7 +1743,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1731,7 +1755,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1790,7 +1814,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1801,7 +1826,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1860,7 +1885,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1871,7 +1897,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -1930,7 +1956,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -1941,7 +1968,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2000,7 +2027,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2011,7 +2039,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2070,7 +2098,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2081,7 +2110,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2140,7 +2169,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2151,7 +2181,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2210,7 +2240,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2221,7 +2252,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2280,7 +2311,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2291,7 +2323,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2350,7 +2382,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2361,7 +2394,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2420,7 +2453,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2431,7 +2465,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2490,7 +2524,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2501,7 +2536,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2560,7 +2595,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2630,6 +2666,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -2641,7 +2678,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2700,7 +2737,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2711,7 +2749,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2770,7 +2808,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2781,7 +2820,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2840,7 +2879,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2851,7 +2891,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2910,7 +2950,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2921,7 +2962,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -2978,7 +3019,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -2989,7 +3031,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3046,7 +3088,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3057,7 +3100,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3116,7 +3159,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3127,7 +3171,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3186,7 +3230,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3197,7 +3242,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3256,7 +3301,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3267,7 +3313,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3326,7 +3372,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3337,7 +3384,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3396,7 +3443,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -3466,6 +3514,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -3477,7 +3526,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3536,7 +3585,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3547,7 +3597,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3604,7 +3654,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3615,7 +3666,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3674,7 +3725,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3744,6 +3796,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -3755,7 +3808,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3814,7 +3867,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3825,7 +3879,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3882,7 +3936,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3893,7 +3948,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -3952,7 +4007,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -3963,7 +4019,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4022,7 +4078,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4033,7 +4090,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4092,7 +4149,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4103,7 +4161,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4162,7 +4220,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4232,6 +4291,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -4243,7 +4303,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4302,7 +4362,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4313,7 +4374,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4372,7 +4433,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4383,7 +4445,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4442,7 +4504,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4453,7 +4516,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4512,7 +4575,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4523,7 +4587,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4580,7 +4644,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4591,7 +4656,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4650,7 +4715,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -4661,7 +4727,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4720,7 +4786,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4731,7 +4798,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4788,7 +4855,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4858,6 +4926,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -4869,7 +4938,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4926,7 +4995,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -4937,7 +5007,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -4996,7 +5066,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5007,7 +5078,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5066,7 +5137,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5077,7 +5149,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5136,7 +5208,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5147,7 +5220,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5206,7 +5279,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5217,7 +5291,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5276,7 +5350,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5346,6 +5421,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -5357,7 +5433,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5416,7 +5492,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5486,6 +5563,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -5497,7 +5575,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5556,7 +5634,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5567,7 +5646,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5626,7 +5705,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5696,6 +5776,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -5766,6 +5847,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -5777,7 +5859,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5834,7 +5916,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5845,7 +5928,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5902,7 +5985,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -5913,7 +5997,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -5972,7 +6056,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -5983,7 +6068,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -6042,7 +6127,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -6053,7 +6139,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -6112,7 +6198,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -6182,6 +6269,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6252,6 +6340,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6263,7 +6352,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -6322,7 +6411,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -6333,7 +6423,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -6392,7 +6482,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -6462,6 +6553,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6532,6 +6624,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6602,6 +6695,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6672,6 +6766,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6742,6 +6837,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6812,6 +6908,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6882,6 +6979,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6952,6 +7050,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -6963,7 +7062,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7022,7 +7121,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7092,6 +7192,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -7103,7 +7204,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7162,7 +7263,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7232,6 +7334,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -7243,7 +7346,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7302,7 +7405,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7313,7 +7417,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7372,7 +7476,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7383,7 +7488,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7442,7 +7547,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7453,7 +7559,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7512,7 +7618,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7521,7 +7628,7 @@
       "id": "pk32-108",
       "name": "斗兽棋",
       "migration": {
-        "assetsMigrated": false,
+        "assetsMigrated": true,
         "levelsMigrated": true,
         "adapterPlayableMigrated": true,
         "rulesMigrated": true,
@@ -7565,8 +7672,8 @@
         "evidenceConfidence": "content-bound",
         "sharedAssetsBound": true,
         "resourcePackageBound": true,
-        "sharedAtlasCount": 28,
-        "gameSpecificAssetMapping": false,
+        "sharedAtlasCount": 1,
+        "gameSpecificAssetMapping": true,
         "charGridCandidatesBound": false,
         "charGridCandidateCount": 0,
         "dedicatedAdapterBound": true,
@@ -7582,6 +7689,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -7593,7 +7701,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7652,7 +7760,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7722,6 +7831,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "evidence-adapter-migration",
@@ -7733,7 +7843,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7792,7 +7902,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7803,7 +7914,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7862,7 +7973,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -7873,7 +7985,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -7932,7 +8044,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -7943,7 +8056,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8002,7 +8115,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -8013,7 +8127,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8072,7 +8186,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -8083,7 +8198,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8142,7 +8257,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -8153,7 +8269,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8212,7 +8328,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -8223,7 +8340,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8282,7 +8399,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -8293,7 +8411,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8352,7 +8470,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -8363,7 +8482,7 @@
       "migration": {
         "assetsMigrated": true,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8422,7 +8541,8 @@
         "embeddedLevelAdapterBound": true,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -8433,7 +8553,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8492,7 +8612,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -8503,7 +8624,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8562,7 +8683,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -8573,7 +8695,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8632,7 +8754,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -8643,7 +8766,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8702,7 +8825,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -8713,7 +8837,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8772,7 +8896,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -8783,7 +8908,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8842,7 +8967,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -8853,7 +8979,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -8912,7 +9038,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -8982,6 +9109,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -9052,6 +9180,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -9122,6 +9251,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -9192,6 +9322,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -9262,6 +9393,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -9273,7 +9405,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9332,7 +9464,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -9343,7 +9476,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9402,7 +9535,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -9413,7 +9547,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9472,7 +9606,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -9483,7 +9618,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9542,7 +9677,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -9612,6 +9748,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -9623,7 +9760,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9682,7 +9819,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -9693,7 +9831,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9752,7 +9890,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -9763,7 +9902,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9822,7 +9961,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -9833,7 +9973,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9890,7 +10030,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -9901,7 +10042,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -9960,7 +10101,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -10030,6 +10172,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -10100,6 +10243,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -10111,7 +10255,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10170,7 +10314,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -10181,7 +10326,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10240,7 +10385,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -10251,7 +10397,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10310,7 +10456,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -10321,7 +10468,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10380,7 +10527,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -10391,7 +10539,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10450,7 +10598,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -10461,7 +10610,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10520,7 +10669,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -10531,7 +10681,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10590,7 +10740,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -10601,7 +10752,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10660,7 +10811,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -10671,7 +10823,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -10730,7 +10882,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -10742,7 +10895,7 @@
         "assetsMigrated": false,
         "levelsMigrated": true,
         "adapterPlayableMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "flowContentMigrated": true,
@@ -10793,13 +10946,14 @@
         "verificationComplete": false,
         "rulesImplementationCandidateByStructureFamily": null,
         "rulesImplementationCandidateByBoardEngine": false,
-        "rulesImplementationCandidateByNativeAdapter": false,
+        "rulesImplementationCandidateByNativeAdapter": true,
         "fullFlowImplementationCandidateByStructureFamily": false,
         "fullFlowImplementationCandidateByBoardEngine": false,
-        "fullFlowImplementationCandidateByNativeAdapter": false,
+        "fullFlowImplementationCandidateByNativeAdapter": true,
         "embeddedLevelAdapterBound": true,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -10870,6 +11024,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -10882,7 +11037,7 @@
         "assetsMigrated": false,
         "levelsMigrated": true,
         "adapterPlayableMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "flowContentMigrated": true,
@@ -10933,13 +11088,14 @@
         "verificationComplete": false,
         "rulesImplementationCandidateByStructureFamily": null,
         "rulesImplementationCandidateByBoardEngine": false,
-        "rulesImplementationCandidateByNativeAdapter": false,
+        "rulesImplementationCandidateByNativeAdapter": true,
         "fullFlowImplementationCandidateByStructureFamily": false,
         "fullFlowImplementationCandidateByBoardEngine": false,
-        "fullFlowImplementationCandidateByNativeAdapter": false,
+        "fullFlowImplementationCandidateByNativeAdapter": true,
         "embeddedLevelAdapterBound": true,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -10951,7 +11107,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -11010,7 +11166,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -11080,6 +11237,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11091,7 +11249,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -11150,7 +11308,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -11162,7 +11321,7 @@
         "assetsMigrated": false,
         "levelsMigrated": false,
         "adapterPlayableMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "flowContentMigrated": true,
@@ -11220,6 +11379,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11232,7 +11392,7 @@
         "assetsMigrated": false,
         "levelsMigrated": true,
         "adapterPlayableMigrated": true,
-        "rulesMigrated": false,
+        "rulesMigrated": true,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
         "flowContentMigrated": true,
@@ -11283,13 +11443,14 @@
         "verificationComplete": false,
         "rulesImplementationCandidateByStructureFamily": null,
         "rulesImplementationCandidateByBoardEngine": false,
-        "rulesImplementationCandidateByNativeAdapter": false,
+        "rulesImplementationCandidateByNativeAdapter": true,
         "fullFlowImplementationCandidateByStructureFamily": false,
         "fullFlowImplementationCandidateByBoardEngine": false,
-        "fullFlowImplementationCandidateByNativeAdapter": false,
+        "fullFlowImplementationCandidateByNativeAdapter": true,
         "embeddedLevelAdapterBound": true,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11301,7 +11462,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -11360,7 +11521,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -11371,7 +11533,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -11430,7 +11592,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -11441,7 +11604,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -11500,7 +11663,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -11570,6 +11734,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11640,6 +11805,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11710,6 +11876,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11780,6 +11947,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11850,6 +12018,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11920,6 +12089,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -11990,6 +12160,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -12001,7 +12172,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -12060,7 +12231,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -12071,7 +12243,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -12130,7 +12302,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -12200,6 +12373,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -12270,6 +12444,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -12281,7 +12456,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -12340,7 +12515,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -12410,6 +12586,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -12421,7 +12598,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -12480,7 +12657,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -12491,7 +12669,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -12550,7 +12728,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -12620,6 +12799,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -12631,7 +12811,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -12690,7 +12870,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -12760,6 +12941,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -12771,7 +12953,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -12830,7 +13012,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -12900,6 +13083,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -12970,6 +13154,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13040,6 +13225,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13051,7 +13237,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -13110,7 +13296,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -13180,6 +13367,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13250,6 +13438,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13320,6 +13509,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13331,7 +13521,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -13390,7 +13580,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -13401,7 +13592,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -13460,7 +13651,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -13471,7 +13663,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -13530,7 +13722,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -13541,7 +13734,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -13600,7 +13793,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -13670,6 +13864,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13740,6 +13935,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13810,6 +14006,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13880,6 +14077,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -13950,6 +14148,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14020,6 +14219,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14031,7 +14231,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -14090,7 +14290,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -14101,7 +14302,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -14160,7 +14361,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -14230,6 +14432,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14300,6 +14503,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14370,6 +14574,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14381,7 +14586,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -14440,7 +14645,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -14510,6 +14716,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14580,6 +14787,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14591,7 +14799,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": false,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -14650,7 +14858,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "evidence-adapter-migration",
       "originalComplete": false
@@ -14661,7 +14870,7 @@
       "migration": {
         "assetsMigrated": false,
         "levelsMigrated": true,
-        "adapterPlayableMigrated": true,
+        "adapterPlayableMigrated": false,
         "rulesMigrated": false,
         "fullFlowMigrated": false,
         "evidenceAdapterMigrated": true,
@@ -14720,7 +14929,8 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
-        "playableAdapterBound": true
+        "actualAdapterBound": false,
+        "playableAdapterBound": false
       },
       "migrationPhase": "partial-content-migration",
       "originalComplete": false
@@ -14790,6 +15000,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14860,6 +15071,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": false,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",
@@ -14930,6 +15142,7 @@
         "embeddedLevelAdapterBound": false,
         "playableNativeAdapterBound": true,
         "genericAdapterBound": true,
+        "actualAdapterBound": true,
         "playableAdapterBound": true
       },
       "migrationPhase": "partial-content-migration",

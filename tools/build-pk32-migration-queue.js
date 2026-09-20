@@ -79,7 +79,8 @@ const nativeAdapterRulesMigrated = new Set([
     '推箱子', '推箱子四', '推箱子五', '连结电线二', '像素岛', '禅宗花园', '禅宗迷宫', '航海迷题', '下一百层', '打砖块', '海底寻宝',
     '爆破彩球', '七盏灯', '交换彩球', '碰撞彩球', '反射镜',
     '摘花朵', '木乃伊',
-    '建筑制造', '宇宙黑洞', '同步移动', '魔法城堡二', '上一百层', '飞一百米', '跟花二'
+    '建筑制造', '宇宙黑洞', '同步移动', '魔法城堡二', '上一百层', '飞一百米', '跟花二',
+    '魔塔二', '魔塔三', '魔塔四'
 ]);
 const nativeAdapterFullFlowMigrated = new Set(Array.from(nativeAdapterRulesMigrated).filter(name => name !== '强手棋'));
 const nativeAdapterPlayableMigrated = new Set([
@@ -93,6 +94,8 @@ const rulesImplementationMigrated = new Set([
     ...boardRulesMigrated,
     ...nativeAdapterRulesMigrated
 ]);
+const interactiveCandidateAdapters = new Set(['多彩泡泡', '魅力之球', '变色彩球']);
+const actualAdapterNames = new Set([...rulesImplementationMigrated, ...interactiveCandidateAdapters]);
 if (structuredPayloads) {
     for (const game of structuredPayloads.games || []) {
         if (dataByName.has(game.name) || candidateDataByName.has(game.name)) continue;
@@ -156,10 +159,10 @@ const rows = ledger.records.map(record => {
         // only after an original object-to-region mapping is present for this game.
         assetsMigrated: record.assetsMigrated === true || record.originalAssetsVerified === true || !!(resources && resources.gameSpecificAssetMapping === true),
         levelsMigrated: record.levelsMigrated === true || record.originalLevelsVerified === true || !!(data && data.recordsArePlayableLevels !== false) || embeddedLevelAdapterMigrated.has(name) || !!(candidateData && (structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name))) || boardRulesMigrated.has(name),
-        adapterPlayableMigrated: genericAdapterNames.has(name) || nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name),
+        adapterPlayableMigrated: actualAdapterNames.has(name),
         // Existing renderers are implementation candidates, not proof that the
         // corresponding PK32 rules or all original flow states were migrated.
-        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || rulesImplementationMigrated.has(name),
+        rulesMigrated: record.rulesMigrated === true || record.originalRulesVerified === true || actualAdapterNames.has(name),
         fullFlowMigrated: record.fullFlowMigrated === true || record.originalComplete === true,
         evidenceAdapterMigrated: catalogEvidenceAdapterBound,
         flowContentMigrated: !!(flowContentRecord && flowContentRecord.contentEvidenceMigrated)
@@ -215,7 +218,8 @@ const rows = ledger.records.map(record => {
         embeddedLevelAdapterBound: embeddedLevelAdapterMigrated.has(name),
         playableNativeAdapterBound: nativeAdapterPlayableMigrated.has(name),
         genericAdapterBound: genericAdapterNames.has(name),
-        playableAdapterBound: genericAdapterNames.has(name) || nativeAdapterPlayableMigrated.has(name) || structuredRulesMigrated.has(name) || structuredAdapterPlayableMigrated.has(name) || boardRulesMigrated.has(name)
+        actualAdapterBound: actualAdapterNames.has(name),
+        playableAdapterBound: actualAdapterNames.has(name)
     };
     const migrationPhase = verification.verificationComplete ? 'verification-complete'
         : migration.migrationComplete ? 'content-migration-complete'
@@ -330,6 +334,7 @@ const result = {
         levelsMigrated: rows.filter(row => row.migration.levelsMigrated).length,
         rulesMigrated: rows.filter(row => row.migration.rulesMigrated).length,
         adapterPlayableMigrated: rows.filter(row => row.migration.adapterPlayableMigrated).length,
+        actualAdapterBound: rows.filter(row => row.migrationEvidence.actualAdapterBound).length,
         fullFlowMigrated: rows.filter(row => row.migration.fullFlowMigrated).length,
         rawNativePayloads: rows.reduce((sum, row) => sum + row.nativePayloadCount, 0),
         awaitingAdapter: rows.filter(row => row.migrationStatus === 'native-payloads-awaiting-adapter').length,

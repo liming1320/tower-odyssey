@@ -70,6 +70,12 @@ const nativeAssetMappings = new Map([
     source: 'public/js/minigames/pk32-variants.js',
     nativeSurface: 'ship atlas',
     mapping: 'ship and sea-monster color sprite rectangles'
+  }],
+  ['斗兽棋', {
+    atlasIds: ['sheet-be5932'],
+    source: 'public/js/minigames/pk32-board.js',
+    nativeSurface: 'jungle board renderer',
+    mapping: '9x7 terrain grid, river/trap/den cells, and animal sprite rectangles'
   }]
 ]);
 

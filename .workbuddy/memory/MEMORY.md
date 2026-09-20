@@ -49,7 +49,7 @@
   ②`const { normalizeSkills } = require(...)` 必须声明在 routeCtx **之前**，否则 TDZ ReferenceError。
 
 ## 联机覆盖现状
-- 棋类：五子棋 gomoku、暗棋 banqi、象棋 xiangqi、国际象棋 mg-chess、军棋 junqi/jungle；4 人桌：大富翁 richman、强手棋 monopoly（cap=4）。不存在围棋 weiqi/go。
+- 棋类：五子棋 gomoku、暗棋 banqi、象棋 xiangqi、国际象棋 mg-chess、军棋 junqi/jungle；4 人桌：强手棋 richman、大富翁 monopoly（cap=4）。不存在围棋 weiqi/go。
 - 引擎（MG.eng）：飞行棋 ludo（新增引擎游戏只需声明 `cfg.net`：setup/ser/apply + 行动后 `api.net.commit()`）。
 - 状态同步类新游戏：memory、g2048(race)、tankpvp、snakepvp、maze-coop(co-op 协作)；非联网进入时渲染「请从小游戏列表联网分类进入」提示，不静默进单人。
 
@@ -60,6 +60,20 @@
   并同步 index.html 里 battle.js/utils.js 的 `?v=`，否则浏览器吃旧图。
 - 无浏览器回归手段：`tools/verify-banqi-pvp.js`、`tools/smoke-battle-polish.js`（stub canvas 驱动 battle.js）。
 - **共享打击感底座 `U.fx`（`utils.js`）**：主玩法战斗与 MG 小游戏共用同一套特效——震屏/飘字/粒子/冲击波/全屏闪走 `MG.cam`+`MG.fxPool`（mg-effects.js 启动期已加载，纯 canvas 工具，不依赖 `MG.runGame`）；顿帧用 battle.js 的全局冻结 dt 模型（`U.fx.hitStop`/`consumeHitStop`）。**任何主玩法场景要加打击感都走 `U.fx`，不要再自写随机抖动/独立飘字数组**；MG 缺失时 `U.fx` 自动降级空操作 + 标量抖动兜底。
+## 渲染：大富翁 monopoly = 真 Three.js WebGL 3D（2026-09-20，de5d7f8）
+- **Three.js 早已自带**：`public/js/lib/three.min.js`（**r149**，有 `sRGBEncoding`/`outputEncoding`，无 `outputColorSpace`），`alienshoot3d.js` 在用 → 做真 3D **零新增依赖**（别再以为「上 Three.js 会破坏零依赖」）。懒加载范式：注入 `script` 指向 `/js/lib/three.min.js?v=20260916a`。
+- 大富翁的 **显示层** 已整体换成 WebGL 场景（40 格方盘 + 立体楼房/酒店 + 4 个圆柱身+球头+emoji 脸的小人 + **逐格跳步行走** + 中央广场）；**游戏逻辑（买地/建楼/卡牌/神明/破产/存档/`MG.pvp` 联机）完全未动**——`render()` 只做「状态 S → 视图」同步，改造只动渲染。
+- **小人逐格行走范式（2026-09-20 续10）**：每小人 `pawnCell[i]`(当前格)+`pawnStep[i]`(0..1)+`pawnQueue[i]`(待走格序列)。`walk()` 每推进一格即 `push` 入队并 `sleep(55/38)`，**视觉由 `animate()` 按 `HOP_TIME` 逐格消耗队列**（`sin(f·π)` 抛物线弧）；`walk()` 末尾 `while(pawnQueue[i].length) sleep(20)` 等动画播完才 resolve → `await walk(); await onLand()` 顺序天然正确。**非走格移动（卡牌传送/监狱）不入队**，靠 `syncScene()`「队列空且 `pos!==pawnCell` 即吸附」兜底对齐（任意距离，别再用旧的 delta≤6 分支）。
+- DOM 结构：`.mgy-board` = WebGL 画布容器（`position:relative/overflow:hidden`，`.mono-canvas` 绝对铺满），顶部 HUD 叠加层 `.mono-center`（轮次/目标/骰子/消息）+ 加载/报错占位 `.mono-emblem` + 右下相机按钮 `.mono-camctl`（均 `pointer-events` 收窄不挡拖拽）。**旧 CSS 伪 3D（perspective/rotateX/billboard 楼房/mono-ct/mgy-pips/mono-crest/mono-deco）已全部删除**。
+- 相机：手写控制（指针拖拽 `cam.az/pol`、滚轮+双指 `cam.rad`）+ **按钮 `camZoom/camSpin/camReset`（`.mono-camctl` 5 键，`wireCamButtons` 绑定）**；`fitCam()` 按垂直/水平半视角较小者反算 `rad` 自动取景（初始 + `onResize` 各调），否则方盘对角会被裁、起点角小人出画。
+- 3D 装饰 `buildCenter()`：中央广场盘+金环+贴地 logo + 机会/命运牌堆 + 起点金环 + 监狱栅栏（`GL_deco` 计数）。
+- `_debug` 暴露 `gl()(含 deco)/blv(i)/visBld()/pawnCell()/pawnQueueLen()/camPos()/raf()/drawCalls()/pawnScreen()` 供无头校验读 3D 内部状态；建楼闪光 `flashBuild(i)`/`fxCount()`、脚步声 `MG.audio.sfx('step')`（mg-audio.js 的 `P={}` 加 `step:` 预设）、竖屏取景 `fitCam()` 按 `window.innerHeight>window.innerWidth` 走 `pol=1.18`+fov60 分支（无头 390×844 实测 8/8 小人在画内）。
+
+### Canvas/WebGL 渲染层验收铁律（血泪）
+- **`catch` 包住的初始化异常会伪装成成功**：曾把初始化尾部写在 `start3D().catch()` 里，某行抛 `TypeError` 被静默接住 → 场景/对象都建好了但**渲染循环从未启动 → 整盘黑屏**。
+- 故验收断言**必须包含**：①渲染循环在跑（`raf()!==0` / 帧计数）②真的产生 draw call（`renderer.info.render.calls>0`）③错误占位文案为空。只断言「DOM/对象存在」会以「全绿黑屏」形式放行（已踩）。
+- **无头 WebGL 必须软件渲染**：Chrome 加 `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader`，**绝不能加 `--disable-gpu`**（会直接废掉 WebGL）。参考 `tools/shot-monopoly.js`（15 项断言 + 截图）。
+- **异步动画类断言要「等稳态再采样」**：曾断言"行走队列已排空"却报残留 `[2,0,0,0]`——其实是**采样时对手的行走动画刚播到一半**（并非 bug）。凡断言"最终状态"，先轮询到稳定（如 `pawnQueueLen()` 全 0 或超时）再取值。
 - **本机有 Chrome**（`C:\Program Files\Google\Chrome\Application\chrome.exe`，另有 Edge、ms-playwright，此前"测试机无 Chrome"的记录有误）。
   UI 改版可做「静态预览 HTML 引用**真实** `public/css/main.css` + 手抄渲染函数产出的 DOM 结构 → 无头 Chrome 截图」肉眼验收，无需起服务：
   `chrome.exe --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=940,1080 --screenshot=out.png file:///E:/...`

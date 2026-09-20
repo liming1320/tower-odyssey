@@ -81,6 +81,7 @@
         '数谜': 'pk32-number-riddle-levels.json',
         '变色彩球': 'pk32-color-changing-balls-levels.json'
     };
+    const CANDIDATE_BUBBLE_NAMES = new Set(['多彩泡泡', '魅力之球']);
     const RAW_PAYLOAD_NAMES = new Set('蜘蛛纸牌|14点|桥牌|麻将王三|弹力连珠'.split('|'));
 
     function el(tag, attrs, text) {
@@ -1761,7 +1762,7 @@
                     }
                     reset();
                 }
-                if (config.name === '多彩泡泡') return renderCandidateBubble();
+                if (CANDIDATE_BUBBLE_NAMES.has(config.name)) return renderCandidateBubble();
                 if (config.name === '变色彩球') return renderCandidateColorChange();
                 function draw() {
                     const item = (data.levels || [])[level];
