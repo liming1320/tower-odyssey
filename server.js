@@ -993,6 +993,7 @@ const MIME_TYPES = {
     '.js': 'application/javascript; charset=utf-8',
     '.wasm': 'application/wasm',
     '.json': 'application/json; charset=utf-8',
+    '.webmanifest': 'application/manifest+json; charset=utf-8',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
@@ -1381,7 +1382,7 @@ const server = http.createServer(async (req, res) => {
 // WebSocket 透传：ST 的 socket.io 靠长连接收发消息，缺了它页面能开但聊天卡死
 Tavern.attachUpgrade(server, { getUserByToken, DB });
 // 小游戏联机中继：仅拦截 /ws/minigame，与上面 ST 的 upgrade 钩子互不干扰（两者都对非自身路径 return）
-if (WsRelay) WsRelay.attach(server); else console.warn('[game] 联机中继未启用（缺少 server/ws-relay 或 ws 模块）');
+if (WsRelay) WsRelay.attach(server, { getUserByToken }); else console.warn('[game] 联机中继未启用（缺少 server/ws-relay 或 ws 模块）');
 
 // MySQL 模式：先连库载入真实数据（玩家 + 英雄），再开始监听，避免请求打到空数据
 //

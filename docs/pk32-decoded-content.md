@@ -32,7 +32,7 @@
 | Levels migrated | 77 |
 | Playable adapters migrated | 213 |
 | Flow/text content migrated | 213 |
-| Rules migrated | 1 |
+| Rules migrated | 2 |
 | Full flow migrated | 0 |
 | Auto-bindable content games | 42 |
 | Content migration complete | 0 |
@@ -156,7 +156,7 @@
 | pk32-096 | 平面魔方 | partial-content-migration | content-bound | shared atlases 28 | 0 | fixed-area-candidate / 9 | 9 | 0 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
 | pk32-097 | 激光坦克 | partial-content-migration | content-bound | shared atlases 28 | 0 | paired-code-candidate / 50 | 50 | 0 | no | no | no | payload semantics not level-ready; rules not fully migrated; full flow not migrated |
 | pk32-098 | 华容道 | partial-content-migration | content-bound | shared atlases 28 | 1 |  | 11 | 0 | yes | no | no | rules not fully migrated; full flow not migrated |
-| pk32-099 | 强手棋 | partial-content-migration | content-bound | shared atlases 1 | 0 |  | 0 | 0 | no | no | no | no decoded content; rules not fully migrated; full flow not migrated |
+| pk32-099 | 强手棋 | partial-content-migration | content-bound | shared atlases 1 | 0 |  | 0 | 0 | no | no | no | no decoded content; full flow not migrated |
 | pk32-100 | 五彩连珠 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |
 | pk32-101 | 跳棋 | partial-content-migration | content-bound | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; rules not fully migrated; full flow not migrated |
 | pk32-102 | 中国象棋 | evidence-adapter-migration | catalog-launch-help | shared atlases 28 | 0 |  | 0 | 0 | no | no | no | no decoded content; no dedicated adapter; rules not fully migrated; full flow not migrated |

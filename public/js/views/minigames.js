@@ -189,7 +189,10 @@ MinigamesView.openHall = function (g) {
     const setStatus = t => { const el = document.getElementById('mh-status'); if (el) el.textContent = t; };
     const meName = () => (MG.me && MG.me.nickname) || '我';
 
-    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame';
+    // 带上登录态：浏览器 WS 握手不带 Authorization 头，故把 game-token 拼进 ?token= 查询参数（与 Tavern 一致）。
+    // 中继层据此验出真实账号，从而「一个人只能开一张桌子」严格按账号算，而非按 IP（避免同 WiFi / 多设备算成多人）。
+    const tk = (typeof localStorage !== 'undefined' && localStorage.getItem('game-token')) || '';
+    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame' + (tk ? ('?token=' + encodeURIComponent(tk)) : '');
     // 大厅长连接中途掉线时，后续点击会静默无效（消息进发件箱但没人冲刷）。任何动作前兜底重连一次。
     const ensureConn = () => {
         try {

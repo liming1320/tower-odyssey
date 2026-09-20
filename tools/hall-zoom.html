@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>桌子卡片放大预览</title>
+<link rel="stylesheet" href="../public/css/main.css">
+<style>
+  body { background:#0e0f1a; margin:0; display:flex; justify-content:center; align-items:center; min-height:400px; }
+  .mini-mask { position: static !important; width:100%; }
+  .mini-stage { position: static !important; overflow: visible !important; background:#0e0f1a; padding:30px; }
+  .mg-hall { width:380px !important; }
+  /* 放大座位胶囊，方便看清细节 */
+  .mh-table { transform: scale(1.25); transform-origin: top left; }
+  .mh-seat { min-height:34px !important; font-size:14px !important; }
+  .mh-seat.empty { flex-basis:34px !important; width:34px !important; height:34px !important; min-height:34px !important; }
+  .mh-av { width:24px !important; height:24px !important; font-size:13px !important; }
+</style>
+</head>
+<body>
+<div class="mini-mask">
+  <div class="mini-stage">
+    <div class="mg-hall">
+      <div class="mh-tables">
+        <div class="mh-table">
+          <div class="mh-table-top">
+            <span class="mh-room">#a4f2c1</span>
+            <span class="mh-count">1/2</span>
+            <button class="mh-join">加入</button>
+          </div>
+          <div class="mh-seats">
+            <span class="mh-seat taken" title="阿强"><i class="mh-av">阿</i><b class="mh-nm">阿强</b></span>
+            <span class="mh-seat empty"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

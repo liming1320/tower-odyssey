@@ -202,7 +202,8 @@ MG.match = {
 MG.net.versus = function (opts) {
     opts = opts || {};
     const game = opts.game || (MG._curGame) || 'unknown';
-    const url = opts.url || ((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame');
+    const tk = (typeof localStorage !== 'undefined' && localStorage.getItem('game-token')) || '';
+    const url = opts.url || ((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame' + (tk ? ('?token=' + encodeURIComponent(tk)) : ''));
     const room = opts.room || null;            // 有房间码=好友邀请；无=快速匹配
     const me = (MG.me && MG.me.nickname) || opts.me || '我';
     MG.net.on('room', m => { try { MG.match.begin({ mode: 'net', me: me, opp: (m && m.opp) || '对手', room: (m && m.room) || room, side: (m && m.side) || 0 }); } catch (e) {} });

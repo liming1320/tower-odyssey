@@ -9,7 +9,10 @@ MG.pwa = {
             if (window.__MG_TEST) return;
             const h = location.hostname;
             if (location.protocol !== 'https:' && h !== 'localhost' && h !== '127.0.0.1' && h !== '152.136.167.250') return;
-            navigator.serviceWorker.register(this.SW).catch(function () {});
+            const meta = document.querySelector('meta[name="pwa-build"]');
+            const rawBuild = meta && meta.getAttribute('content');
+            const build = rawBuild && rawBuild.indexOf('__PWA_BUILD__') === -1 ? rawBuild : 'dev';
+            navigator.serviceWorker.register(this.SW + '?v=' + encodeURIComponent(build)).catch(function () {});
         } catch (e) {}
     },
 };

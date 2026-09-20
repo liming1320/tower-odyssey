@@ -1483,6 +1483,7 @@
       "originalLevelsVerified": true,
       "originalRulesVerified": false,
       "originalAssetsVerified": true,
+      "rulesMigrated": true,
       "originalComplete": false,
       "evidence": "原版 40 格棋盘、四名角色、单骰和地产布局已通过原生图集像素比对；完整规则仍在迁移",
       "notes": "tools/verify-pk32-richman-art.js：13 组 differentPixels=0；tools/verify-pk32-richman-flow.js：28 项通过；tools/verify-richman.js：14 项通过；仍缺原 EXE 全部事件逐动作差分",

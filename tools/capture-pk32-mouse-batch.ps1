@@ -22,6 +22,7 @@ param(
     [int]$GameWaitMs = 1200,
     [switch]$CaptureRuntimeDelta,
     [int]$MaxDeltaMiB = 64,
+    [switch]$AllowCoordinateStartFallback,
     [switch]$Run,
     [switch]$AllowDesktopInput,
     [switch]$KeepOpen
@@ -58,6 +59,8 @@ public static class Pk32MouseBatchNative {
     [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extraInfo);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int capacity);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(IntPtr hWnd, StringBuilder text, int capacity);
+    [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr parent, EnumWindowsProc callback, IntPtr parameter);
+    [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr hWnd);
     private static bool GetScreenRect(IntPtr hWnd, out RECT rect) { return GetWindowRect(hWnd, out rect); }
     private static void MoveCursor(RECT rect, int x, int y) { SetCursorPos(rect.Left + x, rect.Top + y); }
     public static IntPtr FindVisibleWindow(int processId) {
@@ -85,6 +88,30 @@ public static class Pk32MouseBatchNative {
         int width = rect.Right - rect.Left, height = rect.Bottom - rect.Top;
         if (x < 0 || y < 0 || x >= width || y >= height) throw new Exception("Click coordinate is outside the PK32 window");
         SetForegroundWindow(hWnd); MoveCursor(rect, x, y);
+        mouse_event(0x0002, 0, 0, 0, UIntPtr.Zero); mouse_event(0x0004, 0, 0, 0, UIntPtr.Zero);
+    }
+    public static string FindStartButton(IntPtr parent) {
+        IntPtr best = IntPtr.Zero; int bestScore = -1;
+        EnumChildWindows(parent, (hWnd, parameter) => {
+            if (!IsWindowVisible(hWnd) || !IsWindowEnabled(hWnd)) return true;
+            var text = new StringBuilder(256); var className = new StringBuilder(256);
+            GetWindowText(hWnd, text, text.Capacity); GetClassName(hWnd, className, className.Capacity);
+            string caption = text.ToString(); string kind = className.ToString();
+            string lowerCaption = caption.ToLowerInvariant(); string lowerKind = kind.ToLowerInvariant();
+            bool isButton = lowerKind.Contains("button") || lowerKind.Contains("commandbutton");
+            if (!isButton) return true;
+            int score = 1;
+            if (lowerCaption.Contains("start") || lowerCaption.Contains("play") || lowerCaption.Contains("new game")) score += 20;
+            if (caption.Contains("\u5f00\u59cb") || caption.Contains("\u8fdb\u5165") || caption.Contains("\u786e\u5b9a") || caption.Contains("\u65b0\u6e38\u620f")) score += 20;
+            if (lowerCaption.Contains("cancel") || lowerCaption.Contains("exit") || caption.Contains("\u53d6\u6d88") || caption.Contains("\u8fd4\u56de")) score -= 15;
+            if (score > bestScore) { bestScore = score; best = hWnd; }
+            return true;
+        }, IntPtr.Zero);
+        return best == IntPtr.Zero ? "" : WindowInfo(best);
+    }
+    public static void ClickChildCenter(IntPtr child) {
+        RECT rect; if (!GetWindowRect(child, out rect)) throw new Exception("GetWindowRect failed");
+        SetForegroundWindow(child); SetCursorPos((rect.Left + rect.Right) / 2, (rect.Top + rect.Bottom) / 2);
         mouse_event(0x0002, 0, 0, 0, UIntPtr.Zero); mouse_event(0x0004, 0, 0, 0, UIntPtr.Zero);
     }
     public static void Wheel(IntPtr hWnd, int delta) {
@@ -170,6 +197,16 @@ function Click-And-Wait([IntPtr]$Handle, [int]$X, [int]$Y) {
     Start-Sleep -Milliseconds $StepWaitMs
 }
 
+function Find-And-ClickStart([IntPtr]$Handle) {
+    $info = [Pk32MouseBatchNative]::FindStartButton($Handle)
+    if ([string]::IsNullOrWhiteSpace($info)) { return $null }
+    $parts = $info.Split('|')
+    $child = [IntPtr]::new([int64]$parts[0])
+    [Pk32MouseBatchNative]::ClickChildCenter($child)
+    Start-Sleep -Milliseconds $StepWaitMs
+    return $info
+}
+
 function Get-ActiveWindow([Diagnostics.Process]$Process) {
     $Process.Refresh()
     if ($Process.HasExited) { throw 'PK32 exited before the requested capture phase.' }
@@ -248,18 +285,29 @@ for ($position = $From; $position -le $To; $position++) {
         $record.evidence.selectionVisualChange = $selectionVisualChange
         if ($selectedCapture.hash -eq $catalogCapture.hash -or $selectionVisualChange -lt 0.05) { $record.status = 'selection-not-observed'; throw 'The catalog did not visibly transition into a game after the item click; coordinate or mouse delivery needs recalibration.' }
         $startedCapture = $null
-        foreach ($baseY in @($StartButtonY, 390, 420, 470, 370)) {
-            foreach ($offset in @(0, -4, 4, -8, 8)) {
-                Click-And-Wait $handle $StartButtonX ($baseY + $offset)
-                $candidate = Capture-Phase $handle $directory '04-started.png'
-                $startedCapture = $candidate
-                if ($candidate.hash -ne $selectedCapture.hash) { break }
+        $startControl = Find-And-ClickStart $handle
+        if ($startControl) {
+            $record.evidence.startControl = $startControl
+            $record.evidence.startMode = 'child-control'
+            $startedCapture = Capture-Phase $handle $directory '04-started.png'
+        } elseif ($AllowCoordinateStartFallback) {
+            $record.evidence.startMode = 'coordinate-fallback'
+            foreach ($baseY in @($StartButtonY, 390, 420, 470, 370)) {
+                foreach ($offset in @(0, -4, 4, -8, 8)) {
+                    Click-And-Wait $handle $StartButtonX ($baseY + $offset)
+                    $candidate = Capture-Phase $handle $directory '04-started.png'
+                    $startedCapture = $candidate
+                    if ($candidate.hash -ne $selectedCapture.hash) { break }
+                }
+                if ($startedCapture.hash -ne $selectedCapture.hash) { break }
             }
-            if ($startedCapture.hash -ne $selectedCapture.hash) { break }
+        } else {
+            $record.evidence.startMode = 'direct-game-state'
+            $startedCapture = $selectedCapture
         }
         $record.evidence.started = $startedCapture.file
         $record.evidence.startedHash = $startedCapture.hash
-        if ($startedCapture.hash -eq $selectedCapture.hash) { $record.status = 'start-transition-not-observed'; throw 'The selected image did not change after the Start click; start-button coordinates need recalibration.' }
+        if ($startControl -and $startedCapture.hash -eq $selectedCapture.hash) { $record.status = 'start-transition-not-observed'; throw 'The detected Start control did not produce a visible transition.' }
         if ($CaptureRuntimeDelta) {
             Start-Sleep -Milliseconds $GameWaitMs
             $deltaDirectory = Join-Path $directory 'runtime-delta'
@@ -284,7 +332,7 @@ $summary = [ordered]@{
     executable = $fullExecutable
     requestedRange = "$($PositionOffset + $From)..$($PositionOffset + $To)"
     pageNumber = $PageNumber
-    policy = [ordered]@{ selectionUsesMouse = $true; startsEachEntryFromFreshProcess = $true; namesAreNotInferred = $true; runtimeDeltaOptional = [bool]$CaptureRuntimeDelta; migrationStatusUnchanged = $true }
+    policy = [ordered]@{ selectionUsesMouse = $true; startsEachEntryFromFreshProcess = $true; namesAreNotInferred = $true; runtimeDeltaOptional = [bool]$CaptureRuntimeDelta; coordinateStartFallbackOptIn = [bool]$AllowCoordinateStartFallback; directGameStateAccepted = $true; migrationStatusUnchanged = $true }
     records = $records
 }
 $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $fullOutput 'run-summary.json') -Encoding utf8

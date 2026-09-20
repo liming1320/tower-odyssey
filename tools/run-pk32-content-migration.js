@@ -64,12 +64,14 @@ try {
   steps.push(run('tools/build-pk32-structured-payloads.js'));
   steps.push(run('tools/build-pk32-resource-manifest.js'));
   steps.push(run('tools/build-pk32-migration-queue.js'));
+  steps.push(run('tools/build-pk32-static-migration-groups.js'));
   if (fs.existsSync(path.join(root, 'output/pk32-reference/native-ownership.json'))) {
     steps.push(run('tools/build-pk32-native-migration-map.js'));
   }
   steps.push(run('tools/build-pk32-decoded-docs.js'));
 
   const queue = readJson('output/pk32-reference/migration-queue.json');
+  const staticGroups = readJson('output/pk32-reference/static-migration-groups.json');
   const decoded = readJson('output/pk32-reference/decoded-content-index.json');
   const publicStatus = fs.existsSync(path.join(root, 'public/data/pk32-migration-status.json'))
     ? readJson('public/data/pk32-migration-status.json')
@@ -123,7 +125,12 @@ try {
       decodedIndex: 'output/pk32-reference/decoded-content-index.json',
       autoBindableContent: decoded.summary.canAutoBindContent,
       awaitingAdapter: queue.summary.awaitingAdapter,
-      publicStatusRecords: publicStatus && publicStatus.records ? publicStatus.records.length : 0
+      publicStatusRecords: publicStatus && publicStatus.records ? publicStatus.records.length : 0,
+      staticGroups: staticGroups.summary.groups,
+      runtimeRepresentatives: staticGroups.summary.runtimeRepresentatives,
+      runtimeEvidenceBoundGroups: staticGroups.summary.runtimeEvidenceBoundGroups,
+      runtimeSampleFailedGroups: staticGroups.summary.runtimeSampleFailedGroups,
+      adapterReuseCandidates: staticGroups.summary.adapterReuseCandidates
     },
     steps
   };

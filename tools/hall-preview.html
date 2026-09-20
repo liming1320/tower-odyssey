@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>大厅预览</title>
+<link rel="stylesheet" href="../public/css/main.css">
+<style>
+  /* 仅为截图把全屏容器改成静态、可见高度 */
+  body { background:#0e0f1a; margin:0; }
+  .mini-mask { position: static !important; }
+  .mini-stage { position: static !important; overflow: visible !important; min-height:0 !important; background:#0e0f1a; padding:30px 0 48px; }
+</style>
+</head>
+<body>
+<div class="mini-mask">
+  <div class="mini-stage">
+    <div class="mg-hall">
+
+      <div class="mh-head">🌐 《五子棋》联机大厅<span class="mh-cap">2 人桌</span></div>
+      <div class="mh-tip">开一桌等好友，或直接加入下面任意一张桌子 —— 座位坐满自动开战。</div>
+
+      <button class="mvp-btn mvp-primary mh-create">🪑 创建新桌</button>
+
+      <div class="mh-row">
+        <input class="mh-input" placeholder="或粘贴好友的房间码加入" maxlength="40" autocomplete="off"/>
+        <button class="mvp-btn mvp-sm">加入</button>
+      </div>
+
+      <!-- 我所在的桌子：金色卡片，单独置顶 -->
+      <div class="mh-mine">
+        <div class="mh-mine-top">
+          <span class="mh-mine-title">🪑 我所在的桌子</span>
+          <span class="mh-badge">等待中 1/2</span>
+        </div>
+        <div class="mh-seats">
+          <span class="mh-seat taken me" title="liming1320"><i class="mh-av">L</i><b class="mh-nm">liming1320</b><em class="mh-you">你</em></span>
+          <span class="mh-seat empty"></span>
+        </div>
+        <div class="mh-code">
+          <span class="mh-code-lb">房间码</span>
+          <code>mg-gomoku-8bc971cc</code>
+          <button class="mh-copy">复制</button>
+        </div>
+        <div class="mh-code-tip">复制发给好友，对方在大厅粘贴即可同桌。</div>
+        <button class="mh-link">换一张新桌 ›</button>
+      </div>
+
+      <div class="mh-sec">可加入的桌子 · 3</div>
+
+      <div class="mh-tables">
+
+        <div class="mh-table">
+          <div class="mh-table-top">
+            <span class="mh-room">#a4f2c1</span>
+            <span class="mh-count">1/2</span>
+            <button class="mh-join">加入</button>
+          </div>
+          <div class="mh-seats">
+            <span class="mh-seat taken" title="阿强"><i class="mh-av">阿</i><b class="mh-nm">阿强</b></span>
+            <span class="mh-seat empty"></span>
+          </div>
+        </div>
+
+        <div class="mh-table">
+          <div class="mh-table-top">
+            <span class="mh-room">#77be09</span>
+            <span class="mh-count">1/2</span>
+            <button class="mh-join">加入</button>
+          </div>
+          <div class="mh-seats">
+            <span class="mh-seat taken" title="Shadow"><i class="mh-av">S</i><b class="mh-nm">Shadow</b></span>
+            <span class="mh-seat empty"></span>
+          </div>
+        </div>
+
+        <div class="mh-table">
+          <div class="mh-table-top">
+            <span class="mh-room">#c0de42</span>
+            <span class="mh-count">2/2</span>
+            <button class="mh-join">加入</button>
+          </div>
+          <div class="mh-seats">
+            <span class="mh-seat taken" title="Leo"><i class="mh-av">L</i><b class="mh-nm">Leo</b></span>
+            <span class="mh-seat taken" title="Mia"><i class="mh-av">M</i><b class="mh-nm">Mia</b></span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mh-row">
+        <input class="mh-input" placeholder="输入进行中对局的房间码观战" maxlength="40" autocomplete="off"/>
+        <button class="mvp-btn mvp-sm">👁 观战</button>
+      </div>
+
+      <div class="mh-status">🪑 正在开桌…</div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
