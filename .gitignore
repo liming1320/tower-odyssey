@@ -62,3 +62,15 @@ nul
 
 # Python 缓存（测试/诊断脚本生成的字节码）
 tools/__pycache__/
+
+# 调试 / 诊断临时产物（绝不进仓库，避免 `git add -A` 误裹）
+# tmp_live_check.js / tmp_err*.txt 等一次性探针与 bash -n 报错缓存
+tmp_*
+# 临时诊断脚本（如 tools/_diag-ludo.js「临时诊断：单客户端跑 ludo」）
+*_diag*.js
+# 各类调试 scratch 清单 / 缓存
+browsers.txt
+chk.txt
+gsum.txt
+left.txt
+.synchk.txt
