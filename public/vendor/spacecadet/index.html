@@ -13,12 +13,12 @@
         #progress { position: absolute; z-index: 20; top: calc(50% + 24px); left: 50%; transform: translateX(-50%); width: min(260px, 70%); }
         #touch-controls { display: none; position: absolute; inset: 0; z-index: 10; pointer-events: none; }
         .touch-key { position: absolute; border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; color: transparent; opacity: 0; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-appearance: none; }
-        #touch-left { left: 0; bottom: 0; width: 50%; height: 36%; }
-        #touch-right { left: 50%; bottom: 0; width: 50%; height: 36%; }
+        #touch-left { left: 0; top: 0; width: 50%; height: 100%; }
+        #touch-right { left: 50%; top: 0; width: 50%; height: 100%; }
         #touch-launch { right: 0; top: 14%; width: 16%; height: 42%; z-index: 3; }
         #touch-hint { position: absolute; right: 1%; top: 43%; width: 18%; padding: 4px 0; border: 1px solid rgba(255,235,170,.42); border-radius: 5px; background: rgba(10,15,28,.48); color: rgba(255,235,170,.92); font: 700 11px/1.35 Arial, sans-serif; letter-spacing: .3px; text-align: center; pointer-events: none; text-shadow: 0 1px 3px #000; z-index: 4; }
         @media (pointer: coarse), (max-width: 600px) {
-            canvas { image-rendering: pixelated; transform: translateZ(0); }
+            canvas { left: 50%; top: 50%; right: auto; bottom: auto; width: min(100vw, calc(100vh * 4 / 3)); height: min(100vh, calc(100vw * 3 / 4)); transform: translate(-50%, -50%) translateZ(0); image-rendering: pixelated; }
             #touch-controls { display: block; }
         }
     </style>
@@ -92,15 +92,35 @@
             }, { passive: false });
         });
 
+        let nativeSurfaceLocked = false;
+        function lockNativeSurface() {
+            if (nativeSurfaceLocked) return;
+            nativeSurfaceLocked = true;
+            canvas.style.left = '0';
+            canvas.style.top = '0';
+            canvas.style.right = 'auto';
+            canvas.style.bottom = 'auto';
+            canvas.style.transform = 'none';
+            canvas.style.width = '640px';
+            canvas.style.height = '480px';
+            window.dispatchEvent(new Event('resize'));
+            window.setTimeout(() => {
+                ['left', 'top', 'right', 'bottom', 'transform', 'width', 'height'].forEach(property => {
+                    canvas.style.removeProperty(property);
+                });
+            }, 0);
+        }
+
         const loadingStartedAt = performance.now();
         let runtimeReady = false;
         var Module = {
             canvas,
-            locateFile: path => `${path}?v=12`,
+            locateFile: path => `${path}?v=13`,
             print: text => console.log(text),
             printErr: text => console.error(text),
             onRuntimeInitialized() {
                 runtimeReady = true;
+                window.setTimeout(lockNativeSurface, 0);
                 const remaining = Math.max(0, 800 - (performance.now() - loadingStartedAt));
                 window.setTimeout(() => {
                     statusElement.hidden = true;
@@ -140,6 +160,6 @@
             },
         };
     </script>
-    <script async src="SpaceCadetPinball.js?v=12"></script>
+    <script async src="SpaceCadetPinball.js?v=13"></script>
 </body>
 </html>
