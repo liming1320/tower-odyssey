@@ -33,7 +33,40 @@ global.cancelAnimationFrame = noop;
 const store = {};
 global.localStorage = { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = v; } };
 global.Image = class { set src(v) { this._src = v; if (this.onload) this.onload(); } get src() { return this._src; } };
-global.U = { starColor: s => (s >= 15 ? '#ff7a8b' : s >= 11 ? '#b78bff' : '#ffd56b') };
+// 共享打击感底座 U.fx 的测试桩（方法签名与 utils.js 的 U.fx 一致，便于 battle.js 无浏览器驱动）
+let _fxCalls = 0;
+global.U = {
+    starColor: s => (s >= 15 ? '#ff7a8b' : s >= 11 ? '#b78bff' : '#ffd56b'),
+    imgSrc: f => '/img/' + f,
+    fx: {
+        _hs: 0,
+        hitStop(sec) { this._hs = Math.max(this._hs, sec || 0); return this._hs > 0; },
+        consumeHitStop(dt) { if (this._hs > 0) this._hs = Math.max(0, this._hs - dt); return this._hs > 0; },
+        shake() { _fxCalls++; }, updateCam() {}, update() {},
+        applyCam() {}, burst() { _fxCalls++; }, text() { _fxCalls++; }, ring() {}, flash() {}, draw() { _fxCalls++; },
+    },
+};
+// 模拟 MG 引擎底座，确保 U.fx 在「MG 存在」分支下也不抛错（cam/fxPool 接口与 mg-effects.js 对齐）
+global.window.MG = {
+    a11y: null, _quality: 1,
+    cam() {
+        let amt = 0, t = 0, dur = 0;
+        return {
+            shake(a, d) { amt = Math.max(amt, a || 6); dur = Math.max(dur, d || 0.28); t = 0; return this; },
+            set() { return this; }, reset() { return this; },
+            update(dt) { if (amt > 0) { t += dt; if (t >= dur) amt = 0; } return this; },
+            apply(ctx, W, H) { if (amt > 0.2 && ctx && ctx.translate) ctx.translate(0, 0); return this; },
+        };
+    },
+    fxPool(cap) {
+        const list = [];
+        return {
+            list, burst() { _fxCalls++; }, text() { _fxCalls++; }, ring() {}, flash() {}, hitstop() {},
+            update() {}, draw() { _fxCalls++; }, clear() {},
+        };
+    },
+};
+global.__fxCalls = () => _fxCalls;
 
 // 载入 battle.js（浏览器全局对象，eval 到本作用域）
 const code = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'battle.js'), 'utf8');

@@ -35,8 +35,8 @@ const Battle = {
         this.theme = opts.theme || null; // 章节主题配色（远古世界沿用紫色）
         this.floats = []; this.projs = []; this.parts = []; this.fx = [];
         this.enemies = []; this.spawnQueue = [];
-        this.banner = null; this.shake = 0; this.stunUntil = 0;
-        this.hitStop = 0;           // 顿帧（命中定格，纯表现，不影响数值/时序逻辑）
+        this.banner = null; this.stunUntil = 0;
+        // 震屏/顿帧/飘字/粒子统一走 U.fx（与 MG 小游戏共用 MG 引擎的相机/粒子池底座）
         this.shieldUntil = 0; this.teamBuffUntil = 0;
         // 城墙技能 / 必杀 / 障碍
         this.wall = opts.wall || null;
@@ -229,7 +229,7 @@ const Battle = {
         const boss = wave.enemies.find(e => e.boss);
         if (boss) {
             this.banner = { text: '⚠ BOSS 来袭', sub: boss.name, until: performance.now() + 2200, big: true, color: '#ff5252' };
-            this.shake = 12;
+            U.fx.shake(12, 0.4);
         } else {
             this.banner = { text: `第 ${this.waveIdx + 1} 波`, sub: `${wave.enemies.length} 只怪物`, until: performance.now() + 850, color: '#ffd56b' };
         }
@@ -269,9 +269,9 @@ const Battle = {
 
     update(dt, now) {
         // 顿帧：命中瞬间把本帧 dt 压到极低，制造「定格」打击感（仅缩放动画时间，不改真实时序）
-        if (this.hitStop > 0) { this.hitStop = Math.max(0, this.hitStop - dt); dt *= 0.12; }
+        if (U.fx.consumeHitStop(dt)) dt *= 0.12;
         this.time += dt;
-        if (this.shake > 0) this.shake = Math.max(0, this.shake - dt * 30);
+        U.fx.updateCam(dt); U.fx.update(dt); // 推进相机抖动 / 特效粒子池
         const stunned = now < this.stunUntil;
 
         // 逐个出场（怪潮感：出怪间隔略快）
@@ -487,21 +487,21 @@ const Battle = {
                 return;
             }
             t.dead = true;
-            this.hitStop = Math.max(this.hitStop, 0.05); // 我方阵亡定格
+            U.fx.hitStop( 0.05); // 我方阵亡定格
             this.addFloat(t.x, t.y - 60, '阵亡', '#ff5252');
         }
-        if (e.boss) { this.shake = Math.max(this.shake, 5); }
+        if (e.boss) { U.fx.shake(5); }
     },
 
     dealDamage(t, dmg, crit, color, big) {
         dmg = Math.max(1, Math.floor(dmg));
         t.hp -= dmg;
         t.hitFlash = 1;
-        if (crit) { this.shake = Math.max(this.shake, 4.5); this.hitStop = Math.max(this.hitStop, 0.045); } // 暴击：轻震屏 + 顿帧
+        if (crit) { U.fx.shake(4.5); U.fx.hitStop( 0.045); } // 暴击：轻震屏 + 顿帧
         this.addFloat(t.x, t.y - (t.boss ? 52 : 32), (crit ? '暴击 ' : '-') + dmg, crit ? '#ff5252' : (color || '#fff'), crit || big);
         if (t.hp <= 0 && !t.dead) {
             t.dead = true;
-            this.hitStop = Math.max(this.hitStop, 0.06); // 击杀定格
+            U.fx.hitStop( 0.06); // 击杀定格
             this.addFloat(t.x, t.y - 62, '阵亡', '#ff5252');
             // 死亡爆碎
             this.spawnParts(t.boss ? 30 : 14, t.x, t.y - 10, {
@@ -511,7 +511,7 @@ const Battle = {
             this.spawnParts(t.boss ? 16 : 6, t.x, t.y - 10, {
                 color: t.accent || '#ffd56b', spread: t.boss ? 120 : 60, life: 0.7, size: t.boss ? 4 : 2.6,
             });
-            if (t.boss) this.shake = Math.max(this.shake, 14);
+            if (t.boss) U.fx.shake(14);
         }
     },
 
@@ -542,7 +542,7 @@ const Battle = {
                     this.dealDamage(e, dmg, true, ult.tint, true);
                     this.spawnParts(10, e.x, e.y - 16, { color: ult.tint, spread: 40, up: -90, life: 0.8, size: 3.4, glow: true });
                 }
-                this.shake = Math.max(this.shake, 14);
+                U.fx.shake(14);
             },
         });
         return true;
@@ -717,7 +717,7 @@ const Battle = {
                     this.addFloat(this.CX, this.H * 0.42, '冰封!', tint, true);
                 },
             });
-            this.shake = Math.max(this.shake, 6);
+            U.fx.shake(6);
             return;
         }
 
@@ -736,7 +736,7 @@ const Battle = {
                 // 附加效果
                 if (fx === 'burn') for (const e of list) if (!e.dead) e.dot = { dmg: Math.floor(dmg * 0.18), until: performance.now() + 3000, tick: 0.5, tint };
                 if (fx === 'dark') for (const e of list) if (!e.dead) e.atk = Math.max(1, Math.floor(e.atk * 0.85));
-                this.shake = Math.max(this.shake, fx === 'quake' || fx === 'meteor' ? 10 : 6);
+                U.fx.shake(fx === 'quake' || fx === 'meteor' ? 10 : 6);
             },
         });
     },
@@ -759,24 +759,21 @@ const Battle = {
             const p = JSON.parse(localStorage.getItem('tower-odyssey.prefs') || '{}');
             if (p.floatText === false && !big) return;
         } catch (e) {}
-        this.floats.push({ x, y, text, color: color || '#fff', life: big ? 1.1 : 0.9, big: !!big });
+        // 走 U.fx 粒子池的 text（与 MG 小游戏同款飘字：带辉光/描边/重力），缺失时降级空操作
+        U.fx.text(x, y, text, { color: color || '#fff', size: big ? 19 : 14, bold: !!big, vy: -34, life: big ? 1.1 : 0.9, glow: true });
     },
 
     spawnParts(n, x, y, o) {
         o = o || {};
-        for (let i = 0; i < n; i++) {
-            const a = Math.random() * Math.PI * 2;
-            const sp = (o.spread || 60) * (0.3 + Math.random() * 0.7);
-            this.parts.push({
-                x, y,
-                vx: Math.cos(a) * sp,
-                vy: Math.sin(a) * sp + (o.up || 0),
-                life: o.life || 0.5, max: o.life || 0.5,
-                size: o.size || 2.5, color: o.color || '#fff',
-                glow: !!o.glow, grav: o.grav === undefined ? 120 : o.grav,
-                drag: o.drag || 1.2,
-            });
-        }
+        // 命中碎片走 U.fx 粒子池（与 MG 小游戏同款：对象池化、带 glow、尊重减弱动效/画质分级）。
+        // 向上初速用 angle 偏置近似；技能/环境粒子仍走 this.parts（见 drawParticles）。
+        U.fx.burst(x, y, {
+            n, colors: [o.color || '#fff'],
+            speed: o.spread || 60, life: o.life || 0.5,
+            shape: 'spark', glow: !!o.glow,
+            g: o.grav === undefined ? 120 : o.grav, drag: o.drag || 1.2,
+            r: o.size || 2.5, angle: -Math.PI / 2, spread: 1.4,
+        });
     },
 
     onWaveCleared() {
@@ -837,9 +834,7 @@ const Battle = {
     draw() {
         const ctx = this.ctx, W = this.W, H = this.H;
         ctx.save();
-        if (this.shake > 0.2) {
-            ctx.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
-        }
+        U.fx.applyCam(ctx, W, H); // 震屏 / 缩放冲击（MG 相机，缺失时退化为随机抖动）
         this.drawSky();
         this.drawPath();
         this.drawParticles(false);
@@ -852,7 +847,7 @@ const Battle = {
         this.drawProjs();
         this.drawFx();
         this.drawParticles(true);
-        this.drawFloats();
+        U.fx.draw(ctx, W, H); // 飘字 / 命中粒子 / 冲击波（MG 粒子池，与 MG 小游戏同一套）
         ctx.restore();
         this.drawHUD();
         this.drawBanner();

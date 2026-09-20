@@ -144,4 +144,45 @@ const U = {
     },
 };
 
+/* ---------- 共享「打击感」服务（主玩法战斗与 MG 小游戏共用同一套特效底座）----------
+ * 底座直接复用 MG 引擎的相机/粒子池（mg-effects.js 已在 index.html 启动期加载，纯 canvas 工具，
+ * 不依赖 MG.runGame 循环）：
+ *   - 震屏/缩放冲击：MG.cam（阻尼双频抖动 + 可选 zoom 冲击，优于 battle.js 原随机抖动）
+ *   - 粒子/飘字/冲击波/全屏闪：MG.fxPool（对象池化、带 glow、尊重减弱动效与画质分级）
+ *   - 全局顿帧：沿用 battle.js 模型（冻结整个战斗 dt，比 MG.fxPool.hitstop 仅冻结特效池更强）
+ * 若 MG 缺失（极旧构建 / 测试桩），所有方法降级为空操作 + 标量随机抖动兜底，保证不抛错、
+ * 不影响数值与时序。battle.js 与任意未来主玩法场景都走这里，即与 MG 小游戏共用同一套打击感。
+ */
+U.fx = {
+    _hs: 0, _cam: null, _pool: null, _fallbackShake: 0,
+    _mg() { try { return (typeof window !== 'undefined' && window.MG) ? window.MG : null; } catch (e) { return null; } },
+    cam() { if (this._cam === null) { const MG = this._mg(); this._cam = (MG && MG.cam) ? MG.cam() : false; } return this._cam || null; },
+    pool() { if (this._pool === null) { const MG = this._mg(); this._pool = (MG && MG.fxPool) ? MG.fxPool(480) : false; } return this._pool || null; },
+
+    // 全局顿帧（命中定格，纯表现）：传入定格秒数，返回是否处于定格中；调用方据此压低本帧 dt
+    hitStop(sec) { this._hs = Math.max(this._hs, sec || 0); return this._hs > 0; },
+    consumeHitStop(dt) { if (this._hs > 0) this._hs = Math.max(0, this._hs - dt); return this._hs > 0; },
+
+    // 震屏（amt 像素幅度，dur 秒）；MG 缺失时退化为标量随机抖动
+    shake(amt, dur) {
+        const c = this.cam();
+        if (c) { c.shake(amt, dur || 0.35); return; }
+        this._fallbackShake = Math.max(this._fallbackShake, amt || 0);
+    },
+    updateCam(dt) { const c = this.cam(); if (c) c.update(dt); else this._fallbackShake = Math.max(0, this._fallbackShake - dt * 30); },
+    applyCam(ctx, W, H) {
+        const c = this.cam();
+        if (c) { c.apply(ctx, W, H); return; }
+        if (this._fallbackShake > 0.2) ctx.translate((Math.random() - 0.5) * this._fallbackShake, (Math.random() - 0.5) * this._fallbackShake);
+    },
+
+    // 粒子 / 飘字 / 冲击波 / 全屏闪：直接转发 MG.fxPool，缺失则降级空操作
+    burst(x, y, o) { const p = this.pool(); if (p) p.burst(x, y, o); },
+    text(x, y, s, o) { const p = this.pool(); if (p) p.text(x, y, s, o); },
+    ring(x, y, o) { const p = this.pool(); if (p) p.ring(x, y, o); },
+    flash(col, amt, dur) { const p = this.pool(); if (p) p.flash(col, amt, dur); },
+    update(dt) { const p = this.pool(); if (p) p.update(dt); },
+    draw(ctx, W, H) { const p = this.pool(); if (p) p.draw(ctx, W, H); },
+};
+
 window.U = U;
