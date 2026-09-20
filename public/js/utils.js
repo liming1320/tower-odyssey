@@ -295,3 +295,4 @@ U.loop = function (o) {
 };
 
 window.U = U;
+// deploy-trigger: 重新触发 gitee webhook 部署（共享底座 U.math/U.canvas/U.loop 已随 689118a 提交）
