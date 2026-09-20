@@ -254,51 +254,11 @@ window.MiniGames = window.MiniGames || {};
                 <div class="mgy-pest">${p.out ? '<span style="color:#ff7a8b">破产</span>' : money(netWorth(p))}</div>
             </div>`).join('');
 
-        let html = `<div class="mgy-center">
-            <div class="mono-deco mono-deco-l"><b>🎴</b><span>机会</span></div>
-            <div class="mono-deco mono-deco-r"><b>🎴</b><span>命运</span></div>
-            <div class="mono-emblem">
-                <div class="mono-crest">💰</div>
-                <div class="mgy-logo">大富翁<span>MONOPOLY</span></div>
-                <div class="mgy-round">第 ${Math.min(S.round, S.maxRound)}/${S.maxRound} 轮</div>
-                <div class="mgy-goal">目标 ${S.goal === Infinity ? '∞' : money(S.goal)}</div>
-                <div class="mgy-dice" id="mgy-dice"><i>${S.dices[0]}</i><i>${S.dices[1]}</i></div>
-                <div class="mgy-cmsg">${S.msg ? String(S.msg).slice(0, 40) : ''}</div>
-            </div>
-        </div>`;
-        for (let i = 0; i < N; i++) {
-            const c = CELLS[i], pos = cellPos(i), o = S.own[i], g = c.g ? GROUPS[c.g] : null;
-            const pips = S.players.filter(p => p.pos === i && !p.out);
-            let badge = '';
-            if (c.t === 'prop') {
-                if (S.mort[i]) badge = '抵押';
-                else if (S.lv[i] === 5) badge = '🏨';
-                else if (S.lv[i] > 0) badge = '🏠'.repeat(S.lv[i]);
-                else badge = o ? '✔' : money(S.price[i]);
-            } else if (c.t === 'station' || c.t === 'utility') badge = o ? '✔' : money(S.price[i]);
-            else if (c.t === 'tax') badge = '-' + c.v;
-            else if (c.t === 'go') badge = '+' + SALARY;
-            const oc = o ? ((S.players.find(p => p.id === o) || {}).c || '#fff') : '';
-            const corner = (i % 10 === 0) ? ' corner' : '';
-            let bld = '';
-            if (c.t === 'prop' && S.lv[i] > 0) {
-                const bcol = c.g ? GROUPS[c.g].color : '#caa';
-                if (S.lv[i] >= 5) bld = `<div class="mono-bld"><span class="mono-bldbox hotel" style="--c:${bcol}"></span></div>`;
-                else { let q = ''; for (let k = 0; k < S.lv[i]; k++) q += `<span class="mono-bldbox house" style="--c:${bcol}"></span>`; bld = `<div class="mono-bld">${q}</div>`; }
-            }
-            html += `<div class="mgy-cell ${c.t}${corner}${S.mort[i] ? ' mort' : ''}" style="grid-area:${pos.r}/${pos.c}">
-                ${g ? `<div class="mgy-gbar" style="background:${g.color}"></div>` : ''}
-                <div class="mono-ct">
-                    <div class="mgy-ce">${c.e}</div>
-                    <div class="mgy-cn">${c.n}</div>
-                    <div class="mgy-cb" style="color:${oc || '#3a3122'}">${badge}</div>
-                </div>
-                ${bld}
-                <div class="mgy-pips">${pips.map(p => `<b style="background:${p.c}">${p.e}</b>`).join('')}</div>
-            </div>`;
-        }
-        el.board.innerHTML = html;
-        el.dice = el.board.querySelector('#mgy-dice');
+        // 3D 场景叠加层（中央信息），由 syncScene 同步建筑/棋子，文字在此更新
+        if (el.round) el.round.textContent = `第 ${Math.min(S.round, S.maxRound)}/${S.maxRound} 轮`;
+        if (el.goal) el.goal.textContent = `目标 ${S.goal === Infinity ? '∞' : money(S.goal)}`;
+        if (el.cmsg) el.cmsg.textContent = S.msg ? String(S.msg).slice(0, 40) : '';
+        syncScene();
         renderPanel();
         if (opts && opts.onScore) opts.onScore(`第 ${Math.min(S.round, S.maxRound)}/${S.maxRound} 轮 · 净资产 ${money(netWorth(S.players[0]))} · 目标 ${S.goal === Infinity ? '∞' : money(S.goal)}`);
     }
@@ -508,13 +468,7 @@ window.MiniGames = window.MiniGames || {};
         render();
     }
     function markHop() {
-        if (!el.board) return;
-        el.board.querySelectorAll('.mgy-hopping').forEach(x => x.classList.remove('mgy-hopping'));
-        const p = S.players.find(q => q.id === S.hop);
-        if (p) {
-            const cell = el.board.querySelectorAll('.mgy-cell')[p.pos];
-            if (cell) cell.classList.add('mgy-hopping');
-        }
+        // 3D 下小人移动由 animate 的 pawnVis 插值表现（带走路起伏），无需 DOM 高亮
     }
 
     async function animDice(d1, d2) {
@@ -748,6 +702,213 @@ window.MiniGames = window.MiniGames || {};
     }
     function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
 
+    // ================= 3D 渲染层（Three.js · 仿《大富翁4》）=================
+    // 仅替换显示：保留全部游戏逻辑（S / cellPos / doRoll / walk / onLand / nextTurn / 联机同步）。
+    let THREE = null, THREE_LOADING = null, GL_resize = null;
+    const TILE = 1.0, ROOF = 0x7a5a2a;
+    let GL_scene, GL_camera, GL_renderer, GL_raf = 0, GL_board;
+    let GL_tiles = [], GL_pawns = [], GL_blv = [], GL_owner = [];
+    let pawnVis = [0, 0, 0, 0], pawnTgt = [0, 0, 0, 0];
+    const CW = [];
+    for (let i = 0; i < N; i++) { const p = cellPos(i); CW[i] = { x: (p.c - 6) * TILE, z: (p.r - 6) * TILE }; }
+    const cam = { az: -Math.PI / 4, pol: 0.95, rad: 13, tx: 0, ty: 0.5, tz: 0 };
+
+    function ensureThree() {
+        if (THREE) return Promise.resolve(THREE);
+        if (THREE_LOADING) return THREE_LOADING;
+        THREE_LOADING = new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = '/js/lib/three.min.js?v=20260916a';
+            s.onload = () => res(window.THREE);
+            s.onerror = () => rej(new Error('Three.js 加载失败'));
+            document.head.appendChild(s);
+        });
+        THREE_LOADING.then(t => { THREE = t; }).catch(() => {});
+        return THREE_LOADING;
+    }
+
+    function tileTexture(c, i) {
+        const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+        const x = cv.getContext('2d');
+        x.fillStyle = '#efe2c2'; x.fillRect(0, 0, 128, 128);
+        const g = c.g ? GROUPS[c.g] : null;
+        if (g) { x.fillStyle = g.color; x.fillRect(0, 0, 128, 22); }
+        x.textAlign = 'center'; x.font = '42px sans-serif'; x.fillStyle = '#2b241a';
+        x.fillText(c.e || '', 64, 62);
+        x.font = 'bold 15px sans-serif'; x.fillStyle = '#3a2f20'; x.fillText(c.n, 64, 94);
+        if (c.t === 'prop') { x.font = '13px sans-serif'; x.fillStyle = '#5a6'; x.fillText(money(S.price[i]), 64, 116); }
+        const t = new THREE.CanvasTexture(cv);
+        if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding;
+        return t;
+    }
+
+    function buildTiles() {
+        for (let i = 0; i < N; i++) {
+            const c = CELLS[i], w = CW[i];
+            const grp = new THREE.Group(); grp.position.set(w.x, 0, w.z);
+            const base = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.16, 0.94), new THREE.MeshStandardMaterial({ color: 0xe9dcc0, roughness: 0.9 }));
+            base.position.y = 0.08; base.receiveShadow = true; grp.add(base);
+            const g = c.g ? GROUPS[c.g] : null;
+            if (g) { const bar = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.17, 0.18), new THREE.MeshStandardMaterial({ color: new THREE.Color(g.color), roughness: 0.7 })); bar.position.set(0, 0.085, 0.38); grp.add(bar); }
+            const top = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), new THREE.MeshBasicMaterial({ map: tileTexture(c, i) }));
+            top.rotation.x = -Math.PI / 2; top.position.y = 0.165; grp.add(top);
+            const own = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.07, 0.2), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+            own.position.set(0.34, 0.2, -0.34); own.visible = false; grp.add(own);
+            GL_board.add(grp); GL_tiles.push(grp); GL_owner.push(own);
+        }
+    }
+
+    function buildBuildings() {
+        for (let i = 0; i < N; i++) {
+            const c = CELLS[i]; if (c.t !== 'prop') { GL_blv.push(null); continue; }
+            const w = CW[i], g = GROUPS[c.g], col = new THREE.Color(g.color);
+            const grp = new THREE.Group(); grp.position.set(w.x, 0.16, w.z);
+            const slots = [];
+            for (let k = 0; k < 4; k++) {
+                const h = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.3, 0.22), new THREE.MeshStandardMaterial({ color: col, roughness: 0.6 }));
+                body.position.y = 0.15; body.castShadow = true;
+                const roof = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.16, 4), new THREE.MeshStandardMaterial({ color: ROOF, roughness: 0.6 }));
+                roof.position.y = 0.38; roof.rotation.y = Math.PI / 4; roof.castShadow = true;
+                h.add(body); h.add(roof); h.position.set((k - 1.5) * 0.24, 0, 0); h.visible = false; grp.add(h); slots.push(h);
+            }
+            const hotel = new THREE.Group();
+            const hb = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.5), new THREE.MeshStandardMaterial({ color: col, roughness: 0.6 }));
+            hb.position.y = 0.35; hb.castShadow = true;
+            const hr = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.16, 0.54), new THREE.MeshStandardMaterial({ color: ROOF, roughness: 0.6 }));
+            hr.position.y = 0.78; hr.castShadow = true;
+            hotel.add(hb); hotel.add(hr); hotel.visible = false; grp.add(hotel);
+            GL_board.add(grp); GL_blv.push({ slots, hotel });
+        }
+    }
+
+    function emojiSprite(e) {
+        const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+        const x = cv.getContext('2d'); x.font = '44px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(e, 32, 34);
+        const tex = new THREE.CanvasTexture(cv); if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+        const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+        spr.scale.set(0.5, 0.5, 0.5); spr.position.y = 0.92; return spr;
+    }
+
+    function buildPawns() {
+        for (let i = 0; i < 4; i++) {
+            const ch = CHARS[i], grp = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.4, 14), new THREE.MeshStandardMaterial({ color: new THREE.Color(ch.c), roughness: 0.5 }));
+            body.position.y = 0.2; body.castShadow = true;
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffe0c0, roughness: 0.6 }));
+            head.position.y = 0.52; head.castShadow = true;
+            grp.add(body); grp.add(head); grp.add(emojiSprite(ch.e));
+            GL_board.add(grp); GL_pawns.push(grp);
+            pawnVis[i] = S.players[i].pos; pawnTgt[i] = S.players[i].pos;
+        }
+    }
+
+    function setupControls(cv) {
+        let dragId = null, lx = 0, ly = 0; const pts = new Map();
+        cv.addEventListener('pointerdown', e => { try { cv.setPointerCapture(e.pointerId); } catch (x) {} pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pts.size === 1) { dragId = e.pointerId; lx = e.clientX; ly = e.clientY; } });
+        cv.addEventListener('pointermove', e => {
+            if (!pts.has(e.pointerId)) return;
+            const p = pts.get(e.pointerId), px = e.clientX, py = e.clientY;
+            if (pts.size >= 2) { const ids = [...pts.keys()], a = pts.get(ids[0]), b = pts.get(ids[1]); const d = Math.hypot(a.x - b.x, a.y - b.y); if (cv._pd) cam.rad = Math.max(7, Math.min(22, cam.rad * (cv._pd / d))); cv._pd = d; }
+            else if (e.pointerId === dragId) { const dx = px - lx, dy = py - ly; lx = px; ly = py; cam.az -= dx * 0.006; cam.pol = Math.max(0.25, Math.min(1.35, cam.pol - dy * 0.006)); }
+            p.x = px; p.y = py;
+        });
+        const up = e => { pts.delete(e.pointerId); cv._pd = 0; if (e.pointerId === dragId) dragId = null; };
+        cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+        cv.addEventListener('wheel', e => { e.preventDefault(); cam.rad = Math.max(7, Math.min(22, cam.rad * (1 + e.deltaY * 0.001))); }, { passive: false });
+    }
+
+    function syncScene() {
+        if (!GL_board) return;
+        for (let i = 0; i < N; i++) {
+            const b = GL_blv[i]; if (!b) continue;
+            const lv = S.lv[i];
+            if (lv >= 5) { b.hotel.visible = true; b.slots.forEach(s => s.visible = false); }
+            else { b.hotel.visible = false; b.slots.forEach((s, k) => s.visible = k < lv); }
+        }
+        for (let i = 0; i < N; i++) {
+            const o = GL_owner[i], own = S.own[i];
+            if (own) { const pl = S.players.find(p => p.id === own); o.visible = true; o.material.color.set(pl ? pl.c : '#ffffff'); }
+            else o.visible = false;
+        }
+        for (let i = 0; i < 4; i++) {
+            const pos = S.players[i].pos; if (pos == null) continue;
+            const cur = pawnTgt[i], delta = (pos - ((Math.round(cur) % N) + N) % N + N) % N;
+            if (delta === 0) continue;
+            if (delta <= 6) pawnTgt[i] = cur + delta;
+            else { pawnTgt[i] = pos; pawnVis[i] = pos; }
+        }
+    }
+
+    function animate() {
+        if (dead || !GL_renderer) { GL_raf = 0; return; }
+        GL_raf = requestAnimationFrame(animate);
+        const now = performance.now(), dt = Math.min(0.05, (now - (animate._last || now)) / 1000); animate._last = now;
+        const cp = Math.cos(cam.pol), sp = Math.sin(cam.pol);
+        GL_camera.position.set(cam.tx + cam.rad * sp * Math.sin(cam.az), cam.ty + cam.rad * cp, cam.tz + cam.rad * sp * Math.cos(cam.az));
+        GL_camera.lookAt(cam.tx, cam.ty, cam.tz);
+        for (let i = 0; i < 4; i++) {
+            const p = S.players[i];
+            if (!p || p.out) { GL_pawns[i].visible = false; continue; }
+            GL_pawns[i].visible = true;
+            let d = pawnTgt[i] - pawnVis[i]; const step = 4 * dt;
+            if (Math.abs(d) <= step) pawnVis[i] = pawnTgt[i]; else pawnVis[i] += Math.sign(d) * step;
+            const v = pawnVis[i], i0 = ((Math.floor(v) % N) + N) % N, i1 = (i0 + 1) % N, f = v - Math.floor(v);
+            const a = CW[i0], b = CW[i1]; const x = a.x + (b.x - a.x) * f, z = a.z + (b.z - a.z) * f;
+            const ang = i * Math.PI / 2, ox = Math.cos(ang) * 0.16, oz = Math.sin(ang) * 0.16;
+            const hop = Math.abs(d) > 0.02 ? Math.abs(Math.sin(f * Math.PI)) * 0.18 : 0;
+            GL_pawns[i].position.set(x + ox, hop, z + oz);
+        }
+        GL_renderer.render(GL_scene, GL_camera);
+    }
+
+    // 自动取景：让 11×11 方盘完整落在视口内（按垂直/水平半视角取较小者）
+    function fitCam() {
+        if (!GL_renderer || !GL_camera) return;
+        const W = GL_renderer.domElement.clientWidth || 612, H = GL_renderer.domElement.clientHeight || 612;
+        const aspect = W / H;
+        const halfV = (GL_camera.fov * Math.PI / 180) / 2;
+        const halfH = Math.atan(Math.tan(halfV) * aspect);
+        const R = 8.0;                                   // 方盘对角半径（含小人高度冗余）
+        const need = R / Math.tan(Math.min(halfV, halfH));
+        cam.rad = Math.max(7, Math.min(30, need * 1.02));
+    }
+
+    function start3D(container) {
+        return ensureThree().then(T => {
+            if (dead) return; THREE = T;
+            const em = container.querySelector('.mono-emblem'); if (em) em.innerHTML = '';
+            const W = container.clientWidth || 640, H = container.clientHeight || 640;
+            GL_renderer = new THREE.WebGLRenderer({ antialias: true });
+            GL_renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            GL_renderer.setSize(W, H, false);
+            if (THREE.sRGBEncoding) GL_renderer.outputEncoding = THREE.sRGBEncoding;
+            GL_renderer.shadowMap.enabled = true; GL_renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            GL_renderer.domElement.className = 'mono-canvas';
+            GL_renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;background:#0e1622;';
+            container.appendChild(GL_renderer.domElement);
+            GL_scene = new THREE.Scene(); GL_scene.background = new THREE.Color(0x0e1622);
+            GL_camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 200);
+            GL_scene.add(new THREE.HemisphereLight(0xbfd2ff, 0x40342a, 0.85));
+            const sun = new THREE.DirectionalLight(0xffffff, 0.9); sun.position.set(8, 16, 6); sun.castShadow = true;
+            sun.shadow.mapSize.set(1024, 1024);
+            const sc = sun.shadow.camera; sc.left = -8; sc.right = 8; sc.top = 8; sc.bottom = -8; sc.near = 1; sc.far = 50; sun.shadow.bias = -0.0006;
+            GL_scene.add(sun);
+            fitCam();                                    // 初始取景：整盘入镜
+            GL_board = new THREE.Group(); GL_scene.add(GL_board);
+            const base = new THREE.Mesh(new THREE.BoxGeometry(11.6, 0.3, 11.6), new THREE.MeshStandardMaterial({ color: 0x16331f, roughness: 0.95 }));
+            base.position.y = -0.15; base.receiveShadow = true; GL_board.add(base);
+            buildTiles(); buildBuildings(); buildPawns();
+            setupControls(GL_renderer.domElement);
+            const onResize = () => { if (!GL_renderer) return; const w = container.clientWidth, h = container.clientHeight; if (!w || !h) return; GL_renderer.setSize(w, h, false); GL_camera.aspect = w / h; GL_camera.updateProjectionMatrix(); fitCam(); };
+            window.addEventListener('resize', onResize); GL_resize = onResize;
+            syncScene(); animate();
+        }).catch(err => {
+            const em = container.querySelector('.mono-emblem');
+            if (em) em.innerHTML = '<div style="color:#ffb3b3;padding:20px;text-align:center">3D 引擎加载失败：' + (err && err.message) + '</div>';
+        });
+    }
+
     // ================= 入口 =================
     MiniGames.monopoly = {
         LEVELS, ENDLESS,
@@ -791,11 +952,19 @@ window.MiniGames = window.MiniGames || {};
             wrap.className = 'mgy-wrap mono';
             wrap.innerHTML = `
                 <div class="mgy-plays" id="mgy-plays"></div>
-                <div class="mgy-board" id="mgy-board"></div>
+                <div class="mgy-board" id="mgy-board">
+                    <div class="mono-center">
+                        <div class="mgy-round" id="mgy-round"></div>
+                        <div class="mgy-goal" id="mgy-goal"></div>
+                        <div class="mgy-dice" id="mgy-dice"></div>
+                        <div class="mgy-cmsg" id="mgy-cmsg"></div>
+                    </div>
+                    <div class="mono-emblem" id="mono-emblem">🎲 正在加载 3D 棋盘…</div>
+                </div>
                 <div class="mgy-panel" id="mgy-panel"></div>
                 <div class="mgy-acts" id="mgy-acts"></div>
                 <div class="mgy-log" id="mgy-log"></div>
-                <div class="mgy-tip">💡 集齐同色街区即可建楼收高租 · 路过车站/水电要收租 · 踩到庙宇遇神明 · 退出自动存档</div>`;
+                <div class="mgy-tip">💡 拖动旋转视角 · 滚轮缩放 · 集齐同色街区即可建楼收高租 · 踩到庙宇遇神明 · 退出自动存档</div>`;
             c.innerHTML = '';
             c.appendChild(wrap);
             try { MG.audio.unlock(); } catch (e) {}
@@ -806,7 +975,10 @@ window.MiniGames = window.MiniGames || {};
                 panel: wrap.querySelector('#mgy-panel'),
                 acts: wrap.querySelector('#mgy-acts'),
                 log: wrap.querySelector('#mgy-log'),
-                dice: null,
+                round: wrap.querySelector('#mgy-round'),
+                goal: wrap.querySelector('#mgy-goal'),
+                cmsg: wrap.querySelector('#mgy-cmsg'),
+                dice: wrap.querySelector('#mgy-dice'),
             };
 
             if (resumed) {
@@ -818,6 +990,7 @@ window.MiniGames = window.MiniGames || {};
                 S.msg = '轮到你了，掷骰开始';
             }
             render();
+            start3D(el.board);
             const p = cur();
             if (!p.me && !net) later(aiTurn, 500);
 
@@ -828,5 +1001,22 @@ window.MiniGames = window.MiniGames || {};
     MiniGames.monopoly._debug = {
         get S() { return S; }, CELLS, GROUPS, CARDS, GODS, LEVELS, ENDLESS, netWorth, rentOf,
         cur, act: onAct, nextTurn, buildList, newState, render,
+        gl: () => ({ tiles: GL_tiles.length, pawns: GL_pawns.length, hasBoard: !!GL_board, three: !!THREE,
+            threeRev: THREE ? (THREE.REVISION || '?') : null }),
+        blv: (i) => { const b = GL_blv[i]; return b ? { hotel: b.hotel.visible, slots: b.slots.map(s => s.visible) } : null; },
+        visBld: () => GL_blv.reduce((a, b) => a + (b ? (b.hotel.visible ? 1 : 0) + b.slots.filter(s => s.visible).length : 0), 0),
+        pawnTarget: () => pawnTgt.slice(),
+        camPos: () => ({ az: cam.az, pol: cam.pol, rad: cam.rad }),
+        raf: () => GL_raf,
+        drawCalls: () => (GL_renderer && GL_renderer.info) ? GL_renderer.info.render.calls : -1,
+        pawnScreen: () => {
+            if (!GL_camera || !GL_renderer) return [];
+            const W = GL_renderer.domElement.clientWidth, H = GL_renderer.domElement.clientHeight;
+            return GL_pawns.map(g => {
+                const v = g.position.clone(); v.y += 0.5; v.project(GL_camera);
+                return { vis: g.visible, x: Math.round((v.x * 0.5 + 0.5) * W), y: Math.round((-v.y * 0.5 + 0.5) * H),
+                    wx: +g.position.x.toFixed(2), wz: +g.position.z.toFixed(2) };
+            });
+        },
     };
 })();
