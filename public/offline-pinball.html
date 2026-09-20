@@ -14,5 +14,10 @@
 </head>
 <body>
     <main><iframe src="/vendor/spacecadet/index.html?v=__PINBALL_VERSION__" title="Space Cadet Pinball" allow="autoplay"></iframe></main>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js?v=__PWA_BUILD__').catch(function () {});
+        }
+    </script>
 </body>
 </html>
