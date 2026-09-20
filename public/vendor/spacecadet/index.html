@@ -9,9 +9,9 @@
         body { display: grid; place-items: center; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #stage { position: absolute; inset: 0; overflow: hidden; }
         canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; max-height: none; background: #000; outline: none; image-rendering: auto; }
-        #status { position: absolute; color: #d9e7ff; font: 14px Arial, sans-serif; }
-        #progress { position: absolute; top: calc(50% + 24px); width: min(260px, 70%); }
-        #touch-controls { display: none; position: absolute; inset: 0; pointer-events: none; }
+        #status { position: absolute; z-index: 20; top: calc(50% - 34px); left: 50%; transform: translateX(-50%); color: #d9e7ff; font: 14px Arial, sans-serif; white-space: nowrap; }
+        #progress { position: absolute; z-index: 20; top: calc(50% + 24px); left: 50%; transform: translateX(-50%); width: min(260px, 70%); }
+        #touch-controls { display: none; position: absolute; inset: 0; z-index: 10; pointer-events: none; }
         .touch-key { position: absolute; border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; color: transparent; opacity: 0; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-appearance: none; }
         #touch-left { left: 0; bottom: 0; width: 50%; height: 36%; }
         #touch-right { left: 50%; bottom: 0; width: 30%; height: 36%; }
@@ -25,7 +25,7 @@
 <body>
     <main id="stage">
         <div id="status">Loading Space Cadet...</div>
-        <progress id="progress" value="0" max="100"></progress>
+        <progress id="progress" value="5" max="100"></progress>
         <canvas id="canvas" tabindex="0" aria-label="Space Cadet Pinball"></canvas>
         <div id="touch-controls" aria-label="Pinball touch controls">
             <div id="touch-left" class="touch-key" role="button" aria-label="Left flipper"></div>
@@ -91,12 +91,20 @@
             }, { passive: false });
         });
 
+        const loadingStartedAt = performance.now();
+        let runtimeReady = false;
         var Module = {
             canvas,
-            locateFile: path => `${path}?v=8`,
+            locateFile: path => `${path}?v=9`,
             print: text => console.log(text),
             printErr: text => console.error(text),
             onRuntimeInitialized() {
+                runtimeReady = true;
+                const remaining = Math.max(0, 800 - (performance.now() - loadingStartedAt));
+                window.setTimeout(() => {
+                    statusElement.hidden = true;
+                    progressElement.hidden = true;
+                }, remaining);
                 window.setInterval(() => {
                     if (typeof Module._spacecadet_get_score !== 'function') return;
                     window.parent.postMessage({
@@ -117,8 +125,13 @@
                     progressElement.max = Number(match[3]);
                 } else {
                     statusElement.textContent = text || '';
-                    statusElement.hidden = !text;
-                    progressElement.hidden = true;
+                    if (runtimeReady) {
+                        statusElement.hidden = !text;
+                        progressElement.hidden = true;
+                    } else {
+                        statusElement.hidden = false;
+                        progressElement.hidden = false;
+                    }
                 }
             },
             monitorRunDependencies(left) {
@@ -126,6 +139,6 @@
             },
         };
     </script>
-    <script async src="SpaceCadetPinball.js?v=8"></script>
+    <script async src="SpaceCadetPinball.js?v=9"></script>
 </body>
 </html>

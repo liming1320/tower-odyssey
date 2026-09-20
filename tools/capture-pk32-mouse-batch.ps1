@@ -19,6 +19,9 @@ param(
     [int]$To = 4,
     [int]$StartButtonX = 400,
     [int]$StartButtonY = 445,
+    [int]$GameWaitMs = 1200,
+    [switch]$CaptureRuntimeDelta,
+    [int]$MaxDeltaMiB = 64,
     [switch]$Run,
     [switch]$AllowDesktopInput,
     [switch]$KeepOpen
@@ -137,6 +140,30 @@ function Get-Sha256([string]$Path) {
     finally { $hasher.Dispose(); $stream.Dispose() }
 }
 
+function Get-VisualChangeRate([string]$BeforePath, [string]$AfterPath) {
+    $before = New-Object Drawing.Bitmap $BeforePath
+    $after = New-Object Drawing.Bitmap $AfterPath
+    try {
+        $width = [Math]::Min($before.Width, $after.Width)
+        $height = [Math]::Min($before.Height, $after.Height)
+        $samples = 0
+        $changed = 0
+        for ($x = 0; $x -lt $width; $x += 8) {
+            for ($y = 0; $y -lt $height; $y += 8) {
+                $left = $before.GetPixel($x, $y)
+                $right = $after.GetPixel($x, $y)
+                $samples += 1
+                if ([Math]::Abs($left.R - $right.R) + [Math]::Abs($left.G - $right.G) + [Math]::Abs($left.B - $right.B) -gt 60) { $changed += 1 }
+            }
+        }
+        if ($samples -eq 0) { return 0.0 }
+        return [Math]::Round($changed / $samples, 4)
+    } finally {
+        $before.Dispose()
+        $after.Dispose()
+    }
+}
+
 function Click-And-Wait([IntPtr]$Handle, [int]$X, [int]$Y) {
     $Handle = Get-ActiveWindow $process
     [Pk32MouseBatchNative]::Click($Handle, $X, $Y)
@@ -199,6 +226,15 @@ for ($position = $From; $position -le $To; $position++) {
         $record.evidence.catalogHash = $catalogCapture.hash
         $catalogWindow = Get-ActiveWindow $process
         $record.catalogWindow = [Pk32MouseBatchNative]::WindowInfo($catalogWindow).Split('|')
+        $runtimeBaseline = $null
+        if ($CaptureRuntimeDelta) {
+            $baselineDirectory = Join-Path $directory 'runtime-baseline'
+            $baselineOutput = & (Join-Path $PSScriptRoot 'capture-pk32-runtime-delta.ps1') -ProcessId $process.Id -OutputDirectory $baselineDirectory -MaxCaptureMiB $MaxDeltaMiB -SnapshotOnly
+            if (-not $?) { throw 'Runtime baseline collection failed.' }
+            $baselineOutput | Set-Content -LiteralPath (Join-Path $baselineDirectory 'collector-output.json') -Encoding utf8
+            $runtimeBaseline = Join-Path $baselineDirectory 'manifest.json'
+            $record.evidence.runtimeBaseline = 'runtime-baseline/manifest.json'
+        }
         $selectedCapture = $null
         foreach ($offset in @(0, -4, 4, -8, 8)) {
             Click-And-Wait $handle $x ($y + $offset)
@@ -208,7 +244,9 @@ for ($position = $From; $position -le $To; $position++) {
         }
         $record.evidence.selected = $selectedCapture.file
         $record.evidence.selectedHash = $selectedCapture.hash
-        if ($selectedCapture.hash -eq $catalogCapture.hash) { $record.status = 'selection-not-observed'; throw 'The catalog image did not change after the item click; coordinate or mouse delivery needs recalibration.' }
+        $selectionVisualChange = Get-VisualChangeRate (Join-Path $directory $catalogCapture.file) (Join-Path $directory $selectedCapture.file)
+        $record.evidence.selectionVisualChange = $selectionVisualChange
+        if ($selectedCapture.hash -eq $catalogCapture.hash -or $selectionVisualChange -lt 0.05) { $record.status = 'selection-not-observed'; throw 'The catalog did not visibly transition into a game after the item click; coordinate or mouse delivery needs recalibration.' }
         $startedCapture = $null
         foreach ($baseY in @($StartButtonY, 390, 420, 470, 370)) {
             foreach ($offset in @(0, -4, 4, -8, 8)) {
@@ -222,6 +260,14 @@ for ($position = $From; $position -le $To; $position++) {
         $record.evidence.started = $startedCapture.file
         $record.evidence.startedHash = $startedCapture.hash
         if ($startedCapture.hash -eq $selectedCapture.hash) { $record.status = 'start-transition-not-observed'; throw 'The selected image did not change after the Start click; start-button coordinates need recalibration.' }
+        if ($CaptureRuntimeDelta) {
+            Start-Sleep -Milliseconds $GameWaitMs
+            $deltaDirectory = Join-Path $directory 'runtime-delta'
+            $deltaOutput = & (Join-Path $PSScriptRoot 'capture-pk32-runtime-delta.ps1') -ProcessId $process.Id -BaselineManifest $runtimeBaseline -OutputDirectory $deltaDirectory -MaxCaptureMiB $MaxDeltaMiB
+            if (-not $?) { throw 'Runtime delta collection failed.' }
+            $deltaOutput | Set-Content -LiteralPath (Join-Path $deltaDirectory 'collector-output.json') -Encoding utf8
+            $record.evidence.runtimeDelta = 'runtime-delta/manifest.json'
+        }
         $record.window = [Pk32MouseBatchNative]::WindowInfo($handle).Split('|')
         $record.status = 'captured-unverified'
     } catch { $record.error = $_.Exception.Message } finally {
@@ -238,7 +284,7 @@ $summary = [ordered]@{
     executable = $fullExecutable
     requestedRange = "$($PositionOffset + $From)..$($PositionOffset + $To)"
     pageNumber = $PageNumber
-    policy = [ordered]@{ selectionUsesMouse = $true; startsEachEntryFromFreshProcess = $true; namesAreNotInferred = $true; migrationStatusUnchanged = $true }
+    policy = [ordered]@{ selectionUsesMouse = $true; startsEachEntryFromFreshProcess = $true; namesAreNotInferred = $true; runtimeDeltaOptional = [bool]$CaptureRuntimeDelta; migrationStatusUnchanged = $true }
     records = $records
 }
 $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $fullOutput 'run-summary.json') -Encoding utf8

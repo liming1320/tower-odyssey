@@ -334,7 +334,7 @@ window.MiniGames = window.MiniGames || {};
         let stopped = false;
         let completed = false;
         host.style.cssText = 'flex:0 1 auto;width:min(100%,1100px);max-width:100%;height:auto;max-height:100%;min-height:0;aspect-ratio:15/11;margin:auto;background:#000;';
-        frame.src = '/vendor/spacecadet/index.html?v=7';
+        frame.src = '/vendor/spacecadet/index.html?v=9';
         frame.title = 'Space Cadet Pinball';
         frame.setAttribute('allow', 'autoplay');
         frame.style.cssText = 'display:block;width:100%;height:100%;border:0;background:#000;';

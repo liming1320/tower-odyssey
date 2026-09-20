@@ -173,7 +173,10 @@ MinigamesView.openHall = function (g) {
     const stage = document.getElementById('mini-stage');
     MG.match._parent = titleEl;   // 对战双方昵称 HUD 渲染进顶栏标题
 
-    const clearHallHandlers = () => { MG.net.on('tables', () => {}); MG.net.on('seat', () => {}); MG.net.on('start', () => {}); MG.net.on('peer_left', () => {}); };
+    const clearHallHandlers = () => {
+        ['tables', 'seat', 'start', 'peer_left', 'notice', 'error', 'seat_gone'].forEach(t => MG.net.on(t, () => {}));
+        MinigamesView._hallCreate = null; MinigamesView._hallEnsure = null;
+    };
     const close = () => {
         try { MG.net && MG.net.leave && MG.net.leave(); } catch (e) {}
         try { if (MG.net && MG.net._ws) MG.net._ws.close(); } catch (e) {}
@@ -184,21 +187,58 @@ MinigamesView.openHall = function (g) {
     };
     document.getElementById('mini-back').onclick = close;
     const setStatus = t => { const el = document.getElementById('mh-status'); if (el) el.textContent = t; };
+    const meName = () => (MG.me && MG.me.nickname) || '我';
+
+    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame';
+    // 大厅长连接中途掉线时，后续点击会静默无效（消息进发件箱但没人冲刷）。任何动作前兜底重连一次。
+    const ensureConn = () => {
+        try {
+            if (!MG.net._ws || MG.net._ws.readyState !== 1) {
+                MG.net.connect(url);
+                MG.net.send('lobby', { game: g.id, cap });
+                setStatus('连接已断开，正在重连…');
+            }
+        } catch (e) {}
+    };
+    MinigamesView._hallEnsure = ensureConn;
+    const doCreate = fresh => {
+        ensureConn();
+        MG.net.send('join', { game: g.id, cap, create: true, fresh: !!fresh, me: meName() });
+        setStatus('🪑 正在开桌…');
+    };
+    MinigamesView._hallCreate = doCreate;
 
     const hall = U.el(`<div class="mg-hall">
-        <div class="mh-head">🌐 《${g.name}》联机大厅 · <b>${cap}</b> 人桌</div>
-        <div class="mh-tip">点「创建新桌」开一桌并自动坐下，或加入下方任意桌子；座位满即开战。</div>
-        <button class="mvp-btn mvp-primary" id="mh-create">🪑 创建新桌</button>
-        <div class="mh-tables" id="mh-tables"><div class="mh-loading">连接中…</div></div>
+        <div class="mh-head">🌐 《${g.name}》联机大厅<span class="mh-cap">${cap} 人桌</span></div>
+        <div class="mh-tip">开一桌等好友，或直接加入下面任意一张桌子 —— 座位坐满自动开战。</div>
+        <button class="mvp-btn mvp-primary mh-create" id="mh-create">🪑 创建新桌</button>
+        <div class="mh-row">
+            <input class="mh-input" id="mh-join-code" placeholder="或粘贴好友的房间码加入" maxlength="40" autocomplete="off"/>
+            <button class="mvp-btn mvp-sm" id="mh-join-btn">加入</button>
+        </div>
         <div class="mh-mine" id="mh-mine"></div>
-        <div class="mh-spectate">👁 观战：<input id="mh-spec-code" placeholder="输入房间码" maxlength="40"/><button class="mvp-btn mvp-sm" id="mh-spec-btn">观战</button></div>
+        <div class="mh-sec" id="mh-tables-sec">可加入的桌子</div>
+        <div class="mh-tables" id="mh-tables"><div class="mh-loading">正在连接联机大厅…</div></div>
+        <div class="mh-row">
+            <input class="mh-input" id="mh-spec-code" placeholder="输入进行中对局的房间码观战" maxlength="40" autocomplete="off"/>
+            <button class="mvp-btn mvp-sm" id="mh-spec-btn">👁 观战</button>
+        </div>
         <div class="mh-status" id="mh-status"></div>
     </div>`);
     stage.appendChild(hall);
 
     MG.net.on('tables', m => { try { self._renderHallTables(g, m && m.tables); } catch (e) {} });
     MG.net.on('seat', m => { try { if (m && m.room) MinigamesView._roomCode = m.room; self._renderHallMine(g, m); } catch (e) {} });
-    MG.net.on('peer_left', m => { try { self._renderHallMine(g, m); setStatus('有玩家离开了桌子'); } catch (e) {} });
+    MG.net.on('peer_left', () => { try { setStatus('有玩家离开了桌子'); } catch (e) {} });
+    // 服务端提示（复用原桌 / 空桌被收回 / 已有多张桌等）：直接显示在状态行
+    MG.net.on('notice', m => { const t = (m && m.msg) || ''; if (t) setStatus(t); });
+    MG.net.on('error', m => { const t = (m && m.msg) || '联机出错'; setStatus('⚠️ ' + t); if (U.toast) U.toast('⚠️ ' + t); });
+    // 自己的空桌被服务端超时收回：清掉「我所在的桌子」卡片，状态行由紧随的 notice 填充
+    MG.net.on('seat_gone', () => {
+        MinigamesView._roomCode = null;
+        const el = document.getElementById('mh-mine');
+        if (el) { el.className = 'mh-mine'; el.innerHTML = ''; }
+    });
     MG.net.on('start', m => {
         if (!m || typeof m.side !== 'number') return;
         if (m.room) MinigamesView._roomCode = m.room;
@@ -208,63 +248,130 @@ MinigamesView.openHall = function (g) {
         else self._showNetDev(g);
     });
 
-    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/minigame';
     const ok = MG.net.connect(url);
     if (!ok) { setStatus('⚠️ 浏览器不支持 WebSocket'); return; }
     MinigamesView._ensureLatencyPill(); MG.net.onPing(rtt => MinigamesView._updateLatency(rtt));   // 大厅内也显示 RTT
     MG.net.send('lobby', { game: g.id, cap });
-    hall.querySelector('#mh-create').onclick = () => {
-        MG.net.send('join', { game: g.id, cap, create: true, me: (MG.me && MG.me.nickname) || '我' });
-        setStatus('🪑 已创建新桌，等待其他人入座…');
+    hall.querySelector('#mh-create').onclick = () => doCreate(false);
+    hall.querySelector('#mh-join-btn').onclick = () => {
+        const code = ((hall.querySelector('#mh-join-code') || {}).value || '').trim();
+        if (!code) { setStatus('⚠️ 请输入好友的房间码'); return; }
+        ensureConn();
+        MG.net.send('join', { game: g.id, room: code, cap, code: true, me: meName() });   // code:true → 码错时服务端报错而非偷偷建一张孤儿桌
+        setStatus('正在入座…');
     };
     const specBtn = hall.querySelector('#mh-spec-btn');
     if (specBtn) specBtn.onclick = () => {
-        const code = (hall.querySelector('#mh-spec-code') || {}).value || '';
-        if (!code.trim()) { setStatus('⚠️ 请输入要观战的房间码'); return; }
-        MG.net.connect(url);   // 确保已连接（大厅已连，这里幂等）
-        MG.net.spectate(code.trim(), (MG.me && MG.me.nickname) || '观战者');
+        const code = ((hall.querySelector('#mh-spec-code') || {}).value || '').trim();
+        if (!code) { setStatus('⚠️ 请输入要观战的房间码'); return; }
+        ensureConn();   // 幂等：大厅已连接时不做任何事
+        MG.net.spectate(code, meName());
         setStatus('👁 正在进入观战…');
     };
 };
 
-// 大厅：渲染桌子列表（每张桌的座位与昵称）
+// —— 大厅卡片小工具 ——
+// 房间码形如 mg-richman-ea4a0505，列表里只展示末段短码（列宽有限，且短码已足够区分）
+MinigamesView._netShortCode = function (room) {
+    const a = String(room || '').split('-');
+    return a.length > 1 ? a[a.length - 1] : String(room || '');
+};
+MinigamesView._netAvatar = function (name) {
+    const n = String(name == null ? '' : name).trim();
+    return n ? n.slice(0, 1).toUpperCase() : '?';
+};
+// 已占座位：头像圆点 + 昵称（过长省略）；自己额外挂「你」角标
+MinigamesView._netSeatChip = function (name, isMe, gone) {
+    const nm = MG.escapeHtml(String(name == null ? '玩家' : name));
+    return `<span class="mh-seat taken${isMe ? ' me' : ''}${gone ? ' gone' : ''}" title="${nm}">` +
+        `<i class="mh-av">${MG.escapeHtml(MinigamesView._netAvatar(name))}</i>` +
+        `<b class="mh-nm">${nm}</b>${isMe ? '<em class="mh-you">你</em>' : ''}</span>`;
+};
+// 复制文本：HTTPS 下用 clipboard API；线上是 http://IP:5180（非安全上下文，clipboard 不可用），退化为 execCommand
+MinigamesView._copyText = function (text) {
+    try {
+        if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text); return true; }
+    } catch (e) {}
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+        document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, String(text).length);
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return !!ok;
+    } catch (e) { return false; }
+};
+
+// 大厅：渲染桌子列表。每张桌一行「短码 + 已坐人数 + 加入」+ 一行座位胶囊；
+// 自己的桌子由下方「我所在的桌子」单独展示，这里过滤掉，避免同一张桌出现两遍。
 MinigamesView._renderHallTables = function (g, tables) {
     const el = document.getElementById('mh-tables'); if (!el) return;
-    if (!tables || !tables.length) { el.innerHTML = `<div class="mh-empty">暂无开放桌子，点「创建新桌」开一桌～</div>`; return; }
+    const list = (tables || []).filter(t => t && t.room !== MinigamesView._roomCode);
+    const sec = document.getElementById('mh-tables-sec');
+    if (sec) sec.textContent = list.length ? ('可加入的桌子 · ' + list.length) : '可加入的桌子';
+    if (!list.length) { el.innerHTML = `<div class="mh-empty">还没有人开桌 —— 点上面「创建新桌」，把房间码发给好友就能开局。</div>`; return; }
     el.innerHTML = '';
-    tables.forEach(t => {
+    list.forEach(t => {
+        const taken = (t.seats || []).filter(Boolean).length;
         const seats = [];
-        for (let i = 0; i < t.cap; i++) { const s = t.seats[i]; seats.push(s ? `<div class="mh-seat taken">${MG.escapeHtml(s.name)}</div>` : `<div class="mh-seat empty">空位</div>`); }
+        for (let i = 0; i < t.cap; i++) {
+            const s = t.seats && t.seats[i];
+            seats.push(s ? MinigamesView._netSeatChip(s.name, false, s.gone) : '<span class="mh-seat empty"></span>');
+        }
         const card = U.el(`<div class="mh-table">
-            <div class="mh-table-cap">${t.cap} 人桌</div>
+            <div class="mh-table-top">
+                <span class="mh-room">#${MG.escapeHtml(MinigamesView._netShortCode(t.room))}</span>
+                <span class="mh-count">${taken}/${t.cap}</span>
+                <button class="mh-join">加入</button>
+            </div>
             <div class="mh-seats">${seats.join('')}</div>
-            <button class="mvp-btn mvp-sm mh-join">加入</button>
         </div>`);
-        card.querySelector('.mh-join').onclick = () => MG.net.send('join', { game: g.id, room: t.room, cap: t.cap, me: (MG.me && MG.me.nickname) || '我' });
+        card.querySelector('.mh-join').onclick = () => {
+            try { if (MinigamesView._hallEnsure) MinigamesView._hallEnsure(); } catch (e) {}
+            MG.net.send('join', { game: g.id, room: t.room, cap: t.cap, me: (MG.me && MG.me.nickname) || '我' });
+            const st = document.getElementById('mh-status'); if (st) st.textContent = '正在入座…';
+        };
         el.appendChild(card);
     });
 };
 
-// 大厅：渲染「我所在的桌子」——高亮我的座位，显示等待/已满状态
+// 大厅：渲染「我所在的桌子」——高亮我的座位、展示房间码与等待进度
 MinigamesView._renderHallMine = function (g, m) {
-    const el = document.getElementById('mh-mine'); if (!el || !m) return;
+    const el = document.getElementById('mh-mine'); if (!el || !m || typeof m.you !== 'number') return;
     const cap = m.cap || (NET_GAMES[g.id] && NET_GAMES[g.id].seats) || 2;
-    const seats = [];
+    const full = !!m.full;
     let taken = 0;
+    const seats = [];
     for (let i = 0; i < cap; i++) {
         const s = m.seats ? m.seats[i] : null;
         if (s) taken++;
-        const mine = (m.you === i);
-        seats.push(s ? `<div class="mh-seat taken${mine ? ' me' : ''}">${MG.escapeHtml(s.name)}${mine ? '（你）' : ''}</div>` : `<div class="mh-seat empty">空位</div>`);
+        seats.push(s ? MinigamesView._netSeatChip(s.name, m.you === i, s.gone) : '<span class="mh-seat empty"></span>');
     }
     const code = MinigamesView._roomCode;
-    const codeHtml = code ? `<div class="mh-code">房间码：<b id="mh-code-val">${code}</b> <span class="mh-copy" id="mh-copy">复制</span><div class="mh-code-tip">把房间码发给好友，好友点「加入」输入即可同桌</div></div>` : '';
-    el.innerHTML = `<div class="mh-mine-head">我所在的桌子（座位 ${(m.you + 1)} / ${cap}）</div><div class="mh-seats">${seats.join('')}</div>` +
-        (m.full ? `<div class="mh-full">座位已满，即将开战…</div>` : `<div class="mh-wait">等待其他玩家入座（${taken}/${cap}）…</div>`) + codeHtml;
+    el.className = 'mh-mine' + (full ? ' full' : '');
+    el.innerHTML =
+        `<div class="mh-mine-top">
+            <span class="mh-mine-title">🪑 我所在的桌子</span>
+            <span class="mh-badge${full ? ' ok' : ''}">${full ? '已满 · 即将开战' : '等待中 ' + taken + '/' + cap}</span>
+         </div>
+         <div class="mh-seats">${seats.join('')}</div>` +
+        (code ? `<div class="mh-code">
+            <span class="mh-code-lb">房间码</span>
+            <code id="mh-code-val">${MG.escapeHtml(code)}</code>
+            <button class="mh-copy" id="mh-copy">复制</button>
+         </div>
+         <div class="mh-code-tip">复制发给好友，对方在大厅粘贴即可同桌。</div>` : '') +
+        (full ? '' : '<button class="mh-link" id="mh-remake">换一张新桌 ›</button>');
     if (code) {
         const copy = el.querySelector('#mh-copy');
-        if (copy) copy.onclick = () => { try { navigator.clipboard.writeText(code); if (U.toast) U.toast('房间码已复制：' + code); } catch (e) { if (U.toast) U.toast('房间码：' + code); } };
+        if (copy) copy.onclick = () => {
+            const done = MinigamesView._copyText(code);
+            if (U.toast) U.toast(done ? '房间码已复制：' + code : '房间码：' + code);
+        };
     }
+    const rem = el.querySelector('#mh-remake');
+    if (rem) rem.onclick = () => { if (MinigamesView._hallCreate) MinigamesView._hallCreate(true); };
 };
 
 // 4 人桌等尚未接入真实同步的游戏：大厅/座位可用，但满座后提示「开发中」而非假开战
@@ -363,6 +470,7 @@ MinigamesView._removeLatencyPill = function () {
 MinigamesView._launchNet = function (g, m) {
     MG._curGame = g.id;
     MG.net.on('tables', () => {}); MG.net.on('seat', () => {});   // 对战进行中不再处理大厅消息
+    MG.net.on('notice', () => {}); MG.net.on('seat_gone', () => {});   // 清掉大厅专属钩子，避免对局内误改大厅状态
     const isViewer = !!(m && m.viewer);
     const cap = (NET_GAMES[g.id] && NET_GAMES[g.id].seats) || 2;
     const race = !!(NET_GAMES[g.id] && NET_GAMES[g.id].race);

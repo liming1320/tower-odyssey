@@ -24,6 +24,28 @@ const PATH = '/ws/minigame';
 const RESUME_MS = Number(process.env.MG_RESUME_MS) || 30000;
 function genToken() { return crypto.randomBytes(6).toString('hex'); }
 
+// —— 大厅防滥用阈值（均可用环境变量覆盖）——
+// 「创建新桌」此前每次调用都无条件 new 一个房间，且不把自己从上一个房间摘掉：
+// 同一个人连点 N 次 → 大厅出现 N 张同名桌（旧桌仍引用着同一个 ws，永远删不掉）。以下三道闸门修掉它。
+//   闸门1（核心，见 join 分支）：已在「只有自己的未开战桌」上 → 直接复用该桌，绝不新开。
+//   闸门2：同一 IP 同时持有的未开战空桌数上限，超出后带他回到最早那张（防多标签页/脚本刷桌）。
+//   闸门3：全局房间数硬上限 + 空桌超时回收（见 gc），防内存被刷爆。
+const MAX_SOLO_PER_IP = process.env.MG_MAX_SOLO_PER_IP != null ? Number(process.env.MG_MAX_SOLO_PER_IP) : 4;
+const MAX_ROOMS = Number(process.env.MG_MAX_ROOMS) || 500;
+const IDLE_ROOM_MS = Number(process.env.MG_IDLE_ROOM_MS) || 30 * 60 * 1000;   // 空桌无人加入 30 分钟后自动收回
+
+// 取客户端真实 IP：优先反代头（宝塔 Nginx 会带 X-Real-IP / X-Forwarded-For），否则取 socket 对端。
+// 本地直连（开发机 + tools/verify-* 回归脚本）拿到的是回环地址，此时 IP 闸门自动放行（见 isLoopback）。
+function clientIp(req) {
+    try {
+        const h = (req && req.headers) || {};
+        const xf = String(h['x-forwarded-for'] || '').split(',')[0].trim();
+        const ip = xf || String(h['x-real-ip'] || '').trim() || (req && req.socket && req.socket.remoteAddress) || '';
+        return String(ip).replace(/^::ffff:/, '');
+    } catch (e) { return ''; }
+}
+function isLoopback(ip) { return !ip || ip === '127.0.0.1' || ip === '::1' || ip === 'localhost'; }
+
 // 房间快照持久化（应对「服务端重启丢房间」）：进行中对局 debounced 写 JSON 文件，
 // 重启后读回并把所有座位置为 ghost（ws=null、gone=true），客户端在 RESUME_MS 内带 slot 重连即可续局。
 // MG_ROOMS_FILE 可覆盖路径；MG_ROOMS_OFF=1 关闭（纯内存，行为与旧版一致）。
@@ -110,6 +132,35 @@ function broadcastTables(game) {
     }
     set.forEach(ws => send(ws, 'tables', { game, tables }));
 }
+// 把自己从「尚未开战」的房间里摘掉：重排剩余座位号、房间空了就删、并刷新大厅列表。
+// 只处理等待中的桌子——已开战的对局由 cleanup/leave 的 ghost 逻辑负责，这里绝不碰。
+function detachWaiting(ws) {
+    const id = ws._room;
+    ws._room = null; ws._side = null; ws._slot = null;
+    if (!id) return;
+    const room = rooms.get(id);
+    if (!room || room.started) return;
+    const i = room.peers.findIndex(p => p && p.ws === ws);
+    if (i < 0) return;
+    room.peers.splice(i, 1);
+    room.peers.forEach((p, k) => { p.side = k; if (p.ws) p.ws._side = k; });  // 摘掉中间一人后不留座位空洞
+    room._seqBySide = {};                                                     // 座位号重排，旧的去重序号作废
+    if (!room.peers.length) rooms.delete(id);
+    else broadcastSeat(room);
+    broadcastTables(room.game);
+    scheduleSnapshot();
+}
+// 某 IP 当前还占着的「未开战且只有他自己」的桌子（按创建时间升序），用于限制一人多开
+function waitingRoomsOfIp(ip, game) {
+    const out = [];
+    if (isLoopback(ip)) return out;   // 本地直连放行（开发机 / 同机多个回归脚本共用回环地址）
+    for (const [id, room] of rooms) {
+        if (room.started || room.game !== game || room.peers.length !== 1) continue;
+        const p = room.peers[0];
+        if (p && p.ws && p.ws._ip === ip) out.push({ id, room });
+    }
+    return out.sort((a, b) => (a.room.createdAt || 0) - (b.room.createdAt || 0));
+}
 // 满座 → 开战：给每人发 start（带自己 side 与对手昵称列表）
 function startRoom(room) {
     room.started = true;
@@ -162,6 +213,8 @@ function cleanup(ws) {
             scheduleSnapshot();   // 掉线后更新快照（ghost 状态），服务端重启仍可续局
         } else {
             room.peers = room.peers.filter(p => p.ws !== ws);
+            room.peers.forEach((p, k) => { p.side = k; if (p.ws) p.ws._side = k; });  // 有人退出后座位号顺延，不留空洞
+            room._seqBySide = {};
             broadcastSeat(room);
             if (!room.peers.length) { rooms.delete(id); broadcastTables(room.game); }
             else broadcastTables(room.game);
@@ -176,6 +229,7 @@ function listTables(game) {
     for (const [id, room] of rooms) {
         if (room.game !== game) continue;
         if (room.started || !room.peers.length || room.peers.length >= room.cap) continue;
+        if (!room.peers.some(p => p && p.ws)) continue;   // 没有活连接的僵尸桌不展示
         tables.push({ room: id, cap: room.cap, seats: seatView(room), full: false });
     }
     return tables;
@@ -199,8 +253,9 @@ function attach(server) {
     restoreRooms();   // 读回上次运行持久化的进行中对局（座位置为 ghost，供客户端带 slot 重连续局）
     const wss = new WebSocketServer({ noServer: true, maxPayload: 1024 * 1024 }); // 单条消息上限 1MB，防异常/恶意大 state 撑爆内存
 
-    wss.on('connection', (ws) => {
+    wss.on('connection', (ws, req) => {
         ws._name = '对手'; ws._room = null; ws._game = null; ws._side = null; ws.isAlive = true;
+        ws._ip = clientIp(req);   // 真实客户端 IP（反代头优先），供大厅防刷桌闸门使用
         ws.on('pong', () => { ws.isAlive = true; });
 
         ws.on('message', (buf) => {
@@ -237,9 +292,33 @@ function attach(server) {
                                 return;
                             }
                         }
+                        // 按房间码加入（好友邀请）。d.code=true 表示这是「大厅里手动输码」，
+                        // 码打错时不静默开一张没人知道的孤儿桌，直接报错让用户重输。
+                        if (d.code && !rooms.has(String(d.room))) { send(ws, 'error', { msg: '房间不存在或已结束，请核对房间码' }); return; }
+                        detachWaiting(ws);   // 换桌：先从上一张等待桌里摘出来（旧桌空了会立即从大厅消失）
                         joinRoom(ws, String(d.room), cap); return;
                     }
-                    if (d.create) { // 创建新桌：总是开一张空桌（即使已有空桌也另开）
+                    if (d.create) {
+                        // 创建新桌。d.fresh=true 表示用户明确点「换一张」（客户端在自有空桌卡片上提供），否则：
+                        // 【闸门1】已经在「只有自己的未开战桌」上 → 复用该桌。旧实现每次都 new 一个房间且
+                        // 不把自己从上一个房间摘掉，导致连点 N 次就在大厅堆 N 张同名桌（且永远删不掉）。
+                        const cur = ws._room && rooms.get(ws._room);
+                        if (!d.fresh && cur && !cur.started && cur.peers.length === 1 && cur.peers[0].ws === ws) {
+                            broadcastSeat(cur);
+                            send(ws, 'notice', { msg: '你已经在桌子上了 · 房间码 ' + cur._id });
+                            return;
+                        }
+                        detachWaiting(ws);   // 坐在别人的桌上 / 明确换桌：先脱离旧桌
+                        // 【闸门2】同一 IP 已持有过多空桌（多标签页/多设备/脚本）→ 带回最早那张，不再新开
+                        const mine = waitingRoomsOfIp(ws._ip, ws._game);
+                        if (mine.length >= MAX_SOLO_PER_IP) {
+                            const target = mine[0];
+                            joinRoom(ws, target.id, target.room.cap);
+                            send(ws, 'notice', { msg: '你已经开了 ' + mine.length + ' 张桌子，先带你回到最早的那张' });
+                            return;
+                        }
+                        // 【闸门3】全局兜底
+                        if (rooms.size >= MAX_ROOMS) { send(ws, 'error', { msg: '大厅桌子太多了，稍后再试' }); return; }
                         const id = genRoom(ws._game);
                         const room = { game: ws._game, cap, started: false, lastState: null, peers: [], createdAt: Date.now() };
                         room._id = id; rooms.set(id, room);
@@ -310,7 +389,20 @@ function attach(server) {
     const gc = setInterval(() => {
         const now = Date.now();
         for (const [id, room] of rooms) {
-            if (!room.started) continue;
+            if (!room.started) {
+                // —— 未开战的等待桌：只做回收，不做判负 ——
+                // 没有任何活连接（心跳已终止连接但 close 事件未及处理）→ 直接删，防僵尸桌堆积
+                if (!room.peers.some(p => p && p.ws)) { rooms.delete(id); broadcastTables(room.game); continue; }
+                // 开完就忘的空桌：超过 IDLE_ROOM_MS 无人加入 → 收回并告知房主（否则长期占着大厅位置）
+                if (room.peers.length === 1 && now - (room.createdAt || 0) > IDLE_ROOM_MS) {
+                    const host = room.peers[0];
+                    if (host && host.ws) { host.ws._room = null; host.ws._side = null; host.ws._slot = null; }
+                    send(host && host.ws, 'notice', { msg: '这张桌子太久没人加入，已自动收回' });
+                    send(host && host.ws, 'seat_gone', { room: id });
+                    rooms.delete(id); broadcastTables(room.game);
+                }
+                continue;
+            }
             let forfeited = false;
             room.peers.forEach(p => {
                 if (p && p.gone && !p.forfeited && now - (p.goneAt || 0) > RESUME_MS) {

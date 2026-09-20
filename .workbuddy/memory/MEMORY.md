@@ -1,111 +1,66 @@
 # tower-odyssey 长期项目记忆
 
 ## 联机 PvP（MG.pvp）接入铁律
-- `MG.pvp.side` **只有在 `MG.pvp.begin()` 调用后才被赋值**（来自 `_armed.side`）；begin 之前恒为 0。
-- 任何游戏在 `start()` / 游戏初始化里读 `MG.pvp.side` 来算 `me`/`myColor`/`S._my`/`first` 时，
-  **必须先调用 `MG.pvp.begin({setState, onOver})`**，否则 side 1（后手）方会全部按 side 0 计算 → 后手无法落子。
-- 正确范式（参考 gomoku）：在 `setState`/`commit`/`onOver` 等**回调内部**读取 `MG.pvp.side`
-  （回调在收到消息时才执行，此时 begin 早已完成）。
-- 已踩坑并修复：`banqi` / `xiangqi` / `jungle` / `mg-chess`(chess+junqi) 原先都在 begin 之前读 side。
-- 终局防回环：收到对手 `over` 时只做**展示**（`showResult`），绝不再 `commit`；本地判定才 `commit`。
-- **`setState` 里切勿重新赋值 `const` 棋盘/状态**：`MG.pvp._recv` 把 `setState` 包在 `try/catch` 里，
-  重赋值 `const` 会抛 `TypeError` 被**静默吞掉** → 对手落子永远进不了本地棋盘（症状：两方各下各的、
-  互相看不到对方棋子、还能下同一位置）。gomoku 曾因此炸（board 是 const，`setState` 里 `board = m.board`）。
-  **正确做法**：要么 `board` 声明为 `let`（xiangqi/banqi 已如此），要么在 `setState` 原地拷贝
-  （gomoku 修法：`for(... ) board[i][j] = m.board[i][j]`），要么 `Object.assign(S, m)`（monopoly/richman/ludo）。
+- `MG.pvp.side` 只在 `MG.pvp.begin()` 之后才有值（来自 `_armed.side`），begin 前恒为 0。凡是游戏初始化里读 side 来算 me/myColor/first 的，
+  **必须先 begin**；正确范式是只在 `setState`/`commit`/`onOver` 等**回调内部**读 side（回调在收到消息时才执行）。已踩坑：banqi/xiangqi/jungle/mg-chess。
+- **`setState` 里绝不能重新赋值 `const` 棋盘/状态**：`_recv` 把 setState 包在 try/catch 里，`TypeError` 被静默吞掉 → 对手棋子永远进不了本地
+  （症状：各下各的、互相看不到、还能下同一格）。改法：棋盘用 `let`、原地拷贝、或 `Object.assign(S, m)`。
+- 终局防回环：收到对手 `over` 只做**展示**（showResult），不再 `commit`；本地判定才 commit。
+- **竞速 race**：`arm(g, side, opp, {race:true})` → `canMove()` 恒 true（不锁回合，双方各自落子）；`NET_GAMES[id].race=true` 由 `_launchNet` 自动透传。
+  接入新竞速游戏只需每步 `commit({score,maxL,over,win})` 广播进度。
+- `E.def`/`E.defd` 必须 `cfg.id = id`，否则 `shouldBegin(cfg.id)` 恒收 undefined → 联机永不触发。
 
-- **竞速模式（race）**：`MG.pvp.arm(g, side, opp, { race: true })` 后 `canMove()` 恒 true（不受 `_turn===side` 回合锁，双方独立棋盘均可落子），终局仍由本地/对端 `over` 决定。`_armed.race` 透传到 `canMove()`。普通棋类不传 `race`，走回合锁。`NET_GAMES[g.id].race = true` 即由 `_launchNet` 自动透传到 `arm`（如 g2048 竞速）。接入新竞速游戏只需在 `NET_GAMES` 加 `race:true`，游戏内 `commit({score,maxL,over,win})` 每步广播进度、终局带 `over/win` 即可，无需锁输入。
+## 联机中继 ws-relay
+- 依赖 `ws`；`server.js` try/catch 包住。**package.json 必须声明 `"ws":"^8.18.0"`**，否则线上 npm install 不装 → 中继不挂 → WS 握手超时。
+- 客户端 `mg-net.connect()` 必须等 `onopen` 再发 join（`_pending` 队列冲刷）+ 8s 升级超时明确报错。
+- **掉线≠判负**：对局中 ws 断 → 该 peer 标 ghost（`ws=null,gone=true`，**必须保留在 room.peers**，先 filter 掉会导致重连匹配不到座位），
+  活人收 `peer_gone`；重连带 `slot`（入座时 genToken 下发）→ 替回原座位 + 下发 `lastState`（客户端 `MG.pvp.resume`）+ 对端收 `peer_back`。
+  仅显式 leave/quit 才立即判负（`peer_left`）。超时判负由独立 GC 做（周期 `min(2000,RESUME_MS)`，默认 30000ms，`MG_RESUME_MS` 可覆盖）。
+- 快照持久化：进行中房间 debounced(1500ms) 落盘，`SIGINT/server.close` flush，启动 `restoreRooms` 读回成 ghost；`MG_ROOMS_OFF=1` 关闭。
+- `_seq` 去重：`MG.net.send` 给 input/state/sync 打 `_seq`（**下划线**，写 `d.seq` 必 mismatch），中继按 `room._seqBySide[side]` 丢弃非递增包。
+- 观战：`spectate` → `side=-1` 只读，收 `start(viewer:true,state,seats,opp)`，自身 input 被拦，退出不推 peer_left。
+- `WebSocketServer` 已设 `maxPayload:1MB`。
 
-## 工程约束（来自用户/项目）
-- `pinball.js` 严禁修改；`pk32*` 系列排除；`arcade.js`/`emulator.js` 封装层与 `optimized/` 死代码跳过。
-- 新联机代码全部 opt-in，单人/PvE 行为不变。
-- 测试机无 Chrome，无法跑 124 游戏 CDP 全量冒烟；可用 `tools/verify-banqi-pvp.js`
-  （双客户端 + DOM 桩 + 内存 relay，纯 Node 跑真实 banqi.js）做无浏览器回归。
+## 联机大厅「桌子」（2026-09-20 改）
+- **⚠️ 已修的大坑**：旧 `join{create:true}` 每次无条件 new 房间、且**不把自己从上一个房间摘掉** → 旧房间仍引用同一 ws（peers 非空、永不被回收），
+  连点 N 次大厅就堆 N 张同名空桌（用户截图那一幕）。修法：create 前 `detachWaiting(ws)`；且**已在「只有自己的未开战桌」上时直接复用原桌不新开**
+  （`fresh:true` 才是明确「换一张新桌」）。
+- 三道闸门：①复用原桌（核心）②同 IP 未开战桌上限 `MG_MAX_SOLO_PER_IP`（默认 4，超出带回最早那张；**回环地址放行**，否则本机多套回归脚本互相挤兑）
+  ③`MG_MAX_ROOMS`（默认 500）+ gc 回收「无活连接的僵尸桌」与「超 `MG_IDLE_ROOM_MS`（默认 30min）无人加入的空桌」（推 `notice`+`seat_gone`）。
+- 客户端：`listTables` 过滤 0 活人桌；大厅列表**过滤掉自己的房间**（`MinigamesView._roomCode`）避免重复展示；新增「粘贴房间码加入」
+  （带 `code:true`，码错服务端回 `error` 而非偷建孤儿桌）与「换一张新桌」；`notice/error/seat_gone` 渲染到大厅状态行。
+- `joinRoom` 加了「同连接重复入座同一房间 → 直接复座位」守卫；`detachWaiting`/`cleanup` 退出后重排 `side`（不留座位空洞）并清 `_seqBySide`。
+- 大厅 UI：卡片 = 一行「短房间码 · 已坐/总座 · 加入」+ 一行座位胶囊（头像圆点+昵称，空位只留 27px 虚线圆）。`.mh-*` 样式全在 main.css。
+- 回归闸 `tools/verify-hall.js`（22/0）：连点 3 次只留 1 桌 / fresh 换桌回收旧桌 / 输错码不建孤儿桌 / 同 IP 上限（用 `x-forwarded-for` 伪造公网 IP）/ 重复 join 不叠座位。
 
-## 联机中继（ws-relay）部署铁律
-- `server/ws-relay.js` 依赖 `ws` 模块；`server.js` 用 `try{require('./server/ws-relay')}catch` 包住，`WsRelay` 为 null 时不挂中继（静默降级，主服务照常）。
-- **`package.json` 必须声明 `"ws":"^8.18.0"`**（dependencies 不能为空），否则线上 `npm install` 不装 ws → 中继永远不挂 → WS 升级握手 6 秒零响应、浏览器「待处理→超时」。
-- 线上部署三步缺一不可：`git pull` + **`npm install`**（让 ws 进 node_modules）+ 重启（宝塔 `systemctl restart tower-odyssey`）；随 push 自动部署时确认流水线含 npm install。重启后浏览器 Ctrl+F5 强刷（吃 mg-net.js 的 `?v`）。
-- **自动部署已自愈（2026-09-18 改 `deploy/hooks/deploy.sh`）**：`tools/webhook-deploy.js` 收 Gitee push → 跑 `deploy.sh`，但原脚本只 `git reset --hard`+重启、**从不 npm install**。已加「仅当 `package.json` 变动才 `npm install`」分支，且 **ws 缺失直接判失败回滚**（不让无 ws 的版本上线）。效果：纯代码 push 自动部署依旧即用；改依赖时自动同步，不再依赖「上次手动装过 ws 还在」的运气。所以**普通代码改动只需 push，无需手动 npm install**。
-- 客户端 mg-net.js：`connect()` 必须等 `onopen` 再发 join（`_pending` 队列排队冲刷），且加 8s 升级超时明确报错；否则 join 在 CONNECTING 被静默丢弃、三条入口全废。
+## 部署与回归闸
+- push → Gitee webhook → `tools/webhook-deploy.js` → `deploy/hooks/deploy.sh`（`git reset --hard` + **仅 package.json 变动才 npm install** + 重启宝塔
+  `systemctl restart tower-odyssey`）；ws 缺失直接判失败回滚。普通代码改动只需 push。deploy.sh 开头把自己 cp 到 /tmp 再 exec，故脚本改动**下次部署才生效**。
+- **Phase 2.6 部署前回归闸**：`tools/verify-net-gate.js` 串行 9 套（reconnect 14 / 4p 15 / persist 12 / seq 5 / spectate 8 / heartbeat 2 / **hall 22** / net-games 7 / net-new 9），
+  任一失败 → `git reset --hard OLD_SHA` + `restore_db` + exit 1（不重启坏代码）。`DEPLOY_SKIP_VERIFY=1` 跳过；本地 `node tools/verify-net-gate.js` 预检。
+- `tools/verify-routes.js`：`MG_NO_LISTEN=1` + `MG_DATA_DIR` 临时目录加载 server.js，19/0 通过、路由表 111 个。**每抽完一个域必须跑一次**。
 
-## 联机断线重连 / 续局协议（ws-relay + mg-net + mg-pvp，2026-09-19 落地）
-- **座位 token（slot）**：入座时服务端 `genToken()` 生成，`seat`/`start` 消息带 `slot`；客户端存 `MG.net._slot`。重连续局靠它识别「同一座位」。
-- **掉线≠判负**：对局中某方 ws close/error → 服务端把该 peer 标 `gone`（保留在 `room.peers` 作 ghost，`ws=null`），向活人推 `peer_gone`（客户端显示「等待重连」覆盖层、不结束）。
-  - **⚠️ 铁律**：started 房间的 `cleanup` 绝不能在标 ghost 前 `room.peers.filter` 掉该 peer，否则 ghost 被孤立、重连 `find(p=>p.gone&&p.slot)` 匹配不到 → 续局失败（已踩坑修过）。
-  - 显式 `leave`/`quit`（点返回/认输）在对局中→**立即**判负（`peer_left`），不保留座位。
-- **重连**：客户端 `mg-net` 在 socket 关闭且处于对局（`_room` 且非 intentional）时指数退避自动重连，重发 `join(room, game, slot)`；服务端 `join` 分支见 `room.started && d.slot` 匹配 ghost → 替回原座位、发 `resume(lastState)` 给重连方 + `peer_back` 给对端。
-- **lastState**：服务端每次收到 `input/state/sync` 存 `room.lastState`；重连时原样下发，客户端 `MG.pvp.resume(state)` 重建棋盘（不重复 begin，保留 input 监听）。
-- **超时判负**：独立 GC（`setInterval(min(2000,RESUME_MS))`）把 gone 超 `RESUME_MS`（默认 30000ms，可 `MG_RESUME_MS` 环境变量覆盖，主要给自动化测试）的 peer 判负（`peer_left`）；与 15s 心跳 ping 解耦。
-- `WebSocketServer` 已加 `maxPayload:1024*1024` 防异常大 state 撑爆内存。
-- 回归闸：`tools/verify-reconnect.js`（真 ws 起临时端口，两客户端走 建房→落子→掉线→peer_gone→带 slot 重连→resume/peer_back + 超时→peer_left），PASS 14/0。
+## server.js 模块化约定
+- `api['METHOD /path'] = handler` 注册表；新模块 `server/routes/*.js` 用 `require(...)(routeCtx)` 注入共享依赖。
+- **routeCtx 单一上下文对象**：`{ api, DB, sendJson, getUserByToken, isAdminToken, save, newId, newToken, <config 常量>, <共享 helper> }`，各模块解构自取。
+- 纯数据在 `server/config/*`，由 `index.js`（Object.assign barrel）聚合。
+- 已拆 auth/camp/heroes/events/tower/clan/minigame/gift/admin，server.js 由 ~3348 行降到 ~1471 行。踩坑：
+  ①admin.js 抽走后 `romAdminOk` 在 server.js 顶层补一份（否则后台 AI 酒馆配置页必 500）
+  ②`const { normalizeSkills } = require(...)` 必须声明在 routeCtx **之前**，否则 TDZ ReferenceError。
 
-## 联机优化 D1-D4（2026-09-18 落地，commit 97ad3db）
-承接「断线重连+续局(resume)」的 4 个增强方向，全部 opt-in、单人/PvE 零回归：
-- **D1 4人桌真实同步**：`mg-pvp.arm(g,side,opp,{cap,seats,viewer})` 写 `_armed`，`begin` 设 `this.cap`；`commit` 回合用 `(turn+1)%cap` 轮转；richman/monopoly 对手昵称按 **side 索引座位快照** `seats[i].name`（原 `oppNames[i]` 在 4 人局有下标错位风险）；`NET_WIRED` 收录 `monopoly`+`richman`。`side=-1`=观战者（canMove 恒 false）。
-- **D2 房间快照持久化（防服务端重启丢进度）**：进行中房间 debounced(1500ms) 写 JSON（`MG_ROOMS_FILE`，默认 `os.tmpdir`；`MG_ROOMS_OFF=1` 关）；`SIGINT`/`SIGTERM`/`server.close` flush；启动 `restoreRooms` 读回归为 ghost(`ws:null,gone:true`)；等待桌不写快照。
-- **D3 落子丢包/乱序防护（seq 去重）**：`MG.net.send` 给 `input/state/sync` 打单调递增 `_seq`；中继按 `room._seqBySide[side]` 记录，收 `seq<=last` 丢弃（防重连 outbox 重放重复落子）；观战者 side=-1 的 input 被拦。
-  **⚠️ 铁律**：客户端字段名是 `_seq`（下划线），测试/排错写 `d.seq` 必 mismatch（已踩坑修过 verify-seq）。
-- **D4 观战模式**：`spectate` 消息 `side=-1` 只读观战者，收 `start(viewer:true,state:lastState,seats,opp)`+广播，自身 input 拦截、退出走 `leave` 不推 `peer_left`；大厅观战入口 + `_renderSpectator` 轻量 HUD；`onDown` 重连文案增强。`minigames.js` 各 peer_* 钩子 `if(!isViewer)` 守卫。
-- **回归闸（真 ws 事件驱动，全 5 项绿）**：`verify-reconnect.js`(14/0) + `verify-4p.js`(15/0) + `verify-persist.js`(12/0) + `verify-seq.js`(5/0) + `verify-spectate.js`(8/0)。用事件驱动断言（先 send 再 `waitFor`，`waitForNone` 用 `setTimeout(res(null),to)` 重写）避免 sleep 竞态。
-- **部署前回归闸（2026-09-19 接入 `deploy.sh`，commit 255e850）**：`tools/verify-net-gate.js` 串行跑上述 5 套、任一失败整体 exit 1；`deploy/hooks/deploy.sh` 在 Phase 2.6（拉代码+ws 校验之后、重启之前）调用，失败则 `git reset --hard OLD_SHA`+`restore_db`+`exit 1`（旧进程继续、磁盘复位、不重启坏代码）。`DEPLOY_SKIP_VERIFY=1` 可跳过。本地可 `node tools/verify-net-gate.js` 预检。
-  - **⚠️ 生效时机**：deploy.sh 每次运行开头把自己 `cp` 到 /tmp 再 `exec`（防 git reset 覆盖脚本本身），故门槛在 **push 后的下一次部署** 才生效。
-  - Phase 2.5 关键依赖校验已改为「无论 package.json 是否变动都强制校验 node_modules/ws 存在」，缺失即失败回滚。
+## 联机覆盖现状
+- 棋类：五子棋 gomoku、暗棋 banqi、象棋 xiangqi、国际象棋 mg-chess、军棋 junqi/jungle；4 人桌：大富翁 richman、强手棋 monopoly（cap=4）。不存在围棋 weiqi/go。
+- 引擎（MG.eng）：飞行棋 ludo（新增引擎游戏只需声明 `cfg.net`：setup/ser/apply + 行动后 `api.net.commit()`）。
+- 状态同步类新游戏：memory、g2048(race)、tankpvp、snakepvp、maze-coop(co-op 协作)；非联网进入时渲染「请从小游戏列表联网分类进入」提示，不静默进单人。
 
-## server.js 模块化约定（按模块拆）
-- 路由拆分：用 `api['METHOD /path'] = handler` 注册表；新增路由模块 `server/routes/*.js`，
-  通过 `require('./server/routes/xxx')(routeCtx)` 注入共享依赖（参考 `server/routes/rom.js`）。
-- **routeCtx 单一上下文对象**（在首个路由模块位置定义，随抽取逐步 `Object.assign` 追加 helper/config）：
-  `{ api, DB, sendJson, getUserByToken, isAdminToken, save, newId, newToken, <config常量>, <共享helper> }`；
-  各模块 `const { ... } = ctx` 解构自己需要的，handler 连同其私有 helper 一起搬进模块。
-- **回归闸门 `tools/verify-routes.js`**：`MG_NO_LISTEN=1`（不绑端口）+ `MG_DATA_DIR`（临时数据目录，不污染真实 db）
-  加载 server.js，断言 `api` 路由表齐全、实跑几个 GET handler 不抛错。**每抽完一个域必须跑一次**。
-  实现：server.js 末尾 `if (process.env.MG_NO_LISTEN) module.exports = { api, DB };`；`startListen()` 首行 `if (process.env.MG_NO_LISTEN) return;`。
-- 纯数据拆分：游戏内容常量（品质/装备/英雄星级天赋/元素/城墙/材料英雄/许愿/锻造/塔与肉鸽/Boss/建筑/资源/展示ID/短信）
-  抽到 `server/config/*`，由 `server/config/index.js`（Object.assign barrel）聚合，
-  server.js 顶部 `const { ... } = require('./server/config')` 一次性解构引用。
-- 进度（2026-09-18 起，增量拆）：已抽 `camp.js`(6) + `heroes.js`(GET+15 POST，含 4 私有 helper) +
-  `tower.js`(tower/info/level/clear/start/choice/finish + world/world/gather，buildBattleHeroes/getWallInfo 搬入，
-  heroCombatStats/chapterOf/bossForFloor/floorHpScale/floorAtkScale/mulberry32/enemyPoolFor 留 server.js 经 ctx 注入) +
-  `events.js`(events+event/claim+wish+wish/reward+shop/buy-wish，eventState/drawOneHero 搬入) +
-  `clan.js`(clans/clan.create/join/mine + user/set-nickname + chat + mail) +
-  `minigame.js`(minigame 注册表+report/progress/score/rank/order + pk32 注册表+order + admin/minigame/order + admin/pk32/order) +
-  `gift.js`(gift/redeem) + `admin.js`(admin/login/mail + account/delete + admin/gift/* + admin/tavern/{config,test,handles,scan}
-  + admin/user/{delete,grant} + admin/hero/{add,update,delete,reload} + admin/wall/{update,delete} + admin/event/{save,delete}
-  + admin/overview + admin/sms-codes + free + tavern/{ticket,status})。
-  每次 verify-routes 均 **6/0 通过**；2026-09-19 加固后 **19/0 通过，路由表 111 个零缺失**（额外实跑 admin/overview/sms-codes/
-  gift/list/tavern/config/minigame/order/pk32/order + tower/level + register→login→me 链路，并加「admin 无 token→403」「login 错密码→401」负向断言）。
-  server.js 由 ~3348 行降到 **1471 行**（9 个 require('./server/routes/*')：auth/camp/heroes/events/tower/clan/minigame/gift/admin）。
-- **抽 admin 时修复的既有 bug**：server.js 原 `GET /api/admin/tavern/*` 直接调用 `romAdminOk(req)`，但该函数只在
-  `server/routes/rom.js` 模块内定义 → 运行时 ReferenceError（后台 AI 酒馆配置页必 500）。修复：在 server.js 顶层补一份
-  `romAdminOk`（双通道：独立管理员令牌 `__admin__` 或玩家 isAdmin），经 routeCtx 注入 admin.js；rom.js 保留自己的副本。
-- **TDZ 坑（已修）**：`normalizeSkills` 用 `const { normalizeSkills } = require('./server/core/skills')` 声明在 routeCtx
-  **之后**，被 routeCtx 引用时触发 `Cannot access 'normalizeSkills' before initialization`。已把该 require 上移到 routeCtx 之前。
-- **抽 auth 域（2026-09-19 收尾）**：`server/routes/auth.js` 迁出 register/login/sms/send/phone/login、user/bind-phone/set-password/logout/me
-  （8 个）+ 私有 helper `publicUser`；依赖经 ctx 注入（hashPassword/verifyPassword/validPhone/maskPhone/genDefaultNickname/
-  defaultUserState/touchLogin/SMS/validNickname/newId/newToken/newDisplayId）。`displayName` 因被 clan.js 经 ctx 引用而**留在 server.js**；
-  auth.js 自行 `require('crypto')`。唯一残留内联路由仅 `GET /api/health`（引导/分发核心）。
-- **`server/config` 扩装备/戒指/宝石/技能纯数据：经核查已非必要**——用户列举的 铁剑/银刃/蓝晶戒/玄铁法杖/黄玉/翠玉/藤蔓缠绕/潮汐涌动/烈焰爆裂
-  等实际都存于 `data/db.json` / `data/heroes.json` 等运行时数据文件；server.js 内只剩生成逻辑用的小名字池（7 项/组，属生成逻辑本身），无需搬。
-- **verify-routes 闸门已加固**（2026-09-19）：临时 db 里造 `ADMIN_TOKEN`（写 `__admin__`）+ 测试玩家（带 state + 上阵英雄 h_verify）
-  与 `USER_TOKEN`，实跑上述 admin GET 与 `tower/level`，捕捉「ctx 漏注入 → ReferenceError/TypeError」类回归；
-  前置 `if (process.env.MG_NO_LISTEN) return;` 在 `startListen()` 首行保证不绑端口。
-
-## 棋类联机覆盖现状
-- 已接入联机：五子棋(gomoku)、暗棋(banqi)、象棋(xiangqi)、国际象棋(mg-chess chess)、军棋翻翻棋(junqi/jungle)。
-- 2v2/多人桌：大富翁(richman)、强手棋(monopoly) 已支持 **最多 4 人** 真实同步（`cap=4`，`NET_WIRED` 收录，对手昵称按 side 索引座位快照）。
-- 不存在：围棋(weiqi/go) 在 124 款中无此游戏。
-- 引擎游戏（MG.eng）联机：飞行棋(ludo) 已接入（红 vs 黄 双人对弈，无 AI）。
-  接入方式 = 引擎 `E.game()` 内 `cfg.net` opt-in 钩子 + `MG.pvp` 状态同步；新增引擎游戏只需声明 `cfg.net`
-  （`setup/ser/apply` + 在本地行动后 `api.net.commit()`），单人/PvE 零影响。
-- **观战模式**：任意联机游戏进入房间后，另一玩家可凭房间码 `spectate` 只读观战（`side=-1`，收 `start(viewer:true)`+最近盘面+广播，自身 input 拦截、退出不推 peer_left）。
-- **本轮新增联网小游戏（非棋类、状态同步）**：
-  - 记忆翻牌 `memory`（回合制共享牌面：房主生成牌阵首包下发，按回合翻 2 张，配对成功 `scores[mySide]++` 且留回合 `turn=mySide`，否则让对手 `turn=1-mySide`；终局 `commit({...,over})`）。
-  - 2048 竞速 `g2048`（`race:true` 不锁回合：双方独立 5×5 棋盘、均可落子；每步 `commit({score,maxL,over,win})` 广播进度，任一方先达成目标/锁盘即终局，对手收 `over` 判负/胜）。
-  - 坦克大决战 `tankpvp`（实时回声同步，无 AI：每帧广播己方坦克+子弹 `{tk:{x,y,dir,lives,shield},b:[子弹],hit:0}`，命中由**子弹拥有者**发 `hit:1` 对手本地扣血；每端 3 条命；over 语义 0=发送方负/1=发送方胜/2=平局，接收方取反映射）。
-  - 贪吃蛇对战 `snakepvp`（同盘双蛇：17×17/S=30/140ms 步；房主首 `commit` 下发食物+蛇身，撞墙/自身/对手身体即亡，头对头同归 draw=2；over 取反映射）。
-  - 双人迷宫闯关 `maze-coop`（co-op 协作：11×11 DFS 完美迷宫，房主 `seed` 建图并 `commit` 下发、双端一致重建；各广播 `pos` 与 `key`(捡钥匙)，集齐钥匙开出口、两人同达终点通关，任一踩陷阱🔥双双失败）。
-  - `NET_WIRED` 已收录 `memory` + `g2048` + `tankpvp` + `snakepvp` + `maze-coop`；`NET_GAMES` 均 `seats:2`（g2048/tankpvp/snakepvp/maze-coop 均 `race:true`）。
-  - 非联网进入提示范式：3 款新游戏 `start()` 内 `net=MG.pvp.shouldBegin(id)` 为 falsy 时，渲染「🎯/🐍/🤝 XX 为联机对战/协作专属…请从小游戏列表🌐联网对战分类进入」，不静默进单人。
-- **注意**：`E.def`/`E.defd` 必须 `cfg.id = id`，否则 `MG.pvp.shouldBegin(cfg.id)` 恒收 undefined、联机永不触发
-  （引擎自身 `gameId: cfg.id` 错误上报也因此一直是 undefined，一并修复）。
+## 工程约束 / 资源约定
+- **严禁改动**：`pinball.js`、`pk32*`、`public/vendor/spacecadet/*`、`arcade.js`/`emulator.js` 封装层、`optimized/` 死代码。推包时只 `git add` 自己改的文件，别 `git add -A`。
+- 新联机代码全部 opt-in，单人/PvE 零回归。
+- 立绘：`tools/gen-hero-art.js` → `public/img/heroes/<id>.svg` + `avatars/<id>.svg`；**改图必须 bump `utils.js` 的 `IMG_V`**（`U.imgSrc` 自动加 `?v=`），
+  并同步 index.html 里 battle.js/utils.js 的 `?v=`，否则浏览器吃旧图。
+- 无浏览器回归手段：`tools/verify-banqi-pvp.js`、`tools/smoke-battle-polish.js`（stub canvas 驱动 battle.js）。
+- **共享打击感底座 `U.fx`（`utils.js`）**：主玩法战斗与 MG 小游戏共用同一套特效——震屏/飘字/粒子/冲击波/全屏闪走 `MG.cam`+`MG.fxPool`（mg-effects.js 启动期已加载，纯 canvas 工具，不依赖 `MG.runGame`）；顿帧用 battle.js 的全局冻结 dt 模型（`U.fx.hitStop`/`consumeHitStop`）。**任何主玩法场景要加打击感都走 `U.fx`，不要再自写随机抖动/独立飘字数组**；MG 缺失时 `U.fx` 自动降级空操作 + 标量抖动兜底。
+- **本机有 Chrome**（`C:\Program Files\Google\Chrome\Application\chrome.exe`，另有 Edge、ms-playwright，此前"测试机无 Chrome"的记录有误）。
+  UI 改版可做「静态预览 HTML 引用**真实** `public/css/main.css` + 手抄渲染函数产出的 DOM 结构 → 无头 Chrome 截图」肉眼验收，无需起服务：
+  `chrome.exe --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=940,1080 --screenshot=out.png file:///E:/...`
+  模板见 `tools/hall-preview.html`。注：预览外框要覆盖 `.mini-mask` 的 `position:fixed`（改 `static`）与 `.mini-stage` 的 `overflow/align-items`，否则被裁切。

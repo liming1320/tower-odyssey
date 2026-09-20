@@ -7,6 +7,7 @@
 //   seq        落子 _seq 去重（防重连重放重复落子 / 乱序防护）
 //   spectate   观战模式（side=-1 只读、自身 input 拦截、退出不推 peer_left）
 //   heartbeat  应用层心跳 ping/pong 往返 + 客户端死连看门狗（网络黑洞检测）
+//   hall       大厅桌子防刷：连点「创建新桌」不堆同名空桌、换桌回收旧桌、同 IP 空桌上限、输错码不建孤儿桌
 //   net-games  memory/g2048 新增联机游戏的状态同步契约（整盘转发给对手）
 //   net-new    tankpvp/snakepvp/maze-coop 本轮新增 3 款联机游戏的状态同步契约
 //
@@ -19,7 +20,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const APP_DIR = process.env.APP_DIR || path.join(__dirname, '..');
-const SUITES = ['reconnect', '4p', 'persist', 'seq', 'spectate', 'heartbeat', 'net-games', 'net-new'];
+const SUITES = ['reconnect', '4p', 'persist', 'seq', 'spectate', 'heartbeat', 'hall', 'net-games', 'net-new'];
 const PER_SUITE_TIMEOUT = 45000;
 
 let failCount = 0;
@@ -54,5 +55,5 @@ if (failCount) {
     console.log('[net-gate] 结果：✗ ' + failCount + ' 套失败 —— 阻止坏版本上线');
     process.exit(1);
 }
-console.log('[net-gate] 结果：✓ 全部 ' + SUITES.length + ' 套通过（含 heartbeat / net-games / net-new）');
+console.log('[net-gate] 结果：✓ 全部 ' + SUITES.length + ' 套通过（含 heartbeat / hall / net-games / net-new）');
 process.exit(0);
