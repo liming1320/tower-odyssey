@@ -8,6 +8,11 @@
 set -o pipefail
 BRANCH="${1:-master}"
 APP_DIR="${APP_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
+# 必须 export：本脚本第 23 行会把自身 cp 到 /tmp 再 exec 重启（防 git reset --hard
+# 覆盖正在跑的脚本）。重启后 $0 变成 /tmp/to-deploy-self.sh，若不 export，第 10 行会
+# 重新从 $0 推导 APP_DIR 算成根目录，cd 到根目录后 git 全部报 not a git repository。
+# export 后子进程继承正确路径，不再重算。
+export APP_DIR
 SERVICE="${SERVICE:-tower-odyssey}"
 PORT="${PORT:-5180}"
 LOG_DIR="$APP_DIR/deploy/logs"
