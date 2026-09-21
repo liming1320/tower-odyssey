@@ -7,7 +7,7 @@
 //   而本项目的根路径 /socket.io 已被 SillyTavern 网关（server/tavern.js）反向代理占用，
 //   若把 netplay 也挂主服务器的 /socket.io 会被 ST 代理截走 → 客户端握手 404、建不了房间。
 //   因此按 EmulatorJS 官方自托管拓扑，netplay 信令跑在【独立端口】上、socket.io 用默认 /socket.io，
-//   前端把 EJS_netplayServer 指向 http://<本机IP>:<NETPLAY_PORT>/ 即可（默认 5181）。
+//   前端把 EJS_netplayServer 指向 http://<本机IP或域名>:<NETPLAY_PORT>/ 即可（默认 5181）。
 //   房间列表 /list 也由这个独立服务一并托管（客户端请求 = EJS_netplayServer + 'list'）。
 //
 // 协议严格对齐官方 EmulatorJS-Netplay（main 分支 server.js）：
@@ -54,6 +54,10 @@ function listRooms(gameId) {
     return filterRooms(rooms, gameId);
 }
 
+// 启动一个监听在 host 上的信令服务。
+//   先试 0.0.0.0（直连：云安全组/防火墙放行 TCP 该端口即可，零反代）；
+//   若端口被占用（通常是 5181 上挂了反向代理 / nginx / 宝塔站点），自动改绑 127.0.0.1，
+//   并提示把那个反代的上游改成 127.0.0.1:<port> —— 这样保留反代也能直接通，无需改前端。
 function createServer(portOverride) {
     let SocketIO;
     try { SocketIO = require('socket.io'); }
@@ -64,9 +68,12 @@ function createServer(portOverride) {
     const port = (typeof portOverride === 'number' && portOverride > 0)
         ? portOverride
         : (process.env.NETPLAY_PORT ? parseInt(process.env.NETPLAY_PORT, 10) : 5181);
-    try {
+
+    let booted = false;
+
+    function boot(host) {
         // 独立 HTTP 服务：/list 返回房间表，其余 404（socket.io 接管 /socket.io）
-        httpServer = http.createServer((req, res) => {
+        const srv = http.createServer((req, res) => {
             const u = url.parse(req.url, true);
             if (u.pathname === '/list') {
                 res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -83,7 +90,7 @@ function createServer(portOverride) {
             res.end('not found');
         });
 
-        io = new SocketIO.Server(httpServer, {
+        const sio = new SocketIO.Server(srv, {
             path: '/socket.io',          // 默认路径 —— 客户端（EJS_netplayServer）恰好连这里
             cors: { origin: '*', methods: ['GET', 'POST'], credentials: true },
             allowEIO3: true,            // 兼容较旧的 EJS nightly socket.io 客户端
@@ -115,14 +122,14 @@ function createServer(portOverride) {
                     const rest = Object.keys(room.players);
                     if (rest.length) room.owner = room.players[rest[0]].socketId;
                 }
-                io.to(sid).emit('users-updated', playersOf(sid));
+                sio.to(sid).emit('users-updated', playersOf(sid));
             }
             try { socket.leave(sid); } catch (e) {}
             delete socket.sessionId;
             delete socket.playerId;
         }
 
-        io.on('connection', (socket) => {
+        sio.on('connection', (socket) => {
             socket.on('open-room', (data, cb) => {
                 const extra = (data && data.extra) || {};
                 const sessionId = extra.sessionid;
@@ -147,7 +154,7 @@ function createServer(portOverride) {
                 socket.join(sessionId);
                 socket.sessionId = sessionId;
                 socket.playerId = playerId;
-                io.to(sessionId).emit('users-updated', rooms[sessionId].players);
+                sio.to(sessionId).emit('users-updated', rooms[sessionId].players);
                 if (typeof cb === 'function') cb(null);
             });
 
@@ -168,7 +175,7 @@ function createServer(portOverride) {
                 socket.join(sessionId);
                 socket.sessionId = sessionId;
                 socket.playerId = playerId;
-                io.to(sessionId).emit('users-updated', room.players);
+                sio.to(sessionId).emit('users-updated', room.players);
                 if (typeof cb === 'function') cb(null, room.players);
             });
 
@@ -180,12 +187,12 @@ function createServer(portOverride) {
                 try {
                     const d = data || {};
                     if (d.requestRenegotiate && d.target) {
-                        const t = io.sockets.sockets.get(d.target);
+                        const t = sio.sockets.sockets.get(d.target);
                         if (t) t.emit('webrtc-signal', { sender: socket.id, requestRenegotiate: true });
                         return;
                     }
                     if (!d.target) return;
-                    io.to(d.target).emit('webrtc-signal', { sender: socket.id, candidate: d.candidate, offer: d.offer, answer: d.answer });
+                    sio.to(d.target).emit('webrtc-signal', { sender: socket.id, candidate: d.candidate, offer: d.offer, answer: d.answer });
                 } catch (e) {}
             });
 
@@ -195,22 +202,39 @@ function createServer(portOverride) {
             socket.on('input', (d) => { if (socket.sessionId) socket.to(socket.sessionId).emit('input', d); });
         });
 
-        httpServer.listen(port, () => {
-            console.log('[netplay] 信令中继已启动：*:' + port + '/socket.io（EmulatorJS nightly netplay 自托管，独立端口）');
-            console.log('[netplay] 前端 EJS_netplayServer 应指向 http://<本机IP或域名>:' + port + '/ ；若改端口，emulator.js 里的 5181 同步改');
-        });
-        httpServer.on('error', (e) => {
+        srv.once('error', (e) => {
+            if (!booted && e && e.code === 'EADDRINUSE' && host !== '127.0.0.1') {
+                console.warn('[netplay] 端口 ' + port + ' 已被占用（大概率 5181 上挂了反向代理 / nginx / 宝塔站点，上游指错才 502）。' +
+                    '自动改绑 127.0.0.1:' + port + ' —— 请把该反代的上游改成 127.0.0.1:' + port +
+                    '（信令进程现在就监听在这里），或干脆删掉这个反代、只开防火墙即可（设计本就零反代）。');
+                try { clearInterval(gc); } catch (_) {}
+                try { sio.close(); } catch (_) {}
+                try { srv.close(); } catch (_) {}
+                boot('127.0.0.1');
+                return;
+            }
             console.error('[netplay] 端口 ' + port + ' 监听失败（可能被占用，或云安全组/防火墙未放行该端口）：' + (e && e.message ? e.message : e));
             io = null;
         });
 
-        return io;
+        srv.listen(port, host, () => {
+            booted = true;
+            httpServer = srv;
+            io = sio;
+            console.log('[netplay] 信令中继已启动：' + (host === '127.0.0.1' ? '127.0.0.1' : '*') + ':' + port + '/socket.io（EmulatorJS nightly netplay 自托管，独立端口）');
+            console.log('[netplay] 前端 EJS_netplayServer 应指向 http://<本机IP或域名>:' + port + '/ ；若改端口，emulator.js 里的 ' + port + ' 同步改');
+        });
+    }
+
+    try {
+        boot(process.env.NETPLAY_BIND || '0.0.0.0');
     } catch (e) {
         // 任何初始化异常都不能拖垮主服务（参考 ws-relay 的失败不阻断纪律）
         console.error('[netplay] 信令中继初始化失败，已跳过（模拟器联机不可用，站点其余功能正常）：' + (e && e.stack || e));
         io = null;
         return null;
     }
+    return io;
 }
 
 function getPort() {

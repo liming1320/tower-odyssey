@@ -73,8 +73,23 @@
 - **`catch` 包住的初始化异常会伪装成成功**：曾把初始化尾部写在 `start3D().catch()` 里，某行抛 `TypeError` 被静默接住 → 场景/对象都建好了但**渲染循环从未启动 → 整盘黑屏**。
 - 故验收断言**必须包含**：①渲染循环在跑（`raf()!==0` / 帧计数）②真的产生 draw call（`renderer.info.render.calls>0`）③错误占位文案为空。只断言「DOM/对象存在」会以「全绿黑屏」形式放行（已踩）。
 - **无头 WebGL 必须软件渲染**：Chrome 加 `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader`，**绝不能加 `--disable-gpu`**（会直接废掉 WebGL）。参考 `tools/shot-monopoly.js`（15 项断言 + 截图）。
+- **fs 补丁脚本锚点必须按文件真实缩进**：`monopoly.js` 的 `start3D` 函数体（在 `ensureThree().then(T=>{ … })` 内）是 **12 空格缩进**，不是 8；锚点写错缩进会 `未找到` 失败。改前用 `node -e` 打印 `l.slice(0,12)` 确认。
+- **部署核对别在 `monopoly.js` 里找 `?v=` 版本串**：版本串只写在 `index.html` 的 `<script src=...?v=>` 里，`monopoly.js` 自身不含自己的版本号。判部署改查 `GL_turnRing`/`ACESFilmicToneMapping`/`buildMarks`/`inspectCell` 等新标记。
 - **异步动画类断言要「等稳态再采样」**：曾断言"行走队列已排空"却报残留 `[2,0,0,0]`——其实是**采样时对手的行走动画刚播到一半**（并非 bug）。凡断言"最终状态"，先轮询到稳定（如 `pawnQueueLen()` 全 0 或超时）再取值。
 - **本机有 Chrome**（`C:\Program Files\Google\Chrome\Application\chrome.exe`，另有 Edge、ms-playwright，此前"测试机无 Chrome"的记录有误）。
   UI 改版可做「静态预览 HTML 引用**真实** `public/css/main.css` + 手抄渲染函数产出的 DOM 结构 → 无头 Chrome 截图」肉眼验收，无需起服务：
   `chrome.exe --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=940,1080 --screenshot=out.png file:///E:/...`
   模板见 `tools/hall-preview.html`。注：预览外框要覆盖 `.mini-mask` 的 `position:fixed`（改 `static`）与 `.mini-stage` 的 `overflow/align-items`，否则被裁切。
+
+## 模拟器联机信令（EmulatorJS nightly netplay，**本站自建 · 独立端口 5181**）
+- **架构（2026-09-21 重大修正）**：netplay 信令是**独立端口的自包含服务**，`server/netplay.js` 用 `http.createServer` 监听 `NETPLAY_PORT`（默认 **5181**），socket.io 用**默认 `/socket.io`**、房间列表 `GET /list` 也由该服务托管。`server.js` 调 `Netplay.createServer()`（不再 `attach` 到主服务器）。
+- **为什么必须独立端口（血泪）**：EmulatorJS 客户端连 netplay 时，socket.io 端点**永远落在 `EJS_netplayServer` 所指 host 的默认 `/socket.io`**（URL 子路径只当命名空间，不改变端点）。而主服务器根的 `/socket.io` 已被 `server/tavern.js` 反向代理到 SillyTavern → 客户端握手 `/socket.io` 被代理到 ST → 404 → 建不了房间。最初挂在主服务器 `/netplay/socket.io` 也连不上（客户端压根不敲那个路径）。故按官方自托管拓扑，netplay 跑独立端口、socket.io 用默认路径。
+- **`EJS_netplayServer` = `location.protocol + '//' + location.hostname + ':5181/'`**（`emulator.js` 的 `SELF_NETPLAY`）。若改了服务端 `NETPLAY_PORT` 环境变量，`emulator.js` 里的 `5181` 必须同步改。公开服务器 `https://netplay.emulatorjs.org/` 仅作兜底注释。
+- 协议对齐官方 `EmulatorJS-Netplay`：`open-room`/`join-room`/`leave-room`/`webrtc-signal`/`data-message`/`snapshot`/`input`/`disconnect`，房间按 `sessionid`；`game_id` = 前端 `emuGameId(romId)` 稳定哈希，用于 `/list` 浏览（同 ROM 两人自动相遇）。
+- **房间列表 `/list`**：客户端请求 `EJS_netplayServer + 'list?game_id=<EJS_gameID>'` → 独立服务的 `GET /list?game_id=...`，返回 `{<sessionId>:{room_name,current,max,player_name,hasPassword}}`（对齐官方字段）。`filterRooms(roomsMap,gameId)` 纯函数按 `gameId` 且 `players<max` 过滤。
+- **⚠️ 部署必做：云安全组/防火墙放行 5181 入站**。否则服务能起，但浏览器从外连不上 → 仍建不了房间。线上探活：① `TCP 152.136.167.250:5181` 应连上（非 TIMEOUT）② `GET /list?game_id=1` 返回 `{}`(200,json) ③ `GET /socket.io/?EIO=4&transport=polling` 返回 `0{"sid":...}` 握手。**实测 2026-09-21：先 TIMEOUT（云 SG 未放行）→ 放行后变 `502 Bad Gateway`，说明 5181 上有反代/监听器占了端口、上游却是失效地址（多半是宝塔建的反向代理/站点，或旧 `setup-netplay.sh` 残留 nginx）。netplay.js 现已在 `EADDRINUSE` 时自动改绑 `127.0.0.1:5181` 并打印指引。用户侧二选一：①删掉 5181 上的反代、只开防火墙（设计本就零反代）②保留反代但把上游改成 `127.0.0.1:5181`。修好后 `curl 127.0.0.1:5181/list` 应返回 `{}`，浏览器 CORS 报错随之消失（502 的连带症状）。**
+- **`package.json` 必须声明 `"socket.io":"^4.7.5"`**，否则线上 npm install 不装 → 独立服务起不来 → 联机挂不上。
+- `createServer` 整段 try/catch + `httpServer.on('error')` 包裹：socket.io 缺失/`EADDRINUSE` 自动改绑 `127.0.0.1` 重试/绑定彻底失败均仅告警不拖垮主服务（`[netplay] 端口 5181 监听失败…`）。
+- 联机流程：点「👥 联机」→ 核心就绪后 ≡ 菜单 → Netplay → 一方创建房间（出现在列表/得房间号）→ 好友进同 ROM 点联机 → 下拉选房或输号加入 → 两人同房间即开战。**nightly 版联机偶发掉线/desync 属正常**（FC/NES 最稳）。联机时自动用站点昵称（`app.user.nickname`/`MG.me.nickname`）填 EmulatorJS 的「名字/房间名」（`installNetplayNameDefault`，prompt 与输入框两种兜底，最多填 30s）。
+- 回归：`tools/smoke-netplay-list.js`（filterRooms 15 项断言）、`tools/smoke-netplay-standalone.js`（独立服务 HTTP 探活 /list + /socket.io 握手 + 404；⚠️ 本地需先 `npm i socket.io`，沙箱拦 wsl 装不了，故本地跑不了、只能线上验证）。
+- **架构坑**：socket.io 默认 path 是 `/socket.io` 且客户端不可改（URL 子路径只当命名空间）——这是一切 netplay 自托管路径坑的根源。ST `/socket.io`(代理) 与 netplay `/socket.io`(5181) 靠端口区分；ws-relay `/ws/minigame` 独立。

@@ -443,7 +443,7 @@
                             const orig = cw.prompt;
                             cw.__npPromptWrapped = true;
                             cw.prompt = function (msg, def) {
-                                if (typeof msg === 'string' && /name|名字|昵称|名称|player|房间/i.test(msg)) return nick;
+                                if (typeof msg === 'string' && /name|名字|昵称|名称|player|房间|玩家|用户名/i.test(msg)) return nick;
                                 return orig.apply(this, arguments);
                             };
                         }
