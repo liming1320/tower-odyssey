@@ -37,10 +37,10 @@
     // 这里只做筛选与提示，避免两套几乎一样的实现各自腐烂。
     // 把 settings.js 透传下来的回调（onScore / onLayerChange）一并转发，否则顶栏「返回」在街机播放页
     // 会直接关掉整个模拟器、且返回按钮文案不会随层切换。
-    function playViaEmulator(container, rom) {
+    function playViaEmulator(container, rom, opts) {
         const emu = window.MiniGames && window.MiniGames.emulator;
         if (!emu) throw new Error('未加载到模拟器模块');
-        return emu.start(container, Object.assign({ arcadeOnly: true, autoPlayId: rom.id }, opts));
+        return emu.start(container, Object.assign({ arcadeOnly: true, autoPlayId: rom.id }, opts || {}));
     }
 
     MiniGames.arcade = {
@@ -205,7 +205,7 @@
             function startRom(rom) {
                 if (!alive) return;
                 try {
-                    inst = playViaEmulator(container, rom);
+                    inst = playViaEmulator(container, rom, opts);
                 } catch (e) {
                     container.innerHTML = '<div class="emu-empty">启动失败：' + esc(e.message) + '</div>';
                 }
