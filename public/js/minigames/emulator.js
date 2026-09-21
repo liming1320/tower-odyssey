@@ -370,6 +370,39 @@
                 listBox.appendChild(frag);
             }
 
+            // ---------- 模拟器就绪 / 加载失败检测 ----------
+            // nightly 核心偶发加载失败却只给玩家黑屏、无任何提示；这里轮询 iframe 内 EJS_emulator
+            // 是否就绪：就绪即把提示换成「✅ 可开战」；超过阈值仍没起来则明确报「加载超时」并引导重试/改单机。
+            // iframe 是 srcdoc（同源），frame.contentWindow.EJS_emulator 可直接访问（与云存档桥接脚本同源）。
+            function watchEmulatorReady(frame, tipEl, netplay) {
+                if (!frame || !tipEl) return;
+                let ready = false, warned = false;
+                const started = Date.now();
+                const TIMEOUT = 40000;
+                const readyMsg = netplay
+                    ? '<b>✅ 核心已就绪</b><br>点画面顶部 <b>≡ 菜单 → Netplay</b> 创建/加入房间开战<br>' +
+                      '<span style="color:#ffb37a">建议 FC/NES 最稳；进房后若掉线/不同步，重开房间即可</span>'
+                    : '<b>✅ 模拟器已就绪</b><br>点击画面呼出菜单：⚙ 控制设置改键位 / 即时存档 / 全屏';
+                const iv = setInterval(() => {
+                    if (!frame.isConnected) { clearInterval(iv); return; }   // 已返回列表，停止轮询
+                    let booted = false;
+                    try { booted = !!(frame.contentWindow && frame.contentWindow.EJS_emulator); } catch (e) {}
+                    if (booted && !ready) {
+                        ready = true;
+                        tipEl.innerHTML = readyMsg;
+                        clearInterval(iv);   // 就绪是终态，停止轮询
+                        return;
+                    }
+                    if (!ready && !warned && Date.now() - started > TIMEOUT) {
+                        warned = true;
+                        // 不清除轮询：若核心后来才加载完成，下面 booted 分支会把它升级成「✅ 已就绪」
+                        tipEl.innerHTML = '<b style="color:#ffb37a">⚠ 核心加载超时（黑屏）</b><br>' +
+                            'nightly 源可能不稳定，或网络无法访问 cdn.emulatorjs.org。<br>' +
+                            '请点【返回列表】后重试，或改用「▶ 播放」单机模式（走稳定 stable 源）。';
+                    }
+                }, 600);
+            }
+
             // ---------- 播放（鉴权下载 ROM/BIOS/父ROM → blob → EmulatorJS iframe） ----------
             function playRom(rom, netplay) {
                 if (!alive) return;
@@ -417,15 +450,17 @@
                         back.textContent = '⏏ 返回列表';
                         back.onclick = refresh;
                         bar.appendChild(back);
-                        bar.appendChild(el('emu-playtip',
+                        const tipEl = el('emu-playtip',
                             netplay
                                 ? '<b>🎮 联机对战（实验性）</b><br>' +
-                                  '① 核心加载完成后，点画面顶部 <b>≡ 菜单 → Netplay</b><br>' +
-                                  '② 一方【创建房间】会得到一个<b>房间号</b>，把房间号发给好友<br>' +
-                                  '③ 好友进<b>同一款游戏</b> → 点「👥 联机」→ 在 Netplay 菜单【加入房间】输入房间号<br>' +
-                                  '④ 两人都在房间内即可开始对战<br>' +
-                                  '<span style="color:#ffb37a">提示：建议选 FC/NES 游戏最稳；nightly 版联机偶发掉线/不同步属正常，重开房间即可</span>'
-                                : '加载中…首次启动需下载模拟核心（需联网）· 点击画面呼出菜单，⚙ Control Settings 可改 P1/P2 键位、存档、全屏'));
+                                  '① 核心加载中…就绪后点画面顶部 <b>≡ 菜单 → Netplay</b><br>' +
+                                  '② 一方【创建房间】得到<b>房间号</b>，发给好友<br>' +
+                                  '③ 好友进<b>同一款游戏</b> → 点「👥 联机」→ Netplay 菜单【加入房间】输号<br>' +
+                                  '④ 两人同房间即开战<br>' +
+                                  '<span style="color:#ffb37a">提示：建议选 FC/NES 最稳；nightly 联机偶发掉线/不同步属正常，重开房间即可</span>'
+                                : '加载中…首次启动需下载模拟核心（需联网）· 点击画面呼出菜单，⚙ Control Settings 可改 P1/P2 键位、存档、全屏');
+                        bar.appendChild(tipEl);
+                        watchEmulatorReady(frame, tipEl, netplay);
                         bar.appendChild(buildCloudBar(frame));
                         play.appendChild(frame);
                         play.appendChild(bar);
