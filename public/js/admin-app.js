@@ -186,7 +186,8 @@ const AdminApp = {
             gift: () => this.renderGift(body),
             order: () => this.renderOrder(body),
             pk32order: () => this.renderPk32Order(body),
-            roms: () => this.renderRoms(body),
+            roms: () => this.renderRomLib(body, false),
+            arcade: () => this.renderRomLib(body, true),
             tavern: () => this.renderTavern(body),
         }[this.tab];
         fn().catch(e => {
@@ -1221,54 +1222,76 @@ const AdminApp = {
         return (n / 1048576).toFixed(1) + ' MB';
     },
 
-    async renderRoms(body) {
-        body.innerHTML = `
-            <div class="card">
-                <h3>🕹️ 模拟器 ROM 库</h3>
-                <p style="font-size:13px;color:#b9b3d8">
-                    上传的 ROM 会出现在玩家端「经典模拟器」里，<b>所有登录玩家</b>都可游玩（EmulatorJS 引擎）。
-                    文件保存在服务器 data/roms/，单文件上限 512MB。<br>
-                    <b>自动去重</b>：内容完全相同的 ROM 会被拒绝；上传后可在下方给游戏设<b>版本标签</b>（普通版 / 无敌版）和<b>排序</b>（数字越小越靠前，0=默认按上传时间）。
-                    <br><b>平台</b>按文件扩展名<b>自动识别</b>（.nes=FC、.smc/.sfc=SFC、.gba=GBA 等），<b>不要</b>在这里选平台。
-                </p>
-                <p style="margin:12px 0 0">
-                    <button class="btn ghost small" id="rom-goto-catalog" type="button">📖 批量导入街机 ROM（跳转到 ROM 图鉴 ↓）</button>
-                    <span style="font-size:12px;color:#8f89ad;margin-left:8px">整个 roms 目录一次性扫描 · 自动填中文名 / 平台</span>
-                </p>
-                <div class="emu-drop" id="rom-drop">📥 点击选择 ROM 文件，或拖拽到此处<br>
-                    <span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）</span>
-                    <input type="file" id="rom-file" accept=".nes,.smc,.sfc,.swc,.gb,.gbc,.gba,.md,.gen,.bin,.zip,.7z" multiple style="display:none">
+    // 街机核心集合（与玩家端「街机模拟器」过滤完全一致）：这些 core 的 ROM 归到「街机ROM」页管理
+    ARCADE_CORE_SET: ['arcade', 'fbneo', 'fbalpha2012_cps1', 'fbalpha2012_cps2', 'fbalpha2012_neogeo', 'mame2003', 'mame2003_plus'],
+    romIsArcade(rom) { return this.ARCADE_CORE_SET.includes(rom.core); },
+
+    // 模拟器 ROM 管理：arcade=false → 经典ROM（FC/SFC/GBA…），arcade=true → 街机ROM（fbneo/BIOS/图鉴）
+    async renderRomLib(body, arcade) {
+        this._romArcade = !!arcade;
+        if (arcade) {
+            body.innerHTML = `
+                <div class="card">
+                    <h3>🎰 街机 ROM 管理</h3>
+                    <p style="font-size:13px;color:#b9b3d8">
+                        街机游戏（NeoGeo / CPS1 / CPS2 / CPS3 / IGS 等）走 fbneo 核心，<b>必须先传基板 BIOS 固件</b>（neogeo.zip 等）才能启动，缺哪个那一整类全体黑屏。<br>
+                        上传 ZIP → 用下方「ROM 图鉴」批量扫描导入（自动填中文名 / 平台 / CRC）；导入后可在最下方「已导入街机 ROM」里设<b>排序</b>（数字越小越靠前，0=默认按上传时间）。<br>
+                        <b>基板 BIOS 不是游戏</b>：请在下方「BIOS 管理」上传一次，全库共用，会自动挂到对应游戏上。
+                    </p>
                 </div>
-                <div id="rom-core-pick" style="display:none;margin-top:12px"></div>
-            </div>
-            <div class="card">
-                <h3>已上传（<span id="rom-count">0</span>）</h3>
-                <div class="emu-list" id="rom-list"></div>
-                <p id="rom-empty" style="font-size:12px;color:#777;display:none">还没有上传任何 ROM。</p>
-            </div>
-            <div id="bios-box"></div>
-            <div id="rom-catalog-box"></div>
-        `;
-        const drop = body.querySelector('#rom-drop');
-        const fileInput = body.querySelector('#rom-file');
-        const pickBox = body.querySelector('#rom-core-pick');
-        drop.onclick = () => fileInput.click();
-        fileInput.onchange = () => { if (fileInput.files.length) this.romHandleFiles(body, [...fileInput.files]); fileInput.value = ''; };
-        drop.ondragover = e => { e.preventDefault(); drop.style.borderColor = 'rgba(255,213,107,.8)'; };
-        drop.ondragleave = () => { drop.style.borderColor = ''; };
-        drop.ondrop = e => {
-            e.preventDefault();
-            drop.style.borderColor = '';
-            if (e.dataTransfer.files.length) this.romHandleFiles(body, [...e.dataTransfer.files]);
-        };
-        const gotoCatalog = body.querySelector('#rom-goto-catalog');
-        if (gotoCatalog) gotoCatalog.onclick = () => {
-            const b = body.querySelector('#rom-catalog-box');
-            if (b && b.scrollIntoView) b.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        };
-        await this.romRefreshList(body);
-        await this.renderBios(body);
-        await this.renderRomCatalog(body);
+                <div id="bios-box"></div>
+                <div id="rom-catalog-box"></div>
+                <div class="card">
+                    <h3>已导入街机 ROM（<span id="rom-count">0</span>）</h3>
+                    <div class="emu-list" id="rom-list"></div>
+                    <p id="rom-empty" style="font-size:12px;color:#777;display:none">还没有导入任何街机 ROM。<br>用上方「ROM 图鉴」扫描并导入后，会出现在这里，可设排序 / 改名 / 删除。</p>
+                </div>
+            `;
+            await this.renderBios(body);
+            await this.renderRomCatalog(body);
+            await this.romRefreshList(body, true);
+        } else {
+            body.innerHTML = `
+                <div class="card">
+                    <h3>🕹️ 经典模拟器 ROM 库</h3>
+                    <p style="font-size:13px;color:#b9b3d8">
+                        上传的 ROM 会出现在玩家端「经典模拟器」里，<b>所有登录玩家</b>都可游玩（EmulatorJS 引擎）。
+                        文件保存在服务器 data/roms/，单文件上限 512MB。<br>
+                        <b>自动去重</b>：内容完全相同的 ROM 会被拒绝；上传后可在下方给游戏设<b>版本标签</b>（普通版 / 无敌版）和<b>排序</b>（数字越小越靠前，0=默认按上传时间）。
+                        <br><b>平台</b>按文件扩展名<b>自动识别</b>（.nes=FC、.smc/.sfc=SFC、.gba=GBA 等），<b>不要</b>在这里选平台。
+                    </p>
+                    <p style="margin:12px 0 0">
+                        <button class="btn ghost small" id="rom-goto-arcade" type="button">🎰 街机 ROM 管理（BIOS / 图鉴 / 排序）→</button>
+                        <span style="font-size:12px;color:#8f89ad;margin-left:8px">街机 ZIP 走单独的「街机 ROM」页</span>
+                    </p>
+                    <div class="emu-drop" id="rom-drop">📥 点击选择 ROM 文件，或拖拽到此处<br>
+                        <span>.nes / .smc / .sfc / .gb / .gbc / .gba / .md / .zip …（zip 需选择模拟核心）</span>
+                        <input type="file" id="rom-file" accept=".nes,.smc,.sfc,.swc,.gb,.gbc,.gba,.md,.gen,.bin,.zip,.7z" multiple style="display:none">
+                    </div>
+                    <div id="rom-core-pick" style="display:none;margin-top:12px"></div>
+                </div>
+                <div class="card">
+                    <h3>已上传（<span id="rom-count">0</span>）</h3>
+                    <div class="emu-list" id="rom-list"></div>
+                    <p id="rom-empty" style="font-size:12px;color:#777;display:none">还没有上传任何 ROM。</p>
+                </div>
+            `;
+            const drop = body.querySelector('#rom-drop');
+            const fileInput = body.querySelector('#rom-file');
+            const pickBox = body.querySelector('#rom-core-pick');
+            drop.onclick = () => fileInput.click();
+            fileInput.onchange = () => { if (fileInput.files.length) this.romHandleFiles(body, [...fileInput.files]); fileInput.value = ''; };
+            drop.ondragover = e => { e.preventDefault(); drop.style.borderColor = 'rgba(255,213,107,.8)'; };
+            drop.ondragleave = () => { drop.style.borderColor = ''; };
+            drop.ondrop = e => {
+                e.preventDefault();
+                drop.style.borderColor = '';
+                if (e.dataTransfer.files.length) this.romHandleFiles(body, [...e.dataTransfer.files]);
+            };
+            const gotoArcade = body.querySelector('#rom-goto-arcade');
+            if (gotoArcade) gotoArcade.onclick = () => { this.tab = 'arcade'; this.render(); };
+            await this.romRefreshList(body, false);
+        }
     },
 
     // ================= BIOS 管家（基板固件） =================
@@ -1390,6 +1413,12 @@ const AdminApp = {
         if (res) res.textContent = '扫描中…';
         try {
             const r = await AdminAPI.romScan(dir || '');
+            // BIOS 是否已上传：扫描预览里把「需 neogeo.zip」标注成「✅已上传 / ⚠未上传」，
+            // 避免管理员已传 BIOS 还误以为缺件（导入时本就会按 BIOS 名自动挂载）。
+            try {
+                const bl = await AdminAPI.romBiosList();
+                r.biosHave = new Set((bl.bios || []).map(b => String(b.name || '').toLowerCase().replace(/\.zip$/i, '')));
+            } catch (e) { r.biosHave = new Set(); }
             this._romScan = r.items || [];
             this.romRenderScan(body, r);
             U.toast(`✅ 扫到 ${this._romScan.length} 个 ZIP`);
@@ -1543,8 +1572,12 @@ const AdminApp = {
         if (!items.length) { res.textContent = '该目录下没有找到 .zip 文件。'; list.innerHTML = ''; return; }
         const bad = items.filter(i => i.crcStatus === 'mismatch' || i.crcStatus === 'partial').length;
         const nb = items.filter(i => i.isBios).length;
+        const biosHave = r.biosHave || new Set();
+        const biosNeed = [...new Set(items.filter(i => i.bios).map(i => String(i.bios || '').toLowerCase().replace(/\.zip$/i, '')))];
+        const biosMissing = biosNeed.filter(b => !biosHave.has(b));
         res.innerHTML = `扫描到 <b>${items.length}</b> 个 ZIP${bad ? `，其中 <b style="color:#ffd56b">${bad} 个 CRC 异常</b>（残缺或错版，谨慎导入）` : ''}。`
             + `${nb ? `<br><span style="color:#7fd1ff">检测到 ${nb} 个基板 BIOS（默认不勾选）—— 请在上方「BIOS 管理」里上传，不要当游戏导入。</span>` : ''}`
+            + (biosMissing.length ? `<br><span style="color:#ff9aa6">⚠ 还缺 ${biosMissing.length} 种基板 BIOS 未上传：${biosMissing.map(b => b + '.zip').join('、')}（对应游戏会黑屏，上传后导入即可自动挂载）</span>` : (biosNeed.length ? `<br><span style="color:#5ad48a">✅ 所需 BIOS 均已上传，导入后会自动挂载</span>` : ''))
             + `勾选后导入，中文名可直接改。`;
         list.innerHTML = `
             <div style="overflow:auto;max-height:420px;border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-top:8px">
@@ -1567,7 +1600,10 @@ const AdminApp = {
                         <td><input data-year="${i}" value="${this.esc(it.year || '')}" style="width:56px"></td>
                         <td>${this.esc(it.maker || '—')}</td>
                         <td style="color:${this.CRC_COLOR[it.crcStatus] || '#9c96b8'};font-size:12px">${this.CRC_LABEL[it.crcStatus] || it.crcStatus}
-                            ${it.bios ? `<br><span style="font-size:11px;color:#ffd56b">需 ${this.esc(it.bios)}</span>` : ''}</td>
+                            ${it.bios ? (() => {
+                                const ok = (r.biosHave || new Set()).has(String(it.bios).toLowerCase().replace(/\.zip$/i, ''));
+                                return `<br><span style="font-size:11px;${ok ? 'color:#5ad48a' : 'color:#ff9aa6'}">需 ${this.esc(it.bios)} ${ok ? '✅已上传' : '⚠未上传'}</span>`;
+                            })() : ''}</td>
                         <td style="font-size:12px">${this.romFmtSize(it.size)}</td>
                     </tr>`).join('')}
                 </tbody>
@@ -1604,14 +1640,15 @@ const AdminApp = {
                 if ((r.skipped || []).length) console.warn('[rom] 跳过明细', r.skipped);
                 this._romScan = [];
                 this.renderRomCatalog(body);
-                this.romRefreshList(body);
+                this.romRefreshList(body, true);   // 图鉴导入的一定是街机 ROM，刷新街机列表
             } catch (e) { U.toast('❌ ' + e.message); }
         };
         list.querySelector('#rc-import').onclick = () => doImport(false);
         list.querySelector('#rc-import-move').onclick = () => doImport(true);
     },
 
-    async romRefreshList(body) {
+    async romRefreshList(body, arcade) {
+        const isArc = (typeof arcade === 'boolean') ? arcade : !!this._romArcade;
         const r = await AdminAPI.romList();
         const list = body.querySelector('#rom-list');
         const empty = body.querySelector('#rom-empty');
@@ -1619,7 +1656,9 @@ const AdminApp = {
         if (!list) return;
         // 与玩家端一致的排序：sort>0 的越小越靠前；0=未设置 → 按上传时间倒序排后面
         const rank = r => (r.sort > 0 ? r.sort : 1e9);
-        const roms = (r.roms || []).slice().sort((a, b) => rank(a) - rank(b) || (b.addedAt || 0) - (a.addedAt || 0));
+        const roms = (r.roms || [])
+            .filter(rom => this.romIsArcade(rom) === isArc)   // 经典页只显非街机核心，街机页只显街机核心
+            .sort((a, b) => rank(a) - rank(b) || (b.addedAt || 0) - (a.addedAt || 0));
         count.textContent = roms.length;
         list.innerHTML = roms.map(rom => `
             <div class="emu-item">
@@ -1690,7 +1729,7 @@ const AdminApp = {
         const pickBox = body.querySelector('#rom-core-pick');
         let pending = [...files];
         const next = () => {
-            if (!pending.length) { pickBox.style.display = 'none'; pickBox.innerHTML = ''; return this.romRefreshList(body); }
+            if (!pending.length) { pickBox.style.display = 'none'; pickBox.innerHTML = ''; return this.romRefreshList(body, this._romArcade); }
             const file = pending.shift();
             const core = this.romDetectCore(file.name);
             if (core) return this.romUploadOne(body, file, core).then(next);

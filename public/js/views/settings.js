@@ -128,6 +128,7 @@ const SettingsView = {
         const stage = document.getElementById('emu-stage');
         const scoreEl = document.getElementById('emu-score');
         const close = () => mask.remove();
+        let inst = null;   // 函数级声明：backBtn.onclick 闭包要访问，不能放进 try 块内（块级作用域访问不到）
         const backBtn = document.getElementById('emu-back');
         backBtn.onclick = () => {
             // 优先在模拟器内回退一层（播放 → 列表）；列表层才真正关闭返回设置页
@@ -137,7 +138,7 @@ const SettingsView = {
         try {
             const game = window.MiniGames && window.MiniGames.emulator;
             if (!game) throw new Error('未加载到模拟器模块');
-            const inst = game.start(stage, {
+            inst = game.start(stage, {
                 onScore: s => { scoreEl.textContent = s != null ? s : ''; },
                 onLayerChange: l => { backBtn.textContent = (l === 'play') ? '‹ 返回列表' : '‹ 返回'; },
             });
@@ -162,6 +163,7 @@ const SettingsView = {
         const stage = document.getElementById('arc-stage');
         const scoreEl = document.getElementById('arc-score');
         const close = () => mask.remove();
+        let inst = null;   // 函数级声明：backBtn.onclick 闭包要访问，不能放进 try 块内（块级作用域访问不到）
         const backBtn = document.getElementById('arc-back');
         backBtn.onclick = () => {
             // 优先在模拟器内回退一层（播放 → 列表）；列表层才真正关闭返回设置页
@@ -171,7 +173,7 @@ const SettingsView = {
         try {
             const game = window.MiniGames && window.MiniGames.arcade;
             if (!game) throw new Error('未加载到街机模拟器模块');
-            const inst = game.start(stage, {
+            inst = game.start(stage, {
                 onScore: s => { scoreEl.textContent = s != null ? s : ''; },
                 onLayerChange: l => { backBtn.textContent = (l === 'play') ? '‹ 返回列表' : '‹ 返回'; },
             });
