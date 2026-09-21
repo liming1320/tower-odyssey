@@ -1627,6 +1627,7 @@ const AdminApp = {
                     <div class="emu-item-name">${this.esc(rom.name)}${rom.category === 'invincible' ? ' <span class="emu-tag emu-tag-inv">无敌版</span>' : ''}</div>
                     <div class="emu-item-meta">${this.esc(this.romCoreLabel(rom.core))} · ${this.romFmtSize(rom.size)}${rom.by ? ' · ' + this.esc(rom.by) + ' 上传' : ''} · ${new Date(rom.addedAt).toLocaleString('zh-CN')}${rom.sort ? ' · 置顶序 ' + rom.sort : ''}</div>
                     <div class="emu-row-ctl">
+                        <label>名称 <input type="text" maxlength="120" value="${this.esc(rom.name)}" data-name="${this.esc(rom.id)}" style="width:170px" title="玩家端显示名（可中文，如「坦克大战汉化版」；改动后点💾保存）"></label>
                         <label>版本 <select data-cat="${this.esc(rom.id)}" title="平台按扩展名已自动识别，这里只选「普通版 / 无敌版」">
                             <option value="normal"${rom.category !== 'invincible' ? ' selected' : ''}>普通版</option>
                             <option value="invincible"${rom.category === 'invincible' ? ' selected' : ''}>无敌版</option>
@@ -1639,8 +1640,16 @@ const AdminApp = {
             </div>
         `).join('');
         empty.style.display = roms.length ? 'none' : 'block';
-        // 保存分类/排序（只传改动过的字段）
-        const dirty = {};   // id -> {category?, sort?}
+        // 保存改名/分类/排序（只传改动过的字段）
+        const dirty = {};   // id -> {name?, category?, sort?}
+        list.querySelectorAll('[data-name]').forEach(inp => {
+            inp.onchange = () => {
+                const nm = (inp.value || '').trim();
+                if (!nm || nm === inp.defaultValue) return;
+                (dirty[inp.dataset.name] = dirty[inp.dataset.name] || {}).name = nm;
+                inp.closest('.emu-item').classList.add('emu-item-dirty');
+            };
+        });
         list.querySelectorAll('[data-cat]').forEach(sel => {
             sel.onchange = () => {
                 (dirty[sel.dataset.cat] = dirty[sel.dataset.cat] || {}).category = sel.value;
@@ -1660,7 +1669,7 @@ const AdminApp = {
                 if (!patch) return U.toast('没有改动需要保存');
                 try {
                     await AdminAPI.romUpdate(id, patch);
-                    U.toast('✅ 已保存，玩家端立即按新顺序/分类显示');
+                    U.toast('✅ 已保存，玩家端立即按新名称/顺序/分类显示');
                     this.romRefreshList(body);
                 } catch (e) { U.toast('❌ ' + e.message); }
             };

@@ -187,6 +187,14 @@ api['POST /api/roms/upload'] = (req, res) => {
                         if (b) biosAuto = b.id;
                     }
                 }
+                // 显示名剥掉常见 ROM 扩展名（「坦克大战.nes」→「坦克大战」），玩家端更干净；
+                // 街机 zip 的短名身份在 fileName/shortName 里，不受影响。图鉴给了名字则用图鉴的。
+                if (dispName === name) {
+                    const stripped = name.replace(
+                        /\.(zip|7z|bin|rom|nes|fds|unf|unif|smc|sfc|swc|gb|gbc|gba|agb|md|gen|smd|sms|gg|pce|ngp|ngc|ws|wsc|d88|dsk|img|cue|ccd|chd|m3u|uae|adf|d64|t64|prg)$/i,
+                        '').trim();
+                    if (stripped) dispName = stripped;
+                }
                 DB.roms = DB.roms || [];
                 DB.roms.push({
                     id, name: dispName, core, size: received, addedAt: Date.now(),
