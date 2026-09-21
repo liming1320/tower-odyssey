@@ -128,11 +128,19 @@ const SettingsView = {
         const stage = document.getElementById('emu-stage');
         const scoreEl = document.getElementById('emu-score');
         const close = () => mask.remove();
-        document.getElementById('emu-back').onclick = close;
+        const backBtn = document.getElementById('emu-back');
+        backBtn.onclick = () => {
+            // 优先在模拟器内回退一层（播放 → 列表）；列表层才真正关闭返回设置页
+            if (inst && typeof inst.back === 'function' && inst.back()) return;
+            close();
+        };
         try {
             const game = window.MiniGames && window.MiniGames.emulator;
             if (!game) throw new Error('未加载到模拟器模块');
-            const inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; } });
+            const inst = game.start(stage, {
+                onScore: s => { scoreEl.textContent = s != null ? s : ''; },
+                onLayerChange: l => { backBtn.textContent = (l === 'play') ? '‹ 返回列表' : '‹ 返回'; },
+            });
             inst && (inst._close = close);
         } catch (e) {
             stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;
@@ -154,11 +162,19 @@ const SettingsView = {
         const stage = document.getElementById('arc-stage');
         const scoreEl = document.getElementById('arc-score');
         const close = () => mask.remove();
-        document.getElementById('arc-back').onclick = close;
+        const backBtn = document.getElementById('arc-back');
+        backBtn.onclick = () => {
+            // 优先在模拟器内回退一层（播放 → 列表）；列表层才真正关闭返回设置页
+            if (inst && typeof inst.back === 'function' && inst.back()) return;
+            close();
+        };
         try {
             const game = window.MiniGames && window.MiniGames.arcade;
             if (!game) throw new Error('未加载到街机模拟器模块');
-            const inst = game.start(stage, { onScore: s => { scoreEl.textContent = s != null ? s : ''; } });
+            const inst = game.start(stage, {
+                onScore: s => { scoreEl.textContent = s != null ? s : ''; },
+                onLayerChange: l => { backBtn.textContent = (l === 'play') ? '‹ 返回列表' : '‹ 返回'; },
+            });
             inst && (inst._close = close);
         } catch (e) {
             stage.innerHTML = `<div style="padding:30px;color:#ff7a8b">启动失败：${e.message}</div>`;

@@ -35,10 +35,12 @@
 
     // 直接复用经典模拟器已经跑通的播放链路（BIOS / 父 ROM / 云存档桥接都在那里面），
     // 这里只做筛选与提示，避免两套几乎一样的实现各自腐烂。
+    // 把 settings.js 透传下来的回调（onScore / onLayerChange）一并转发，否则顶栏「返回」在街机播放页
+    // 会直接关掉整个模拟器、且返回按钮文案不会随层切换。
     function playViaEmulator(container, rom) {
         const emu = window.MiniGames && window.MiniGames.emulator;
         if (!emu) throw new Error('未加载到模拟器模块');
-        return emu.start(container, { arcadeOnly: true, autoPlayId: rom.id });
+        return emu.start(container, Object.assign({ arcadeOnly: true, autoPlayId: rom.id }, opts));
     }
 
     MiniGames.arcade = {
@@ -243,6 +245,12 @@
             }
 
             load();
+            // 顶栏「返回」委托给内部 emulator 实例：播放层 → 退回列表层（返回 true 阻止外层关闭）；
+            // 列表层（含街机自身列表、或 emulator 列表层）→ 返回 false，由 settings.js 关闭回设置页。
+            api.back = function () {
+                if (inst && typeof inst.back === 'function') return inst.back();
+                return false;
+            };
             return api;
         },
     };

@@ -219,6 +219,16 @@
             let alive = true;
             // 三个 blob URL（主 ROM / BIOS / 父 ROM）都要在退出时回收，否则大 ROM 会驻留内存
             let objectUrl = null, biosUrl = null, parentUrl = null;
+            // 导航层：'list' = ROM 列表层；'play' = 播放层。顶栏「返回」在播放层应先退回列表层（上一层），
+            // 仅在列表层才真正关闭整个模拟器返回设置页（避免播放页一点顶栏返回就跨过列表直接回主界面）。
+            let layer = 'list';
+            // 导航代次：进入播放层 / 退回列表层各自增一次；playRom 在途的异步回调若发现代次已变，
+            // 说明玩家已中途返回列表，则作废（不再把播放页/「加载失败」覆盖回列表上）。
+            let navGen = 0;
+            function setLayer(l) {
+                layer = l;
+                try { if (opts.onLayerChange) opts.onLayerChange(l); } catch (e) {}
+            }
             const api = {
                 stop() {
                     alive = false;
@@ -406,11 +416,13 @@
             // ---------- 播放（鉴权下载 ROM/BIOS/父ROM → blob → EmulatorJS iframe） ----------
             function playRom(rom, netplay) {
                 if (!alive) return;
+                const myGen = ++navGen;   // 标记本次播放，退回列表层会作废在途回调
                 if (typeof Blob === 'undefined' || typeof URL === 'undefined' || !URL.createObjectURL) {
                     container.innerHTML = '<div class="emu-empty">当前环境不支持模拟器播放</div>';
                     return;
                 }
                 container.innerHTML = '<div class="emu-empty">正在从服务器加载「' + String(rom.name).replace(/[<>&]/g, '') + '」…</div>';
+                setLayer('play');
                 Promise.resolve()
                     .then(() => Promise.all([
                         romDownload(rom.id),
@@ -424,7 +436,7 @@
                         return Promise.all([rr.blob(), br ? br.blob() : null, pr ? pr.blob() : null]);
                     })
                     .then(([main, bios, parent]) => {
-                        if (!alive) return;
+                        if (!alive || myGen !== navGen) return;
                         [objectUrl, biosUrl, parentUrl].forEach(u => {
                             if (u) { try { URL.revokeObjectURL(u); } catch (e) {} }
                         });
@@ -448,7 +460,7 @@
                         const back = document.createElement('button');
                         back.className = 'emu-btn emu-btn-back';
                         back.textContent = '⏏ 返回列表';
-                        back.onclick = refresh;
+                        back.onclick = goList;
                         bar.appendChild(back);
                         const tipEl = el('emu-playtip',
                             netplay
@@ -470,7 +482,7 @@
                         if (opts.onScore) { try { opts.onScore(''); } catch (e) {} }
                     })
                     .catch(e => {
-                        if (!alive) return;
+                        if (!alive || myGen !== navGen) return;
                         container.innerHTML = '<div class="emu-empty">加载失败：' + (e && e.message ? e.message : '未知错误') + '</div>';
                     });
             }
@@ -542,6 +554,15 @@
                 try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (e) { return []; }
             }
 
+            // 返回 ROM 列表层：释放上一个游戏的 blob（避免大 ROM 驻留内存），并通知外层更新返回按钮文案
+            function goList() {
+                [objectUrl, biosUrl, parentUrl].forEach(u => { if (u) { try { URL.revokeObjectURL(u); } catch (e) {} } });
+                objectUrl = biosUrl = parentUrl = null;
+                navGen++;   // 作废任何在途的 playRom 异步回调
+                setLayer('list');
+                refresh();
+            }
+
             function refresh() {
                 if (!alive) return;
                 romList().then(d => {
@@ -563,6 +584,14 @@
             }
 
             refresh();
+            // 顶栏「返回」统一入口（由 settings.js 的 mini-topbar 调用）：
+            //   播放层 → 退回列表层（已在模拟器内回退一层，返回 true 阻止外层关闭）；
+            //   列表层 → 返回 false，由外层（settings.js）真正关闭整个模拟器回设置页（上一层）。
+            api.back = function () {
+                if (!alive) return false;
+                if (layer === 'play') { goList(); return true; }
+                return false;
+            };
             return api;
         },
     };
