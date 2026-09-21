@@ -1342,21 +1342,6 @@ require('./server/routes/admin')(routeCtx);
 const server = http.createServer(async (req, res) => {
     const parsed = url.parse(req.url, true);
     const pathname = parsed.pathname;
-    // 模拟器联机信令：
-    //  · /netplay/list  —— HTTP 房间列表接口（供客户端填充 Room Name 下拉 + 另一玩家搜索），
-    //    由 Netplay.listRooms 处理，按 game_id 返回房间对象表（对齐官方 EmulatorJS-Netplay /list）。
-    //  · 其余 /netplay/*（主要是 /netplay/socket.io 握手/轮询）——直接放行给 socket.io 接管
-    //    （netplay.attach 挂的监听器），避免与 socket.io 的 request 监听器重复响应。
-    if (pathname.indexOf('/netplay/') === 0) {
-        if (pathname === '/netplay/list' && Netplay && typeof Netplay.listRooms === 'function') {
-            const gid = parsed.query && parsed.query.game_id;
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.setHeader('Access-Control-Allow-Origin', '*');
-            res.end(JSON.stringify(Netplay.listRooms(gid)));
-            return;
-        }
-        return;
-    }
     try {
         if (pathname.startsWith('/api/')) {
             const key = req.method + ' ' + pathname;
@@ -1400,8 +1385,9 @@ const server = http.createServer(async (req, res) => {
 Tavern.attachUpgrade(server, { getUserByToken, DB });
 // 小游戏联机中继：仅拦截 /ws/minigame，与上面 ST 的 upgrade 钩子互不干扰（两者都对非自身路径 return）
 if (WsRelay) WsRelay.attach(server, { getUserByToken }); else console.warn('[game] 联机中继未启用（缺少 server/ws-relay 或 ws 模块）');
-// 模拟器联机信令中继（EmulatorJS nightly netplay）：挂 /netplay/socket.io，与 /ws/minigame、/socket.io(ST) 路径互不干扰
-if (Netplay) Netplay.attach(server); else console.warn('[game] 模拟器联机信令未启用（缺少 server/netplay 或 socket.io 模块）');
+// 模拟器联机信令中继（EmulatorJS nightly netplay）：独立端口自包含服务（socket.io 默认 /socket.io + /list），
+// 不与主服务器的 /socket.io(ST 代理) / /ws/minigame 冲突。端口 = NETPLAY_PORT 环境变量或默认 5181。
+if (Netplay) Netplay.createServer(); else console.warn('[game] 模拟器联机信令未启用（缺少 server/netplay 或 socket.io 模块）');
 
 // MySQL 模式：先连库载入真实数据（玩家 + 英雄），再开始监听，避免请求打到空数据
 //

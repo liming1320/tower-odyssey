@@ -11,9 +11,16 @@
     // 启用条件：① 必须用 nightly CDN（stable 无 netplay 模块）；② 配 EJS_netplayServer + EJS_gameID + ICE。
     // 由于 nightly 单机会略不稳定，采用「按需切换」：只有点「👥 联机」才切 nightly，普通单机仍走稳定 stable。
     // 信令服务器：默认走【本站自建】——server.js 已内置 socket.io 中继（/netplay/socket.io），
-    //   联机信令留在自家服务器，彻底隔离公开大厅里的陌生人，跨公网更可控（零额外进程/反向代理）。
-    //   若自建信令不可达，可临时改回官方公开服务器作兜底：'https://netplay.emulatorjs.org/'。
-    const SELF_NETPLAY = (typeof location !== 'undefined' && location.origin ? location.origin : '') + '/netplay/';
+    //   联机信令留在自家服务器，彻底隔离公开大厅里的陌生人，跨公网更可控。
+    //   信令跑在【独立端口 NETPLAY_PORT（默认 5181）】的自包含服务上（socket.io 默认 /socket.io + /list），
+    //   因为客户端永远连 EJS_netplayServer 所指 host 的 /socket.io（子路径只当命名空间），而主服务器根的
+    //   /socket.io 已被 SillyTavern 网关占用。前端这里按「本机 IP/域名 + :5181」拼地址。
+    //   若改了服务端 NETPLAY_PORT 环境变量，下面这个 5181 也要同步改。
+    //   兜底：若独立端口信令不可达，可临时改回官方公开服务器：'https://netplay.emulatorjs.org/'。
+    const NETPLAY_PORT = (typeof location !== 'undefined' && location.hostname) ? 5181 : 5181;
+    const SELF_NETPLAY = (typeof location !== 'undefined' && location.hostname
+        ? (location.protocol + '//' + location.hostname + ':' + NETPLAY_PORT + '/')
+        : 'http://localhost:5181/');
     const NETPLAY = {
         cdn: 'https://cdn.emulatorjs.org/nightly/data/',
         server: SELF_NETPLAY,
@@ -413,6 +420,48 @@
                 }, 600);
             }
 
+            // ---------- 联机时自动用站点昵称填「名字 / 房间名」 ----------
+            // 来源：顶栏头像的 app.user.nickname（MinigamesView.open 时已写入 MG.me.nickname）。
+            // EmulatorJS netplay 取名字可能是 window.prompt（弹窗）也可能是输入框，两种都兜底；
+            // iframe 是 srcdoc（同源），frame.contentWindow 可直接访问。
+            function installNetplayNameDefault(frame) {
+                if (!frame) return;
+                let nick = '';
+                try {
+                    nick = (window.MG && MG.me && MG.me.nickname)
+                        || (window.app && app.user && app.user.nickname)
+                        || (window.localStorage && localStorage.getItem('nick'))
+                        || '';
+                } catch (e) {}
+                if (!nick) return;
+                const fill = () => {
+                    try {
+                        const cw = frame.contentWindow;
+                        if (!cw) return;
+                        // 1) prompt 兜底：名字类弹窗直接返回昵称
+                        if (typeof cw.prompt === 'function' && !cw.__npPromptWrapped) {
+                            const orig = cw.prompt;
+                            cw.__npPromptWrapped = true;
+                            cw.prompt = function (msg, def) {
+                                if (typeof msg === 'string' && /name|名字|昵称|名称|player|房间/i.test(msg)) return nick;
+                                return orig.apply(this, arguments);
+                            };
+                        }
+                        // 2) 输入框兜底：placeholder/id/name 含 name/昵称/玩家/房间 且为空的输入框填昵称
+                        const doc = cw.document;
+                        if (doc && doc.querySelectorAll) {
+                            doc.querySelectorAll('input').forEach(inp => {
+                                const tag = ((inp.placeholder || '') + ' ' + (inp.id || '') + ' ' + (inp.name || '')).toLowerCase();
+                                if (/name|nick|玩家|名字|昵称|房间/.test(tag) && !inp.value) inp.value = nick;
+                            });
+                        }
+                    } catch (e) {}
+                };
+                fill();
+                const iv = setInterval(() => { if (!frame.isConnected) { clearInterval(iv); return; } fill(); }, 800);
+                setTimeout(() => clearInterval(iv), 30000);   // 最多填 30s，避免常驻轮询
+            }
+
             // ---------- 播放（鉴权下载 ROM/BIOS/父ROM → blob → EmulatorJS iframe） ----------
             function playRom(rom, netplay) {
                 if (!alive) return;
@@ -477,6 +526,9 @@
                         play.appendChild(frame);
                         play.appendChild(bar);
                         container.appendChild(play);
+                        // 联机模式：自动用站点昵称填 EmulatorJS 的「名字/房间名」输入，避免每次手输
+                        // （EmulatorJS netplay 可能用 window.prompt 或输入框取名字，两种都兜底）
+                        if (netplay) installNetplayNameDefault(frame);
                         rememberPlay(rom.id);
                         listenCloud();
                         if (opts.onScore) { try { opts.onScore(''); } catch (e) {} }
