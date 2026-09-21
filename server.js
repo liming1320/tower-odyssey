@@ -1342,9 +1342,21 @@ require('./server/routes/admin')(routeCtx);
 const server = http.createServer(async (req, res) => {
     const parsed = url.parse(req.url, true);
     const pathname = parsed.pathname;
-    // 模拟器联机信令（/netplay/socket.io）由 socket.io 接管（netplay.attach 挂的监听器）。
-    // 主分发不处理、直接放行，避免与 socket.io 的 request 监听器重复响应（参考 ST 的 /socket.io/ 由 Tavern 拦截）。
-    if (pathname.indexOf('/netplay/') === 0) return;
+    // 模拟器联机信令：
+    //  · /netplay/list  —— HTTP 房间列表接口（供客户端填充 Room Name 下拉 + 另一玩家搜索），
+    //    由 Netplay.listRooms 处理，按 game_id 返回房间对象表（对齐官方 EmulatorJS-Netplay /list）。
+    //  · 其余 /netplay/*（主要是 /netplay/socket.io 握手/轮询）——直接放行给 socket.io 接管
+    //    （netplay.attach 挂的监听器），避免与 socket.io 的 request 监听器重复响应。
+    if (pathname.indexOf('/netplay/') === 0) {
+        if (pathname === '/netplay/list' && Netplay && typeof Netplay.listRooms === 'function') {
+            const gid = parsed.query && parsed.query.game_id;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.end(JSON.stringify(Netplay.listRooms(gid)));
+            return;
+        }
+        return;
+    }
     try {
         if (pathname.startsWith('/api/')) {
             const key = req.method + ' ' + pathname;

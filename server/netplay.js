@@ -10,6 +10,40 @@
 //
 // 失败不阻断主服务：socket.io 缺失时仅告警并返回，站点照常运行。
 let io = null;
+let rooms = {};   // 模块级：socket.io 处理器与 HTTP /list 接口共享同一份房间表
+
+// HTTP 房间列表接口（供 EmulatorJS 客户端填充「Room Name」下拉 + 另一玩家搜索）。
+// 严格对齐官方 EmulatorJS-Netplay 的 app.get('/list')：按 game_id 过滤、返回房间对象表。
+// 客户端请求地址 = EJS_netplayServer + 'list?game_id=<EJS_gameID>'，即本站 /netplay/list。
+// 过滤逻辑抽成纯函数 filterRooms，便于无 socket.io 环境下单测（tools/smoke-netplay-list.js）。
+function filterRooms(roomsMap, gameId) {
+    const out = {};
+    for (const sid in roomsMap) {
+        const room = roomsMap[sid];
+        if (!room) continue;
+        // 只列出未满、且同 game_id 的房间（不同 ROM 的人不会互相串台）
+        if (Object.keys(room.players).length >= room.maxPlayers) continue;
+        if (String(room.gameId) !== String(gameId)) continue;
+        // 房主昵称（与官方一致：取 owner socketId 对应的 player_name）
+        let ownerPid = null;
+        for (const pid in room.players) {
+            if (room.players[pid].socketId === room.owner) { ownerPid = pid; break; }
+        }
+        const playerName = ownerPid ? (room.players[ownerPid].player_name || 'Unknown') : 'Unknown';
+        out[sid] = {
+            room_name: room.roomName,
+            current: Object.keys(room.players).length,
+            max: room.maxPlayers,
+            player_name: playerName,
+            hasPassword: !!room.password,
+        };
+    }
+    return out;
+}
+
+function listRooms(gameId) {
+    return filterRooms(rooms, gameId);
+}
 
 function attach(httpServer) {
     let SocketIO;
@@ -26,7 +60,7 @@ function attach(httpServer) {
         maxHttpBufferSize: 1e6,     // 与 ws-relay 对齐（1MB）
     });
 
-    const rooms = {};
+    rooms = {};
 
     // 每分钟回收空房间，避免长期占用内存
     const gc = setInterval(() => {
@@ -141,4 +175,4 @@ function attach(httpServer) {
     }
 }
 
-module.exports = { attach, getIO: () => io };
+module.exports = { attach, getIO: () => io, listRooms, filterRooms };
