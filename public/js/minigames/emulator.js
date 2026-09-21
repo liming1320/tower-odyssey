@@ -398,6 +398,7 @@
                 const TIMEOUT = 40000;
                 const readyMsg = netplay
                     ? '<b>✅ 核心已就绪</b><br>点画面顶部 <b>≡ 菜单 → Netplay</b> 创建/加入房间开战<br>' +
+                      '<span style="color:#ffd56b">⚠ 坦克大战等双人游戏：进游戏后按【选择 / Select】键切到 <b>2P 模式</b>，双方才能各自操作（你=本机 1P，好友=网络来的 2P）；若停在 1P 模式，对方的按键会被忽略 → 看起来「第二人不能动」</span><br>' +
                       '<span style="color:#ffb37a">建议 FC/NES 最稳；进房后若掉线/不同步，重开房间即可</span>'
                     : '<b>✅ 模拟器已就绪</b><br>点击画面呼出菜单：⚙ 控制设置改键位 / 即时存档 / 全屏';
                 const iv = setInterval(() => {
