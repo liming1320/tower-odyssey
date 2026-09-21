@@ -40,6 +40,8 @@ const Store = require('./server/store');
 const Tavern = require('./server/tavern');
 // 小游戏联机中继：按游戏匹配的房间转发（WebSocket，挂 upgrade 钩子 /ws/minigame）。失败不阻断主服务。
 const WsRelay = (() => { try { return require('./server/ws-relay'); } catch (e) { return null; } })();
+// 模拟器联机信令中继（EmulatorJS nightly netplay，socket.io 挂 /netplay/socket.io）。失败不阻断主服务。
+const Netplay = (() => { try { return require('./server/netplay'); } catch (e) { return null; } })();
 
 // 游戏内容配置（品质 / 装备 / 英雄星级天赋 / 元素 / 城墙 / 材料英雄 / 许愿 / 锻造 / 塔与肉鸽 / Boss / 建筑 / 资源 / 展示ID / 短信）
 // 纯数据常量统一放在 server/config/，server.js 只保留路由、DB 与战斗逻辑。
@@ -1340,6 +1342,9 @@ require('./server/routes/admin')(routeCtx);
 const server = http.createServer(async (req, res) => {
     const parsed = url.parse(req.url, true);
     const pathname = parsed.pathname;
+    // 模拟器联机信令（/netplay/socket.io）由 socket.io 接管（netplay.attach 挂的监听器）。
+    // 主分发不处理、直接放行，避免与 socket.io 的 request 监听器重复响应（参考 ST 的 /socket.io/ 由 Tavern 拦截）。
+    if (pathname.indexOf('/netplay/') === 0) return;
     try {
         if (pathname.startsWith('/api/')) {
             const key = req.method + ' ' + pathname;
@@ -1383,6 +1388,8 @@ const server = http.createServer(async (req, res) => {
 Tavern.attachUpgrade(server, { getUserByToken, DB });
 // 小游戏联机中继：仅拦截 /ws/minigame，与上面 ST 的 upgrade 钩子互不干扰（两者都对非自身路径 return）
 if (WsRelay) WsRelay.attach(server, { getUserByToken }); else console.warn('[game] 联机中继未启用（缺少 server/ws-relay 或 ws 模块）');
+// 模拟器联机信令中继（EmulatorJS nightly netplay）：挂 /netplay/socket.io，与 /ws/minigame、/socket.io(ST) 路径互不干扰
+if (Netplay) Netplay.attach(server); else console.warn('[game] 模拟器联机信令未启用（缺少 server/netplay 或 socket.io 模块）');
 
 // MySQL 模式：先连库载入真实数据（玩家 + 英雄），再开始监听，避免请求打到空数据
 //

@@ -10,12 +10,13 @@
     // ---------- 联机对战（EmulatorJS nightly netplay）----------
     // 启用条件：① 必须用 nightly CDN（stable 无 netplay 模块）；② 配 EJS_netplayServer + EJS_gameID + ICE。
     // 由于 nightly 单机会略不稳定，采用「按需切换」：只有点「👥 联机」才切 nightly，普通单机仍走稳定 stable。
-    // 信令服务器：默认用官方公开服务器，零基建即可联机；生产建议自建（见 deploy/netplay/），
-    //   把下面 server 改成你的反代地址（如 'https://你的域名/netplay/'）即可，前端无需其他改动。
-    // 提醒：公开服务器会按 EJS_gameID 把陌生人分到同一大厅；自建可彻底隔离，且只需同 ROM 的两人相遇。
+    // 信令服务器：默认走【本站自建】——server.js 已内置 socket.io 中继（/netplay/socket.io），
+    //   联机信令留在自家服务器，彻底隔离公开大厅里的陌生人，跨公网更可控（零额外进程/反向代理）。
+    //   若自建信令不可达，可临时改回官方公开服务器作兜底：'https://netplay.emulatorjs.org/'。
+    const SELF_NETPLAY = (typeof location !== 'undefined' && location.origin ? location.origin : '') + '/netplay/';
     const NETPLAY = {
         cdn: 'https://cdn.emulatorjs.org/nightly/data/',
-        server: 'https://netplay.emulatorjs.org/',
+        server: SELF_NETPLAY,
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
@@ -361,7 +362,7 @@
                     net.className = 'emu-btn emu-btn-play';
                     net.style.marginLeft = '6px';
                     net.textContent = '👥 联机';
-                    net.title = '联机对战（实验性 · 建议 FC/街机；双方都点此进入同一 ROM 即可相遇）';
+                    net.title = '联机对战（实验性 · 建议 FC/街机）：点此进入后，在 ≡ 菜单 → Netplay 创建/加入房间，把房间号发给好友即可对战';
                     net.onclick = ev => { ev.stopPropagation(); playRom(rom, true); };
                     item.appendChild(net);
                     frag.appendChild(item);
@@ -418,7 +419,12 @@
                         bar.appendChild(back);
                         bar.appendChild(el('emu-playtip',
                             netplay
-                                ? '联机模式加载中…核心就绪后请在 ≡ 菜单 → Netplay 开/进房；同一 ROM 的两人会进入同一大厅'
+                                ? '<b>🎮 联机对战（实验性）</b><br>' +
+                                  '① 核心加载完成后，点画面顶部 <b>≡ 菜单 → Netplay</b><br>' +
+                                  '② 一方【创建房间】会得到一个<b>房间号</b>，把房间号发给好友<br>' +
+                                  '③ 好友进<b>同一款游戏</b> → 点「👥 联机」→ 在 Netplay 菜单【加入房间】输入房间号<br>' +
+                                  '④ 两人都在房间内即可开始对战<br>' +
+                                  '<span style="color:#ffb37a">提示：建议选 FC/NES 游戏最稳；nightly 版联机偶发掉线/不同步属正常，重开房间即可</span>'
                                 : '加载中…首次启动需下载模拟核心（需联网）· 点击画面呼出菜单，⚙ Control Settings 可改 P1/P2 键位、存档、全屏'));
                         bar.appendChild(buildCloudBar(frame));
                         play.appendChild(frame);

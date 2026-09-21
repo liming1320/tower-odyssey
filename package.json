@@ -45,6 +45,7 @@
   "dependencies": {
     "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
+    "socket.io": "^4.7.5",
     "ws": "^8.18.0"
   },
   "optionalDependencies": {
